@@ -258,7 +258,12 @@ if(MSVC)
     add_compile_options("/utf-8")
 endif()
 
-find_package(RakNet REQUIRED)
+set(CRABNET_ENABLE_DLL OFF CACHE BOOL "" FORCE)
+set(CRABNET_ENABLE_SAMPLES OFF CACHE BOOL "" FORCE)
+set(CRABNET_ENABLE_STATIC ON CACHE BOOL "" FORCE)
+add_subdirectory(extern/crabnet)
+set(RakNet_LIBRARY RakNetLibStatic)
+set(RakNet_INCLUDES ${CMAKE_SOURCE_DIR}/extern/crabnet/include/raknet)
 include_directories(${RakNet_INCLUDES})
 
 # Dependencies

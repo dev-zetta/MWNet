@@ -22,7 +22,7 @@ Modes of operation:
 Options:
   -s, --server-only              Only build the server
   -j, --cores N                  Use N cores for building (default: all available)
-  --skip-deps                    Skip building dependencies (CrabNet)
+  --skip-deps                    Skip building external dependencies (no-op: CrabNet is now vendored)
   --skip-pkgs                    Skip package installation
   --cmake-local                  Tell CMake to look in /usr/local/ for libraries
 
@@ -108,7 +108,6 @@ BASE="$PROJECT_DIR"
 CODE="$BASE"
 BUILD_DIR="$BASE/build"
 DEPENDENCIES="$BASE/dependencies"
-CRABNET_LOCATION="$DEPENDENCIES/crabnet"
 
 # Distro identification
 if command -v lsb_release &> /dev/null; then
@@ -221,39 +220,7 @@ if [[ $INSTALL == true && $SKIP_PACKAGE_INSTALL == false ]]; then
   esac
 fi
 
-# Build CrabNet dependency
-if [[ ($INSTALL == true || $REBUILD == true) && $SKIP_DEPS == false ]]; then
-  echo -e "\n>> Building CrabNet (TES3MP's RakNet fork)"
-  
-  if [ ! -d "$CRABNET_LOCATION" ]; then
-    echo -e "\nERROR: CrabNet not found at: $CRABNET_LOCATION"
-    echo -e "CrabNet should already be cloned in the dependencies directory."
-    echo -e "Please ensure the repository is properly set up."
-    exit 1
-  fi
-  
-  echo -e "CrabNet found at: $CRABNET_LOCATION"
-  
-  echo -e "Building CrabNet..."
-  mkdir -p "$CRABNET_LOCATION/build"
-  cd "$CRABNET_LOCATION/build"
-  
-  rm -f CMakeCache.txt
-  cmake -DCMAKE_BUILD_TYPE=Release \
-        -DCRABNET_ENABLE_DLL=OFF \
-        -DCRABNET_ENABLE_SAMPLES=OFF \
-        -DCRABNET_ENABLE_STATIC=ON \
-        ..
-  
-  make -j$CORES
-  
-  # Create case-insensitive symlink for compatibility
-  ln -sf "$CRABNET_LOCATION/include/RakNet" "$CRABNET_LOCATION/include/raknet" 2>/dev/null || true
-  
-  echo -e "CrabNet built successfully"
-  echo -e "  Location: $CRABNET_LOCATION"
-  echo -e "  Library: $CRABNET_LOCATION/build/lib/libRakNetLibStatic.a"
-fi
+# CrabNet is now vendored in extern/crabnet and built automatically by CMake
 
 # Build TES3MP
 if [ $INSTALL == true ] || [ $REBUILD == true ]; then
@@ -266,10 +233,7 @@ if [ $INSTALL == true ] || [ $REBUILD == true ]; then
   CMAKE_PARAMS="-Wno-dev \
       -DCMAKE_BUILD_TYPE=RelWithDebInfo \
       -DCMAKE_CXX_STANDARD=20 \
-      -DBUILD_OPENCS=OFF \
-      -DRakNet_INCLUDES=${CRABNET_LOCATION}/include \
-      -DRakNet_LIBRARY_DEBUG=${CRABNET_LOCATION}/build/lib/libRakNetLibStatic.a \
-      -DRakNet_LIBRARY_RELEASE=${CRABNET_LOCATION}/build/lib/libRakNetLibStatic.a"
+      -DBUILD_OPENCS=OFF"
   
   if [ "$SERVER_ONLY" = true ]; then
     echo -e "Building server-only configuration"
