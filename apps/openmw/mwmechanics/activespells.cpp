@@ -289,7 +289,7 @@ namespace MWMechanics
                     if (removedSpell)
                         break;
 
-                        /*
+                    /*
                         Start of tes3mp addition
 
                         Whenever the local player loses an active spell, send an ID_PLAYER_SPELLS_ACTIVE packet to the server with it

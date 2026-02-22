@@ -245,7 +245,7 @@ namespace MWWorld
 
         LocalScripts& getLocalScripts() override;
 
-                /*
+            /*
                 Start of tes3mp addition
 
                 Make it possible to get the World's ESMStore as a non-const
@@ -270,7 +270,7 @@ namespace MWWorld
         int getGlobalInt(GlobalVariableName name) const override;
         ///< Get value independently from real type.
 
-                /*
+            /*
                 Start of tes3mp addition
 
                 Make it possible to check whether global variables exist and to create
@@ -317,7 +317,7 @@ namespace MWWorld
 
         void enable(const Ptr& ptr) override;
 
-                /*
+            /*
                 Start of tes3mp addition
 
                 Make it possible to find a Ptr in any active cell based on its refNum and mpNum
@@ -325,7 +325,7 @@ namespace MWWorld
             Ptr searchPtrViaActorId(int actorId) override;
             Ptr searchPtrViaUniqueIndex(int refNum, int mpNum) override;
             /* End of tes3mp addition */
-                /*
+            /*
                 Start of tes3mp addition
 
                 Make it possible to update all Ptrs in active cells that have a certain refId
@@ -362,7 +362,7 @@ namespace MWWorld
 
         int getMasserPhase() const override;
 
-                /*
+            /*
                 Start of tes3mp addition
 
                 Make it possible to set a specific weather state for a region from elsewhere
@@ -371,7 +371,7 @@ namespace MWWorld
             void setRegionWeather(const ESM::RefId& region, const unsigned int currentWeather, const unsigned int nextWeather,
                 const unsigned int queuedWeather, const float transitionFactor, bool force) override;
             /* End of tes3mp addition */
-                /*
+            /*
                 Start of tes3mp addition
 
                 Make it possible to check whether the local WeatherManager has the
@@ -379,7 +379,7 @@ namespace MWWorld
             */
             bool getWeatherCreationState() override;
             /* End of tes3mp addition */
-                /*
+            /*
                 Start of tes3mp addition
 
                 Make it possible to enable and disable the local WeatherManager's ability
@@ -387,7 +387,7 @@ namespace MWWorld
             */
             void setWeatherCreationState(bool state) override;
             /* End of tes3mp addition */
-                /*
+            /*
                 Start of tes3mp addition
 
                 Make it possible to send the current weather in a WorldWeather packet
@@ -501,14 +501,14 @@ namespace MWWorld
         /// @param object
         /// @param number of objects to place
 
-                /*
+            /*
                 Start of tes3mp addition
 
                 Make it possible to set the inertial force of a Ptr directly
             */
             void setInertialForce(const Ptr& ptr, const osg::Vec3f &force);
             /* End of tes3mp addition */
-                /*
+            /*
                 Start of tes3mp addition
 
                 Make it possible to set whether a Ptr is on the ground or not, needed for proper
@@ -516,7 +516,7 @@ namespace MWWorld
             */
             void setOnGround(const Ptr& ptr, bool onGround);
             /* End of tes3mp addition */
-                /*
+            /*
                 Start of tes3mp addition
 
                 Make it possible to set the physics framerate from elsewhere
@@ -675,35 +675,35 @@ namespace MWWorld
 
         bool findInteriorPositionInWorldSpace(const MWWorld::CellStore* cell, osg::Vec3f& result) override;
 
-                /*
+            /*
                 Start of tes3mp addition
 
                 Useful self-contained method for saving door states
             */
             void saveDoorState(const MWWorld::Ptr& door, MWWorld::DoorState state) override;
             /* End of tes3mp addition */
-                /*
+            /*
                 Start of tes3mp addition
 
                 Make it possible to check whether a cell is active
             */
             bool isCellActive(const ESM::Cell& cell) override;
             /* End of tes3mp addition */
-                /*
+            /*
                 Start of tes3mp addition
 
                 Make it possible to unload a cell from elsewhere
             */
             void unloadCell(const ESM::Cell& cell) override;
             /* End of tes3mp addition */
-                /*
+            /*
                 Start of tes3mp addition
 
                 Make it possible to unload all active cells from elsewhere
             */
             void unloadActiveCells() override;
             /* End of tes3mp addition */
-                /*
+            /*
                 Start of tes3mp addition
 
                 Clear the CellStore for a specific Cell from elsewhere

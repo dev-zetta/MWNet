@@ -9,7 +9,7 @@
 #include <components/esm3/esmwriter.hpp>
 #include <components/esm3/loadmgef.hpp>
 
-    /*
+/*
     Start of tes3mp addition
 
     Include additional headers for multiplayer purposes
