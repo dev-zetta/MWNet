@@ -23,16 +23,16 @@ namespace mwmp
 
         size_t size() const;
 
-        typedef std::multimap <ESM::RefId, ESM::CustomMarker> ContainerType;
+        using ContainerType = std::multimap<ESM::RefId, ESM::CustomMarker>;
 
-        typedef std::pair <ContainerType::const_iterator, ContainerType::const_iterator> RangeType;
+        using RangeType = std::pair<ContainerType::const_iterator, ContainerType::const_iterator>;
 
         ContainerType::const_iterator begin() const;
         ContainerType::const_iterator end() const;
 
         RangeType getMarkers(const ESM::RefId &cellId) const;
 
-        typedef MyGUI::delegates::MultiDelegate<> EventHandle_Void;
+        using EventHandle_Void = MyGUI::delegates::MultiDelegate<>;
         EventHandle_Void eventMarkersChanged;
 
         bool contains(const ESM::CustomMarker &marker);

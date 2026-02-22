@@ -14,7 +14,7 @@ namespace mwmp
             BPP_INIT(ID_CELL_RESET)
         }
 
-        virtual void Do(WorldstatePacket &packet, Worldstate &worldstate)
+        void Do(WorldstatePacket &packet, Worldstate &worldstate) override
         {
             LOG_MESSAGE_SIMPLE(TimedLog::LOG_INFO, "Received ID_CELL_RESET");
 

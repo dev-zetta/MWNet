@@ -13,13 +13,13 @@ namespace mwmp
             BPP_INIT(ID_PLAYER_TOPIC)
         }
 
-        virtual void Do(PlayerPacket &packet, BasePlayer *player)
+        void Do(PlayerPacket &packet, BasePlayer *player) override
         {
             if (isRequest())
             {
                 // Entire list of topics cannot currently be requested from players
             }
-            else if (player != 0)
+            else if (player != nullptr)
             {
                 static_cast<LocalPlayer*>(player)->addTopics();
             }

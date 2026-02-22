@@ -17,7 +17,7 @@ namespace mwmp
             BPP_INIT(ID_ACTOR_AUTHORITY)
         }
 
-        virtual void Do(ActorPacket &packet, ActorList &actorList)
+        void Do(ActorPacket &packet, ActorList &actorList) override
         {
             LOG_MESSAGE_SIMPLE(TimedLog::LOG_INFO, "Received %s about %s", strPacketID.c_str(), actorList.cell.getDescription().c_str());
             mwmp::CellController *cellController = Main::get().getCellController();
@@ -44,7 +44,7 @@ namespace mwmp
                 {
                     BasePlayer *player = PlayerList::getPlayer(guid);
 
-                    if (player != 0)
+                    if (player != nullptr)
                         LOG_APPEND(TimedLog::LOG_INFO, "- The new authority is %s", player->npc.mName.c_str());
 
                     cell->uninitializeLocalActors();

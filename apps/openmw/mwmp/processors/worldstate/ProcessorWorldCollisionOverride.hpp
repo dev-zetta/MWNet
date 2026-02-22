@@ -16,7 +16,7 @@ namespace mwmp
             BPP_INIT(ID_WORLD_COLLISION_OVERRIDE)
         }
 
-        virtual void Do(WorldstatePacket &packet, Worldstate &worldstate)
+        void Do(WorldstatePacket &packet, Worldstate &worldstate) override
         {
             // Placeholder
         }

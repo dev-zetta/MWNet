@@ -1262,9 +1262,8 @@ void LocalPlayer::setSpellbook()
     while (true)
     {
         bool removed = false;
-        for (auto iter = ptrSpells.begin(); iter != ptrSpells.end(); ++iter)
+        for (const auto* spell : ptrSpells)
         {
-            const ESM::Spell *spell = *iter;
             if (spell->mData.mType == ESM::Spell::ST_Spell)
             {
                 ptrSpells.remove(spell->mId);
@@ -1333,9 +1332,8 @@ void LocalPlayer::setQuickKeys()
             MWMechanics::Spells &ptrSpells = ptrPlayer.getClass().getCreatureStats(ptrPlayer).getSpells();
             bool hasSpell = false;
 
-            for (auto iter = ptrSpells.begin(); iter != ptrSpells.end(); ++iter)
+            for (const auto* spell : ptrSpells)
             {
-                const ESM::Spell *spell = *iter;
                 if (Misc::StringUtils::ciEqual(spell->mId.getRefIdString(), quickKey.itemId))
                 {
                     hasSpell = true;
@@ -1902,9 +1900,7 @@ void LocalPlayer::clearCurrentContainer()
 
 void LocalPlayer::storeCellState(const ESM::Cell& storedCell, int stateType)
 {
-    std::vector<CellState>::iterator iter;
-
-    for (iter = cellStateChanges.begin(); iter != cellStateChanges.end(); )
+    for (auto iter = cellStateChanges.begin(); iter != cellStateChanges.end(); )
     {
         // If there's already a cell state recorded for this particular cell,
         // remove it

@@ -13,7 +13,7 @@ namespace mwmp
             BPP_INIT(ID_OBJECT_PLACE)
         }
 
-        virtual void Do(ObjectPacket &packet, ObjectList &objectList)
+        void Do(ObjectPacket &packet, ObjectList &objectList) override
         {
             BaseObjectProcessor::Do(packet, objectList);
 

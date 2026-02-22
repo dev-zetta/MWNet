@@ -20,7 +20,7 @@ namespace mwmp
             BPP_INIT(ID_PLAYER_ITEM_USE)
         }
 
-        virtual void Do(PlayerPacket &packet, BasePlayer *player)
+        void Do(PlayerPacket &packet, BasePlayer *player) override
         {
             if (!isLocal()) return;
 

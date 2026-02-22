@@ -17,7 +17,7 @@ namespace mwmp
             BPP_INIT(ID_SYSTEM_HANDSHAKE)
         }
 
-        virtual void Do(SystemPacket &packet, BaseSystem *system)
+        void Do(SystemPacket &packet, BaseSystem *system) override
         {
             packet.setSystem(Main::get().getLocalSystem());
             packet.Send(serverAddr);

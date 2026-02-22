@@ -18,7 +18,7 @@ namespace mwmp
             BPP_INIT(ID_PLAYER_RESURRECT)
         }
 
-        virtual void Do(PlayerPacket &packet, BasePlayer *player)
+        void Do(PlayerPacket &packet, BasePlayer *player) override
         {
             LOG_MESSAGE_SIMPLE(TimedLog::LOG_INFO, "Received ID_PLAYER_RESURRECT from server");
             
@@ -28,7 +28,7 @@ namespace mwmp
 
                 static_cast<LocalPlayer*>(player)->resurrect();
             }
-            else if (player != 0)
+            else if (player != nullptr)
             {
                 LOG_APPEND(TimedLog::LOG_INFO, "- Packet was about %s", player->npc.mName.c_str());
 

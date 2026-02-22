@@ -15,7 +15,7 @@ namespace mwmp
             BPP_INIT(ID_ACTOR_STATS_DYNAMIC);
         }
 
-        virtual void Do(ActorPacket &packet, ActorList &actorList)
+        void Do(ActorPacket &packet, ActorList &actorList) override
         {
             Main::get().getCellController()->readStatsDynamic(actorList);
         }

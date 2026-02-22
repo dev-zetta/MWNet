@@ -17,8 +17,8 @@
 #include "Cell.hpp"
 #include "CellController.hpp"
 
-typedef std::map<RakNet::RakNetGUID, Player*> TPlayers;
-typedef std::map<unsigned short, Player*> TSlots;
+using TPlayers = std::map<RakNet::RakNetGUID, Player*>;
+using TSlots = std::map<unsigned short, Player*>;
 
 class Players
 {

@@ -14,7 +14,7 @@ namespace mwmp
             BPP_INIT(ID_PLAYER_EQUIPMENT)
         }
 
-        virtual void Do(PlayerPacket &packet, BasePlayer *player)
+        void Do(PlayerPacket &packet, BasePlayer *player) override
         {
             if (isLocal())
             {
@@ -25,7 +25,7 @@ namespace mwmp
                 else
                     static_cast<LocalPlayer*>(player)->setEquipment();
             }
-            else if (player != 0)
+            else if (player != nullptr)
                 static_cast<DedicatedPlayer*>(player)->setEquipment();
         }
     };

@@ -13,14 +13,14 @@ namespace mwmp
             BPP_INIT(ID_PLAYER_SPEECH)
         }
 
-        virtual void Do(PlayerPacket &packet, BasePlayer *player)
+        void Do(PlayerPacket &packet, BasePlayer *player) override
         {
             if (isLocal())
             {
                 LOG_MESSAGE_SIMPLE(TimedLog::LOG_INFO, "Received ID_PLAYER_SPEECH about LocalPlayer from server");
                 static_cast<LocalPlayer*>(player)->playSpeech();
             }
-            else if (player != 0)
+            else if (player != nullptr)
                 static_cast<DedicatedPlayer*>(player)->playSpeech();
         }
     };

@@ -55,7 +55,7 @@ bool Public::IsLua(const std::string &name)
 
 void Public::DeleteAll()
 {
-    for (auto it = publics.begin(); it != publics.end(); it++)
+    for (auto it = publics.begin(); it != publics.end(); ++it)
     {
         Public *_public = it->second;
         delete _public;

@@ -15,7 +15,7 @@ namespace mwmp
             BPP_INIT(ID_ACTOR_POSITION);
         }
 
-        virtual void Do(ActorPacket &packet, ActorList &actorList)
+        void Do(ActorPacket &packet, ActorList &actorList) override
         {
             Main::get().getCellController()->readPositions(actorList);
         }

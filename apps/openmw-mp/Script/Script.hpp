@@ -42,7 +42,7 @@ private:
     int script_type;
     std::unordered_map<unsigned int, FunctionEllipsis<void>> callbacks_;
 
-    typedef std::vector<std::unique_ptr<Script>> ScriptList;
+    using ScriptList = std::vector<std::unique_ptr<Script>>;
     static ScriptList scripts;
 
     Script(const char *path);

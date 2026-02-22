@@ -15,7 +15,7 @@ namespace mwmp
             BPP_INIT(ID_ACTOR_AI);
         }
 
-        virtual void Do(ActorPacket &packet, ActorList &actorList)
+        void Do(ActorPacket &packet, ActorList &actorList) override
         {
             LOG_MESSAGE_SIMPLE(TimedLog::LOG_INFO, "Received %s about %s", strPacketID.c_str(), actorList.cell.getDescription().c_str());
 

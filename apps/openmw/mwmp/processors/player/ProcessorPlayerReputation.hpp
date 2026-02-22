@@ -14,13 +14,13 @@ namespace mwmp
             BPP_INIT(ID_PLAYER_REPUTATION)
         }
 
-        virtual void Do(PlayerPacket &packet, BasePlayer *player)
+        void Do(PlayerPacket &packet, BasePlayer *player) override
         {
             if (isRequest())
             {
                 static_cast<LocalPlayer *>(player)->updateReputation(true);
             }
-            else if (player != 0)
+            else if (player != nullptr)
             {
                 static_cast<LocalPlayer *>(player)->setReputation();
             }

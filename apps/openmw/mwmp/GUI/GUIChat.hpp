@@ -24,7 +24,7 @@ namespace mwmp
         MyGUI::EditBox* mCommandLine;
         MyGUI::EditBox* mHistory;
 
-        typedef std::list<std::string> StringList;
+        using StringList = std::list<std::string>;
 
         // History of previous entered commands
         StringList mCommandHistory;

@@ -16,7 +16,7 @@ namespace mwmp
             BPP_INIT(ID_CLIENT_SCRIPT_SETTINGS)
         }
 
-        virtual void Do(WorldstatePacket &packet, Worldstate &worldstate)
+        void Do(WorldstatePacket &packet, Worldstate &worldstate) override
         {
             LOG_MESSAGE_SIMPLE(TimedLog::LOG_INFO, "Received ID_CLIENT_SCRIPT_SETTINGS making us send packets for the following globals:");
             std::string debugMessage = "";

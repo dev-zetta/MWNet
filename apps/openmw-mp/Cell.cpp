@@ -130,15 +130,15 @@ mwmp::BaseActor *Cell::getActor(int refNum, int mpNum)
         if (actor->refNum == refNum && actor->mpNum == mpNum)
             return actor;
     }
-    return 0;
+    return nullptr;
 }
 
 void Cell::removeActors(const mwmp::BaseActorList *newActorList)
 {
-    for (std::vector<mwmp::BaseActor>::iterator it = cellActorList.baseActors.begin(); it != cellActorList.baseActors.end();)
+    for (auto it = cellActorList.baseActors.begin(); it != cellActorList.baseActors.end();)
     {
-        int refNum = (*it).refNum;
-        int mpNum = (*it).mpNum;
+        int refNum = it->refNum;
+        int mpNum = it->mpNum;
 
         bool foundActor = false;
 

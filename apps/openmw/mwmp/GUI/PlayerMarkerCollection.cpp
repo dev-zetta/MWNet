@@ -6,16 +6,16 @@ using namespace mwmp;
 
 void PlayerMarkerCollection::addMarker(const ESM::CustomMarker &marker, bool triggerEvent)
 {
-    mMarkers.insert(std::make_pair(marker.mCell, marker));
+    mMarkers.insert({marker.mCell, marker});
     if (triggerEvent)
         eventMarkersChanged();
 }
 
 void PlayerMarkerCollection::deleteMarker(const ESM::CustomMarker &marker)
 {
-    std::pair<ContainerType::iterator, ContainerType::iterator> range = mMarkers.equal_range(marker.mCell);
+    auto range = mMarkers.equal_range(marker.mCell);
 
-    for (ContainerType::iterator it = range.first; it != range.second; ++it)
+    for (auto it = range.first; it != range.second; ++it)
     {
         if (it->second == marker)
         {
@@ -29,9 +29,9 @@ void PlayerMarkerCollection::deleteMarker(const ESM::CustomMarker &marker)
 
 void PlayerMarkerCollection::updateMarker(const ESM::CustomMarker &marker, const std::string &newNote)
 {
-    std::pair<ContainerType::iterator, ContainerType::iterator> range = mMarkers.equal_range(marker.mCell);
+    auto range = mMarkers.equal_range(marker.mCell);
 
-    for (ContainerType::iterator it = range.first; it != range.second; ++it)
+    for (auto it = range.first; it != range.second; ++it)
     {
         if (it->second == marker)
         {
@@ -71,9 +71,9 @@ size_t PlayerMarkerCollection::size() const
 
 bool PlayerMarkerCollection::contains(const ESM::CustomMarker &marker)
 {
-    std::pair<ContainerType::iterator, ContainerType::iterator> range = mMarkers.equal_range(marker.mCell);
+    auto range = mMarkers.equal_range(marker.mCell);
 
-    for (ContainerType::iterator it = range.first; it != range.second; ++it)
+    for (auto it = range.first; it != range.second; ++it)
     {
         if (it->second == marker)
             return true;

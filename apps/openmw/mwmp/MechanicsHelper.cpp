@@ -653,7 +653,7 @@ MWWorld::Ptr MechanicsHelper::getItemPtrFromStore(const mwmp::Item& item, MWWorl
 {
     MWWorld::Ptr closestPtr;
 
-    for (MWWorld::ContainerStoreIterator storeIterator = store.begin(); storeIterator != store.end(); ++storeIterator)
+    for (auto storeIterator = store.begin(); storeIterator != store.end(); ++storeIterator)
     {
         // Enchantment charges are often in the process of refilling themselves, so don't check for them here
         if (Misc::StringUtils::ciEqual(item.refId, storeIterator->getCellRef().getRefId().getRefIdString()) &&

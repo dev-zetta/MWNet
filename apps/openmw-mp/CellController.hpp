@@ -24,8 +24,8 @@ public:
     static void destroy();
     static CellController *get();
 public:
-    typedef std::deque<Cell*> TContainer;
-    typedef TContainer::iterator TIter;
+    using TContainer = std::deque<Cell*>;
+    using TIter = TContainer::iterator;
 
     Cell * addCell(ESM::Cell cell);
     void removeCell(Cell *);

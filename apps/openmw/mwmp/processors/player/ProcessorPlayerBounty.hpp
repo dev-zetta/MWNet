@@ -13,7 +13,7 @@ namespace mwmp
             BPP_INIT(ID_PLAYER_BOUNTY)
         }
 
-        virtual void Do(PlayerPacket &packet, BasePlayer *player)
+        void Do(PlayerPacket &packet, BasePlayer *player) override
         {
             if (isLocal())
             {
@@ -22,7 +22,7 @@ namespace mwmp
                 else
                     static_cast<LocalPlayer *>(player)->setBounty();
             }
-            else if (player != 0)
+            else if (player != nullptr)
             {
                 MWWorld::Ptr ptrPlayer =  static_cast<DedicatedPlayer *>(player)->getPtr();
                 MWMechanics::NpcStats *ptrNpcStats = &ptrPlayer.getClass().getNpcStats(ptrPlayer);

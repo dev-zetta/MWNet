@@ -13,7 +13,7 @@ namespace mwmp
             BPP_INIT(ID_PLAYER_SHAPESHIFT)
         }
 
-        virtual void Do(PlayerPacket &packet, BasePlayer *player)
+        void Do(PlayerPacket &packet, BasePlayer *player) override
         {
             LOG_MESSAGE_SIMPLE(TimedLog::LOG_INFO, "Received ID_PLAYER_SHAPESHIFT from server");
 
@@ -23,7 +23,7 @@ namespace mwmp
 
                 static_cast<LocalPlayer *>(player)->setShapeshift();
             }
-            else if (player != 0)
+            else if (player != nullptr)
             {
                 static_cast<DedicatedPlayer *>(player)->setShapeshift();
             }

@@ -16,7 +16,7 @@ namespace mwmp
             BPP_INIT(ID_ACTOR_ANIM_PLAY);
         }
 
-        virtual void Do(ActorPacket &packet, ActorList &actorList)
+        void Do(ActorPacket &packet, ActorList &actorList) override
         {
             Main::get().getCellController()->readAnimPlay(actorList);
         }

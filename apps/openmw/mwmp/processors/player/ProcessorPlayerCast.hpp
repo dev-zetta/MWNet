@@ -15,9 +15,9 @@ namespace mwmp
             BPP_INIT(ID_PLAYER_CAST)
         }
 
-        virtual void Do(PlayerPacket &packet, BasePlayer *player)
+        void Do(PlayerPacket &packet, BasePlayer *player) override
         {
-            if (!isLocal() && player != 0)
+            if (!isLocal() && player != nullptr)
             {
                 DedicatedPlayer& dedicatedPlayer = static_cast<DedicatedPlayer&>(*player);
                 MWWorld::Ptr playerPtr = dedicatedPlayer.getPtr();

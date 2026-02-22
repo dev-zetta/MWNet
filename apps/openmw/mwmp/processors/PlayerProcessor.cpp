@@ -38,7 +38,7 @@ bool PlayerProcessor::Process(RakNet::Packet &packet)
             else
                 player = Main::get().getLocalPlayer();
 
-            if (!request && !processor.second->avoidReading && player != 0)
+            if (!request && !processor.second->avoidReading && player != nullptr)
             {
                 myPacket->setPlayer(player);
                 myPacket->Read();

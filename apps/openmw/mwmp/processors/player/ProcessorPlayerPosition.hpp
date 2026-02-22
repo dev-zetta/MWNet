@@ -14,7 +14,7 @@ namespace mwmp
             BPP_INIT(ID_PLAYER_POSITION)
         }
 
-        virtual void Do(PlayerPacket &packet, BasePlayer *player)
+        void Do(PlayerPacket &packet, BasePlayer *player) override
         {
             if (isLocal())
             {
@@ -27,7 +27,7 @@ namespace mwmp
                 else
                     static_cast<LocalPlayer*>(player)->updatePosition(true);
             }
-            else if (player != 0) // dedicated player
+            else if (player != nullptr) // dedicated player
                 static_cast<DedicatedPlayer*>(player)->updateMarker();
         }
     };

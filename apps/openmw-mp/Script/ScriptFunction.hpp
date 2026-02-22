@@ -8,9 +8,9 @@
 #include "LangLua/LangLua.hpp"
 #endif
 
-typedef unsigned long long(*ScriptFunc)();
+using ScriptFunc = unsigned long long(*)();
 #if defined (ENABLE_LUA)
-typedef std::string ScriptFuncLua;
+using ScriptFuncLua = std::string;
 #endif
 
 class ScriptFunction

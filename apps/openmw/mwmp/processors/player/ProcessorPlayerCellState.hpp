@@ -14,7 +14,7 @@ namespace mwmp
             avoidReading = true;
         }
 
-        virtual void Do(PlayerPacket &packet, BasePlayer *player)
+        void Do(PlayerPacket &packet, BasePlayer *player) override
         {
             if (isLocal() && isRequest())
                 static_cast<LocalPlayer *>(player)->sendCellStates();

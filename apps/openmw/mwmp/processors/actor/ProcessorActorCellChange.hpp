@@ -16,7 +16,7 @@ namespace mwmp
             BPP_INIT(ID_ACTOR_CELL_CHANGE);
         }
 
-        virtual void Do(ActorPacket &packet, ActorList &actorList)
+        void Do(ActorPacket &packet, ActorList &actorList) override
         {
             Main::get().getCellController()->readCellChange(actorList);
         }

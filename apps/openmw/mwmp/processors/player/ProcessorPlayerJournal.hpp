@@ -13,7 +13,7 @@ namespace mwmp
             BPP_INIT(ID_PLAYER_JOURNAL)
         }
 
-        virtual void Do(PlayerPacket &packet, BasePlayer *player)
+        void Do(PlayerPacket &packet, BasePlayer *player) override
         {
             LOG_MESSAGE_SIMPLE(TimedLog::LOG_INFO, "Received ID_PLAYER_JOURNAL from server");
 
@@ -21,7 +21,7 @@ namespace mwmp
             {
                 // Entire journal cannot currently be requested from players
             }
-            else if (player != 0)
+            else if (player != nullptr)
             {
                 static_cast<LocalPlayer*>(player)->addJournalItems();
             }

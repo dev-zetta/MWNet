@@ -17,8 +17,8 @@ class Cell
     friend class CellController;
 public:
     Cell(ESM::Cell cell);
-    typedef std::deque<Player*> TPlayers;
-    typedef TPlayers::const_iterator Iterator;
+    using TPlayers = std::deque<Player*>;
+    using Iterator = TPlayers::const_iterator;
 
     Iterator begin() const;
     Iterator end() const;

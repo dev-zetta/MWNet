@@ -36,7 +36,7 @@
 
 #define GET_PLAYER(pid, pl, retvalue) \
      pl = Players::getPlayer(pid); \
-     if (player == 0) {\
+     if (player == nullptr) {\
         LOG_MESSAGE_SIMPLE(TimedLog::LOG_ERROR, "%s: Player with pid \'%d\' not found\n", __PRETTY_FUNCTION__, pid);\
         /*ScriptFunctions::StopServer(1);*/ \
         return retvalue;\

@@ -13,7 +13,7 @@ namespace mwmp
             BPP_INIT(ID_PLAYER_BASEINFO)
         }
 
-        virtual void Do(PlayerPacket &packet, BasePlayer *player)
+        void Do(PlayerPacket &packet, BasePlayer *player) override
         {
             LOG_MESSAGE_SIMPLE(TimedLog::LOG_INFO, "Received ID_PLAYER_BASEINFO from server");
 
@@ -34,9 +34,9 @@ namespace mwmp
             }
             else
             {
-                LOG_APPEND(TimedLog::LOG_INFO, "- Packet was about %s", player == 0 ? "new player" : player->npc.mName.c_str());
+                LOG_APPEND(TimedLog::LOG_INFO, "- Packet was about %s", player == nullptr ? "new player" : player->npc.mName.c_str());
 
-                if (player == 0)
+                if (player == nullptr)
                 {
                     LOG_APPEND(TimedLog::LOG_INFO, "- Exchanging data with new player");
                     player = PlayerList::newPlayer(guid);

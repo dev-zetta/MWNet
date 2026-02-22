@@ -19,7 +19,7 @@ namespace mwmp
             BPP_INIT(ID_GAME_SETTINGS)
         }
 
-        virtual void Do(PlayerPacket &packet, BasePlayer *player)
+        void Do(PlayerPacket &packet, BasePlayer *player) override
         {
             static const int initialLogLevel = TimedLog::GetLevel();
 

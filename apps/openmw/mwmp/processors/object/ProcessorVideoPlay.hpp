@@ -13,7 +13,7 @@ namespace mwmp
             BPP_INIT(ID_VIDEO_PLAY)
         }
 
-        virtual void Do(ObjectPacket &packet, ObjectList &objectList)
+        void Do(ObjectPacket &packet, ObjectList &objectList) override
         {
             LOG_MESSAGE_SIMPLE(TimedLog::LOG_VERBOSE, "Received %s", strPacketID.c_str());
             objectList.playVideo();

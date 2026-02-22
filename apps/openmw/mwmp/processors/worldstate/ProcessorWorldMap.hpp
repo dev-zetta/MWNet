@@ -13,7 +13,7 @@ namespace mwmp
             BPP_INIT(ID_WORLD_MAP)
         }
 
-        virtual void Do(WorldstatePacket &packet, Worldstate &worldstate)
+        void Do(WorldstatePacket &packet, Worldstate &worldstate) override
         {
             worldstate.setMapExplored();
         }

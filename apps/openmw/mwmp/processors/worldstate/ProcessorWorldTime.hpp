@@ -17,7 +17,7 @@ namespace mwmp
             BPP_INIT(ID_WORLD_TIME)
         }
 
-        virtual void Do(WorldstatePacket &packet, Worldstate &worldstate)
+        void Do(WorldstatePacket &packet, Worldstate &worldstate) override
         {
             MWBase::World *world = MWBase::Environment::get().getWorld();
 

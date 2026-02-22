@@ -18,15 +18,15 @@ namespace mwmp
             avoidReading = true;
         }
 
-        virtual void Do(PlayerPacket &packet, BasePlayer *player)
+        void Do(PlayerPacket &packet, BasePlayer *player) override
         {
             if (isLocal())
                 MWBase::Environment::get().getStateManager()->requestQuit();
-            else if (player != 0)
+            else if (player != nullptr)
             {
                 mwmp::LocalPlayer *localPlayer = mwmp::Main::get().getLocalPlayer();
 
-                for (std::vector<RakNet::RakNetGUID>::iterator iter = localPlayer->alliedPlayers.begin(); iter != localPlayer->alliedPlayers.end(); )
+                for (auto iter = localPlayer->alliedPlayers.begin(); iter != localPlayer->alliedPlayers.end(); )
                 {
                     if (*iter == guid)
                     {

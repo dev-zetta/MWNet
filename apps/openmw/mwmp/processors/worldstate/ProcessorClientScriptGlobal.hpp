@@ -13,7 +13,7 @@ namespace mwmp
             BPP_INIT(ID_CLIENT_SCRIPT_GLOBAL)
         }
 
-        virtual void Do(WorldstatePacket &packet, Worldstate &worldstate)
+        void Do(WorldstatePacket &packet, Worldstate &worldstate) override
         {
             mwmp::Main::get().getNetworking()->getWorldstate()->setClientGlobals();
         }

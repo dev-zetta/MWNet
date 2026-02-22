@@ -16,9 +16,9 @@ namespace mwmp
             BPP_INIT(ID_CHAT_MESSAGE)
         }
 
-        virtual void Do(PlayerPacket &packet, BasePlayer *player)
+        void Do(PlayerPacket &packet, BasePlayer *player) override
         {
-            if (player != 0)
+            if (player != nullptr)
                 Main::get().getGUIController()->printChatMessage(player->chatMessage);
         }
     };

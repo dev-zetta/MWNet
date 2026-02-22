@@ -13,7 +13,7 @@ namespace mwmp
             BPP_INIT(ID_PLAYER_REST)
         }
 
-        virtual void Do(PlayerPacket &packet, BasePlayer *player)
+        void Do(PlayerPacket &packet, BasePlayer *player) override
         {
             // Placeholder to be filled in later
         }

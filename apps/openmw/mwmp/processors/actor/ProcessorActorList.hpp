@@ -16,7 +16,7 @@ namespace mwmp
             BPP_INIT(ID_ACTOR_LIST)
         }
 
-        virtual void Do(ActorPacket &packet, ActorList &actorList)
+        void Do(ActorPacket &packet, ActorList &actorList) override
         {
             MWWorld::CellStore *ptrCellStore = Main::get().getCellController()->getCellStore(actorList.cell);
 

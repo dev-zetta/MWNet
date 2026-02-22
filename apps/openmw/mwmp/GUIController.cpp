@@ -100,11 +100,11 @@ void mwmp::GUIController::showDialogList(const mwmp::BasePlayer::GUIMessageBox &
 {
     MWBase::WindowManager *windowManager = MWBase::Environment::get().getWindowManager();
     
-    if (mListBox != NULL)
+    if (mListBox != nullptr)
     {
         windowManager->removeCurrentModal(mListBox);
         windowManager->removeDialog(std::unique_ptr<MWGui::Layout>(mListBox));
-        mListBox = NULL;
+        mListBox = nullptr;
     }
 
     std::vector<std::string> list;

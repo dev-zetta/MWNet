@@ -15,7 +15,7 @@ namespace mwmp
             BPP_INIT(ID_WORLD_REGION_AUTHORITY)
         }
 
-        virtual void Do(WorldstatePacket &packet, Worldstate &worldstate)
+        void Do(WorldstatePacket &packet, Worldstate &worldstate) override
         {
             MWBase::World *world = MWBase::Environment::get().getWorld();
 
@@ -38,7 +38,7 @@ namespace mwmp
                 {
                     BasePlayer *player = PlayerList::getPlayer(guid);
 
-                    if (player != 0)
+                    if (player != nullptr)
                         LOG_APPEND(TimedLog::LOG_INFO, "- The new region authority is %s", player->npc.mName.c_str());
 
                     world->setWeatherCreationState(false);

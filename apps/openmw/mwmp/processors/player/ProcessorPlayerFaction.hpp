@@ -13,13 +13,13 @@ namespace mwmp
             BPP_INIT(ID_PLAYER_FACTION)
         }
 
-        virtual void Do(PlayerPacket &packet, BasePlayer *player)
+        void Do(PlayerPacket &packet, BasePlayer *player) override
         {
             if (isRequest())
             {
                 // Entire faction membership cannot currently be requested from players
             }
-            else if (player != 0)
+            else if (player != nullptr)
             {
                 static_cast<LocalPlayer*>(player)->setFactions();
             }
