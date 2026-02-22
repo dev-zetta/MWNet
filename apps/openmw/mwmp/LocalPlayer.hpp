@@ -124,6 +124,8 @@ namespace mwmp
 
         MWWorld::Ptr getPlayerPtr();
 
+        bool waitingForResurrect = false;
+
     private:
         Networking *getNetworking();
 

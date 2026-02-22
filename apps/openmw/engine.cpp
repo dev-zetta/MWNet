@@ -52,6 +52,7 @@
 #include <components/openmw-mp/TimedLog.hpp>
 #include "mwmp/Main.hpp"
 #include "mwmp/GUIController.hpp"
+#include "mwmp/LocalPlayer.hpp"
 /* End of tes3mp addition */
 #include <components/misc/frameratelimiter.hpp>
 
@@ -326,7 +327,20 @@ bool OMW::Engine::frame(unsigned frameNumber, float frametime)
             {
                 MWWorld::Ptr player = mWorld->getPlayerPtr();
                 if (!paused && player.getClass().getCreatureStats(player).isDead())
-                    mStateManager->endGame();
+                {
+                    /*
+                        Start of tes3mp change (major)
+
+                        Instead of ending the game on player death, send ID_PLAYER_DEATH to
+                        the server and wait for ID_PLAYER_RESURRECT. The server will respond
+                        with a resurrect packet that calls LocalPlayer::resurrect(), which
+                        teleports the player to a shrine and restores their health.
+                    */
+                    mwmp::LocalPlayer *localPlayer = mwmp::Main::get().getLocalPlayer();
+                    if (localPlayer && !localPlayer->waitingForResurrect)
+                        localPlayer->sendDeath(1);
+                    /* End of tes3mp change (major) */
+                }
             }
         }
 

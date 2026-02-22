@@ -887,6 +887,7 @@ void LocalPlayer::die()
 void LocalPlayer::resurrect()
 {
     creatureStats.mDead = false;
+    waitingForResurrect = false; // allow sendDeath to fire again on next death
 
     MWWorld::Ptr ptrPlayer = getPlayerPtr();
 
@@ -1470,6 +1471,15 @@ void LocalPlayer::sendDeath(char newDeathState)
         killer = MechanicsHelper::getTarget(getPlayerPtr());
 
     deathState = newDeathState;
+
+    /*
+        Start of tes3mp addition
+
+        Set flag so engine.cpp doesn't fire ID_PLAYER_DEATH every frame
+        while waiting for ID_PLAYER_RESURRECT from the server
+    */
+    waitingForResurrect = true;
+    /* End of tes3mp addition */
 
     LOG_MESSAGE_SIMPLE(TimedLog::LOG_INFO, "Sending ID_PLAYER_DEATH about myself to server\n- deathState: %d", deathState);
     getNetworking()->getPlayerPacket(ID_PLAYER_DEATH)->setPlayer(this);
