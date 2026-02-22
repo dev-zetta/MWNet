@@ -368,7 +368,9 @@ namespace MWMechanics
         }
         catch (std::exception& e)
         {
-            Log(Debug::Error) << "Error during AiSequence::execute: " << e.what();
+            Log(Debug::Error) << "Error during AiSequence::execute: " << e.what()
+                << " (package type=" << static_cast<int>(packageTypeId)
+                << " actor=" << actor.getCellRef().getRefId() << ")";
         }
     }
 

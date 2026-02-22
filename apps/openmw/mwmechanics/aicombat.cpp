@@ -1,5 +1,6 @@
 #include "aicombat.hpp"
 
+#include <components/debug/debuglog.hpp>
 #include <components/detournavigator/navigatorutils.hpp>
 #include <components/esm3/aisequence.hpp>
 #include <components/misc/coordinateconverter.hpp>
