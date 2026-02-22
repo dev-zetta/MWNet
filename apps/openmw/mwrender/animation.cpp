@@ -1073,9 +1073,10 @@ namespace MWRender
         const AnimState& active)
     {
         osg::ref_ptr<ControllerType> animController;
-        if (blendControllers.contains(node))
+        auto blendIt = blendControllers.find(node);
+        if (blendIt != blendControllers.end())
         {
-            animController = blendControllers.at(node);
+            animController = blendIt->second;
             animController->setKeyframeTrack(keyframeController, stateData, blendRules);
         }
         else
@@ -1151,8 +1152,11 @@ namespace MWRender
                 for (AnimSource::ControllerMap::iterator it = animsrc->mControllerMap[blendMask].begin();
                      it != animsrc->mControllerMap[blendMask].end(); ++it)
                 {
-                    osg::ref_ptr<osg::Node> node = getNodeMap().at(
-                        it->first); // this should not throw, we already checked for the node existing in addAnimSource
+                    const auto& nodeMap = getNodeMap();
+                    const auto nodeIt = nodeMap.find(it->first);
+                    if (nodeIt == nodeMap.end())
+                        continue;
+                    osg::ref_ptr<osg::Node> node = nodeIt->second;
 
                     const bool useSmoothAnims = Settings::game().mSmoothAnimTransitions;
 

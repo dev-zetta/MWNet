@@ -239,12 +239,14 @@ namespace MWRender
         // Shouldn't happen, but potentially an edge case where a new bone was added
         // between gatherRecursiveBoneTransforms and this update
         // currently OpenMW will never do this
-        assert(mBlendBoneTransforms.find(bone) != mBlendBoneTransforms.end());
+        const auto blendIt = mBlendBoneTransforms.find(bone);
+        if (blendIt == mBlendBoneTransforms.end())
+            return;
 
         // Every frame the osgAnimation controller updates this
         // so it is ok that we update it directly below
         const osg::Matrixf& currentSampledMatrix = bone->getMatrix();
-        const osg::Matrixf& lastSampledMatrix = mBlendBoneTransforms.at(bone);
+        const osg::Matrixf& lastSampledMatrix = blendIt->second;
 
         const osg::Vec3f scale = currentSampledMatrix.getScale();
         const osg::Quat rotation = currentSampledMatrix.getRotate();
