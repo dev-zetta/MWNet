@@ -295,7 +295,7 @@ void LocalActor::sendSpellsActiveAddition(const std::string id, bool isStackingS
 
     spellsActiveChanges.activeSpells.clear();
 
-    const MWWorld::Ptr& caster = MWBase::Environment::get().getWorld()->searchPtrViaActorId(params.getCasterActorId());
+    const MWWorld::Ptr caster = MWBase::Environment::get().getWorldModel()->getPtr(params.getCaster());
 
     mwmp::ActiveSpell spell;
     spell.id = id;

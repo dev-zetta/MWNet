@@ -698,25 +698,33 @@ namespace MWWorld
 
     Ptr World::searchPtrViaActorId(int actorId)
     {
-        // The player is not registered in any CellStore so must be checked manually
-        if (actorId == getPlayerPtr().getClass().getCreatureStats(getPlayerPtr()).getActorId())
-            return getPlayerPtr();
         /*
             Start of tes3mp addition
 
             Make it possible to find dedicated players here as well
         */
-        else
-        {
-            mwmp::DedicatedPlayer* dedicatedPlayer = mwmp::PlayerList::getPlayer(actorId);
-            if (dedicatedPlayer != nullptr)
-            {
-                return dedicatedPlayer->getPtr();
-            }
-        }
+        mwmp::DedicatedPlayer* dedicatedPlayer = mwmp::PlayerList::getPlayer(actorId);
+        if (dedicatedPlayer != nullptr)
+            return dedicatedPlayer->getPtr();
         /* End of tes3mp addition */
-        // Now search cells
-        return mWorldScene->searchPtrViaActorId(actorId);
+
+        // Search all active cells
+        for (CellStore* cellStore : mWorldScene->getActiveCells())
+        {
+            Ptr found;
+            cellStore->forEach([&](const Ptr& ptr) {
+                if (ptr.getClass().isActor()
+                    && ptr.getClass().getCreatureStats(ptr).getActorId() == actorId)
+                {
+                    found = ptr;
+                    return false;
+                }
+                return true;
+            });
+            if (!found.isEmpty())
+                return found;
+        }
+        return Ptr();
     }
 
     /*

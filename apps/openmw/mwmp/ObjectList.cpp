@@ -526,7 +526,7 @@ void ObjectList::spawnObjects(MWWorld::CellStore* cellStore)
 
                     std::vector<ESM::ActiveEffect> activeEffects;
                     ESM::ActiveEffect activeEffect;
-                    activeEffect.mEffectId = baseObject.summonEffectId;
+                    activeEffect.mEffectId = ESM::MagicEffect::indexToRefId(baseObject.summonEffectId);
                     activeEffect.mDuration = baseObject.summonDuration;
                     activeEffect.mMagnitude = 1;
                     activeEffects.push_back(activeEffect);
@@ -544,7 +544,8 @@ void ObjectList::spawnObjects(MWWorld::CellStore* cellStore)
                     // Check if this creature is present in the summoner's summoned creature map
                     auto& creatureMap = masterCreatureStats.getSummonedCreatureMap();
 
-                    auto range = creatureMap.equal_range(baseObject.summonEffectId);
+                    const ESM::RefId summonEffectRefId = ESM::MagicEffect::indexToRefId(baseObject.summonEffectId);
+                    auto range = creatureMap.equal_range(summonEffectRefId);
                     bool foundSummonedCreature = (range.first != range.second);
 
                     // If it is, update its creatureActorId
@@ -555,7 +556,7 @@ void ObjectList::spawnObjects(MWWorld::CellStore* cellStore)
                     // If not, add it to the summoned creature map
                     else
                     {
-                        creatureMap.emplace(baseObject.summonEffectId, creatureActorId);
+                        creatureMap.emplace(summonEffectRefId, newPtr.getCellRef().getRefNum());
                     }
 
                     creatureStats.setFriendlyHits(0);
@@ -662,7 +663,7 @@ void ObjectList::triggerTrapObjects(MWWorld::CellStore* cellStore)
             }
 
             ptrFound.getCellRef().setTrap(ESM::RefId{});
-            MWBase::Environment::get().getSoundManager()->playSound3D(ptrFound, "Disarm Trap", 1.0f, 1.0f);
+            MWBase::Environment::get().getSoundManager()->playSound3D(ptrFound, ESM::RefId::stringRefId("Disarm Trap"), 1.0f, 1.0f);
         }
     }
 }

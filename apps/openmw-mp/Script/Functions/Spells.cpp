@@ -123,11 +123,11 @@ void SpellFunctions::AddSpellActiveEffect(unsigned short pid, int effectId, doub
     GET_PLAYER(pid, player, );
 
     ESM::ActiveEffect effect;
-    effect.mEffectId = effectId;
+    effect.mEffectId = ESM::MagicEffect::indexToRefId(effectId);
     effect.mMagnitude = magnitude;
     effect.mDuration = duration;
     effect.mTimeLeft = timeLeft;
-    effect.mArg = static_cast<int>(arg);
+    effect.mArg = ESM::Attribute::indexToRefId(arg);
 
     storedActiveEffects.push_back(effect);
 }
@@ -208,7 +208,7 @@ unsigned int SpellFunctions::GetSpellsActiveEffectId(unsigned short pid, unsigne
     if (spellIndex >= player->spellsActiveChanges.activeSpells.size())
         return 0;
 
-    return player->spellsActiveChanges.activeSpells.at(spellIndex).params.mEffects.at(effectIndex).mEffectId;
+    return static_cast<unsigned int>(ESM::MagicEffect::refIdToIndex(player->spellsActiveChanges.activeSpells.at(spellIndex).params.mEffects.at(effectIndex).mEffectId));
 }
 
 int SpellFunctions::GetSpellsActiveEffectArg(unsigned short pid, unsigned int spellIndex, unsigned int effectIndex) noexcept
@@ -220,7 +220,9 @@ int SpellFunctions::GetSpellsActiveEffectArg(unsigned short pid, unsigned int sp
         return 0;
 
     const auto& arg = player->spellsActiveChanges.activeSpells.at(spellIndex).params.mEffects.at(effectIndex).mArg;
-    return std::holds_alternative<int>(arg) ? std::get<int>(arg) : 0;
+    if (std::holds_alternative<ESM::RefId>(arg))
+        return ESM::Attribute::refIdToIndex(std::get<ESM::RefId>(arg));
+    return 0;
 }
 
 double SpellFunctions::GetSpellsActiveEffectMagnitude(unsigned short pid, unsigned int spellIndex, unsigned int effectIndex) noexcept

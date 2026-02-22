@@ -597,13 +597,16 @@ bool MechanicsHelper::isStackingSpell(const std::string& id)
 
 bool MechanicsHelper::doesEffectListContainEffect(const ESM::EffectList& effectList, short effectId, short attributeId, short skillId)
 {
+    const ESM::RefId effectRefId = ESM::MagicEffect::indexToRefId(effectId);
+    const ESM::RefId attrRefId = (attributeId >= 0) ? ESM::Attribute::indexToRefId(attributeId) : ESM::RefId{};
+    const ESM::RefId skillRefId = (skillId >= 0) ? ESM::Skill::indexToRefId(skillId) : ESM::RefId{};
     for (const auto &effect : effectList.mList)
     {
-        if (effect.mData.mEffectID == effectId)
+        if (effect.mData.mEffectID == effectRefId)
         {
-            if (attributeId == -1 || effect.mData.mAttribute == attributeId)
+            if (attributeId == -1 || effect.mData.mAttribute == attrRefId)
             {
-                if (skillId == -1 || effect.mData.mSkill == skillId)
+                if (skillId == -1 || effect.mData.mSkill == skillRefId)
                 {
                     return true;
                 }
@@ -612,6 +615,15 @@ bool MechanicsHelper::doesEffectListContainEffect(const ESM::EffectList& effectL
     }
 
     return false;
+}
+
+void MechanicsHelper::unequipItemsByEffect(const MWWorld::Ptr& ptr, short enchantmentType, const ESM::RefId& effectId, short attributeId, short skillId)
+{
+    MWBase::World *world = MWBase::Environment::get().getWorld();
+    MWWorld::InventoryStore &ptrInventory = ptr.getClass().getInventoryStore(ptr);
+    const int effectIdx = ESM::MagicEffect::refIdToIndex(effectId);
+    if (effectIdx < 0) return;
+    unequipItemsByEffect(ptr, enchantmentType, static_cast<short>(effectIdx), attributeId, skillId);
 }
 
 void MechanicsHelper::unequipItemsByEffect(const MWWorld::Ptr& ptr, short enchantmentType, short effectId, short attributeId, short skillId)

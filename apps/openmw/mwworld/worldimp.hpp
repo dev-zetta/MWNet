@@ -322,6 +322,7 @@ namespace MWWorld
 
                 Make it possible to find a Ptr in any active cell based on its refNum and mpNum
             */
+            Ptr searchPtrViaActorId(int actorId) override;
             Ptr searchPtrViaUniqueIndex(int refNum, int mpNum) override;
             /* End of tes3mp addition */
                 /*

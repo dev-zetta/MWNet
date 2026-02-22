@@ -2,7 +2,7 @@
 #define OPENMW_PINGUPDATER_HPP
 
 #include <QObject>
-#include <QVector>
+#include <QList>
 
 #include "Types.hpp"
 
@@ -19,7 +19,7 @@ signals:
     void updateModel(int row, unsigned ping);
     void finished();
 private:
-    QVector<ServerRow> servers;
+    QList<ServerRow> servers;
     bool run;
 };
 

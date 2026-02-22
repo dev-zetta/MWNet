@@ -661,8 +661,8 @@ if (USE_QT)
         qtconversion
         )
 
-    QT5_WRAP_UI(ESM_UI_HDR ${ESM_UI})
-    QT5_WRAP_CPP(MOC_SRCS ${COMPONENT_MOC_FILES})
+    qt_wrap_ui(ESM_UI_HDR ${ESM_UI})
+    qt_wrap_cpp(MOC_SRCS ${COMPONENT_MOC_FILES})
 endif()
 # Start of tes3mp change (major)
 #

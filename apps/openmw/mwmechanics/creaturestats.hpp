@@ -76,6 +76,10 @@ namespace MWMechanics
         // actor attacks. It is cleared when combat ends.
         ESM::RefNum mHitAttemptActor;
 
+        /* Start of tes3mp addition */
+        int mActorId = 0;
+        /* End of tes3mp addition */
+
         // The difference between view direction and lower body direction.
         float mSideMovementAngle = 0;
 
@@ -248,6 +252,8 @@ namespace MWMechanics
             initializing them after syncing them across players
          */
         void setSummonedCreatureActorId(ESM::RefId refId, int actorId);
+        int getActorId() const { return mActorId; }
+        void setActorId(int actorId) { mActorId = actorId; }
         /* End of tes3mp addition */
 
         enum Flag

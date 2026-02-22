@@ -906,7 +906,7 @@ void LocalPlayer::resurrect()
 
     // Ensure we unequip any items with constant effects that can put us into an infinite
     // death loop
-    static const int damageEffects[5] = { ESM::MagicEffect::DrainHealth, ESM::MagicEffect::FireDamage,
+    static const ESM::RefId damageEffects[5] = { ESM::MagicEffect::DrainHealth, ESM::MagicEffect::FireDamage,
         ESM::MagicEffect::FrostDamage, ESM::MagicEffect::ShockDamage, ESM::MagicEffect::SunDamage };
 
     for (const auto &damageEffect : damageEffects)
@@ -1648,7 +1648,7 @@ void LocalPlayer::sendSpellsActiveAddition(const std::string id, bool isStacking
     spellsActiveChanges.activeSpells.clear();
 
 
-    MWWorld::Ptr caster = MWBase::Environment::get().getWorld()->searchPtrViaActorId(params.getCasterActorId());
+    MWWorld::Ptr caster = MWBase::Environment::get().getWorldModel()->getPtr(params.getCaster());
     mwmp::ActiveSpell spell;
     spell.id = id;
     spell.isStackingSpell = isStackingSpell;

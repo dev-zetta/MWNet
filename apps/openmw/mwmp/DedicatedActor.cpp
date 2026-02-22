@@ -295,7 +295,7 @@ void DedicatedActor::setAi()
                 LOG_APPEND(TimedLog::LOG_VERBOSE, "-- Being escorted by target, for duration %i, to coordinates %f, %f, %f",
                     aiDuration, aiCoordinates.pos[0], aiCoordinates.pos[1], aiCoordinates.pos[2]);
 
-                MWMechanics::AiEscort package(targetPtr.getCellRef().getRefId(), aiDuration,
+                MWMechanics::AiEscort package(targetPtr.getCellRef().getRefNum(), std::string_view{}, static_cast<int>(aiDuration),
                     aiCoordinates.pos[0], aiCoordinates.pos[1], aiCoordinates.pos[2], false);
                 ptrCreatureStats->getAiSequence().stack(package, ptr, true);
             }

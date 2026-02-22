@@ -14,9 +14,10 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     ca-certificates \
     libboost-all-dev \
     libsdl2-dev \
-    qtbase5-dev \
-    qttools5-dev \
-    libqt5opengl5-dev \
+    qt6-base-dev \
+    qt6-tools-dev \
+    libqt6opengl6-dev \
+    qt6-l10n-tools \
     libopenscenegraph-dev \
     libavcodec-dev \
     libavformat-dev \
@@ -35,7 +36,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     libyaml-cpp-dev \
     libcollada-dom-dev \
     libsqlite3-dev \
-    libqt5svg5-dev \
+    libqt6svg6-dev \
     libfreetype-dev \
     && rm -rf /var/lib/apt/lists/*
 

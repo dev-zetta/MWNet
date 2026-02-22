@@ -56,7 +56,7 @@ else()
         set(res_output ${CMAKE_CURRENT_BINARY_DIR}/qrc_${res_name}.cpp)
         add_custom_command(
             OUTPUT ${res_output}
-            COMMAND Qt5::rcc ${res_file} -o ${res_output}
+            COMMAND Qt6::rcc ${res_file} -o ${res_output}
             DEPENDS ${res_file}
             COMMENT "Compiling Qt resource ${res_file}"
         )
@@ -69,7 +69,7 @@ else()
         set(moc_output ${CMAKE_CURRENT_BINARY_DIR}/moc_${moc_name}.cpp)
         add_custom_command(
             OUTPUT ${moc_output}
-            COMMAND Qt5::moc ${CMAKE_CURRENT_SOURCE_DIR}/${moc_file} -o ${moc_output}
+            COMMAND Qt6::moc ${CMAKE_CURRENT_SOURCE_DIR}/${moc_file} -o ${moc_output}
             DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/${moc_file}
             COMMENT "Running moc on ${moc_file}"
         )
@@ -82,7 +82,7 @@ else()
         set(ui_output ${CMAKE_CURRENT_BINARY_DIR}/ui_${ui_name}.h)
         add_custom_command(
             OUTPUT ${ui_output}
-            COMMAND Qt5::uic ${ui_file} -o ${ui_output}
+            COMMAND Qt6::uic ${ui_file} -o ${ui_output}
             DEPENDS ${ui_file}
             COMMENT "Running uic on ${ui_file}"
         )
@@ -117,7 +117,7 @@ target_link_libraries(tes3mp-browser
         smhasher
         Boost::filesystem
         Boost::program_options
-        Qt5::Svg
+        Qt6::Svg
         )
 
 if (DESIRED_QT_VERSION MATCHES 4)
@@ -126,7 +126,7 @@ if (DESIRED_QT_VERSION MATCHES 4)
 #        target_link_libraries(tes3mp-browser ${QT_QTMAIN_LIBRARY})
 #    endif(WIN32)
 else()
-    target_link_libraries(tes3mp-browser Qt5::Widgets Qt5::Core)
+    target_link_libraries(tes3mp-browser Qt6::Widgets Qt6::Core)
 endif()
 
 if (BUILD_WITH_CODE_COVERAGE)

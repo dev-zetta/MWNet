@@ -257,13 +257,16 @@ unsigned int ActorFunctions::GetActorSpellsActiveEffectCount(unsigned int actorI
 
 unsigned int ActorFunctions::GetActorSpellsActiveEffectId(unsigned int actorIndex, unsigned int spellIndex, unsigned int effectIndex) noexcept
 {
-    return readActorList->baseActors.at(actorIndex).spellsActiveChanges.activeSpells.at(spellIndex).params.mEffects.at(effectIndex).mEffectId;
+    const auto& id = readActorList->baseActors.at(actorIndex).spellsActiveChanges.activeSpells.at(spellIndex).params.mEffects.at(effectIndex).mEffectId;
+    return static_cast<unsigned int>(ESM::MagicEffect::refIdToIndex(id));
 }
 
 int ActorFunctions::GetActorSpellsActiveEffectArg(unsigned int actorIndex, unsigned int spellIndex, unsigned int effectIndex) noexcept
 {
     const auto& arg = readActorList->baseActors.at(actorIndex).spellsActiveChanges.activeSpells.at(spellIndex).params.mEffects.at(effectIndex).mArg;
-    return std::holds_alternative<int>(arg) ? std::get<int>(arg) : 0;
+    if (std::holds_alternative<ESM::RefId>(arg))
+        return ESM::Attribute::refIdToIndex(std::get<ESM::RefId>(arg));
+    return 0;
 }
 
 double ActorFunctions::GetActorSpellsActiveEffectMagnitude(unsigned int actorIndex, unsigned int spellIndex, unsigned int effectIndex) noexcept
@@ -506,11 +509,11 @@ void ActorFunctions::AddActorSpellActive(const char* spellId, const char* displa
 void ActorFunctions::AddActorSpellActiveEffect(int effectId, double magnitude, double duration, double timeLeft, int arg) noexcept
 {
     ESM::ActiveEffect effect;
-    effect.mEffectId = effectId;
+    effect.mEffectId = ESM::MagicEffect::indexToRefId(effectId);
     effect.mMagnitude = magnitude;
     effect.mDuration = duration;
     effect.mTimeLeft = timeLeft;
-    effect.mArg = arg;
+    effect.mArg = ESM::Attribute::indexToRefId(arg);
 
     storedActorActiveEffects.push_back(effect);
 }

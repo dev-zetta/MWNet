@@ -33,7 +33,7 @@ namespace Launcher
         void slotFramerateLimitToggled(bool checked);
 
     private:
-        QVector<QStringList> mResolutionsPerScreen;
+        QList<QStringList> mResolutionsPerScreen;
 
         static QStringList getAvailableResolutions(int screen);
         static QRect getMaximumResolution();

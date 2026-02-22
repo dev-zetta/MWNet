@@ -312,17 +312,17 @@ unsigned int RecordsDynamicFunctions::GetRecordQuantity(unsigned int index) noex
 
 unsigned int RecordsDynamicFunctions::GetRecordEffectId(unsigned int recordIndex, unsigned int effectIndex) noexcept
 {
-    return GetRecordEffects(recordIndex).mList.at(effectIndex).mData.mEffectID;
+    return static_cast<unsigned int>(ESM::MagicEffect::refIdToIndex(GetRecordEffects(recordIndex).mList.at(effectIndex).mData.mEffectID));
 }
 
 int RecordsDynamicFunctions::GetRecordEffectAttribute(unsigned int recordIndex, unsigned int effectIndex) noexcept
 {
-    return GetRecordEffects(recordIndex).mList.at(effectIndex).mData.mAttribute;
+    return ESM::Attribute::refIdToIndex(GetRecordEffects(recordIndex).mList.at(effectIndex).mData.mAttribute);
 }
 
 int RecordsDynamicFunctions::GetRecordEffectSkill(unsigned int recordIndex, unsigned int effectIndex) noexcept
 {
-    return GetRecordEffects(recordIndex).mList.at(effectIndex).mData.mSkill;
+    return ESM::Skill::refIdToIndex(GetRecordEffects(recordIndex).mList.at(effectIndex).mData.mSkill);
 }
 
 unsigned int RecordsDynamicFunctions::GetRecordEffectRangeType(unsigned int recordIndex, unsigned int effectIndex) noexcept
@@ -1646,17 +1646,17 @@ void RecordsDynamicFunctions::SetRecordEnchantmentIdByIndex(unsigned int index, 
 
 void RecordsDynamicFunctions::SetRecordEffectId(unsigned int effectId) noexcept
 {
-    tempEffect.mEffectID = effectId;
+    tempEffect.mEffectID = ESM::MagicEffect::indexToRefId(static_cast<int>(effectId));
 }
 
 void RecordsDynamicFunctions::SetRecordEffectAttribute(int attributeId) noexcept
 {
-    tempEffect.mAttribute = attributeId;
+    tempEffect.mAttribute = ESM::Attribute::indexToRefId(attributeId);
 }
 
 void RecordsDynamicFunctions::SetRecordEffectSkill(int skillId) noexcept
 {
-    tempEffect.mSkill = skillId;
+    tempEffect.mSkill = ESM::Skill::indexToRefId(skillId);
 }
 
 void RecordsDynamicFunctions::SetRecordEffectRangeType(unsigned int rangeType) noexcept

@@ -44,7 +44,7 @@ public:
 
 public:
     //QHash<int, QByteArray> roles;
-    QVector<ServerData> myData;
+    QList<ServerData> myData;
 };
 
 

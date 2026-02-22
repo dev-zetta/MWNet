@@ -182,6 +182,7 @@ namespace MWMechanics
                       const std::string& displayName, int casterActorId);
         bool removeSpellByTimestamp(const ESM::RefId& id, MWWorld::TimeStamp timestamp);
         void purgeEffectByArg(short effectId, int effectArg);
+        void purgeEffectByArg(const ESM::RefId& effectId, int effectArg);
         float getEffectDuration(short effectId, ESM::RefId sourceId);
         int getActorId() const;
         void setActorId(int actorId);

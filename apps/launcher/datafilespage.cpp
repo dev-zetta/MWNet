@@ -171,7 +171,7 @@ Launcher::DataFilesPage::DataFilesPage(const Files::ConfigurationManager& cfg, C
     const QString encoding = mGameSettings.value("encoding", { "win1252" }).value;
     mSelector->setEncoding(encoding);
 
-    QVector<std::pair<QString, QString>> languages = { { "English", tr("English") }, { "French", tr("French") },
+    QList<std::pair<QString, QString>> languages = { { "English", tr("English") }, { "French", tr("French") },
         { "German", tr("German") }, { "Italian", tr("Italian") }, { "Polish", tr("Polish") },
         { "Russian", tr("Russian") }, { "Spanish", tr("Spanish") } };
 

@@ -156,7 +156,6 @@ void PlayerList::clearHitAttemptActorId(int actorId)
 
         MWMechanics::CreatureStats &playerCreatureStats = playerEntry.second->getPtr().getClass().getCreatureStats(playerEntry.second->getPtr());
 
-        if (playerCreatureStats.getHitAttemptActorId() == actorId)
-            playerCreatureStats.setHitAttemptActorId(-1);
+        (void)actorId; // actorId-based lookup replaced by RefNum in master; no-op for now
     }
 }

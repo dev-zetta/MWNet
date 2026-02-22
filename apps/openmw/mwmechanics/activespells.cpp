@@ -588,7 +588,6 @@ namespace MWMechanics
         esmParams.mSourceSpellId = id;
         esmParams.mEffects = std::move(effects);
         esmParams.mDisplayName = displayName;
-        esmParams.mCasterActorId = casterActorId;
         esmParams.mFlags = ESM::ActiveSpells::Flag_SpellStore;
         mQueue.emplace_back(ActiveSpellParams{ esmParams });
     }
@@ -787,14 +786,24 @@ namespace MWMechanics
     }
 
     /* Start of tes3mp addition */
+    void ActiveSpells::purgeEffectByArg(const ESM::RefId& effectId, int effectArg)
+    {
+        const int idx = ESM::MagicEffect::refIdToIndex(effectId);
+        if (idx >= 0)
+            purgeEffectByArg(static_cast<short>(idx), effectArg);
+    }
+
     void ActiveSpells::purgeEffectByArg(short effectId, int effectArg)
     {
+        const ESM::RefId effectRefId = ESM::MagicEffect::indexToRefId(effectId);
+        const ESM::RefId argRefId = ESM::Attribute::indexToRefId(effectArg);
         for (auto& spell : mSpells)
         {
             for (auto effectIt = spell.mEffects.begin(); effectIt != spell.mEffects.end();)
             {
-                bool argMatch = std::holds_alternative<int>(effectIt->mArg) && std::get<int>(effectIt->mArg) == effectArg;
-                if (effectIt->mEffectId == effectId && argMatch)
+                bool argMatch = std::holds_alternative<ESM::RefId>(effectIt->mArg)
+                    && std::get<ESM::RefId>(effectIt->mArg) == argRefId;
+                if (effectIt->mEffectId == effectRefId && argMatch)
                     effectIt = spell.mEffects.erase(effectIt);
                 else
                     ++effectIt;
@@ -804,13 +813,14 @@ namespace MWMechanics
 
     float ActiveSpells::getEffectDuration(short effectId, ESM::RefId sourceId)
     {
+        const ESM::RefId effectRefId = ESM::MagicEffect::indexToRefId(effectId);
         for (const auto& spell : mSpells)
         {
             if (spell.mSourceSpellId == sourceId)
             {
                 for (const auto& effect : spell.mEffects)
                 {
-                    if (effect.mEffectId == effectId)
+                    if (effect.mEffectId == effectRefId)
                         return effect.mDuration;
                 }
             }
