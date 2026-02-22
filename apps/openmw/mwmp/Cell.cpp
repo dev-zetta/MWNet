@@ -64,8 +64,17 @@ void Cell::updateLocal(bool forceUpdate)
                 LOG_APPEND(TimedLog::LOG_VERBOSE, "- Moving LocalActor %s to our authority in %s",
                     mapIndex.c_str(), actor->cell.getDescription().c_str());
                 Cell *newCell = cellController->getCell(actor->cell);
-                newCell->localActors[mapIndex] = actor;
-                cellController->setLocalActorRecord(mapIndex, newCell->getDescription());
+                if (newCell)
+                {
+                    newCell->localActors[mapIndex] = actor;
+                    cellController->setLocalActorRecord(mapIndex, newCell->getDescription());
+                }
+                else
+                {
+                    LOG_MESSAGE_SIMPLE(TimedLog::LOG_WARN, "Cell::updateLocal: getCell nullptr for actor %s moving to %s", mapIndex.c_str(), actor->cell.getDescription().c_str());
+                    cellController->removeLocalActorRecord(mapIndex);
+                    delete actor;
+                }
             }
             else
             {
@@ -442,8 +451,13 @@ void Cell::readCellChange(ActorList& actorList)
                     mapIndex.c_str(), dedicatedActor->cell.getDescription().c_str());
                 cellController->initializeCell(dedicatedActor->cell);
                 Cell *newCell = cellController->getCell(dedicatedActor->cell);
-                newCell->dedicatedActors[mapIndex] = dedicatedActor;
-                cellController->setDedicatedActorRecord(mapIndex, newCell->getDescription());
+                if (newCell)
+                {
+                    newCell->dedicatedActors[mapIndex] = dedicatedActor;
+                    cellController->setDedicatedActorRecord(mapIndex, newCell->getDescription());
+                }
+                else
+                    LOG_MESSAGE_SIMPLE(TimedLog::LOG_WARN, "Cell::updateDedicated: getCell nullptr for DedicatedActor %s moving to %s", mapIndex.c_str(), dedicatedActor->cell.getDescription().c_str());
             }
             else
             {
@@ -452,18 +466,23 @@ void Cell::readCellChange(ActorList& actorList)
                     LOG_APPEND(TimedLog::LOG_VERBOSE, "- Creating new LocalActor based on %s in %s",
                         mapIndex.c_str(), dedicatedActor->cell.getDescription().c_str());
                     Cell *newCell = cellController->getCell(dedicatedActor->cell);
-                    LocalActor *localActor = new LocalActor();
-                    localActor->cell = dedicatedActor->cell;
-                    localActor->setPtr(dedicatedActor->getPtr());
-                    localActor->position = dedicatedActor->position;
-                    localActor->direction = dedicatedActor->direction;
-                    localActor->movementFlags = dedicatedActor->movementFlags;
-                    localActor->drawState = dedicatedActor->drawState;
-                    localActor->isFlying = dedicatedActor->isFlying;
-                    localActor->creatureStats = dedicatedActor->creatureStats;
+                    if (newCell)
+                    {
+                        LocalActor *localActor = new LocalActor();
+                        localActor->cell = dedicatedActor->cell;
+                        localActor->setPtr(dedicatedActor->getPtr());
+                        localActor->position = dedicatedActor->position;
+                        localActor->direction = dedicatedActor->direction;
+                        localActor->movementFlags = dedicatedActor->movementFlags;
+                        localActor->drawState = dedicatedActor->drawState;
+                        localActor->isFlying = dedicatedActor->isFlying;
+                        localActor->creatureStats = dedicatedActor->creatureStats;
 
-                    newCell->localActors[mapIndex] = localActor;
-                    cellController->setLocalActorRecord(mapIndex, newCell->getDescription());
+                        newCell->localActors[mapIndex] = localActor;
+                        cellController->setLocalActorRecord(mapIndex, newCell->getDescription());
+                    }
+                    else
+                        LOG_MESSAGE_SIMPLE(TimedLog::LOG_WARN, "Cell::uninitializeDedicatedActors: getCell nullptr for %s in %s", mapIndex.c_str(), dedicatedActor->cell.getDescription().c_str());
                 }
 
                 LOG_APPEND(TimedLog::LOG_VERBOSE, "- Deleting DedicatedActor %s which is no longer needed",
@@ -570,9 +589,15 @@ void Cell::uninitializeDedicatedActors(ActorList& actorList)
     for (const auto &baseActor : actorList.baseActors)
     {
         std::string mapIndex = Main::get().getCellController()->generateMapIndex(baseActor);
+        auto it = dedicatedActors.find(mapIndex);
+        if (it == dedicatedActors.end())
+        {
+            LOG_MESSAGE_SIMPLE(TimedLog::LOG_VERBOSE, "Cell::uninitializeDedicatedActors: actor %s not found in cell (may be a local actor)", mapIndex.c_str());
+            continue;
+        }
         Main::get().getCellController()->removeDedicatedActorRecord(mapIndex);
-        delete dedicatedActors.at(mapIndex);
-        dedicatedActors.erase(mapIndex);
+        delete it->second;
+        dedicatedActors.erase(it);
     }
 }
 
@@ -589,12 +614,24 @@ void Cell::uninitializeDedicatedActors()
 
 LocalActor *Cell::getLocalActor(std::string actorIndex)
 {
-    return localActors.at(actorIndex);
+    auto it = localActors.find(actorIndex);
+    if (it == localActors.end())
+    {
+        LOG_MESSAGE_SIMPLE(TimedLog::LOG_WARN, "Cell::getLocalActor: actor %s not found in cell", actorIndex.c_str());
+        return nullptr;
+    }
+    return it->second;
 }
 
 DedicatedActor *Cell::getDedicatedActor(std::string actorIndex)
 {
-    return dedicatedActors.at(actorIndex);
+    auto it = dedicatedActors.find(actorIndex);
+    if (it == dedicatedActors.end())
+    {
+        LOG_MESSAGE_SIMPLE(TimedLog::LOG_WARN, "Cell::getDedicatedActor: actor %s not found in cell", actorIndex.c_str());
+        return nullptr;
+    }
+    return it->second;
 }
 
 bool Cell::hasLocalAuthority()

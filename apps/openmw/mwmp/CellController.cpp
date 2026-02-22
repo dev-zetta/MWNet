@@ -1,3 +1,4 @@
+#include <set>
 #include <components/detournavigator/navigator.hpp>
 #include <components/esm3/cellid.hpp>
 #include <components/openmw-mp/TimedLog.hpp>
@@ -97,6 +98,8 @@ void CellController::initializeCell(const ESM::Cell& cell)
         if (!cellStore) return;
 
         mwmp::Cell *mpCell = new mwmp::Cell(cellStore);
+        mpCell->setAuthority(Main::get().getLocalPlayer()->guid);
+        mpCell->shouldInitializeActors = true;
         cellsInitialized[mapIndex] = mpCell;
 
         LOG_APPEND(TimedLog::LOG_VERBOSE, "- Successfully initialized mwmp::Cell %s", cell.getDescription().c_str());
@@ -310,31 +313,53 @@ bool CellController::isLocalActor(MWWorld::Ptr ptr)
         return false;
 
     std::string actorIndex = generateMapIndex(ptr);
-
     return localActorsToCells.count(actorIndex) > 0;
 }
 
 bool CellController::isLocalActor(int refNum, int mpNum)
 {
     std::string actorIndex = generateMapIndex(refNum, mpNum);
-
     return localActorsToCells.count(actorIndex) > 0;
 }
 
 LocalActor *CellController::getLocalActor(MWWorld::Ptr ptr)
 {
     std::string actorIndex = generateMapIndex(ptr);
-    std::string cellIndex = localActorsToCells.at(actorIndex);
-
-    return cellsInitialized.at(cellIndex)->getLocalActor(actorIndex);
+    auto cellIt = localActorsToCells.find(actorIndex);
+    if (cellIt == localActorsToCells.end())
+    {
+        LOG_MESSAGE_SIMPLE(TimedLog::LOG_WARN, "getLocalActor: actor %s not in localActorsToCells", actorIndex.c_str());
+        return nullptr;
+    }
+    auto cellIt2 = cellsInitialized.find(cellIt->second);
+    if (cellIt2 == cellsInitialized.end())
+    {
+        static std::set<std::string> warned;
+        if (warned.insert(actorIndex).second)
+            LOG_MESSAGE_SIMPLE(TimedLog::LOG_WARN, "getLocalActor: cell %s not in cellsInitialized for actor %s", cellIt->second.c_str(), actorIndex.c_str());
+        return nullptr;
+    }
+    return cellIt2->second->getLocalActor(actorIndex);
 }
 
 LocalActor *CellController::getLocalActor(int refNum, int mpNum)
 {
     std::string actorIndex = generateMapIndex(refNum, mpNum);
-    std::string cellIndex = localActorsToCells.at(actorIndex);
-
-    return cellsInitialized.at(cellIndex)->getLocalActor(actorIndex);
+    auto cellIt = localActorsToCells.find(actorIndex);
+    if (cellIt == localActorsToCells.end())
+    {
+        LOG_MESSAGE_SIMPLE(TimedLog::LOG_WARN, "getLocalActor: actor %s not in localActorsToCells", actorIndex.c_str());
+        return nullptr;
+    }
+    auto cellIt2 = cellsInitialized.find(cellIt->second);
+    if (cellIt2 == cellsInitialized.end())
+    {
+        static std::set<std::string> warned;
+        if (warned.insert(actorIndex).second)
+            LOG_MESSAGE_SIMPLE(TimedLog::LOG_WARN, "getLocalActor: cell %s not in cellsInitialized for actor %s", cellIt->second.c_str(), actorIndex.c_str());
+        return nullptr;
+    }
+    return cellIt2->second->getLocalActor(actorIndex);
 }
 
 void CellController::setDedicatedActorRecord(std::string actorIndex, std::string cellIndex)
@@ -353,31 +378,49 @@ bool CellController::isDedicatedActor(MWWorld::Ptr ptr)
         return false;
 
     std::string actorIndex = generateMapIndex(ptr);
-
     return dedicatedActorsToCells.count(actorIndex) > 0;
 }
 
 bool CellController::isDedicatedActor(int refNum, int mpNum)
 {
     std::string actorIndex = generateMapIndex(refNum, mpNum);
-
     return dedicatedActorsToCells.count(actorIndex) > 0;
 }
 
 DedicatedActor *CellController::getDedicatedActor(MWWorld::Ptr ptr)
 {
     std::string actorIndex = generateMapIndex(ptr);
-    std::string cellIndex = dedicatedActorsToCells.at(actorIndex);
-
-    return cellsInitialized.at(cellIndex)->getDedicatedActor(actorIndex);
+    auto cellIt = dedicatedActorsToCells.find(actorIndex);
+    if (cellIt == dedicatedActorsToCells.end())
+    {
+        LOG_MESSAGE_SIMPLE(TimedLog::LOG_WARN, "getDedicatedActor: actor %s not in dedicatedActorsToCells", actorIndex.c_str());
+        return nullptr;
+    }
+    auto cellIt2 = cellsInitialized.find(cellIt->second);
+    if (cellIt2 == cellsInitialized.end())
+    {
+        LOG_MESSAGE_SIMPLE(TimedLog::LOG_WARN, "getDedicatedActor: cell %s not in cellsInitialized for actor %s", cellIt->second.c_str(), actorIndex.c_str());
+        return nullptr;
+    }
+    return cellIt2->second->getDedicatedActor(actorIndex);
 }
 
 DedicatedActor *CellController::getDedicatedActor(int refNum, int mpNum)
 {
     std::string actorIndex = generateMapIndex(refNum, mpNum);
-    std::string cellIndex = dedicatedActorsToCells.at(actorIndex);
-
-    return cellsInitialized.at(cellIndex)->getDedicatedActor(actorIndex);
+    auto cellIt = dedicatedActorsToCells.find(actorIndex);
+    if (cellIt == dedicatedActorsToCells.end())
+    {
+        LOG_MESSAGE_SIMPLE(TimedLog::LOG_WARN, "getDedicatedActor: actor %s not in dedicatedActorsToCells", actorIndex.c_str());
+        return nullptr;
+    }
+    auto cellIt2 = cellsInitialized.find(cellIt->second);
+    if (cellIt2 == cellsInitialized.end())
+    {
+        LOG_MESSAGE_SIMPLE(TimedLog::LOG_WARN, "getDedicatedActor: cell %s not in cellsInitialized for actor %s", cellIt->second.c_str(), actorIndex.c_str());
+        return nullptr;
+    }
+    return cellIt2->second->getDedicatedActor(actorIndex);
 }
 
 std::string CellController::generateMapIndex(int refNum, int mpNum)
@@ -422,7 +465,13 @@ bool CellController::isActiveWorldCell(const ESM::Cell& cell)
 
 Cell *CellController::getCell(const ESM::Cell& cell)
 {
-    return cellsInitialized.at(cell.getDescription());
+    auto it = cellsInitialized.find(cell.getDescription());
+    if (it == cellsInitialized.end())
+    {
+        LOG_MESSAGE_SIMPLE(TimedLog::LOG_WARN, "CellController::getCell: cell %s not in cellsInitialized", cell.getDescription().c_str());
+        return nullptr;
+    }
+    return it->second;
 }
 
 MWWorld::CellStore *CellController::getCellStore(const ESM::Cell& cell)
