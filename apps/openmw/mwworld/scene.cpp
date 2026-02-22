@@ -32,6 +32,7 @@
 */
 #include "../mwmp/Main.hpp"
 #include "../mwmp/LocalPlayer.hpp"
+#include "../mwmp/CellController.hpp"
 /* End of tes3mp addition */
 
 #include "../mwbase/environment.hpp"
@@ -520,6 +521,21 @@ namespace MWWorld
 
         if (respawn)
             cell.respawn();
+
+        /*
+            Start of tes3mp addition
+
+            Initialize the mwmp::Cell before insertCell so that hasLocalAuthority() returns true
+            when updateMergedRefs fires during insertCell, allowing shouldInitializeActors to be set
+        */
+        ESM::visit(ESM::VisitOverload{
+                       [&](const ESM::Cell& c) {
+                           mwmp::Main::get().getCellController()->initializeCell(c);
+                       },
+                       [&](const ESM4::Cell& /*c*/) {},
+                   },
+            *cell.getCell());
+        /* End of tes3mp addition */
 
         insertCell(cell, loadingListener, navigatorUpdateGuard);
 
