@@ -22,6 +22,16 @@
 #include <SDL_clipboard.h>
 #include <SDL_keyboard.h>
 
+/*
+    Start of tes3mp addition
+
+    Include additional headers for multiplayer purposes
+*/
+#include <components/openmw-mp/TimedLog.hpp>
+#include "../mwmp/Main.hpp"
+#include "../mwmp/GUIController.hpp"
+/* End of tes3mp addition */
+
 #include <components/debug/debuglog.hpp>
 
 #include <components/esm3/esmreader.hpp>
@@ -737,6 +747,14 @@ namespace MWGui
                 break;
             default:
                 break;
+
+                /*
+                Start of tes3mp addition
+
+                Pass the GuiMode further on to the multiplayer-specific GUI controller
+            */
+            mwmp::Main::get().getGUIController()->WM_UpdateVisible(mode);
+            /* End of tes3mp addition */
         }
     }
 
@@ -820,6 +838,49 @@ namespace MWGui
             mMessageBoxManager->resetInteractiveMessageBox();
         }
     }
+
+    /* Start of tes3mp addition */
+    void WindowManager::interactiveMessageBox(const ESM::RefId& message, const std::vector<ESM::RefId>& buttons,
+        bool block, bool hasServerOrigin)
+    {
+        std::vector<std::string> buttonStrings;
+        buttonStrings.reserve(buttons.size());
+        for (const auto& b : buttons)
+            buttonStrings.push_back(b.getRefIdString());
+        mMessageBoxManager->createInteractiveMessageBox(message.getRefIdString(), buttonStrings, block, -1, hasServerOrigin);
+        updateVisible();
+        if (block)
+        {
+            Misc::FrameRateLimiter frameRateLimiter
+                = Misc::makeFrameRateLimiter(MWBase::Environment::get().getFrameRateLimit());
+            while (mMessageBoxManager->readPressedButton(false) == -1
+                && !MWBase::Environment::get().getStateManager()->hasQuitRequest())
+            {
+                const double dt
+                    = std::chrono::duration_cast<std::chrono::duration<double>>(frameRateLimiter.getLastFrameDuration())
+                          .count();
+
+                mKeyboardNavigation->onFrame();
+                mMessageBoxManager->onFrame(dt);
+                MWBase::Environment::get().getInputManager()->update(dt, true, false);
+
+                if (!mWindowVisible)
+                    std::this_thread::sleep_for(std::chrono::milliseconds(5));
+                else
+                {
+                    mViewer->eventTraversal();
+                    mViewer->updateTraversal();
+                    mViewer->renderingTraversals();
+                }
+                mViewer->advance(mViewer->getFrameStamp()->getSimulationTime());
+
+                frameRateLimiter.limit();
+            }
+
+            mMessageBoxManager->resetInteractiveMessageBox();
+        }
+    }
+    /* End of tes3mp addition */
 
     void WindowManager::messageBox(std::string_view message, enum MWGui::ShowInDialogueMode showInDialogueMode)
     {
@@ -1018,6 +1079,24 @@ namespace MWGui
                     window->onFrame(frameDuration);
         }
 
+        /*
+            Start of tes3mp addition
+
+            Fix crashes caused by messageboxes that never have their modals erased elsewhere, working around
+            one of the main GUI-related problems that arise in an unpaused environment
+        */
+        for (auto modalIterator = mCurrentModals.begin(); modalIterator != mCurrentModals.end();) {
+            if ((*modalIterator)->mMainWidget == 0)
+            {
+                mCurrentModals.erase(modalIterator);
+            }
+            else
+            {
+                ++modalIterator;
+            }
+        }
+        /* End of tes3mp addition */
+
         // Make sure message boxes are always in front
         // This is an awful workaround for a series of awfully interwoven issues that couldn't be worked around
         // in a better way because of an impressive number of even more awfully interwoven issues.
@@ -1146,6 +1225,13 @@ namespace MWGui
         setActiveMap(*cellCommon);
     }
 
+    /* Start of tes3mp addition */
+    void WindowManager::setGlobalMapImage(int cellX, int cellY, const std::vector<char>& imageData)
+    {
+        mMap->setGlobalMapImage(cellX, cellY, imageData);
+    }
+    /* End of tes3mp addition */
+
     void WindowManager::setActiveMap(const MWWorld::Cell& cell)
     {
         mMap->setActiveCell(cell);
@@ -1221,6 +1307,18 @@ namespace MWGui
         mToolTips->setEnabled(!dragDrop);
         MWBase::Environment::get().getInputManager()->setDragDrop(dragDrop);
     }
+
+    /*
+        Start of tes3mp addition
+
+        Allow the completion of a drag and drop from elsewhere in the code
+    */
+    void WindowManager::finishDragDrop()
+    {
+        if (mDragAndDrop->mIsOnDragAndDrop)
+            mDragAndDrop->finish();
+    }
+    /* End of tes3mp addition */
 
     void WindowManager::setCursorVisible(bool visible)
     {
@@ -1677,6 +1775,15 @@ namespace MWGui
         return mPostProcessorHud;
     }
 
+    /* Start of tes3mp addition */
+    void WindowManager::executeCommandInConsole(const ESM::RefId& command)
+    {
+        mConsole->execute(command.getRefIdString());
+    }
+    MWGui::ContainerWindow* WindowManager::getContainerWindow() { return mContainerWindow; }
+    MWGui::DialogueWindow* WindowManager::getDialogueWindow() { return mDialogueWindow; }
+    /* End of tes3mp addition */
+
     void WindowManager::useItem(const MWWorld::Ptr& item, bool bypassBeastRestrictions)
     {
         if (mInventoryWindow)
@@ -1807,6 +1914,34 @@ namespace MWGui
     {
         mQuickKeysMenu->activateQuickKey(index);
     }
+
+    /* Start of tes3mp addition */
+    void WindowManager::setQuickKey(int slot, int quickKeyType, MWWorld::Ptr item, const ESM::RefId& spellId)
+    {
+        if (slot > 0)
+        {
+            // The actual indexes recorded for quick keys are always 1 higher than their
+            // indexes in the mKey vector, so adjust for the latter
+            mQuickKeysMenu->setSelectedIndex(slot - 1);
+
+            switch (static_cast<ESM::QuickKeys::Type>(quickKeyType))
+            {
+            case ESM::QuickKeys::Type::Unassigned:
+                mQuickKeysMenu->unassignIndex(slot - 1);
+                break;
+            case ESM::QuickKeys::Type::Item:
+                mQuickKeysMenu->onAssignItem(item);
+                break;
+            case ESM::QuickKeys::Type::MagicItem:
+                mQuickKeysMenu->onAssignMagicItem(item);
+                break;
+            case ESM::QuickKeys::Type::Magic:
+                mQuickKeysMenu->onAssignMagic(spellId);
+                break;
+            }
+        }
+    }
+    /* End of tes3mp addition */
 
     bool WindowManager::setHudVisibility(bool show)
     {
@@ -2445,6 +2580,17 @@ namespace MWGui
     {
         mConsole->setSelectedObject(object);
     }
+
+    /* Start of tes3mp addition */
+    void WindowManager::setConsolePtr(const MWWorld::Ptr &object)
+    {
+        mConsole->setPtr(object);
+    }
+    void WindowManager::clearConsolePtr()
+    {
+        mConsole->resetReference();
+    }
+    /* End of tes3mp addition */
 
     MWWorld::Ptr WindowManager::getConsoleSelectedObject() const
     {

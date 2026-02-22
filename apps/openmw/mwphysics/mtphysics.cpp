@@ -518,6 +518,8 @@ namespace MWPhysics
     void PhysicsTaskScheduler::prepareWork(float& timeAccum, std::vector<Simulation>& simulations,
         osg::Timer_t frameStart, unsigned int frameNumber, osg::Stats& stats)
     {
+        waitForWorkers();
+
         // This function run in the main thread.
         // While the mSimulationMutex is held, background physics threads can't run.
 

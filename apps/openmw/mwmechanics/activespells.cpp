@@ -19,6 +19,20 @@
 #include "spellcasting.hpp"
 #include "spelleffects.hpp"
 
+/*
+    Start of tes3mp addition
+
+    Include additional headers for multiplayer purposes
+*/
+#include "../mwmechanics/actorutil.hpp"
+#include "../mwmechanics/creaturestats.hpp"
+#include "../mwworld/class.hpp"
+#include "../mwmp/Main.hpp"
+#include "../mwmp/LocalPlayer.hpp"
+#include "../mwmp/CellController.hpp"
+#include "../mwmp/MechanicsHelper.hpp"
+/* End of tes3mp addition */
+
 #include "../mwbase/environment.hpp"
 #include "../mwbase/luamanager.hpp"
 #include "../mwbase/windowmanager.hpp"
@@ -274,6 +288,28 @@ namespace MWMechanics
                     removedSpell = applyPurges(ptr, &spellIt, &effectIt);
                     if (removedSpell)
                         break;
+
+                        /*
+                        Start of tes3mp addition
+
+                        Whenever the local player loses an active spell, send an ID_PLAYER_SPELLS_ACTIVE packet to the server with it
+
+                        Whenever a local actor loses an active spell, send an ID_ACTOR_SPELLS_ACTIVE packet to the server with it
+                    */
+                    if (this == &MWMechanics::getPlayer().getClass().getCreatureStats(MWMechanics::getPlayer()).getActiveSpells())
+                    {
+                        mwmp::Main::get().getLocalPlayer()->sendSpellsActiveRemoval(spellIt->getSourceSpellId().getRefIdString(),
+                            MechanicsHelper::isStackingSpell(spellIt->getSourceSpellId().getRefIdString()), spellIt->mNextWorsening);
+                    }
+                    else
+                    {
+                        MWWorld::Ptr actorPtr = MWBase::Environment::get().getWorld()->searchPtrViaActorId(getActorId());
+
+                        if (mwmp::Main::get().getCellController()->isLocalActor(actorPtr))
+                            mwmp::Main::get().getCellController()->getLocalActor(actorPtr)->sendSpellsActiveRemoval(spellIt->getSourceSpellId().getRefIdString(),
+                                MechanicsHelper::isStackingSpell(spellIt->getSourceSpellId().getRefIdString()), spellIt->mNextWorsening);
+                    }
+                    /* End of tes3mp addition */
                 }
                 else
                 {
@@ -544,6 +580,20 @@ namespace MWMechanics
         mQueue.emplace_back(params);
     }
 
+    /* Start of tes3mp addition */
+    void ActiveSpells::addSpell(const ESM::RefId& id, bool stack, std::vector<ActiveEffect> effects,
+                                const std::string& displayName, int casterActorId)
+    {
+        ESM::ActiveSpells::ActiveSpellParams esmParams;
+        esmParams.mSourceSpellId = id;
+        esmParams.mEffects = std::move(effects);
+        esmParams.mDisplayName = displayName;
+        esmParams.mCasterActorId = casterActorId;
+        esmParams.mFlags = ESM::ActiveSpells::Flag_SpellStore;
+        mQueue.emplace_back(ActiveSpellParams{ esmParams });
+    }
+    /* End of tes3mp addition */
+
     void ActiveSpells::addSpell(const ESM::Spell* spell, const MWWorld::Ptr& actor, bool ignoreResistances)
     {
         mQueue.emplace_back(ActiveSpellParams{ spell, actor, ignoreResistances });
@@ -677,6 +727,21 @@ namespace MWMechanics
         }
     }
 
+    /* Start of tes3mp addition */
+    bool ActiveSpells::removeSpellByTimestamp(const ESM::RefId& id, MWWorld::TimeStamp timestamp)
+    {
+        for (auto spell = mSpells.begin(); spell != mSpells.end(); ++spell)
+        {
+            if (spell->mSourceSpellId == id && spell->mNextWorsening == timestamp)
+            {
+                spell->mEffects.clear();
+                return true;
+            }
+        }
+        return false;
+    }
+    /* End of tes3mp addition */
+
     void ActiveSpells::writeState(ESM::ActiveSpells& state) const
     {
         for (const auto& spell : mSpells)
@@ -718,5 +783,49 @@ namespace MWMechanics
     {
         purge([](const auto& spell) { return spell.hasFlag(ESM::ActiveSpells::Flag_Temporary); }, ptr);
         mQueue.clear();
+
     }
+
+    /* Start of tes3mp addition */
+    void ActiveSpells::purgeEffectByArg(short effectId, int effectArg)
+    {
+        for (auto& spell : mSpells)
+        {
+            for (auto effectIt = spell.mEffects.begin(); effectIt != spell.mEffects.end();)
+            {
+                bool argMatch = std::holds_alternative<int>(effectIt->mArg) && std::get<int>(effectIt->mArg) == effectArg;
+                if (effectIt->mEffectId == effectId && argMatch)
+                    effectIt = spell.mEffects.erase(effectIt);
+                else
+                    ++effectIt;
+            }
+        }
+    }
+
+    float ActiveSpells::getEffectDuration(short effectId, ESM::RefId sourceId)
+    {
+        for (const auto& spell : mSpells)
+        {
+            if (spell.mSourceSpellId == sourceId)
+            {
+                for (const auto& effect : spell.mEffects)
+                {
+                    if (effect.mEffectId == effectId)
+                        return effect.mDuration;
+                }
+            }
+        }
+        return 0.f;
+    }
+
+    int ActiveSpells::getActorId() const
+    {
+        return mActorId;
+    }
+
+    void ActiveSpells::setActorId(int actorId)
+    {
+        mActorId = actorId;
+    }
+    /* End of tes3mp addition */
 }

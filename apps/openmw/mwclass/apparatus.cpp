@@ -3,6 +3,15 @@
 #include <MyGUI_TextIterator.h>
 #include <MyGUI_UString.h>
 
+    /*
+    Start of tes3mp addition
+
+    Include additional headers for multiplayer purposes
+*/
+#include <components/openmw-mp/Utils.hpp>
+#include "../mwmp/Main.hpp"
+#include "../mwmp/Networking.hpp"
+/* End of tes3mp addition */
 #include "../mwbase/environment.hpp"
 #include "../mwbase/windowmanager.hpp"
 #include <components/esm3/loadappa.hpp>

@@ -44,6 +44,15 @@
 #include <components/loadinglistener/asynclistener.hpp>
 #include <components/loadinglistener/loadinglistener.hpp>
 
+    /*
+    Start of tes3mp addition
+
+    Include additional headers for multiplayer purposes
+*/
+#include <components/openmw-mp/TimedLog.hpp>
+#include "mwmp/Main.hpp"
+#include "mwmp/GUIController.hpp"
+/* End of tes3mp addition */
 #include <components/misc/frameratelimiter.hpp>
 
 #include <components/sceneutil/color.hpp>
@@ -185,6 +194,31 @@ void OMW::Engine::executeLocalScripts()
     {
         MWScript::InterpreterContext interpreterContext(&script.second.getRefData().getLocals(), script.second);
         mScriptManager->run(script.first, interpreterContext);
+
+            /*
+            Start of tes3mp addition
+
+            By comparing its name with a list of script names, check if this script
+            is allowed to send packets about its value changes
+
+            If it is, set a tes3mp-only boolean to true in its interpreterContext
+        */
+        if (mwmp::Main::isValidPacketScript(script.first.getRefIdString()))
+        {
+            interpreterContext.sendPackets = true;
+        }
+        /* End of tes3mp addition */
+            /*
+            Start of tes3mp addition
+
+            Mark this InterpreterContext as having a SCRIPT_LOCAL context
+            and as currently running the script with this name, so that
+            packets sent by the Interpreter can have their
+            origin determined by serverside scripts
+        */
+        interpreterContext.trackContextType(Interpreter::Context::SCRIPT_LOCAL);
+        interpreterContext.trackCurrentScriptName(script.first.getRefIdString());
+        /* End of tes3mp addition */
     }
 }
 
@@ -236,6 +270,13 @@ bool OMW::Engine::frame(unsigned frameNumber, float frametime)
             mLuaManager->synchronizedUpdate();
         }
 
+            /*
+            Start of tes3mp addition
+
+            Update multiplayer processing for the current frame
+        */
+        mwmp::Main::frame(frametime);
+        /* End of tes3mp addition */
         // update game state
         {
             ScopedProfile<UserStatsType::State> profile(frameStart, frameNumber, *timer, *stats);
@@ -429,6 +470,23 @@ OMW::Engine::~Engine()
     mLuaManager = nullptr;
     mL10nManager = nullptr;
 
+
+        /*
+        Start of tes3mp addition
+
+        Free up memory allocated by multiplayer's GUIController, but make sure
+        mwmp::Main has actually been initialized
+    */
+    if (mwmp::Main::isInitialized())
+        mwmp::Main::get().getGUIController()->cleanUp();
+    /* End of tes3mp addition */
+        /*
+        Start of tes3mp addition
+
+        Free up memory allocated by multiplayer's Main class
+    */
+    mwmp::Main::destroy();
+    /* End of tes3mp addition */
     mScriptContext = nullptr;
 
     mUnrefQueue = nullptr;
@@ -448,6 +506,13 @@ OMW::Engine::~Engine()
 
     SDL_Quit();
 
+        /*
+        Start of tes3mp addition
+
+        Free up memory allocated by multiplayer's logger
+    */
+    LOG_QUIT();
+    /* End of tes3mp addition */
     Log(Debug::Info) << "Quitting peacefully.";
 }
 
@@ -944,6 +1009,15 @@ void OMW::Engine::go()
 {
     assert(!mContentFiles.empty());
 
+    /*
+        Start of tes3mp change (major)
+
+        Attempt multiplayer initialization and proceed no further if it fails
+    */
+    if (!mwmp::Main::init(mContentFiles, mFileCollections))
+        return;
+    /* End of tes3mp change (major)*/
+
     Log(Debug::Info) << "OSG version: " << osgGetVersion();
     SDL_version sdlVersion;
     SDL_GetVersion(&sdlVersion);
@@ -992,6 +1066,22 @@ void OMW::Engine::go()
             Log(Debug::Warning) << "Failed to open file to write OSG stats \"" << path
                                 << "\": " << std::generic_category().message(errno);
     }
+
+    /*
+        Start of tes3mp addition
+
+        Handle post-initialization for multiplayer classes
+    */
+    mwmp::Main::postInit();
+    /* End of tes3mp addition */
+
+    /*
+        Start of tes3mp change (major)
+
+        Always skip the main menu in multiplayer
+    */
+    mSkipMenu = true;
+    /* End of tes3mp change (major)*/
 
     // Setup profiler
     osg::ref_ptr<Resource::Profiler> statsHandler = new Resource::Profiler(stats.is_open(), *mVFS);

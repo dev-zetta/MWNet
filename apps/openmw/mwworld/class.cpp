@@ -2,6 +2,14 @@
 
 #include <stdexcept>
 
+/*
+    Start of tes3mp addition
+
+    Include additional headers for multiplayer purposes
+*/
+#include <components/openmw-mp/TimedLog.hpp>
+/* End of tes3mp addition */
+
 #include <components/esm/defs.hpp>
 #include <components/esm3/loadench.hpp>
 #include <components/esm3/loadmgef.hpp>
@@ -71,6 +79,16 @@ namespace MWWorld
     MWMechanics::CreatureStats& Class::getCreatureStats(const Ptr& ptr) const
     {
         throw std::runtime_error("class does not have creature stats");
+
+            /*
+            Start of tes3mp addition
+
+            This is a common error in multiplayer, so additional logging has been added for it
+        */
+        LOG_MESSAGE_SIMPLE(TimedLog::LOG_ERROR, "Attempt at getting creatureStats for %s %i-%i which is type %u!",
+            ptr.getCellRef().getRefId().getRefIdString().c_str(), ptr.getCellRef().getRefNum().mIndex, ptr.getCellRef().getMpNum(),
+            ptr.getClass().getType());
+        /* End of tes3mp addition */
     }
 
     MWMechanics::NpcStats& Class::getNpcStats(const Ptr& ptr) const
@@ -145,10 +163,24 @@ namespace MWWorld
         throw std::runtime_error("class does not have an inventory store");
     }
 
+    /* Start of tes3mp addition */
+    bool Class::hasContainerStore(const Ptr &ptr) const
+    {
+        return false;
+    }
+    /* End of tes3mp addition */
+
     bool Class::hasInventoryStore(const ConstPtr& ptr) const
     {
         return false;
     }
+
+    /* Start of tes3mp addition */
+    bool Class::canBeHarvested(const ConstPtr& ptr) const
+    {
+        return false;
+    }
+    /* End of tes3mp addition */
 
     bool Class::canLock(const ConstPtr& ptr) const
     {

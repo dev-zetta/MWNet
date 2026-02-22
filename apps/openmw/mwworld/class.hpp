@@ -193,12 +193,29 @@ namespace MWWorld
         ///< Return name of the script attached to ptr (default implementation: return an empty
         /// string).
 
+                /*
+                Start of tes3mp addition
+
+                Make it possible to check whether a class has a container store
+            */
+            virtual bool hasContainerStore(const Ptr& ptr) const;
+            ///< Does this object have a container store? (default implementation: false)
+            /* End of tes3mp addition */
         virtual float getWalkSpeed(const Ptr& ptr) const;
         virtual float getRunSpeed(const Ptr& ptr) const;
         virtual float getSwimSpeed(const Ptr& ptr) const;
 
         /// Return maximal movement speed for the current state.
         virtual float getMaxSpeed(const Ptr& ptr) const;
+
+                /*
+                Start of tes3mp addition
+
+                Make it possible to check whether a class can be harvested
+            */
+            virtual bool canBeHarvested(const ConstPtr& ptr) const;
+            ///< Can this object be harvested? (default implementation: false)
+            /* End of tes3mp addition */
 
         /// Return current movement speed.
         virtual float getCurrentSpeed(const Ptr& ptr) const;

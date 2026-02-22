@@ -72,6 +72,14 @@ namespace MWPhysics
         void releaseSharedStates(); // destroy all objects whose destructor can't be safely called from
                                     // ~PhysicsTaskScheduler()
 
+        /*
+            Start of tes3mp addition
+
+            Make it possible to set the physics timestep from elsewhere
+        */
+        void setPhysicsDt(float physicsDt) { mPhysicsDt = physicsDt; }
+        /* End of tes3mp addition */
+
     private:
         class WorkersSync;
 

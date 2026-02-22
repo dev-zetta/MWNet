@@ -8,6 +8,16 @@
 #include <components/esm3/loadrace.hpp>
 #include <components/settings/values.hpp>
 
+    /*
+    Start of tes3mp addition
+
+    Include additional headers for multiplayer purposes
+*/
+#include "../mwmp/Main.hpp"
+#include "../mwmp/Networking.hpp"
+#include "../mwmp/LocalPlayer.hpp"
+#include "../mwmp/ObjectList.hpp"
+/* End of tes3mp addition */
 #include "../mwbase/environment.hpp"
 #include "../mwbase/inputmanager.hpp"
 #include "../mwbase/mechanicsmanager.hpp"
@@ -188,9 +198,30 @@ namespace MWGui
         spells.add(spell->second);
         player.getClass().getContainerStore(player).remove(MWWorld::ContainerStore::sGoldId, price);
 
+            /*
+            Start of tes3mp addition
+
+            Send an ID_PLAYER_SPELLBOOK packet every time a player buys a spell
+        */
+        mwmp::Main::get().getLocalPlayer()->sendSpellChange(spell->second.getRefIdString(), mwmp::SpellbookChanges::ADD);
+        /* End of tes3mp addition */
         // add gold to NPC trading gold pool
         MWMechanics::CreatureStats& npcStats = mPtr.getClass().getCreatureStats(mPtr);
-        npcStats.setGoldPool(npcStats.getGoldPool() + price);
+
+        /*
+            Start of tes3mp change (major)
+
+            Don't unilaterally change the merchant's gold pool on our client and instead let the server do it
+        */
+        //npcStats.setGoldPool(npcStats.getGoldPool() + price);
+
+        mwmp::ObjectList* objectList = mwmp::Main::get().getNetworking()->getObjectList();
+        objectList->reset();
+        objectList->packetOrigin = mwmp::CLIENT_GAMEPLAY;
+        objectList->addObjectMiscellaneous(mPtr, npcStats.getGoldPool() + price, npcStats.getLastRestockTime().getHour(),
+            npcStats.getLastRestockTime().getDay());
+        objectList->sendObjectMiscellaneous();
+        /* End of tes3mp change (major)*/
 
         setPtr(mPtr, mSpellsView->getViewOffset().top);
 

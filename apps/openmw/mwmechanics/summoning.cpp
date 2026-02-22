@@ -6,6 +6,19 @@
 #include <components/esm3/loadstat.hpp>
 #include <components/misc/resourcehelpers.hpp>
 
+/*
+    Start of tes3mp addition
+
+    Include additional headers for multiplayer purposes
+*/
+#include <components/openmw-mp/TimedLog.hpp>
+#include "../mwmechanics/creaturestats.hpp"
+#include "../mwmp/Main.hpp"
+#include "../mwmp/Networking.hpp"
+#include "../mwmp/CellController.hpp"
+#include "../mwmp/ObjectList.hpp"
+/* End of tes3mp addition */
+
 #include "../mwbase/environment.hpp"
 #include "../mwbase/mechanicsmanager.hpp"
 #include "../mwbase/world.hpp"

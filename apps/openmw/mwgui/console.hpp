@@ -34,6 +34,15 @@ namespace MWGui
         MyGUI::Button* mCaseSensitiveToggleButton;
         MyGUI::Button* mRegExSearchToggleButton;
 
+                /*
+                Start of tes3mp addition
+
+                Allow the direct setting of a console's Ptr, without the assumption that an object
+                was clicked and that key focus should be restored to the console window, for console
+                commands executed via server scripts
+            */
+            void setPtr(const MWWorld::Ptr& object);
+            /* End of tes3mp addition */
         typedef std::list<std::string> StringList;
 
         // History of previous entered commands

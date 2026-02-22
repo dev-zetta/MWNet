@@ -2,6 +2,17 @@
 
 #include <algorithm>
 
+
+    /*
+    Start of tes3mp addition
+
+    Include additional headers for multiplayer purposes
+*/
+#include "../mwmp/Main.hpp"
+#include "../mwmp/Networking.hpp"
+#include "../mwmp/LocalPlayer.hpp"
+#include "../mwmp/ObjectList.hpp"
+/* End of tes3mp addition */
 #include "../mwmechanics/actorutil.hpp"
 #include "../mwmechanics/creaturestats.hpp"
 
@@ -191,6 +202,7 @@ namespace MWGui
                     mItems.push_back(newItem);
                 }
             }
+
         }
         for (MWWorld::Ptr& source : mWorldItems)
         {

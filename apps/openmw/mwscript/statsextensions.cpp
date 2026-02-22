@@ -5,6 +5,14 @@
 #include <components/esm3/loadcrea.hpp>
 #include <components/esm3/loadnpc.hpp>
 
+    /*
+    Start of tes3mp addition
+
+    Include additional headers for multiplayer purposes
+*/
+#include "../mwmp/Main.hpp"
+#include "../mwmp/LocalPlayer.hpp"
+/* End of tes3mp addition */
 #include "../mwworld/esmstore.hpp"
 
 #include <components/compiler/opcodes.hpp>
@@ -617,9 +625,7 @@ namespace MWScript
                 ESM::RefId factionID;
 
                 if (arg0 == 0)
-                {
                     factionID = getDialogueActorFaction(actor);
-                }
                 else
                 {
                     factionID = ESM::RefId::stringRefId(runtime.getStringLiteral(runtime[0].mInteger));
@@ -632,6 +638,15 @@ namespace MWScript
                 {
                     MWWorld::Ptr player = MWMechanics::getPlayer();
                     player.getClass().getNpcStats(player).joinFaction(factionID);
+
+                    /*
+                        Start of tes3mp addition
+
+                        Send an ID_PLAYER_FACTION packet every time a player joins a faction
+                    */
+                    int newRank = player.getClass().getNpcStats(player).getFactionRanks().at(factionID);
+                    mwmp::Main::get().getLocalPlayer()->sendFactionRank(factionID.getRefIdString(), newRank);
+                    /* End of tes3mp addition */
                 }
             }
         };
@@ -669,6 +684,15 @@ namespace MWScript
                     {
                         int currentRank = player.getClass().getNpcStats(player).getFactionRank(factionID);
                         player.getClass().getNpcStats(player).setFactionRank(factionID, currentRank + 1);
+
+                            /*
+                            Start of tes3mp addition
+
+                            Send an ID_PLAYER_FACTION packet every time a player rises in a faction
+                        */
+                        int newRank = player.getClass().getNpcStats(player).getFactionRanks().at(factionID);
+                        mwmp::Main::get().getLocalPlayer()->sendFactionRank(factionID.getRefIdString(), newRank);
+                        /* End of tes3mp addition */
                     }
                 }
             }
@@ -685,9 +709,7 @@ namespace MWScript
                 ESM::RefId factionID;
 
                 if (arg0 == 0)
-                {
                     factionID = getDialogueActorFaction(actor);
-                }
                 else
                 {
                     factionID = ESM::RefId::stringRefId(runtime.getStringLiteral(runtime[0].mInteger));
@@ -701,6 +723,15 @@ namespace MWScript
                     MWWorld::Ptr player = MWMechanics::getPlayer();
                     int currentRank = player.getClass().getNpcStats(player).getFactionRank(factionID);
                     player.getClass().getNpcStats(player).setFactionRank(factionID, currentRank - 1);
+
+                    /*
+                        Start of tes3mp addition
+
+                        Send an ID_PLAYER_FACTION packet every time a player falls in a faction
+                    */
+                    int newRank = player.getClass().getNpcStats(player).getFactionRanks().at(factionID);
+                    mwmp::Main::get().getLocalPlayer()->sendFactionRank(factionID.getRefIdString(), newRank);
+                    /* End of tes3mp addition */
                 }
             }
         };
@@ -843,6 +874,12 @@ namespace MWScript
                 {
                     factionId = ESM::RefId::stringRefId(runtime.getStringLiteral(runtime[0].mInteger));
                     runtime.pop();
+
+                        /*
+                        Start of tes3mp addition
+
+                        Send an ID_PLAYER_FACTION packet every time a player's faction reputation changes
+                    */
                 }
                 else
                 {
@@ -854,6 +891,14 @@ namespace MWScript
 
                 MWWorld::Ptr player = MWMechanics::getPlayer();
                 player.getClass().getNpcStats(player).setFactionReputation(factionId, value);
+
+                    /*
+                    Start of tes3mp addition
+
+                    Send an ID_PLAYER_FACTION packet every time a player's faction reputation changes
+                */
+                mwmp::Main::get().getLocalPlayer()->sendFactionReputation(factionId.getRefIdString(), value);
+                /* End of tes3mp addition */
             }
         };
 
@@ -874,6 +919,12 @@ namespace MWScript
                 {
                     factionId = ESM::RefId::stringRefId(runtime.getStringLiteral(runtime[0].mInteger));
                     runtime.pop();
+
+                        /*
+                        Start of tes3mp addition
+
+                        Send an ID_PLAYER_FACTION packet every time a player's faction reputation changes
+                    */
                 }
                 else
                 {
@@ -886,6 +937,15 @@ namespace MWScript
                 MWWorld::Ptr player = MWMechanics::getPlayer();
                 player.getClass().getNpcStats(player).setFactionReputation(
                     factionId, player.getClass().getNpcStats(player).getFactionReputation(factionId) + value);
+
+                    /*
+                    Start of tes3mp addition
+
+                    Send an ID_PLAYER_FACTION packet every time a player's faction reputation changes
+                */
+                int newReputation = player.getClass().getNpcStats(player).getFactionReputation(factionId);
+                mwmp::Main::get().getLocalPlayer()->sendFactionReputation(factionId.getRefIdString(), newReputation);
+                /* End of tes3mp addition */
             }
         };
 
@@ -997,6 +1057,14 @@ namespace MWScript
                 {
                     factionID = ESM::RefId::stringRefId(runtime.getStringLiteral(runtime[0].mInteger));
                     runtime.pop();
+
+                            /*
+                            Start of tes3mp addition
+
+                            Send an ID_PLAYER_FACTION packet every time a player is expelled from a faction
+                        */
+                        mwmp::Main::get().getLocalPlayer()->sendFactionExpulsionState(factionID.getRefIdString(), true);
+                        /* End of tes3mp addition */
                 }
                 else
                 {
@@ -1023,6 +1091,15 @@ namespace MWScript
                 {
                     factionID = ESM::RefId::stringRefId(runtime.getStringLiteral(runtime[0].mInteger));
                     runtime.pop();
+
+                        /*
+                        Start of tes3mp addition
+
+                        Send an ID_PLAYER_FACTION packet every time a player is no longer expelled from a faction
+                    */
+                    if (factionID != "")
+                        mwmp::Main::get().getLocalPlayer()->sendFactionExpulsionState(factionID.getRefIdString(), false);
+                    /* End of tes3mp addition */
                 }
                 else
                 {
@@ -1182,7 +1259,18 @@ namespace MWScript
             {
                 MWWorld::Ptr ptr = R()(runtime);
                 if (ptr.getClass().isNpc())
+                {
                     MWBase::Environment::get().getMechanicsManager()->setWerewolf(ptr, set);
+
+                    /*
+                        Start of tes3mp addition
+
+                        When the player's werewolf state changes, send an ID_PLAYER_SHAPESHIFT packet
+                    */
+                    if (ptr == MWMechanics::getPlayer())
+                        mwmp::Main::get().getLocalPlayer()->sendWerewolfState(set);
+                    /* End of tes3mp addition */
+                }
             }
         };
 

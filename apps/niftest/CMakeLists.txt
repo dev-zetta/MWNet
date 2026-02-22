@@ -10,6 +10,7 @@ openmw_add_executable(niftest
 
 target_link_libraries(niftest
     components
+    smhasher
 )
 
 if (WIN32)

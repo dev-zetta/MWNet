@@ -1,5 +1,21 @@
 #include <components/debug/debuglog.hpp>
 
+/*
+    Start of tes3mp addition
+
+    Include additional headers for multiplayer purposes
+*/
+#include <components/openmw-mp/TimedLog.hpp>
+#include "../mwbase/windowmanager.hpp"
+#include "../mwmp/Main.hpp"
+#include "../mwmp/Networking.hpp"
+#include "../mwmp/LocalPlayer.hpp"
+#include "../mwmp/PlayerList.hpp"
+#include "../mwmp/ObjectList.hpp"
+#include "../mwmp/CellController.hpp"
+#include "../mwmp/ScriptController.hpp"
+/* End of tes3mp addition */
+
 #include <components/sceneutil/positionattitudetransform.hpp>
 
 #include <components/esm3/loadcell.hpp>
@@ -119,7 +135,41 @@ namespace MWScript
                 Interpreter::Type_Float scale = runtime[0].mFloat;
                 runtime.pop();
 
-                MWBase::Environment::get().getWorld()->scaleObject(ptr, scale);
+                /*
+                    Start of tes3mp addition
+
+                    Prevent players from changing their own scale
+
+                    Send an ID_OBJECT_SCALE every time an object's scale is changed through a script
+                */
+                if (ptr == MWMechanics::getPlayer())
+                {
+                    MWBase::Environment::get().getWindowManager()->
+                        messageBox("You can't change your own scale in multiplayer. Only the server can.");
+                }
+                else
+                {
+                    MWBase::Environment::get().getWorld()->scaleObject(ptr, scale);
+
+                    if (mwmp::Main::get().getLocalPlayer()->isLoggedIn() && ptr.isInCell())
+                    {
+                        if (mwmp::PlayerList::isDedicatedPlayer(ptr))
+                        {
+                            MWBase::Environment::get().getWindowManager()->
+                                messageBox("You can't change the scales of other players. Only the server can.");
+                        }
+                        else
+                        {
+                            mwmp::ObjectList *objectList = mwmp::Main::get().getNetworking()->getObjectList();
+                            objectList->reset();
+                            objectList->packetOrigin = ScriptController::getPacketOriginFromContextType(static_cast<const MWScript::InterpreterContext&>(runtime.getContext()).getContextType());
+                            objectList->originClientScript = static_cast<const MWScript::InterpreterContext&>(runtime.getContext()).getCurrentScriptName();
+                            objectList->addObjectScale(ptr, scale);
+                            objectList->sendObjectScale();
+                        }
+                    }
+                }
+                /* End of tes3mp addition */
             }
         };
 
@@ -535,6 +585,31 @@ namespace MWScript
                 ref.getPtr().getCellRef().setPosition(pos);
                 MWWorld::Ptr placed = MWBase::Environment::get().getWorld()->placeObject(ref.getPtr(), store, pos);
                 placed.getClass().adjustPosition(placed, true);
+
+                /*
+                    Start of tes3mp addition
+
+                    Send an ID_OBJECT_PLACE or ID_OBJECT_SPAWN packet every time an object is placed
+                    in the world through a script
+                */
+                if (mwmp::Main::get().getLocalPlayer()->isLoggedIn())
+                {
+                    mwmp::ObjectList *objectList = mwmp::Main::get().getNetworking()->getObjectList();
+                    objectList->reset();
+                    objectList->packetOrigin = ScriptController::getPacketOriginFromContextType(static_cast<const MWScript::InterpreterContext&>(runtime.getContext()).getContextType());
+                    objectList->originClientScript = static_cast<const MWScript::InterpreterContext&>(runtime.getContext()).getCurrentScriptName();
+                    if (placed.getClass().isActor())
+                    {
+                        objectList->addObjectSpawn(placed);
+                        objectList->sendObjectSpawn();
+                    }
+                    else
+                    {
+                        objectList->addObjectPlace(placed);
+                        objectList->sendObjectPlace();
+                    }
+                }
+                /* End of tes3mp addition */
             }
         };
 
@@ -581,6 +656,31 @@ namespace MWScript
                 ref.getPtr().getCellRef().setPosition(pos);
                 MWWorld::Ptr placed = MWBase::Environment::get().getWorld()->placeObject(ref.getPtr(), store, pos);
                 placed.getClass().adjustPosition(placed, true);
+
+                /*
+                    Start of tes3mp addition
+
+                    Send an ID_OBJECT_PLACE or ID_OBJECT_SPAWN packet every time an object is placed
+                    in the world through a script
+                */
+                if (mwmp::Main::get().getLocalPlayer()->isLoggedIn())
+                {
+                    mwmp::ObjectList *objectList = mwmp::Main::get().getNetworking()->getObjectList();
+                    objectList->reset();
+                    objectList->packetOrigin = ScriptController::getPacketOriginFromContextType(static_cast<const MWScript::InterpreterContext&>(runtime.getContext()).getContextType());
+                    objectList->originClientScript = static_cast<const MWScript::InterpreterContext&>(runtime.getContext()).getCurrentScriptName();
+                    if (placed.getClass().isActor())
+                    {
+                        objectList->addObjectSpawn(placed);
+                        objectList->sendObjectSpawn();
+                    }
+                    else
+                    {
+                        objectList->addObjectPlace(placed);
+                        objectList->sendObjectPlace();
+                    }
+                }
+                /* End of tes3mp addition */
             }
         };
 
@@ -620,6 +720,32 @@ namespace MWScript
                     MWWorld::Ptr ptr = MWBase::Environment::get().getWorld()->safePlaceObject(
                         ref.getPtr(), actor, actor.getCell(), direction, distance);
                     MWBase::Environment::get().getWorld()->scaleObject(ptr, actor.getCellRef().getScale());
+
+                            /*
+                            Start of tes3mp addition
+
+                            Send an ID_OBJECT_PLACE or ID_OBJECT_SPAWN packet every time an object is placed
+                            in the world through a script
+                        */
+                        if (mwmp::Main::get().getLocalPlayer()->isLoggedIn())
+                        {
+                            mwmp::ObjectList *objectList = mwmp::Main::get().getNetworking()->getObjectList();
+                            objectList->reset();
+                            objectList->packetOrigin = ScriptController::getPacketOriginFromContextType(static_cast<const MWScript::InterpreterContext&>(runtime.getContext()).getContextType());
+                            objectList->originClientScript = static_cast<const MWScript::InterpreterContext&>(runtime.getContext()).getCurrentScriptName();
+
+                            if (ptr.getClass().isActor())
+                            {
+                                objectList->addObjectSpawn(ptr);
+                                objectList->sendObjectSpawn();
+                            }
+                            else
+                            {
+                                objectList->addObjectPlace(ptr);
+                                objectList->sendObjectPlace();
+                            }
+                        }
+                        /* End of tes3mp addition */
                 }
             }
         };

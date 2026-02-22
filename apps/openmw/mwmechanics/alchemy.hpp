@@ -5,6 +5,13 @@
 
 #include <components/esm3/effectlist.hpp>
 
+    /*
+    Start of tes3mp addition
+
+    Include additional headers for multiplayer purposes
+*/
+#include <components/esm3/loadalch.hpp>
+/* End of tes3mp addition */
 #include "../mwworld/ptr.hpp"
 
 namespace ESM
@@ -56,6 +63,14 @@ namespace MWMechanics
 
         Result getReadyStatus() const;
 
+                /*
+                Start of tes3mp addition
+
+                Keep a copy of the last created potion record so it can be sent to the
+                server once we have determined its brewedCount
+            */
+            ESM::Potion mStoredPotion;
+            /* End of tes3mp addition */
         const ESM::Potion* getRecord(const ESM::Potion& toFind) const;
         ///< Try to find a potion record similar to \a toFind in the record store, or return 0 if not found
         /// \note Does not account for record ID, model or icon

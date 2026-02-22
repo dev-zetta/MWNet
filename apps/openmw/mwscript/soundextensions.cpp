@@ -1,5 +1,16 @@
 #include "soundextensions.hpp"
 
+/*
+    Start of tes3mp addition
+
+    Include additional headers for multiplayer purposes
+*/
+#include "../mwmp/Main.hpp"
+#include "../mwmp/Networking.hpp"
+#include "../mwmp/ObjectList.hpp"
+#include "../mwmp/ScriptController.hpp"
+/* End of tes3mp addition */
+
 #include <components/compiler/opcodes.hpp>
 
 #include <components/interpreter/interpreter.hpp>
@@ -68,6 +79,22 @@ namespace MWScript
 
                 MWBase::Environment::get().getSoundManager()->streamMusic(
                     Misc::ResourceHelpers::correctMusicPath(music), MWSound::MusicType::MWScript);
+
+                /*
+                    Start of tes3mp addition
+
+                    Send an ID_MUSIC_PLAY packet every time new music is streamed through
+                    a script
+                */
+                {
+                    mwmp::ObjectList *objectList = mwmp::Main::get().getNetworking()->getObjectList();
+                    objectList->reset();
+                    objectList->packetOrigin = ScriptController::getPacketOriginFromContextType(static_cast<const MWScript::InterpreterContext&>(runtime.getContext()).getContextType());
+                    objectList->originClientScript = static_cast<const MWScript::InterpreterContext&>(runtime.getContext()).getCurrentScriptName();
+                    objectList->addMusicPlay(std::string(music));
+                    objectList->sendMusicPlay();
+                }
+                /* End of tes3mp addition */
             }
         };
 

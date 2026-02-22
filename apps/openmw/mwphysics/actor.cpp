@@ -2,6 +2,16 @@
 
 #include <BulletCollision/CollisionShapes/btCylinderShape.h>
 
+    /*
+    Start of tes3mp addition
+
+    Include additional headers for multiplayer purposes
+*/
+#include <components/openmw-mp/TimedLog.hpp>
+#include "../mwmp/Main.hpp"
+#include "../mwmp/Networking.hpp"
+#include "../mwmp/PlayerList.hpp"
+/* End of tes3mp addition */
 #include <components/debug/debuglog.hpp>
 #include <components/misc/convert.hpp>
 #include <components/resource/bulletshape.hpp>

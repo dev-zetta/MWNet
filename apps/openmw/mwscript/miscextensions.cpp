@@ -6,6 +6,18 @@
 #include <sstream>
 
 #include <components/compiler/extensions.hpp>
+
+    /*
+    Start of tes3mp addition
+
+    Include additional headers for multiplayer purposes
+*/
+#include "../mwmp/Main.hpp"
+#include "../mwmp/Networking.hpp"
+#include "../mwmp/LocalPlayer.hpp"
+#include "../mwmp/ObjectList.hpp"
+#include "../mwmp/ScriptController.hpp"
+/* End of tes3mp addition */
 #include <components/compiler/locals.hpp>
 #include <components/compiler/opcodes.hpp>
 
@@ -245,6 +257,30 @@ namespace MWScript
             {
                 MWWorld::Ptr ptr = R()(runtime);
                 MWBase::Environment::get().getWorld()->enable(ptr);
+
+                /*
+                    Start of tes3mp addition
+
+                    Send an ID_OBJECT_STATE packet whenever an object should be enabled
+                */
+                if (mwmp::Main::get().getLocalPlayer()->isLoggedIn() && ptr.isInCell())
+                {
+                    unsigned char packetOrigin = ScriptController::getPacketOriginFromContextType(static_cast<const MWScript::InterpreterContext&>(runtime.getContext()).getContextType());
+
+                    if (packetOrigin == mwmp::CLIENT_CONSOLE || packetOrigin == mwmp::CLIENT_DIALOGUE ||
+                        ptr.getRefData().getLastCommunicatedState() != MWWorld::RefData::StateCommunication::Enabled)
+                    {
+                        ptr.getRefData().setLastCommunicatedState(MWWorld::RefData::StateCommunication::Enabled);
+
+                        mwmp::ObjectList* objectList = mwmp::Main::get().getNetworking()->getObjectList();
+                        objectList->reset();
+                        objectList->packetOrigin = packetOrigin;
+                        objectList->originClientScript = static_cast<const MWScript::InterpreterContext&>(runtime.getContext()).getCurrentScriptName();
+                        objectList->addObjectState(ptr, true);
+                        objectList->sendObjectState();
+                    }
+                }
+                /* End of tes3mp addition */
             }
         };
 
@@ -269,6 +305,33 @@ namespace MWScript
                         Log(Debug::Error) << error;
                         return;
                     }
+
+                        /*
+                        Start of tes3mp addition
+
+                        Send an ID_OBJECT_STATE packet whenever an object should be disabled, as long as the
+                        player is logged in on the server and  if triggered from a clientside script  our
+                        last packet regarding its state did not already attempt to disable it (to prevent
+                        packet spam)
+                    */
+                    if (mwmp::Main::get().getLocalPlayer()->isLoggedIn() && ptr.isInCell())
+                    {
+                        unsigned char packetOrigin = ScriptController::getPacketOriginFromContextType(static_cast<const MWScript::InterpreterContext&>(runtime.getContext()).getContextType());
+
+                        if (packetOrigin == mwmp::CLIENT_CONSOLE || packetOrigin == mwmp::CLIENT_DIALOGUE ||
+                            ptr.getRefData().getLastCommunicatedState() != MWWorld::RefData::StateCommunication::Disabled)
+                        {
+                            ptr.getRefData().setLastCommunicatedState(MWWorld::RefData::StateCommunication::Disabled);
+
+                            mwmp::ObjectList *objectList = mwmp::Main::get().getNetworking()->getObjectList();
+                            objectList->reset();
+                            objectList->packetOrigin = packetOrigin;
+                            objectList->originClientScript = static_cast<const MWScript::InterpreterContext&>(runtime.getContext()).getCurrentScriptName();
+                            objectList->addObjectState(ptr, false);
+                            objectList->sendObjectState();
+                        }
+                    }
+                    /* End of tes3mp addition */
                 }
                 else
                 {
@@ -301,6 +364,23 @@ namespace MWScript
                 runtime.pop();
 
                 MWBase::Environment::get().getWindowManager()->playVideo(name, allowSkipping);
+
+                    /*
+                    Start of tes3mp addition
+
+                    Send an ID_VIDEO_PLAY packet every time a video is played
+                    through a script
+                */
+                if (mwmp::Main::get().getLocalPlayer()->isLoggedIn())
+                {
+                    mwmp::ObjectList *objectList = mwmp::Main::get().getNetworking()->getObjectList();
+                    objectList->reset();
+                    objectList->packetOrigin = ScriptController::getPacketOriginFromContextType(static_cast<const MWScript::InterpreterContext&>(runtime.getContext()).getContextType());
+                    objectList->originClientScript = static_cast<const MWScript::InterpreterContext&>(runtime.getContext()).getCurrentScriptName();
+                    objectList->addVideoPlay(std::string(name), allowSkipping);
+                    objectList->sendVideoPlay();
+                }
+                /* End of tes3mp addition */
             }
         };
 
@@ -377,6 +457,24 @@ namespace MWScript
                 if (lockLevel == 0)
                 { // no lock level was ever set, set to 100 as default
                     lockLevel = 100;
+
+                        /*
+                        Start of tes3mp addition
+
+                        Send an ID_OBJECT_LOCK packet every time an object is locked
+                        through a script, as long as the lock level being set is not
+                        the one it already has
+                    */
+                    if (mwmp::Main::get().getLocalPlayer()->isLoggedIn() && ptr.getCellRef().getLockLevel() != lockLevel)
+                    {
+                        mwmp::ObjectList *objectList = mwmp::Main::get().getNetworking()->getObjectList();
+                        objectList->reset();
+                        objectList->packetOrigin = ScriptController::getPacketOriginFromContextType(static_cast<const MWScript::InterpreterContext&>(runtime.getContext()).getContextType());
+                        objectList->originClientScript = static_cast<const MWScript::InterpreterContext&>(runtime.getContext()).getCurrentScriptName();
+                        objectList->addObjectLock(ptr, lockLevel);
+                        objectList->sendObjectLock();
+                    }
+                    /* End of tes3mp addition */
                 }
 
                 if (arg0 == 1)
@@ -403,6 +501,24 @@ namespace MWScript
             void execute(Interpreter::Runtime& runtime) override
             {
                 MWWorld::Ptr ptr = R()(runtime);
+
+                /*
+                    Start of tes3mp addition
+
+                    Send an ID_OBJECT_LOCK packet every time an object is unlocked
+                    through a script, as long as it's not already unlocked
+                */
+                if (mwmp::Main::get().getLocalPlayer()->isLoggedIn() && ptr.getCellRef().getLockLevel() > 0)
+                {
+                    mwmp::ObjectList *objectList = mwmp::Main::get().getNetworking()->getObjectList();
+                    objectList->reset();
+                    objectList->packetOrigin = ScriptController::getPacketOriginFromContextType(static_cast<const MWScript::InterpreterContext&>(runtime.getContext()).getContextType());
+                    objectList->originClientScript = static_cast<const MWScript::InterpreterContext&>(runtime.getContext()).getCurrentScriptName();
+                    objectList->addObjectLock(ptr, 0);
+                    objectList->sendObjectLock();
+                }
+                /* End of tes3mp addition */
+
                 if (ptr.getCellRef().isLocked())
                     ptr.getCellRef().unlock();
             }
@@ -909,7 +1025,30 @@ namespace MWScript
                 runtime.pop();
 
                 if (parameter == 1)
+                {
+                    /*
+                        Start of tes3mp addition
+
+                        Send an ID_OBJECT_DELETE packet every time an object is deleted
+                        through a script, as long as we haven't already communicated
+                        a deletion for it
+                    */
+                    if (mwmp::Main::get().getLocalPlayer()->isLoggedIn() &&
+                        ptr.getRefData().getLastCommunicatedState() != MWWorld::RefData::StateCommunication::Deleted)
+                    {
+                        ptr.getRefData().setLastCommunicatedState(MWWorld::RefData::StateCommunication::Deleted);
+
+                        mwmp::ObjectList *objectList = mwmp::Main::get().getNetworking()->getObjectList();
+                        objectList->reset();
+                        objectList->packetOrigin = ScriptController::getPacketOriginFromContextType(static_cast<const MWScript::InterpreterContext&>(runtime.getContext()).getContextType());
+                        objectList->originClientScript = static_cast<const MWScript::InterpreterContext&>(runtime.getContext()).getCurrentScriptName();
+                        objectList->addObjectGeneric(ptr);
+                        objectList->sendObjectDelete();
+                    }
+                    /* End of tes3mp addition */
+
                     MWBase::Environment::get().getWorld()->deleteObject(ptr);
+                }
                 else if (parameter == 0)
                     MWBase::Environment::get().getWorld()->undeleteObject(ptr);
                 else

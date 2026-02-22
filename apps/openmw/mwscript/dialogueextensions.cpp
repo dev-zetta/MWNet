@@ -1,5 +1,15 @@
 #include "dialogueextensions.hpp"
 
+/*
+    Start of tes3mp addition
+
+    Include additional headers for multiplayer purposes
+*/
+#include "../mwbase/windowmanager.hpp"
+#include "../mwmp/Main.hpp"
+#include "../mwmp/LocalPlayer.hpp"
+/* End of tes3mp addition */
+
 #include <components/compiler/extensions.hpp>
 #include <components/compiler/opcodes.hpp>
 #include <components/debug/debuglog.hpp>
@@ -44,6 +54,16 @@ namespace MWScript
                 try
                 {
                     MWBase::Environment::get().getJournal()->addEntry(quest, index, ptr);
+
+                            /*
+                            Start of tes3mp addition
+
+                            Send an ID_PLAYER_JOURNAL packet every time a new journal entry is added
+                            through a script
+                        */
+                        if (mwmp::Main::get().getLocalPlayer()->isLoggedIn() && !MWBase::Environment::get().getJournal()->hasEntry(quest, index))
+                            mwmp::Main::get().getLocalPlayer()->sendJournalEntry(quest.getRefIdString(), index, ptr);
+                        /* End of tes3mp addition */
                 }
                 catch (...)
                 {
@@ -65,6 +85,16 @@ namespace MWScript
                 runtime.pop();
 
                 MWBase::Environment::get().getJournal()->setJournalIndex(quest, index);
+
+                /*
+                    Start of tes3mp addition
+
+                    Send an ID_PLAYER_JOURNAL packet every time a journal index is set
+                    through a script
+                */
+                if (mwmp::Main::get().getLocalPlayer()->isLoggedIn())
+                    mwmp::Main::get().getLocalPlayer()->sendJournalIndex(quest.getRefIdString(), index);
+                /* End of tes3mp addition */
             }
         };
 
@@ -128,6 +158,17 @@ namespace MWScript
                     runtime.getContext().report(
                         "Failed to add topic '" + topic.getRefIdString() + "': topic record not found");
                     return;
+
+                        /*
+                        Start of tes3mp addition
+
+                        Send an ID_PLAYER_TOPIC packet every time a new topic is added
+                        through a script
+                    */
+                    if (mwmp::Main::get().getLocalPlayer()->isLoggedIn() &&
+                        MWBase::Environment::get().getDialogueManager()->isNewTopic(topic))
+                        mwmp::Main::get().getLocalPlayer()->sendTopic(topic.getRefIdString());
+                    /* End of tes3mp addition */
                 }
 
                 MWBase::Environment::get().getDialogueManager()->addTopic(topic);

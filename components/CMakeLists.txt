@@ -111,6 +111,11 @@ add_component_dir (bgsm
     stream file
     )
 
+# Start of tes3mp change
+#
+# Don't include certain components in server-only builds
+IF (BUILD_OPENMW OR BUILD_OPENCS)
+# End of tes3mp change
 add_component_dir (bsa
     bsafile compressedbsafile ba2gnrlfile ba2dx10file ba2file memorystream
     )
@@ -155,6 +160,11 @@ add_component_dir (nifosg
 add_component_dir (nifbullet
     bulletnifloader
     )
+# Start of tes3mp change
+#
+# Don't include certain components in server-only builds
+ENDIF (BUILD_OPENMW OR BUILD_OPENCS)
+# End of tes3mp change
 
 add_component_dir (toutf8
     tablesgen
@@ -192,10 +202,20 @@ add_component_dir (esm3
     refnum actoridconverter
     )
 
+# Start of tes3mp change
+#
+# Don't include certain components in server-only builds
+IF (BUILD_OPENMW OR BUILD_OPENCS)
+# End of tes3mp change
 add_component_dir (esmterrain
     gridsampling
     storage
     )
+# Start of tes3mp change
+#
+# Don't include certain components in server-only builds
+ENDIF (BUILD_OPENMW OR BUILD_OPENCS)
+# End of tes3mp change
 
 add_component_dir (esm4
     actor
@@ -317,11 +337,26 @@ IF(NOT WIN32 AND NOT APPLE)
     add_compile_definitions(GLOBAL_DATA_PATH="${GLOBAL_DATA_PATH}")
     add_compile_definitions(GLOBAL_CONFIG_PATH="${GLOBAL_CONFIG_PATH}")
 ENDIF()
+
 add_component_dir (files
     linuxpath androidpath windowspath macospath fixedpath multidircollection collections configurationmanager
     constrainedfilestream memorystream hash configfileparser openfile constrainedfilestreambuf conversion
-    istreamptr streamwithbuffer utils
+    istreamptr streamwithbuffer utils escape
     )
+
+if (WIN32)
+    add_component_dir (platform
+        platform filewin32
+    )
+elseif (UNIX)
+    add_component_dir (platform
+        platform fileposix
+    )
+else()
+    add_component_dir (platform
+        platform filestdio
+    )
+endif()
 
 if(NOT CMAKE_CXX_COMPILER_ID STREQUAL "MSVC" AND NOT CMAKE_CXX_COMPILER_FRONTEND_VARIANT STREQUAL "MSVC")
     set_source_files_properties(files/configfileparser.cpp PROPERTIES COMPILE_FLAGS -Wno-shadow)
@@ -343,6 +378,11 @@ add_component_dir (translation
     translation
     )
 
+# Start of tes3mp addition
+#
+# Don't include certain components in server-only builds
+IF (BUILD_OPENMW OR BUILD_OPENCS)
+# End of tes3mp change
 add_component_dir (terrain
     storage world buffercache defs terraingrid material terraindrawable texturemanager chunkmanager compositemaprenderer
     quadtreeworld quadtreenode viewdata cellborder view heightcull
@@ -360,6 +400,13 @@ add_component_dir (widgets
     box fontwrapper imagebutton tags list numericeditbox sharedstatebutton windowcaption widgets
     )
 
+add_component_dir (lua_ui
+    registerscriptsettings scriptsettings
+    properties widget element util layers content alignment resources
+    adapter text textedit window image container flex padding
+    )
+copy_resource_file("lua_ui/content.lua" "${OPENMW_RESOURCES_ROOT}" "resources/lua_libs/content.lua")
+
 add_component_dir (fontloader
     fontloader
     )
@@ -376,152 +423,207 @@ add_component_dir (sdlutil
     vsyncmode
     )
 
+add_component_dir (esmloader
+    esmdata
+    load
+    )
+
+add_component_dir (sqlite3
+    db
+    statement
+    transaction
+    )
+# Start of tes3mp change
+#
+# Don't include certain components in server-only builds
+ENDIF (BUILD_OPENMW OR BUILD_OPENCS)
+# End of tes3mp change
+
 add_component_dir (version
     version
     )
+
+add_component_dir (openmw-mp
+        TimedLog Utils ErrorMessages NetworkMessages Version
+        )
+
+add_component_dir (openmw-mp/Base
+        BaseActor BaseObject BasePacketProcessor BasePlayer BaseStructs BaseSystem BaseWorldstate
+        )
+
+add_component_dir (openmw-mp/Controllers
+        SystemPacketController PlayerPacketController ActorPacketController ObjectPacketController WorldstatePacketController
+        )
+
+add_component_dir(openmw-mp/Master
+        MasterData PacketMasterQuery PacketMasterUpdate PacketMasterAnnounce BaseMasterPacket ProxyMasterPacket
+        )
+
+add_component_dir (openmw-mp/Packets
+        BasePacket PacketPreInit
+        )
+
+add_component_dir (openmw-mp/Packets/Actor
+        ActorPacket
+
+        PacketActorList PacketActorAuthority PacketActorTest PacketActorAI PacketActorAnimFlags PacketActorAnimPlay
+        PacketActorAttack PacketActorCast PacketActorCellChange PacketActorDeath PacketActorEquipment PacketActorPosition
+        PacketActorSpeech PacketActorSpellsActive PacketActorStatsDynamic
+        )
+
+add_component_dir (openmw-mp/Packets/System
+        SystemPacket
+
+        PacketSystemHandshake
+        )
+
+add_component_dir (openmw-mp/Packets/Player
+        PlayerPacket
+
+        PacketChatMessage PacketGUIBoxes PacketGameSettings
+
+        PacketPlayerBaseInfo PacketPlayerCharGen PacketPlayerAlly PacketPlayerAnimFlags PacketPlayerAnimPlay
+        PacketPlayerAttack PacketPlayerAttribute PacketPlayerBehavior PacketPlayerBook PacketPlayerBounty
+        PacketPlayerCast PacketPlayerCellChange PacketPlayerCellState PacketPlayerClass PacketPlayerCooldowns
+        PacketPlayerDeath PacketPlayerEquipment PacketPlayerFaction PacketPlayerInput PacketPlayerInventory
+        PacketPlayerItemUse PacketPlayerJail PacketPlayerJournal PacketPlayerLevel PacketPlayerMiscellaneous
+        PacketPlayerMomentum PacketPlayerPosition PacketPlayerQuickKeys PacketPlayerReputation PacketPlayerRest
+        PacketPlayerResurrect PacketPlayerShapeshift PacketPlayerSkill PacketPlayerSpeech PacketPlayerSpellbook
+        PacketPlayerSpellsActive PacketPlayerStatsDynamic PacketPlayerTopic
+        )
+
+add_component_dir (openmw-mp/Packets/Object
+        ObjectPacket
+
+        PacketDoorDestination PacketDoorState
+
+        PacketConsoleCommand PacketContainer PacketObjectActivate PacketObjectAnimPlay PacketObjectAttach
+        PacketObjectDelete PacketObjectDialogueChoice PacketObjectHit PacketObjectLock PacketObjectMove PacketObjectPlace
+        PacketObjectRestock PacketObjectRotate PacketObjectScale PacketObjectSound PacketObjectSpawn PacketObjectState
+        PacketObjectTrap PacketMusicPlay PacketVideoPlay PacketClientScriptLocal PacketScriptMemberShort
+        PacketObjectMiscellaneous
+        )
+
+add_component_dir (openmw-mp/Packets/Worldstate
+        WorldstatePacket
+
+        PacketCellCreate PacketCellReset PacketClientScriptGlobal PacketClientScriptSettings PacketRecordDynamic
+        PacketWorldCollisionOverride PacketWorldDestinationOverride PacketWorldKillCount PacketWorldMap
+        PacketWorldRegionAuthority PacketWorldTime PacketWorldWeather
+        )
 
 add_component_dir (fallback
     fallback validate
     )
 
-add_component_dir (lua_ui
-    registerscriptsettings scriptsettings
-    properties widget element util layers content alignment resources
-    adapter text textedit window image container flex padding
-    )
-copy_resource_file("lua_ui/content.lua" "${OPENMW_RESOURCES_ROOT}" "resources/lua_libs/content.lua")
+# Start of tes3mp change (major)
+#
+# Don't require the crashcatcher when building on platforms other than Windows or when building only the server,
+# as it causes compilation problems
+IF (BUILD_OPENMW OR BUILD_OPENCS)
+    if(WIN32)
+        add_component_dir (crashcatcher
+            windowscrashcatcher
+            windowscrashdumppathhelpers
+            windowscrashmonitor
+            windowscrashshm
+        )
+    elseif(NOT ANDROID)
+        add_component_dir (crashcatcher
+            crashcatcher
+        )
+    endif()
+ENDIF (BUILD_OPENMW OR BUILD_OPENCS)
 
+add_component_dir (navmeshtool
+    protocol
+    )
+# End of tes3mp change (major)
 
-if(WIN32)
-    add_component_dir (crashcatcher
-        windowscrashcatcher
-        windowscrashdumppathhelpers
-        windowscrashmonitor
-        windowscrashshm
-    )
-elseif(NOT ANDROID)
-    add_component_dir (crashcatcher
-        crashcatcher
-    )
-endif()
-
-add_component_dir(detournavigator
-    agentbounds
-    areatype
-    asyncnavmeshupdater
-    bounds
-    cellgridbounds
-    changetype
-    collisionshapetype
-    commulativeaabb
-    dbrefgeometryobject
-    debug
-    exceptions
-    findrandompointaroundcircle
-    findsmoothpath
-    flags
-    generatenavmeshtile
-    gettilespositions
-    guardednavmeshcacheitem
-    heightfieldshape
-    makenavmesh
-    navigator
-    navigatorimpl
-    navigatorstub
-    navigatorutils
-    navmeshcacheitem
-    navmeshdata
-    navmeshdb
-    navmeshdbutils
-    navmeshmanager
-    navmeshtilescache
-    navmeshtileview
-    objectid
-    objecttransform
-    offmeshconnection
-    offmeshconnectionsmanager
-    preparednavmeshdata
-    preparednavmeshdatatuple
-    raycast
-    recast
-    recastallocutils
-    recastcontext
-    recastglobalallocator
-    recastmesh
-    recastmeshbuilder
-    recastmeshobject
-    recastmeshprovider
-    recastmeshtiles
-    recastparams
-    recasttempallocator
-    ref
-    serialization
-    settings
-    settingsutils
-    sharednavmeshcacheitem
-    stats
-    status
-    tilebounds
-    tilecachedrecastmeshmanager
-    tileposition
-    tilespositionsrange
-    updateguard
-    version
-    waitconditiontype
-    )
+# Start of tes3mp change (major)
+#
+# Don't require the DetourNavigator when building the server
+IF (BUILD_OPENMW OR BUILD_OPENCS)
+    add_component_dir(detournavigator
+        agentbounds
+        areatype
+        asyncnavmeshupdater
+        bounds
+        cellgridbounds
+        changetype
+        collisionshapetype
+        commulativeaabb
+        dbrefgeometryobject
+        debug
+        exceptions
+        findrandompointaroundcircle
+        findsmoothpath
+        flags
+        generatenavmeshtile
+        gettilespositions
+        guardednavmeshcacheitem
+        heightfieldshape
+        makenavmesh
+        navigator
+        navigatorimpl
+        navigatorstub
+        navigatorutils
+        navmeshcacheitem
+        navmeshdata
+        navmeshdb
+        navmeshdbutils
+        navmeshmanager
+        navmeshtilescache
+        navmeshtileview
+        objectid
+        objecttransform
+        offmeshconnection
+        offmeshconnectionsmanager
+        preparednavmeshdata
+        preparednavmeshdatatuple
+        raycast
+        recast
+        recastallocutils
+        recastcontext
+        recastglobalallocator
+        recastmesh
+        recastmeshbuilder
+        recastmeshobject
+        recastmeshprovider
+        recastmeshtiles
+        recastparams
+        recasttempallocator
+        ref
+        serialization
+        settings
+        settingsutils
+        sharednavmeshcacheitem
+        stats
+        status
+        tilebounds
+        tilecachedrecastmeshmanager
+        tileposition
+        tilespositionsrange
+        updateguard
+        version
+        waitconditiontype
+        )
+ELSE()
+    add_component_dir(detournavigator
+        collisionshapetype
+        )
+ENDIF (BUILD_OPENMW OR BUILD_OPENCS)
+# End of tes3mp change (major)
 
 add_component_dir(loadinglistener
     reporter
     )
 
-add_component_dir(serialization
-    binaryreader
-    binarywriter
-    osgyaml
-    sizeaccumulator
-    )
-
-add_component_dir(sqlite3
-    db
-    request
-    statement
-    transaction
-)
-
-add_component_dir(esmloader
-    lessbyid
-    load
-    esmdata
-)
-
-add_component_dir(navmeshtool
-    protocol
-    )
-
-add_component_dir(platform
-    platform
-    file
-    )
-
-if (WIN32)
-    add_component_dir(platform
-        filewin32
-        )
-elseif (UNIX)
-    add_component_dir(platform
-        fileposix
-        )
-else ()
-    add_component_dir(platform
-        filestdio
-        )
-endif()
-
-add_component_dir(testing
-    expecterror
-    util
-)
-
+# Start of tes3mp change (major)
+#
+# Don't require Qt when building the server
+IF (BUILD_OPENMW OR BUILD_OPENCS)
+# End of tes3mp change
 if (USE_QT)
     add_component_qt_dir (contentselector
         model/modelitem model/esmfile
@@ -547,11 +649,6 @@ if (USE_QT)
         helpviewer utf8qtextstream hash scalableicon
         )
 
-    add_component_qt_dir (files
-        qtconversion
-        qtconfigpath
-        )
-
     add_component_qt_dir (platform
         application
         )
@@ -560,7 +657,18 @@ if (USE_QT)
         qtconversion
         )
 
+    add_component_qt_dir (files
+        qtconversion
+        )
+
+    QT5_WRAP_UI(ESM_UI_HDR ${ESM_UI})
+    QT5_WRAP_CPP(MOC_SRCS ${COMPONENT_MOC_FILES})
 endif()
+# Start of tes3mp change (major)
+#
+# Don't require Qt when building the server
+ENDIF (BUILD_OPENMW OR BUILD_OPENCS)
+# End of tes3mp change
 
 if (MSVC)
     # these TUs take a lot of memory for codegen
@@ -594,6 +702,10 @@ if (APPLE)
     target_compile_definitions(components PUBLIC GL_SILENCE_DEPRECATION=1)
 endif()
 
+# Start of tes3mp change (major)
+#
+# Don't require graphics related libs when building the server
+IF (BUILD_OPENMW OR BUILD_OPENCS)
 target_link_libraries(components
     # CMake's built-in OSG finder does not use pkgconfig, so we have to
     # manually ensure the order is correct for inter-library dependencies.
@@ -619,25 +731,49 @@ target_link_libraries(components
     ${MyGUI_LIBRARIES}
     ${LUA_LIBRARIES}
     LZ4::LZ4
-    RecastNavigation::DebugUtils
-    RecastNavigation::Detour
-    RecastNavigation::Recast
-
-    Base64
-    SQLite3::SQLite3
-    smhasher
-    ${ICU_LIBRARIES}
-    ZLIB::ZLIB
     )
+ENDIF (BUILD_OPENMW OR BUILD_OPENCS)
+target_link_libraries(components
+    ${Boost_SYSTEM_LIBRARY}
+    ${Boost_FILESYSTEM_LIBRARY}
+    ${Boost_PROGRAM_OPTIONS_LIBRARY}
+    ${Boost_IOSTREAMS_LIBRARY}
+    )
+# End of tes3mp change (major)
 
+# Link yaml-cpp (from openmw-50)
 if(yaml-cpp_VERSION VERSION_GREATER_EQUAL 0.8.0)
     target_link_libraries(components yaml-cpp::yaml-cpp)
 else()
     target_link_libraries(components yaml-cpp)
 endif()
 
-target_link_libraries(components ${BULLET_LIBRARIES})
+# Start of tes3mp change (major)
+#
+# Don't require RecastNavigation nor Bullet when building the server
+IF (BUILD_OPENMW OR BUILD_OPENCS)
+    target_link_libraries(components
+            RecastNavigation::DebugUtils
+            RecastNavigation::Detour
+            RecastNavigation::Recast
 
+            ${BULLET_LIBRARIES}
+            )
+ENDIF (BUILD_OPENMW OR BUILD_OPENCS)
+target_link_libraries(components Base64 smhasher SQLite3::SQLite3 ${ICU_LIBRARIES} ZLIB::ZLIB)
+# End of tes3mp change (major)
+
+if (WIN32)
+    target_link_libraries(components
+    ${Boost_LOCALE_LIBRARY}
+    ${Boost_ZLIB_LIBRARY})
+endif()
+
+# Start of tes3mp change (major)
+#
+# Don't require Qt when building the server
+IF (BUILD_OPENMW OR BUILD_OPENCS)
+# End of tes3mp change
 if (USE_QT)
     add_library(components_qt STATIC ${COMPONENT_QT_FILES})
     target_link_libraries(components_qt components Qt::Widgets Qt::Core)
@@ -651,6 +787,11 @@ if (USE_QT)
         target_link_libraries(components_qt gcov)
     endif()
 endif()
+# Start of tes3mp change (major)
+#
+# Don't require Qt when building the server
+ENDIF (BUILD_OPENMW OR BUILD_OPENCS)
+# End of tes3mp change
 
 if (OSG_STATIC AND CMAKE_SYSTEM_NAME MATCHES "Linux")
     find_package(X11 REQUIRED COMPONENTS Xinerama Xrandr)

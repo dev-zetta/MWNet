@@ -18,6 +18,7 @@ namespace
 
         refValue = MWWorld::LiveCellRef<T>(cellRef, base);
         ptrValue = MWWorld::Ptr(&std::any_cast<MWWorld::LiveCellRef<T>&>(refValue), nullptr);
+        /* Start of tes3mp addition: mMpNum defaults to 0 via ESM::CellRef::blank() */
     }
 
     template <typename T>

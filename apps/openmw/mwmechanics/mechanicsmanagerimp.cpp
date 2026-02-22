@@ -15,6 +15,18 @@
 
 #include <components/sceneutil/positionattitudetransform.hpp>
 
+
+    /*
+    Start of tes3mp addition
+
+    Include additional headers for multiplayer purposes
+*/
+#include <components/openmw-mp/TimedLog.hpp>
+#include "../mwmp/Main.hpp"
+#include "../mwmp/LocalPlayer.hpp"
+#include "../mwmp/PlayerList.hpp"
+#include "../mwmp/CellController.hpp"
+/* End of tes3mp addition */
 #include "../mwworld/class.hpp"
 #include "../mwworld/esmstore.hpp"
 #include "../mwworld/globals.hpp"
@@ -595,6 +607,13 @@ namespace MWMechanics
         return mActors.countDeaths(id);
     }
 
+    /* Start of tes3mp addition */
+    void MechanicsManager::setDeaths(const ESM::RefId& refId, int number)
+    {
+        mActors.setDeaths(refId, number);
+    }
+    /* End of tes3mp addition */
+
     void MechanicsManager::getPersuasionDispositionChange(
         const MWWorld::Ptr& npc, PersuasionType type, bool& success, int& tempChange, int& permChange)
     {
@@ -846,6 +865,13 @@ namespace MWMechanics
         mUpdatePlayer = true;
         mClassSelected = true;
         mRaceSelected = true;
+        /*
+            Start of tes3mp change (major)
+
+            Avoid enabling AI in multiplayer
+        */
+        mAI = false;
+        /* End of tes3mp change (major)*/
     }
 
     namespace
@@ -881,6 +907,14 @@ namespace MWMechanics
 
         return boundItemIdCache.find(item.getCellRef().getRefId()) != boundItemIdCache.end();
     }
+
+    /* Start of tes3mp addition */
+    bool MechanicsManager::isBoundItem(const ESM::RefId& itemId)
+    {
+        static const std::set<ESM::RefId> cache = makeBoundItemIdCache();
+        return cache.find(itemId) != cache.end();
+    }
+    /* End of tes3mp addition */
 
     bool MechanicsManager::isAllowedToUse(const MWWorld::Ptr& ptr, const MWWorld::Ptr& target, MWWorld::Ptr& victim)
     {
@@ -1176,6 +1210,15 @@ namespace MWMechanics
                 || (MWBase::Environment::get().getWorld()->getLOS(player, neighbor)
                     && awarenessCheck(player, neighbor)))
             {
+                /*
+                    Start of tes3mp addition
+                
+                    We need player-controlled NPCs to not report crimes committed by other players
+                */
+                if (mwmp::PlayerList::isDedicatedPlayer(neighbor))
+                    continue;
+                /* End of tes3mp addition */
+
                 // NPC will complain about theft even if he will do nothing about it
                 if (type == OT_Theft || type == OT_Pickpocket)
                     MWBase::Environment::get().getDialogueManager()->say(neighbor, ESM::RefId::stringRefId("thief"));
@@ -1476,6 +1519,14 @@ namespace MWMechanics
                 if (playerRanks.find(factionID) != playerRanks.end())
                 {
                     player.getClass().getNpcStats(player).expell(factionID, true);
+
+                        /*
+                        Start of tes3mp addition
+
+                        Send an ID_PLAYER_FACTION packet every time a player is expelled from a faction
+                    */
+                    mwmp::Main::get().getLocalPlayer()->sendFactionExpulsionState(Misc::StringUtils::lowerCase(factionID.getRefIdString()), true);
+                    /* End of tes3mp addition */
                 }
             }
             else if (!factionId.empty())
@@ -1517,9 +1568,17 @@ namespace MWMechanics
         MWMechanics::CreatureStats& statsTarget = target.getClass().getCreatureStats(target);
         AiSequence& seq = statsTarget.getAiSequence();
 
+        /*
+            Start of tes3mp change (major)
+
+            Make it possible to start combat with DedicatedPlayers and DedicatedActors by
+            adding additional conditions for them
+        */
         if (!attacker.isEmpty()
-            && (attacker.getClass().getCreatureStats(attacker).getAiSequence().isInCombat(target) || attacker == player)
+            && (attacker.getClass().getCreatureStats(attacker).getAiSequence().isInCombat(target) || attacker == player
+                || mwmp::PlayerList::isDedicatedPlayer(attacker) || mwmp::Main::get().getCellController()->isDedicatedActor(attacker))
             && !seq.isInCombat(attacker))
+        /* End of tes3mp change (major)*/
         {
             // Attacker is in combat with us, but we are not in combat with the attacker yet. Time to fight back.
             // Note: accidental or collateral damage attacks are ignored.
@@ -1874,6 +1933,17 @@ namespace MWMechanics
     {
         return mActors.isAttackingOrSpell(ptr);
     }
+
+    /*
+        Start of tes3mp addition
+
+        Make it possible to set the attackingOrSpell state from elsewhere in the code
+    */
+    void MechanicsManager::setAttackingOrSpell(const MWWorld::Ptr &ptr, bool state) const
+    {
+        return mActors.setAttackingOrSpell(ptr, state);
+    }
+    /* End of tes3mp addition */
 
     void MechanicsManager::setWerewolf(const MWWorld::Ptr& actor, bool werewolf)
     {

@@ -8,6 +8,21 @@
 #include <components/misc/rng.hpp>
 #include <components/misc/strings/format.hpp>
 
+
+    /*
+    Start of tes3mp addition
+
+    Include additional headers for multiplayer purposes
+*/
+#include <components/openmw-mp/TimedLog.hpp>
+#include "../mwmp/Main.hpp"
+#include "../mwmp/Networking.hpp"
+#include "../mwmp/PlayerList.hpp"
+#include "../mwmp/LocalPlayer.hpp"
+#include "../mwmp/ObjectList.hpp"
+#include "../mwmp/CellController.hpp"
+#include "../mwmp/MechanicsHelper.hpp"
+/* End of tes3mp addition */
 #include "../mwbase/environment.hpp"
 #include "../mwbase/luamanager.hpp"
 #include "../mwbase/mechanicsmanager.hpp"
@@ -144,6 +159,9 @@ namespace MWMechanics
         const MWWorld::Ptr& target, const ESM::EffectList& effects, ESM::RangeType range, bool exploded) const
     {
         const bool targetIsActor = !target.isEmpty() && target.getClass().isActor();
+        const bool targetIsDedicatedActor = targetIsActor
+            && (mwmp::PlayerList::isDedicatedPlayer(target)
+                || mwmp::Main::get().getCellController()->isDedicatedActor(target));
 
         // If none of the effects need to apply, we can early-out
         bool found = false;
@@ -193,7 +211,22 @@ namespace MWMechanics
                 && (mCaster.isEmpty() || !mCaster.getClass().isActor()))
                 continue;
 
+            // Dedicated actors are driven by authoritative SpellsActive packets.
+            if (targetIsDedicatedActor)
+                continue;
+
             indexes.push_back(enam.mIndex);
+
+            if (!targetIsActor && magicEffect->mData.mFlags & ESM::MagicEffect::NoDuration)
+            {
+                /* Start of tes3mp addition */
+                mwmp::ObjectList* objectList = mwmp::Main::get().getNetworking()->getObjectList();
+                objectList->reset();
+                objectList->packetOrigin = mwmp::CLIENT_GAMEPLAY;
+                objectList->addObjectSound(target, magicEffect->mHitSound.getRefIdString(), 1.0f, 1.0f);
+                objectList->sendObjectSound();
+                /* End of tes3mp addition */
+            }
         }
 
         MWBase::Environment::get().getLuaManager()->applyMagicEffects(mId, mCaster, mItem, target, indexes,
@@ -273,6 +306,18 @@ namespace MWMechanics
                     MWBase::SoundManager* sndMgr = MWBase::Environment::get().getSoundManager();
                     sndMgr->playSound3D(
                         mCaster, store->get<ESM::Skill>().find(school)->mSchool->mFailureSound, 1.0f, 1.0f);
+
+                        /*
+                        Start of tes3mp addition
+
+                        Send an ID_OBJECT_SOUND packet every time a sound is made here
+                    */
+                    mwmp::ObjectList* objectList = mwmp::Main::get().getNetworking()->getObjectList();
+                    objectList->reset();
+                    objectList->packetOrigin = mwmp::CLIENT_GAMEPLAY;
+                    objectList->addObjectSound(mCaster, "Spell Failure " + school.getRefIdString(), 1.0f, 1.0f);
+                    objectList->sendObjectSound();
+                    /* End of tes3mp addition */
                 }
                 return false;
             }
@@ -346,6 +391,25 @@ namespace MWMechanics
             {
                 bool fail = false;
 
+                /*
+                    Start of tes3mp change (major)
+                
+                    Make spell casting fail based on the casting success rated determined
+                    in MechanicsHelper::getSpellSuccess()
+                */
+                mwmp::Cast *localCast = NULL;
+                mwmp::Cast *dedicatedCast = MechanicsHelper::getDedicatedCast(mCaster);
+
+                if (dedicatedCast)
+                    dedicatedCast->pressed = false;
+                else
+                {
+                    localCast = MechanicsHelper::getLocalCast(mCaster);
+                    localCast->success = MechanicsHelper::getSpellSuccess(mId.getRefIdString(), mCaster);
+                    localCast->pressed = false;
+                    localCast->shouldSend = true;
+                }
+
                 // Check success
                 float successChance = getSpellSuccessChance(spell, mCaster, nullptr, true, false);
                 auto& prng = MWBase::Environment::get().getWorld()->getPrng();
@@ -355,6 +419,7 @@ namespace MWMechanics
                         MWBase::Environment::get().getWindowManager()->messageBox("#{sMagicSkillFail}");
                     fail = true;
                 }
+                /* End of tes3mp change (major)*/
 
                 if (fail)
                 {
@@ -362,6 +427,18 @@ namespace MWMechanics
                     MWBase::SoundManager* sndMgr = MWBase::Environment::get().getSoundManager();
                     const ESM::Skill* skill = MWBase::Environment::get().getESMStore()->get<ESM::Skill>().find(school);
                     sndMgr->playSound3D(mCaster, skill->mSchool->mFailureSound, 1.0f, 1.0f);
+
+                        /*
+                        Start of tes3mp addition
+
+                        Send an ID_OBJECT_SOUND packet every time a sound is made here
+                    */
+                    mwmp::ObjectList* objectList = mwmp::Main::get().getNetworking()->getObjectList();
+                    objectList->reset();
+                    objectList->packetOrigin = mwmp::CLIENT_GAMEPLAY;
+                    objectList->addObjectSound(mCaster, "Spell Failure " + school.getRefIdString(), 1.0f, 1.0f);
+                    objectList->sendObjectSound();
+                    /* End of tes3mp addition */
                     return false;
                 }
             }

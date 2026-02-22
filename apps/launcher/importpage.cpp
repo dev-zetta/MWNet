@@ -88,7 +88,7 @@ void Launcher::ImportPage::on_importerButton_clicked()
     // Create the file if it doesn't already exist, else the importer will fail
     auto path = mCfgMgr.getUserConfigPath();
     path /= "openmw.cfg";
-    QFile file(path);
+    QFile file(QString::fromStdString(path.string()));
 
     if (!file.exists())
     {

@@ -35,6 +35,7 @@ openmw_add_executable(openmw-essimporter
 target_link_libraries(openmw-essimporter
     Boost::program_options
     components
+    smhasher
 )
 
 if (WIN32)

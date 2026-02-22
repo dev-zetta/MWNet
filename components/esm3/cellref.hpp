@@ -30,6 +30,10 @@ namespace ESM
         // Note: Currently unused for items in containers
         RefNum mRefNum;
 
+        /* Start of tes3mp addition */
+        unsigned int mMpNum = 0;
+        /* End of tes3mp addition */
+
         ESM::RefId mRefID; // ID of object being referenced
 
         float mScale; // Scale applied to mesh

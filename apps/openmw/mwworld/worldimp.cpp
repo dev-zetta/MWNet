@@ -11,6 +11,25 @@
 
 #include <LinearMath/btAabbUtil2.h>
 
+/*
+    Start of tes3mp addition
+
+    Include additional headers for multiplayer purposes
+*/
+#include <components/openmw-mp/TimedLog.hpp>
+#include "../mwmp/Main.hpp"
+#include "../mwmp/Networking.hpp"
+#include "../mwmp/LocalPlayer.hpp"
+#include "../mwmp/PlayerList.hpp"
+#include "../mwmp/DedicatedPlayer.hpp"
+#include "../mwmp/LocalActor.hpp"
+#include "../mwmp/DedicatedActor.hpp"
+#include "../mwmp/ObjectList.hpp"
+#include "../mwmp/RecordHelper.hpp"
+#include "../mwmp/CellController.hpp"
+#include "../mwmp/MechanicsHelper.hpp"
+/* End of tes3mp addition */
+
 #include <components/debug/debuglog.hpp>
 
 #include <components/esm3/cellref.hpp>
@@ -315,6 +334,12 @@ namespace MWWorld
             if (!getPlayerPtr().isInCell())
             {
                 ESM::Position pos;
+
+                /*
+                    Start of tes3mp change (major)
+
+                    Spawn at 0, -7 by default
+                */
                 const int cellSize = Constants::CellSizeInUnits;
                 pos.pos[0] = cellSize / 2;
                 pos.pos[1] = cellSize / 2;
@@ -517,6 +542,13 @@ namespace MWWorld
         return *mPlayer;
     }
 
+    /* Start of tes3mp addition */
+    MWWorld::ESMStore& World::getModifiableStore()
+    {
+        return mStore;
+    }
+    /* End of tes3mp addition */
+
     const std::vector<int>& World::getESMVersions() const
     {
         return mESMVersions;
@@ -532,6 +564,21 @@ namespace MWWorld
         mTimeManager->updateGlobalInt(name, value);
         mGlobalVariables[name].setInteger(value);
     }
+
+    /* Start of tes3mp addition */
+    bool World::hasGlobal(const ESM::RefId& name)
+    {
+        return mGlobalVariables.hasRecord(name.getRefIdString());
+    }
+
+    void World::createGlobal(const ESM::RefId& name, ESM::VarType varType)
+    {
+        ESM::Global global;
+        global.mId = name;
+        global.mValue.setType(varType);
+        mGlobalVariables.addRecord(global);
+    }
+    /* End of tes3mp addition */
 
     void World::setGlobalFloat(GlobalVariableName name, float value)
     {
@@ -648,6 +695,97 @@ namespace MWWorld
             error += " in active cells";
         throw std::runtime_error(error);
     }
+
+    Ptr World::searchPtrViaActorId(int actorId)
+    {
+        // The player is not registered in any CellStore so must be checked manually
+        if (actorId == getPlayerPtr().getClass().getCreatureStats(getPlayerPtr()).getActorId())
+            return getPlayerPtr();
+        /*
+            Start of tes3mp addition
+
+            Make it possible to find dedicated players here as well
+        */
+        else
+        {
+            mwmp::DedicatedPlayer* dedicatedPlayer = mwmp::PlayerList::getPlayer(actorId);
+            if (dedicatedPlayer != nullptr)
+            {
+                return dedicatedPlayer->getPtr();
+            }
+        }
+        /* End of tes3mp addition */
+        // Now search cells
+        return mWorldScene->searchPtrViaActorId(actorId);
+    }
+
+    /*
+        Start of tes3mp addition
+
+        Make it possible to find a Ptr in any active cell based on its refNum and mpNum
+    */
+    Ptr World::searchPtrViaUniqueIndex(int refNum, int mpNum)
+    {
+        for (Scene::CellStoreCollection::const_iterator iter(mWorldScene->getActiveCells().begin());
+            iter != mWorldScene->getActiveCells().end(); ++iter)
+        {
+            CellStore* cellStore = *iter;
+
+            MWWorld::Ptr ptrFound = cellStore->searchExact(refNum, mpNum);
+
+            if (!ptrFound.isEmpty())
+                return ptrFound;
+        }
+
+        return MWWorld::Ptr();
+    }
+    /* End of tes3mp addition */
+
+    /*
+        Start of tes3mp addition
+
+        Make it possible to update all Ptrs in active cells that have a certain refId
+    */
+    void World::updatePtrsWithRefId(ESM::RefId refId)
+    {
+        for (Scene::CellStoreCollection::const_iterator iter(mWorldScene->getActiveCells().begin());
+            iter != mWorldScene->getActiveCells().end(); ++iter)
+        {
+            CellStore* cellStore = *iter;
+
+            for (auto &mergedRef : cellStore->getMergedRefs())
+            {
+                if (Misc::StringUtils::ciEqual(refId.getRefIdString(), mergedRef->mRef.getRefId().getRefIdString()))
+                {
+                    MWWorld::Ptr ptr(mergedRef, cellStore);
+
+                    const ESM::Position* position = &ptr.getRefData().getPosition();
+                    const unsigned int refNum = ptr.getCellRef().getRefNum().mIndex;
+                    const unsigned int mpNum = ptr.getCellRef().getMpNum();
+
+                    deleteObject(ptr);
+                    ptr.getCellRef().unsetRefNum();
+                    ptr.getCellRef().setMpNum(0);
+
+                    MWWorld::ManualRef* reference = new MWWorld::ManualRef(getStore(), refId, 1);
+                    MWWorld::Ptr newPtr = placeObject(reference->getPtr(), cellStore, *position);
+                    newPtr.getCellRef().setRefNum(refNum);
+                    newPtr.getCellRef().setMpNum(mpNum);
+
+                    // Update Ptrs for LocalActors and DedicatedActors
+                    if (newPtr.getClass().isActor())
+                    {
+                        if (mwmp::Main::get().getCellController()->isLocalActor(refNum, mpNum))
+                            mwmp::Main::get().getCellController()->getLocalActor(refNum, mpNum)->setPtr(newPtr);
+                        else if (mwmp::Main::get().getCellController()->isDedicatedActor(refNum, mpNum))
+                            mwmp::Main::get().getCellController()->getDedicatedActor(refNum, mpNum)->setPtr(newPtr);
+                    }
+                }
+            }
+        }
+    }
+    /* End of tes3mp addition */
+
 
     struct FindContainerVisitor
     {
@@ -991,6 +1129,15 @@ namespace MWWorld
     MWWorld::Ptr World::moveObject(
         const Ptr& ptr, CellStore* newCell, const osg::Vec3f& position, bool movePhysics, bool keepActive)
     {
+        /*
+            Start of tes3mp addition
+
+            If we choose to deny this move because it's part of an unapproved cell change, we should also revert the Ptr back to its
+            original coordinates, so keep track of them
+        */
+        ESM::Position originalPos = ptr.getRefData().getPosition();
+        /* End of tes3mp addition */
+
         ESM::Position pos = ptr.getRefData().getPosition();
         std::memcpy(pos.pos, &position, sizeof(osg::Vec3f));
         ptr.getRefData().setPosition(pos);
@@ -1012,6 +1159,26 @@ namespace MWWorld
 
         if (currCell != newCell)
         {
+            /*
+                Start of tes3mp addition
+
+                Check if a DedicatedPlayer or DedicatedActor's new Ptr cell is the same as their packet cell, and deny the Ptr's movement and
+                cell change if it is not
+            */
+            if (mwmp::PlayerList::isDedicatedPlayer(ptr) &&
+                !mwmp::Main::get().getCellController()->isSameCell(mwmp::PlayerList::getPlayer(ptr)->cell, newCell->getCell()->getEsm3()))
+            {
+                ptr.getRefData().setPosition(originalPos);
+                return ptr;
+            }
+            else if (mwmp::Main::get().getCellController()->isDedicatedActor(ptr) &&
+                !mwmp::Main::get().getCellController()->isSameCell(mwmp::Main::get().getCellController()->getDedicatedActor(ptr)->cell, newCell->getCell()->getEsm3()))
+            {
+                ptr.getRefData().setPosition(originalPos);
+                return ptr;
+            }
+            /* End of tes3mp addition */
+
             removeContainerScripts(ptr);
 
             if (isPlayer)
@@ -1080,6 +1247,19 @@ namespace MWWorld
                         addContainerScripts(newPtr, newCell);
                     }
                 }
+
+                /*
+                    Start of tes3mp addition
+
+                    Update the Ptrs of LocalActors, DedicatedPlayers and DedicatedActors
+                */
+                if (mwmp::Main::get().getCellController()->isLocalActor(ptr))
+                    mwmp::Main::get().getCellController()->getLocalActor(ptr)->setPtr(newPtr);
+                else if (mwmp::Main::get().getCellController()->isDedicatedActor(ptr))
+                    mwmp::Main::get().getCellController()->getDedicatedActor(ptr)->setPtr(newPtr);
+                else if (mwmp::PlayerList::isDedicatedPlayer(ptr))
+                    mwmp::PlayerList::getPlayer(ptr)->setPtr(newPtr);
+                /* End of tes3mp addition */
             }
 
             MWBase::Environment::get().getWindowManager()->updateConsoleObjectPtr(ptr, newPtr);
@@ -1366,6 +1546,30 @@ namespace MWWorld
         if (ptr == MWMechanics::getPlayer())
             MWBase::Environment::get().getSoundManager()->setListenerVel(velocity);
     }
+
+    /* Start of tes3mp addition */
+    void World::setInertialForce(const Ptr& ptr, const osg::Vec3f &force)
+    {
+        MWPhysics::Actor *actor = mPhysics->getActor(ptr);
+        if (actor != nullptr)
+        {
+            actor->setOnGround(false);
+            actor->setInertialForce(force);
+        }
+    }
+
+    void World::setOnGround(const Ptr& ptr, bool onGround)
+    {
+        MWPhysics::Actor* actor = mPhysics->getActor(ptr);
+        if (actor != nullptr)
+            actor->setOnGround(onGround);
+    }
+
+    void World::setPhysicsFramerate(float physFramerate)
+    {
+        mPhysics->setPhysicsFramerate(physFramerate);
+    }
+    /* End of tes3mp addition */
 
     void World::updateAnimatedCollisionShape(const Ptr& ptr)
     {
@@ -1834,6 +2038,29 @@ namespace MWWorld
     {
         mWeatherManager->changeWeather(region, id);
     }
+
+    /* Start of tes3mp addition */
+    void World::setRegionWeather(const ESM::RefId& region, const unsigned int currentWeather, const unsigned int nextWeather,
+        const unsigned int queuedWeather, const float transitionFactor, bool force)
+    {
+        mWeatherManager->setRegionWeather(region.getRefIdString(), currentWeather, nextWeather, queuedWeather, transitionFactor, force);
+    }
+
+    bool World::getWeatherCreationState()
+    {
+        return mWeatherManager->getWeatherCreationState();
+    }
+
+    void World::setWeatherCreationState(bool state)
+    {
+        mWeatherManager->setWeatherCreationState(state);
+    }
+
+    void World::sendWeather()
+    {
+        mWeatherManager->sendWeather();
+    }
+    /* End of tes3mp addition */
 
     void World::modRegion(const ESM::RefId& regionid, std::span<const uint8_t> chances)
     {
@@ -2354,12 +2581,43 @@ namespace MWWorld
                 state = MWWorld::DoorState::Closing; // if opening, then close
                 break;
         }
+
+        /*
+            Start of tes3mp addition
+
+            Send an ID_DOOR_STATE packet every time a door is activated
+        */
+        if (mwmp::Main::get().getLocalPlayer()->isLoggedIn())
+        {
+            mwmp::ObjectList *objectList = mwmp::Main::get().getNetworking()->getObjectList();
+            objectList->reset();
+            objectList->packetOrigin = mwmp::CLIENT_GAMEPLAY;
+            objectList->addDoorState(door, state);
+            objectList->sendDoorState();
+        }
+        /* End of tes3mp addition */
+
         door.getClass().setDoorState(door, state);
         mDoorStates[door] = state;
     }
 
     void World::activateDoor(const Ptr& door, MWWorld::DoorState state)
     {
+        /*
+            Start of tes3mp addition
+
+            Send an ID_DOOR_STATE packet every time a door is activated
+        */
+        if (mwmp::Main::get().getLocalPlayer()->isLoggedIn())
+        {
+            mwmp::ObjectList *objectList = mwmp::Main::get().getNetworking()->getObjectList();
+            objectList->reset();
+            objectList->packetOrigin = mwmp::CLIENT_GAMEPLAY;
+            objectList->addDoorState(door, state);
+            objectList->sendDoorState();
+        }
+        /* End of tes3mp addition */
+
         door.getClass().setDoorState(door, state);
         mDoorStates[door] = state;
         if (state == MWWorld::DoorState::Idle)
@@ -2368,6 +2626,56 @@ namespace MWWorld
             rotateDoor(door, state, 1);
         }
     }
+
+    /* Start of tes3mp addition */
+    void World::saveDoorState(const Ptr &door, MWWorld::DoorState state)
+    {
+        mDoorStates[door] = state;
+        if (state == MWWorld::DoorState::Idle)
+            mDoorStates.erase(door);
+    }
+
+    bool World::isCellActive(const ESM::Cell& cell)
+    {
+        const Scene::CellStoreCollection& activeCells = mWorldScene->getActiveCells();
+        mwmp::CellController *cellController = mwmp::Main::get().getCellController();
+        for (auto it = activeCells.begin(); it != activeCells.end(); ++it)
+        {
+            if (cellController->isSameCell(cell, (*it)->getCell()->getEsm3()))
+                return true;
+        }
+        return false;
+    }
+
+    void World::unloadCell(const ESM::Cell& cell)
+    {
+        if (isCellActive(cell))
+        {
+            mwmp::CellController *cellController = mwmp::Main::get().getCellController();
+            CellStore* cellStore = cellController->getCellStore(cell);
+            if (cellStore)
+                mWorldScene->unloadCell(cellStore, nullptr);
+        }
+    }
+
+    void World::unloadActiveCells()
+    {
+        const Scene::CellStoreCollection activeCells = mWorldScene->getActiveCells();
+        for (CellStore* cellStore : activeCells)
+        {
+            if (cellStore->getCell()->isExterior() || !Misc::StringUtils::ciEqual(cellStore->getCell()->getDescription(), RecordHelper::getPlaceholderInteriorCellName()))
+                mWorldScene->unloadCell(cellStore, nullptr);
+        }
+    }
+
+    void World::clearCellStore(const ESM::Cell& cell)
+    {
+        mwmp::CellController* cellController = mwmp::Main::get().getCellController();
+        MWWorld::CellStore *cellStore = cellController->getCellStore(cell);
+        if (cellStore != nullptr)
+            cellStore->clearMovesToCells();
+    }
+    /* End of tes3mp addition */
 
     bool World::getPlayerStandingOn(const MWWorld::ConstPtr& object)
     {
@@ -2399,8 +2707,15 @@ namespace MWWorld
 
     void World::hurtStandingActors(const ConstPtr& object, float healthPerSecond)
     {
-        if (MWBase::Environment::get().getWindowManager()->isGuiMode())
-            return;
+        /*
+            Start of tes3mp change (major)
+
+            Being in a menu should not prevent actors from being hurt in multiplayer,
+            so that check has been commented out
+        */
+        //if (MWBase::Environment::get().getWindowManager()->isGuiMode())
+        //    return;
+        /* End of tes3mp change (major)*/
 
         std::vector<MWWorld::Ptr> actors;
         mPhysics->getActorsStandingOn(object, actors);
@@ -2433,8 +2748,15 @@ namespace MWWorld
 
     void World::hurtCollidingActors(const ConstPtr& object, float healthPerSecond)
     {
-        if (MWBase::Environment::get().getWindowManager()->isGuiMode())
-            return;
+        /*
+            Start of tes3mp change (major)
+
+            Being in a menu should not prevent actors from being hurt in multiplayer,
+            so that check has been commented out
+        */
+        //if (MWBase::Environment::get().getWindowManager()->isGuiMode())
+        //    return;
+        /* End of tes3mp change (major)*/
 
         std::vector<Ptr> actors;
         mPhysics->getActorsCollidingWith(object, actors);
@@ -2844,6 +3166,26 @@ namespace MWWorld
 
         if (!selectedSpell.empty())
         {
+            /*
+                Start of tes3mp addition
+
+                If the spell being cast does not exist on our client, ignore it
+                to avoid framelistener errors
+            */
+            if (getStore().get<ESM::Spell>().search(selectedSpell) == 0)
+                return MWWorld::SpellCastState::Success;
+            /* End of tes3mp addition */
+
+            /*
+                Start of tes3mp addition
+
+                Always start spells cast by DedicatedPlayers and DedicatedActors,
+                without unilaterally deducting any magicka for them on this client
+            */
+            if (mwmp::PlayerList::isDedicatedPlayer(actor) || mwmp::Main::get().getCellController()->isDedicatedActor(actor))
+                return MWWorld::SpellCastState::Success;
+            /* End of tes3mp addition */
+
             const ESM::Spell* spell = mStore.get<ESM::Spell>().find(selectedSpell);
             int spellCost = MWMechanics::calcSpellCost(*spell);
 
@@ -2982,6 +3324,8 @@ namespace MWWorld
                 const auto& itemPtr = *inv.getSelectedEnchantItem();
                 cast.cast(itemPtr);
             }
+
+                /* End of tes3mp addition */
         }
     }
 
@@ -3082,8 +3426,8 @@ namespace MWWorld
         }
         else
         {
-            const MWWorld::Cell& cellVariant = *cell->getCell();
-            uint32_t ambient = cellVariant.getMood().mAmbiantColor;
+            const ESM::Cell cellVariant = cell->getCell()->getEsm3();
+            uint32_t ambient = cellVariant.mAmbi.mAmbient;
             int ambientTotal = (ambient & 0xff) + ((ambient >> 8) & 0xff) + ((ambient >> 16) & 0xff);
             return !cell->getCell()->noSleep() && ambientTotal <= 201;
         }
@@ -3291,6 +3635,12 @@ namespace MWWorld
         MWWorld::Ptr player = getPlayerPtr();
         player.getClass().getInventoryStore(player).rechargeItems(duration);
 
+        /*
+            Start of tes3mp change (major)
+
+            Don't unilaterally recharge world items on clients
+        */
+        /*
         if (activeOnly)
         {
             for (auto& cell : mWorldScene->getActiveCells())
@@ -3300,6 +3650,8 @@ namespace MWWorld
         }
         else
             mWorldModel.forEachLoadedCellStore([duration](CellStore& store) { store.recharge(duration); });
+        */
+        /* End of tes3mp change (major) */
     }
 
     void World::teleportToClosestMarker(const MWWorld::Ptr& ptr, const ESM::RefId& id)
@@ -3614,7 +3966,22 @@ namespace MWWorld
 
             MWWorld::ManualRef ref(mStore, selectedCreature, 1);
 
-            safePlaceObject(ref.getPtr(), getPlayerPtr(), getPlayerPtr().getCell(), 0, 220.f);
+            /*
+                Start of tes3mp change (major)
+
+                Send an ID_OBJECT_SPAWN packet every time a random creature is spawned, then delete
+                the creature and wait for the server to send it back with a unique mpNum of its own
+            */
+            MWWorld::Ptr ptr = safePlaceObject(ref.getPtr(), getPlayerPtr(), getPlayerPtr().getCell(), 0, 220.f);
+
+            mwmp::ObjectList *objectList = mwmp::Main::get().getNetworking()->getObjectList();
+            objectList->reset();
+            objectList->packetOrigin = mwmp::CLIENT_GAMEPLAY;
+            objectList->addObjectSpawn(ptr);
+            objectList->sendObjectSpawn();
+
+            deleteObject(ptr);
+            /* End of tes3mp change (major)*/
         }
     }
 

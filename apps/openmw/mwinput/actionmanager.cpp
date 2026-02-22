@@ -6,6 +6,16 @@
 
 #include <components/settings/values.hpp>
 
+
+    /*
+    Start of tes3mp addition
+
+    Include additional headers for multiplayer purposes
+*/
+#include "../mwmp/Main.hpp"
+#include "../mwmp/LocalPlayer.hpp"
+#include "../mwmp/GUIController.hpp"
+/* End of tes3mp addition */
 #include "../mwbase/environment.hpp"
 #include "../mwbase/inputmanager.hpp"
 #include "../mwbase/luamanager.hpp"
@@ -174,6 +184,17 @@ namespace MWInput
 
     void ActionManager::toggleMainMenu()
     {
+        /*
+            Start  of tes3mp addition
+
+            Don't allow the main menu to be toggled while TES3MP listboxes are open
+        */
+        if (MWBase::Environment::get().getWindowManager()->getMode() == mwmp::GUIController::GM_TES3MP_ListBox)
+        {
+            return;
+        }
+        /* End of tes3mp addition */
+
         if (MyGUI::InputManager::getInstance().isModalAny())
         {
             MWBase::Environment::get().getWindowManager()->exitCurrentModal();
@@ -224,12 +245,43 @@ namespace MWInput
             return;
 
         MWBase::Environment::get().getWindowManager()->pushGuiMode(MWGui::GM_Rest); // Open rest GUI
+
+            /*
+            Start of tes3mp addition
+
+            Ignore attempts to rest if the player has not logged in on the server yet
+
+            Set LocalPlayer's isUsingBed to be able to distinguish bed use from regular rest
+            menu use
+        */
+        if (!mwmp::Main::get().getLocalPlayer()->isLoggedIn())
+            return;
+
+        mwmp::Main::get().getLocalPlayer()->isUsingBed = false;
+        /* End of tes3mp addition */
+            /*
+            Start of tes3mp addition
+
+            Ignore attempts to open inventory if the player has not logged in on the server yet
+        */
+        if (!mwmp::Main::get().getLocalPlayer()->isLoggedIn())
+            return;
+        /* End of tes3mp addition */
     }
 
     void ActionManager::toggleConsole()
     {
         if (MyGUI::InputManager::getInstance().isModalAny())
             return;
+
+        /*
+            Start of tes3mp addition
+
+            If a player's console is disabled by the server, go no further
+        */
+        if (!mwmp::Main::get().getLocalPlayer()->consoleAllowed)
+            return;
+        /* End of tes3mp addition */
 
         MWBase::Environment::get().getWindowManager()->toggleConsole();
     }

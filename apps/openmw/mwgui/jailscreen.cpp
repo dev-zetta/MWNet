@@ -1,5 +1,14 @@
 #include <MyGUI_ScrollBar.h>
 
+/*
+    Start of tes3mp addition
+
+    Include additional headers for multiplayer purposes
+*/
+#include "../mwmp/Main.hpp"
+#include "../mwmp/LocalPlayer.hpp"
+/* End of tes3mp addition */
+
 #include <components/misc/rng.hpp>
 #include <components/misc/strings/format.hpp>
 
@@ -44,6 +53,15 @@ namespace MWGui
         mProgressBar->setScrollRange(100 + 1);
         mProgressBar->setScrollPosition(0);
         mProgressBar->setTrackSize(0);
+
+        /*
+            Start of tes3mp addition
+
+            If we've received a packet overriding the default jail progress text, use the new text
+        */
+        if (!mwmp::Main::get().getLocalPlayer()->jailProgressText.empty())
+            setText("LoadingText", mwmp::Main::get().getLocalPlayer()->jailProgressText);
+        /* End of tes3mp addition */
     }
 
     void JailScreen::onFrame(float dt)
@@ -82,11 +100,45 @@ namespace MWGui
 
         MWWorld::Ptr player = MWMechanics::getPlayer();
 
+        /*
+            Start of tes3mp addition
+
+            Declare pointer to LocalPlayer for use in other additions
+        */
+        mwmp::LocalPlayer* localPlayer = mwmp::Main::get().getLocalPlayer();
+        /* End of tes3mp addition */
+
         MWBase::Environment::get().getMechanicsManager()->rest(mDays * 24, true);
-        MWBase::Environment::get().getWorld()->advanceTime(mDays * 24);
+
+        /*
+            Start of tes3mp change (major)
+
+            Multiplayer requires that time not get advanced here
+        */
+        //MWBase::Environment::get().getWorld()->advanceTime(mDays * 24);
+        /* End of tes3mp change (major)*/
 
         // We should not worsen corprus when in prison
         player.getClass().getCreatureStats(player).getActiveSpells().skipWorsenings(mDays * 24);
         MWBase::Environment::get().getLuaManager()->jailTimeServed(player, mDays);
+
+            /*
+            Start of tes3mp addition
+
+            If we've received a packet overriding the default jail end text, use the new text
+        */
+        if (!localPlayer->jailEndText.empty())
+            MWBase::Environment::get().getWindowManager()->messageBox(localPlayer->jailEndText);
+        /* End of tes3mp addition */
+            /*
+            Start of tes3mp addition
+
+            Reset all PlayerJail-related overrides
+        */
+        localPlayer->ignoreJailTeleportation = false;
+        localPlayer->ignoreJailSkillIncreases = false;
+        localPlayer->jailProgressText = "";
+        localPlayer->jailEndText = "";
+        /* End of tes3mp addition */
     }
 }

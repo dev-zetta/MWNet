@@ -13,6 +13,16 @@
 #include <components/resource/resourcesystem.hpp>
 #include <components/settings/values.hpp>
 
+
+    /*
+    Start of tes3mp addition
+
+    Include additional headers for multiplayer purposes
+*/
+#include <components/openmw-mp/TimedLog.hpp>
+#include "../mwmp/Main.hpp"
+#include "../mwmp/LocalPlayer.hpp"
+/* End of tes3mp addition */
 #include "../mwworld/class.hpp"
 #include "../mwworld/esmstore.hpp"
 #include "../mwworld/inventorystore.hpp"
@@ -168,7 +178,31 @@ namespace MWGui
             textBox->setCaption(MyGUI::utility::toString(key->index));
             textBox->setNeedMouseFocus(false);
         }
+
+        /*
+            Start of tes3mp addition
+
+            Send a PLAYER_QUICKKEYS packet whenever a key is unassigned, but only if the player
+            is logged in on the server, so as to avoid doing anything doing at startup when all
+            quick keys get unassigned by default
+        */
+        if (mwmp::Main::get().getLocalPlayer()->isLoggedIn() && !mwmp::Main::get().getLocalPlayer()->isReceivingQuickKeys)
+        {
+            mwmp::Main::get().getLocalPlayer()->sendQuickKey(key->index, static_cast<int>(ESM::QuickKeys::Type::Unassigned));
+        }
+        /* End of tes3mp addition */
     }
+
+    /*
+        Start of tes3mp addition
+
+        Allow unassigning an index directly from elsewhere in the code
+    */
+    void QuickKeysMenu::unassignIndex(int index)
+    {
+        unassign(&mKey[index]);
+    }
+    /* End of tes3mp addition */
 
     void QuickKeysMenu::onQuickKeyButtonClicked(MyGUI::Widget* sender)
     {
@@ -261,6 +295,16 @@ namespace MWGui
 
         if (mItemSelectionDialog)
             mItemSelectionDialog->setVisible(false);
+
+        /*
+            Start of tes3mp addition
+
+            Send a PlayerQuickKeys packet whenever a key is assigned to an item
+            by a player, not by a packet received from the server
+        */
+        if (!mwmp::Main::get().getLocalPlayer()->isReceivingQuickKeys)
+            mwmp::Main::get().getLocalPlayer()->sendQuickKey(mSelected->index, static_cast<int>(ESM::QuickKeys::Type::Item), item.getCellRef().getRefId().getRefIdString());
+        /* End of tes3mp addition */
     }
 
     void QuickKeysMenu::onAssignItem(MWWorld::Ptr item)
@@ -300,6 +344,15 @@ namespace MWGui
 
         if (mMagicSelectionDialog)
             mMagicSelectionDialog->setVisible(false);
+
+        /*
+            Start of tes3mp addition
+
+            Send a PLAYER_QUICKKEYS packet whenever a key is assigned to an item's magic
+        */
+        if (!mwmp::Main::get().getLocalPlayer()->isReceivingQuickKeys)
+            mwmp::Main::get().getLocalPlayer()->sendQuickKey(mSelected->index, static_cast<int>(ESM::QuickKeys::Type::MagicItem), item.getCellRef().getRefId().getRefIdString());
+        /* End of tes3mp addition */
     }
 
     void QuickKeysMenu::onAssignMagic(const ESM::RefId& spellId)
@@ -338,6 +391,15 @@ namespace MWGui
 
         if (mMagicSelectionDialog)
             mMagicSelectionDialog->setVisible(false);
+
+        /*
+            Start of tes3mp addition
+
+            Send a PLAYER_QUICKKEYS packet whenever a key is assigned to a spell
+        */
+        if (!mwmp::Main::get().getLocalPlayer()->isReceivingQuickKeys)
+            mwmp::Main::get().getLocalPlayer()->sendQuickKey(mSelected->index, static_cast<int>(ESM::QuickKeys::Type::Magic), spellId.getRefIdString());
+        /* End of tes3mp addition */
     }
 
     void QuickKeysMenu::onAssignMagicCancel()
@@ -407,6 +469,12 @@ namespace MWGui
 
             if (key->type == ESM::QuickKeys::Type::Item)
             {
+                /*
+                    Start of tes3mp change (major)
+
+                    Instead of unilaterally using an item, send an ID_PLAYER_ITEM_USE packet
+                */
+                /*
                 if (!store.isEquipped(item.getCellRef().getRefId()))
                     MWBase::Environment::get().getWindowManager()->useItem(item);
                 MWWorld::ConstContainerStoreIterator rightHand
@@ -416,10 +484,22 @@ namespace MWGui
                 {
                     MWBase::Environment::get().getWorld()->getPlayer().setDrawState(MWMechanics::DrawState::Weapon);
                 }
+                */
+
+                mwmp::Main::get().getLocalPlayer()->sendItemUse(item, false, static_cast<char>(MWMechanics::DrawState::Weapon));
+                /* End of tes3mp change (major)*/
             }
             else if (key->type == ESM::QuickKeys::Type::MagicItem)
             {
                 // equip, if it can be equipped and isn't yet equipped
+
+                /*
+                    Start of tes3mp change (major)
+
+                    Instead of unilaterally using an item, send an ID_PLAYER_ITEM_USE packet and let the server
+                    decide if the item actually gets used
+                */
+                /*
                 if (!item.getClass().getEquipmentSlots(item).first.empty() && !store.isEquipped(item))
                 {
                     MWBase::Environment::get().getWindowManager()->useItem(item);
@@ -428,12 +508,16 @@ namespace MWGui
                     if (!store.isEquipped(item))
                         return;
                 }
-
+                
                 store.setSelectedEnchantItem(it);
                 // to reset WindowManager::mSelectedSpell immediately
                 MWBase::Environment::get().getWindowManager()->setSelectedEnchantItem(*it);
 
                 MWBase::Environment::get().getWorld()->getPlayer().setDrawState(MWMechanics::DrawState::Spell);
+                */
+
+                mwmp::Main::get().getLocalPlayer()->sendItemUse(item, false, static_cast<char>(MWMechanics::DrawState::Spell));
+                /* End of tes3mp change (major)*/
             }
         }
         else if (key->type == ESM::QuickKeys::Type::Magic)
@@ -454,6 +538,14 @@ namespace MWGui
             MWBase::Environment::get().getWindowManager()->setSelectedSpell(
                 spellId, int(MWMechanics::getSpellSuccessChance(spellId, player)));
             MWBase::Environment::get().getWorld()->getPlayer().setDrawState(MWMechanics::DrawState::Spell);
+
+                /*
+                Start of tes3mp addition
+
+                Send a PlayerMiscellaneous packet with the player's new selected spell
+            */
+            mwmp::Main::get().getLocalPlayer()->sendSelectedSpell(spellId.getRefIdString());
+            /* End of tes3mp addition */
         }
         else if (key->type == ESM::QuickKeys::Type::HandToHand)
         {
@@ -497,6 +589,17 @@ namespace MWGui
 
         return true;
     }
+
+    /*
+        Start of tes3mp addition
+
+        Make it possible to add quickKeys from elsewhere in the code
+    */
+    void QuickKeysMenu::setSelectedIndex(int index)
+    {
+        mSelected = &mKey[index];
+    }
+    /* End of tes3mp addition */
 
     // ---------------------------------------------------------------------------------------------------------
 

@@ -4,6 +4,16 @@
 
 #include <components/debug/debuglog.hpp>
 
+
+    /*
+    Start of tes3mp addition
+
+    Include additional headers for multiplayer purposes
+*/
+#include "../mwmp/Main.hpp"
+#include "../mwmp/Networking.hpp"
+#include "../mwmp/ObjectList.hpp"
+/* End of tes3mp addition */
 #include <components/esm/defs.hpp>
 #include <components/esm3/actoridconverter.hpp>
 #include <components/esm3/esmreader.hpp>
@@ -204,6 +214,18 @@ namespace MWWorld
             return;
 
         MWBase::Environment::get().getLuaManager()->objectActivated(toActivate, player);
+
+            /*
+            Start of tes3mp addition
+
+            Send an ID_OBJECT_ACTIVATE packet every time an object is activated here
+        */
+        mwmp::ObjectList *objectList = mwmp::Main::get().getNetworking()->getObjectList();
+        objectList->reset();
+        objectList->packetOrigin = mwmp::CLIENT_GAMEPLAY;
+        objectList->addObjectActivate(toActivate, player);
+        objectList->sendObjectActivate();
+        /* End of tes3mp addition */
     }
 
     bool Player::wasTeleported() const

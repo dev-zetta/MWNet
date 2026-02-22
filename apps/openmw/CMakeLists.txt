@@ -4,8 +4,8 @@ set(OPENMW_SOURCES
 )
 
 set(OPENMW_RESOURCES
-    ${CMAKE_SOURCE_DIR}/files/windows/openmw.rc
-    ${CMAKE_SOURCE_DIR}/files/windows/openmw.exe.manifest
+    ${CMAKE_SOURCE_DIR}/files/tes3mp/tes3mp.rc
+    ${CMAKE_SOURCE_DIR}/files/tes3mp/tes3mp.exe.manifest
 )
 
 set(OPENMW_HEADERS
@@ -116,6 +116,55 @@ add_openmw_dir (mwbase
     inputmanager windowmanager statemanager luamanager
     )
 
+add_openmw_dir (mwmp Main Networking LocalSystem LocalPlayer DedicatedPlayer PlayerList LocalActor DedicatedActor ActorList
+    ObjectList Worldstate Cell CellController GUIController MechanicsHelper RecordHelper ScriptController
+    )
+
+add_openmw_dir (mwmp/GUI GUIChat GUILogin PlayerMarkerCollection GUIDialogList TextInputDialog
+    )
+
+add_openmw_dir(mwmp/processors BaseClientPacketProcessor SystemProcessor PlayerProcessor ObjectProcessor ActorProcessor
+    WorldstateProcessor ProcessorInitializer
+    )
+
+add_openmw_dir (mwmp/processors/system ProcessorSystemHandshake
+    )
+
+add_openmw_dir (mwmp/processors/actor ProcessorActorAI ProcessorActorAnimFlags ProcessorActorAnimPlay ProcessorActorAttack
+    ProcessorActorAuthority ProcessorActorCast ProcessorActorCellChange ProcessorActorDeath ProcessorActorEquipment
+    ProcessorActorList ProcessorActorPosition ProcessorActorSpeech ProcessorActorSpellsActive ProcessorActorStatsDynamic
+    ProcessorActorTest
+    )
+
+add_openmw_dir (mwmp/processors/player ProcessorChatMessage ProcessorGUIMessageBox ProcessorUserDisconnected
+    ProcessorUserMyID ProcessorGameSettings ProcessorPlayerAlly ProcessorPlayerAnimFlags ProcessorPlayerAnimPlay
+    ProcessorPlayerAttack ProcessorPlayerAttribute ProcessorPlayerBaseInfo ProcessorPlayerBehavior ProcessorPlayerBook
+    ProcessorPlayerBounty ProcessorPlayerCast ProcessorPlayerCellChange ProcessorPlayerCellState ProcessorPlayerCharClass
+    ProcessorPlayerCharGen ProcessorPlayerCooldowns ProcessorPlayerDeath ProcessorPlayerDisposition ProcessorPlayerEquipment
+    ProcessorPlayerFaction ProcessorPlayerInput ProcessorPlayerInventory ProcessorPlayerItemUse ProcessorPlayerJail
+    ProcessorPlayerJournal ProcessorPlayerLevel ProcessorPlayerMiscellaneous ProcessorPlayerMomentum ProcessorPlayerPosition 
+    ProcessorPlayerQuickKeys ProcessorPlayerReputation ProcessorPlayerResurrect ProcessorPlayerShapeshift
+    ProcessorPlayerSkill ProcessorPlayerSpeech ProcessorPlayerSpellbook ProcessorPlayerSpellsActive
+    ProcessorPlayerStatsDynamic ProcessorPlayerTopic
+    )
+
+add_openmw_dir (mwmp/processors/object BaseObjectProcessor
+
+    ProcessorConsoleCommand ProcessorContainer ProcessorDoorDestination ProcessorDoorState ProcessorMusicPlay
+    ProcessorVideoPlay
+
+    ProcessorObjectActivate ProcessorObjectAnimPlay ProcessorObjectAttach ProcessorObjectDelete
+    ProcessorObjectDialogueChoice ProcessorObjectHit ProcessorObjectLock ProcessorObjectMove ProcessorObjectPlace
+    ProcessorObjectRestock ProcessorObjectRotate ProcessorObjectScale ProcessorObjectSound ProcessorObjectSpawn
+    ProcessorObjectState ProcessorObjectTrap ProcessorClientScriptLocal ProcessorScriptMemberShort
+    ProcessorObjectMiscellaneous
+    )
+
+add_openmw_dir (mwmp/processors/worldstate ProcessorCellReset ProcessorClientScriptGlobal ProcessorClientScriptSettings
+    ProcessorRecordDynamic ProcessorWorldCollisionOverride ProcessorWorldDestinationOverride ProcessorWorldKillCount
+    ProcessorWorldMap ProcessorWorldRegionAuthority ProcessorWorldTime ProcessorWorldWeather
+    )
+
 # Main executable
 
 add_library(openmw-lib STATIC
@@ -124,10 +173,6 @@ add_library(openmw-lib STATIC
 )
 
 if (MSVC)
-    # these TUs take a lot of memory for codegen
-    # in CI, they often go over the 8GB memory limit if another cl.exe is running at the same time
-    # this option (make sure you're not looking at the docs for the identically-named linker option) stops four codegen threads being spun off
-    # it hurts build time ~33% to enable this unnecessarily, though, so target it to the hungriest boys
     set_source_files_properties(
         mwlua/dialoguebindings.cpp
         mwlua/magicbindings.cpp
@@ -139,27 +184,30 @@ if (MSVC)
     )
 endif()
 
-if(BUILD_OPENMW)
-    if (ANDROID)
-        add_library(openmw SHARED
-            main.cpp
-            androidmain.cpp
-        )
-    else()
-        openmw_add_executable(openmw
-            ${APPLE_BUNDLE_RESOURCES}
-            ${OPENMW_RESOURCES}
-            main.cpp
-        )
-    endif()
+if (NOT ANDROID)
+    openmw_add_executable(tes3mp
+        ${APPLE_BUNDLE_RESOURCES}
+        ${OPENMW_RESOURCES}
+        main.cpp
+    )
+else ()
+    add_library(tes3mp
+        SHARED
+        main.cpp
+        androidmain.cpp
+    )
+endif ()
 
-    target_link_libraries(openmw openmw-lib)
+target_link_libraries(tes3mp
+    -Wl,--start-group
+    openmw-lib
+    -Wl,--end-group
+)
 
-    # Workaround necessary to ensure osgAnimation::MatrixLinearSampler dynamic casts work under Clang
-    # NOTE: it's unclear whether the broken behavior is spec-compliant
-    if (CMAKE_CXX_COMPILER_ID STREQUAL Clang)
-        set_target_properties(openmw PROPERTIES ENABLE_EXPORTS ON)
-    endif()
+# Workaround necessary to ensure osgAnimation::MatrixLinearSampler dynamic casts work under Clang
+# NOTE: it's unclear whether the broken behavior is spec-compliant
+if (CMAKE_CXX_COMPILER_ID STREQUAL Clang)
+    set_target_properties(tes3mp PROPERTIES ENABLE_EXPORTS ON)
 endif()
 
 # Sound stuff - here so CMake doesn't stupidly recompile EVERYTHING
@@ -189,6 +237,10 @@ target_link_libraries(openmw-lib
     osg-ffmpeg-videoplayer
     oics
     components
+    ${RakNet_LIBRARY}
+    ICU::uc
+    ICU::i18n
+    ICU::data
 )
 
 if (MSVC AND PRECOMPILE_HEADERS_WITH_MSVC)
@@ -217,6 +269,31 @@ if (MSVC AND PRECOMPILE_HEADERS_WITH_MSVC)
     )
 endif()
 
+add_definitions(-DMYGUI_DONT_USE_OBSOLETE=ON)
+
+if(OSG_STATIC)
+    unset(_osg_plugins_static_files)
+    add_library(openmw_osg_plugins INTERFACE)
+    foreach(_plugin ${USED_OSG_PLUGINS})
+        string(TOUPPER ${_plugin} _plugin_uc)
+        if(OPENMW_USE_SYSTEM_OSG)
+            list(APPEND _osg_plugins_static_files ${${_plugin_uc}_LIBRARY})
+        else()
+            list(APPEND _osg_plugins_static_files $<TARGET_FILE:${${_plugin_uc}_LIBRARY}>)
+            target_link_libraries(openmw_osg_plugins INTERFACE $<TARGET_PROPERTY:${${_plugin_uc}_LIBRARY},LINK_LIBRARIES>)
+            add_dependencies(openmw_osg_plugins ${${_plugin_uc}_LIBRARY})
+        endif()
+    endforeach()
+    get_whole_archive_options(_opts ${_osg_plugins_static_files})
+    target_link_options(openmw_osg_plugins INTERFACE ${_opts})
+    target_link_libraries(openmw-lib openmw_osg_plugins)
+
+    if(OPENMW_USE_SYSTEM_OSG)
+        target_link_libraries(openmw-lib freetype jpeg png)
+    endif()
+endif(OSG_STATIC)
+
+
 if (ANDROID)
     target_link_libraries(openmw-lib EGL android log z)
 endif (ANDROID)
@@ -234,7 +311,7 @@ if (UNIX AND NOT APPLE)
     target_link_libraries(openmw-lib ${CMAKE_THREAD_LIBS_INIT})
 endif()
 
-if(APPLE AND BUILD_OPENMW)
+if(APPLE)
     set(BUNDLE_RESOURCES_DIR "${APP_BUNDLE_DIR}/Contents/Resources")
 
     set(OPENMW_RESOURCES_ROOT ${BUNDLE_RESOURCES_DIR})
@@ -245,32 +322,32 @@ if(APPLE AND BUILD_OPENMW)
     configure_file("${OpenMW_BINARY_DIR}/openmw.cfg" ${BUNDLE_RESOURCES_DIR} COPYONLY)
     configure_file("${OpenMW_BINARY_DIR}/gamecontrollerdb.txt" ${BUNDLE_RESOURCES_DIR} COPYONLY)
 
-    add_custom_command(TARGET openmw
+    add_custom_command(TARGET tes3mp
         POST_BUILD
         COMMAND cp "${OpenMW_BINARY_DIR}/resources/version" "${BUNDLE_RESOURCES_DIR}/resources")
 
     find_library(COCOA_FRAMEWORK Cocoa)
     find_library(IOKIT_FRAMEWORK IOKit)
-    target_link_libraries(openmw ${COCOA_FRAMEWORK} ${IOKIT_FRAMEWORK})
+    target_link_libraries(tes3mp ${COCOA_FRAMEWORK} ${IOKIT_FRAMEWORK})
 
     if (FFmpeg_FOUND)
-        target_link_options(openmw PRIVATE "LINKER:SHELL:-framework CoreVideo"
+        target_link_options(tes3mp PRIVATE "LINKER:SHELL:-framework CoreVideo"
                                            "LINKER:SHELL:-framework CoreMedia"
                                            "LINKER:SHELL:-framework VideoToolbox"
                                            "LINKER:SHELL:-framework AudioToolbox"
                                            "LINKER:SHELL:-framework VideoDecodeAcceleration")
     endif()
-endif()
+endif(APPLE)
 
 if (BUILD_WITH_CODE_COVERAGE)
     target_compile_options(openmw-lib PRIVATE --coverage)
     target_link_libraries(openmw-lib gcov)
-    if (NOT ANDROID AND BUILD_OPENMW)
-        target_compile_options(openmw PRIVATE --coverage)
-        target_link_libraries(openmw gcov)
+    if (NOT ANDROID)
+        target_compile_options(tes3mp PRIVATE --coverage)
+        target_link_libraries(tes3mp gcov)
     endif()
 endif()
 
-if (WIN32 AND BUILD_OPENMW)
-    INSTALL(TARGETS openmw RUNTIME DESTINATION ".")
+if (WIN32)
+    INSTALL(TARGETS tes3mp RUNTIME DESTINATION ".")
 endif()

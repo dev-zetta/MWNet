@@ -151,8 +151,17 @@ namespace MWGui
             finish();
     }
 
-    void DragAndDrop::finish()
+    void DragAndDrop::finish(bool deleteDragItems)
     {
+        /*
+            Start of tes3mp addition
+
+            Make it possible to entirely delete the items in the drag
+        */
+        if (deleteDragItems)
+            mSourceModel->removeItem(mItem, mDraggedCount);
+        /* End of tes3mp addition */
+
         mIsOnDragAndDrop = false;
         mSourceSortModel->clearDragItems();
         // since mSourceView doesn't get updated in drag()

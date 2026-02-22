@@ -150,7 +150,18 @@ else(WIN32)
     set(OPENCS_RC_FILE "")
 endif(WIN32)
 
-qt_add_resources(OPENCS_RES_SRC ${OPENCS_RES})
+# Manually compile Qt resources using rcc
+foreach(res_file ${OPENCS_RES})
+    get_filename_component(res_name ${res_file} NAME_WE)
+    set(res_output ${CMAKE_CURRENT_BINARY_DIR}/qrc_${res_name}.cpp)
+    add_custom_command(
+        OUTPUT ${res_output}
+        COMMAND Qt5::rcc ${res_file} -o ${res_output}
+        DEPENDS ${res_file}
+        COMMENT "Compiling Qt resource ${res_file}"
+    )
+    list(APPEND OPENCS_RES_SRC ${res_output})
+endforeach()
 
 if(APPLE)
     set (OPENCS_MAC_ICON "${CMAKE_SOURCE_DIR}/files/mac/openmw-cs.icns")

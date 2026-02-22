@@ -15,6 +15,18 @@
 #include <components/esm3/loadmgef.hpp>
 #include <components/esm3/loadskil.hpp>
 
+/*
+    Start of tes3mp addition
+
+    Include additional headers for multiplayer purposes
+*/
+#include <components/openmw-mp/TimedLog.hpp>
+#include "../mwmp/Main.hpp"
+#include "../mwmp/Networking.hpp"
+#include "../mwmp/LocalPlayer.hpp"
+#include "../mwmp/Worldstate.hpp"
+/* End of tes3mp addition */
+
 #include "../mwbase/environment.hpp"
 #include "../mwbase/world.hpp"
 
@@ -288,6 +300,14 @@ void MWMechanics::Alchemy::removeIngredients()
             iter->getContainerStore()->remove(*iter, 1);
 
             if (iter->getCellRef().getCount() < 1)
+
+                /*
+                Start of tes3mp addition
+
+                Store this item removal for later sending to avoid packet spam
+            */
+            mwmp::Main::get().getLocalPlayer()->storeItemRemoval(iter->getCellRef().getRefId().getRefIdString(), 1);
+            /* End of tes3mp addition */
                 *iter = MWWorld::Ptr();
         }
 
@@ -326,11 +346,15 @@ void MWMechanics::Alchemy::addPotion(const std::string& name)
 
     newRecord.mEffects.populate(mEffects);
 
-    const ESM::Potion* record = getRecord(newRecord);
-    if (!record)
-        record = MWBase::Environment::get().getESMStore()->insert(newRecord);
+    /*
+        Start of tes3mp change (major)
 
-    mAlchemist.getClass().getContainerStore(mAlchemist).add(record->mId, 1);
+        Don't create a record and don't add the potion to the player's inventory;
+        instead just store its record in preparation for sending it to the server
+        and expect the server to add it to the player's inventory
+    */
+    mStoredPotion = newRecord;
+    /* End of tes3mp change (major) */
 }
 
 void MWMechanics::Alchemy::increaseSkill()
@@ -544,14 +568,35 @@ MWMechanics::Alchemy::Result MWMechanics::Alchemy::getReadyStatus() const
 
 MWMechanics::Alchemy::Result MWMechanics::Alchemy::create(const std::string& name, int& count)
 {
+    /*
+        Start of tes3mp addition
+
+        Instead of sending an ID_PLAYER_INVENTORY packet for every ingredient removal in
+        ContainerStore::remove(), as that would get very spammy when many potions are created
+        at the same time, just avoid sending packets here and store the item removals so they
+        can be sent in a single packet when all the potions have been created
+    */
+    mwmp::Main::get().getLocalPlayer()->avoidSendingInventoryPackets = true;
+    /* End of tes3mp addition */
+
     setPotionName(name);
     Result readyStatus = getReadyStatus();
 
     if (readyStatus == Result_NoEffects)
         removeIngredients();
 
+    /*
+        Start of tes3mp change (minor)
+
+        Set avoidSendingInventoryPackets to false again if this has not been a successful
+        potion creation
+    */
     if (readyStatus != Result_Success)
+    {
+        mwmp::Main::get().getLocalPlayer()->avoidSendingInventoryPackets = false;
         return readyStatus;
+    }
+    /* End of tes3mp change (major)*/
 
     MWBase::Environment::get().getWorld()->breakInvisibility(mAlchemist);
 
@@ -567,6 +612,15 @@ MWMechanics::Alchemy::Result MWMechanics::Alchemy::create(const std::string& nam
     }
 
     count = brewedCount;
+
+    /*
+        Start of tes3mp addition
+    */
+    mwmp::Main::get().getNetworking()->getWorldstate()->sendPotionRecord(&mStoredPotion, brewedCount);
+    mwmp::Main::get().getLocalPlayer()->avoidSendingInventoryPackets = false;
+    mwmp::Main::get().getLocalPlayer()->sendStoredItemRemovals();
+    /* End of tes3mp addition */
+
     return result;
 }
 

@@ -178,6 +178,19 @@ namespace MWScript
             if (script.second->mRunning)
             {
                 MWScript::InterpreterContext context(script.second);
+
+                /*
+                    Start of tes3mp addition
+
+                    Mark this InterpreterContext as having a SCRIPT_GLOBAL context
+                    and as currently running the script with this name, so that
+                    packets sent by the Interpreter can have their
+                    origin determined by serverside scripts
+                */
+                context.trackContextType(Interpreter::Context::SCRIPT_GLOBAL);
+                context.trackCurrentScriptName(script.first.getRefIdString());
+                /* End of tes3mp addition */
+
                 if (!MWBase::Environment::get().getScriptManager()->run(script.first, context))
                     script.second->mRunning = false;
             }

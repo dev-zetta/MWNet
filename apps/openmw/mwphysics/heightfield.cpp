@@ -109,4 +109,15 @@ namespace MWPhysics
     {
         return mShape.get();
     }
+
+    HeightField::HeightField()
+        : mTaskScheduler(nullptr)
+    {
+    }
+
+    HeightField::HeightField(const HeightField& other, const osg::CopyOp&)
+        : osg::Object(other)
+        , mTaskScheduler(other.mTaskScheduler)
+    {
+    }
 }

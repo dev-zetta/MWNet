@@ -152,6 +152,32 @@ namespace MWWorld
 
         const ESM::AnimationState& getAnimationState() const;
         ESM::AnimationState& getAnimationState();
+
+            /*
+                Start of tes3mp addition
+
+                Track the last state communicated to the server for this reference,
+                to avoid packet spam when the server denies our state change request or
+                is slow to reply
+            */
+            enum StateCommunication
+            {
+                None = 0,
+                Enabled = 1,
+                Disabled = 2,
+                Deleted = 3
+            };
+
+        private:
+
+            short mLastCommunicatedState = StateCommunication::None;
+
+        public:
+
+            short getLastCommunicatedState() { return mLastCommunicatedState; };
+
+            void setLastCommunicatedState(short communicationState) { mLastCommunicatedState = communicationState; };
+            /* End of tes3mp addition */
     };
 }
 

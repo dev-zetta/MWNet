@@ -38,6 +38,32 @@ namespace MWWorld
         // Set RefNum to its default state.
         void unsetRefNum() { setRefNum({}); }
 
+        /*
+            Start of tes3mp addition
+
+            Set the unique reference number index of a CellRef, needed to
+            make objects retain their uniqueIndex when they are updated
+            after their records are modified on the fly by the server
+        */
+        void setRefNum(unsigned int index);
+        /* End of tes3mp addition */
+
+        /*
+            Start of tes3mp addition
+
+            Get the mMpNum (unique multiplayer reference number) of a CellRef
+        */
+        unsigned int getMpNum() const;
+        /* End of tes3mp addition */
+
+        /*
+            Start of tes3mp addition
+
+            Set the mMpNum (unique multiplayer reference number) of a CellRef
+        */
+        void setMpNum(unsigned int index);
+        /* End of tes3mp addition */
+
         /// Does the RefNum have a content file?
         bool hasContentFile() const { return getRefNum().hasContentFile(); }
 
@@ -66,11 +92,35 @@ namespace MWWorld
             return std::visit(Visitor(), mCellRef.mVariant);
         }
 
+        /*
+            Start of tes3mp addition
+
+            Make it possible to change the teleport state from elsewhere
+        */
+        void setTeleport(bool teleportState);
+        /* End of tes3mp addition */
+
         // Teleport location for the door, if this is a teleporting door.
         ESM::Position getDoorDest() const;
 
+        /*
+            Start of tes3mp addition
+
+            Make it possible to change the destination position from elsewhere
+        */
+        void setDoorDest(const ESM::Position& position);
+        /* End of tes3mp addition */
+
         // Destination cell for doors (optional)
         ESM::RefId getDestCell() const;
+
+        /*
+            Start of tes3mp addition
+
+            Make it possible to change the destination cell from elsewhere
+        */
+        void setDestCell(const std::string& cellDescription);
+        /* End of tes3mp addition */
 
         // Scale applied to mesh
         float getScale() const

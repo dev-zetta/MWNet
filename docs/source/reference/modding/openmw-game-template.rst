@@ -36,8 +36,7 @@ and ``data=`` tells OpenMW what folders to look for meshes, textures, audio,
 and other assets. The required lines would look like this, but with the paths
 of course different on your system.
 
-.. code-block:: openmwcfg
-    :caption: openmw.cfg
+.. code::
 
     content=template.omwgame
     data="/home/someuser/example-suite/data"
@@ -52,8 +51,7 @@ you need to remove or comment out the following lines from ``openmw.cfg``.
 Not doing so will either produce errors or load Morrowind content, which you
 probably do not want when you are making your own game.
 
-.. code-block:: openmwcfg
-    :caption: openmw.cfg
+.. code::
 
     fallback-archive=Morrowind.bsa
     fallback-archive=Tribunal.bsa
@@ -72,10 +70,8 @@ are instead assigned through ``settings.cfg``. These models are player and NPC
 animations, and meshes for the sky. In ``settings.cfg`` used by your OpenMW
 install, add the following lines under the ``[Models]`` section.
 
-.. code-block:: ini
-    :caption: settings.cfg
+.. code::
 
-    [Models]
     xbaseanim = meshes/BasicPlayer.dae
     baseanim = meshes/BasicPlayer.dae
     xbaseanim1st = meshes/BasicPlayer.dae
@@ -107,7 +103,7 @@ need to be copied to ``resources/mygui`` folder found in your OpenMW installatio
 folder. Overwrite any files aready in this folder. These files provide the
 UI font, its definition, and some minor UI tweaks.
 
-.. code-block:: none
+.. code::
 
     openmw_box.skin.xml
     openmw_button.skin.xml

@@ -189,6 +189,17 @@ namespace MWGui
         MWGui::PostProcessorHud* getPostProcessorHud() override;
         std::vector<MWGui::WindowBase*> getGuiModeWindows(GuiMode mode) override;
 
+        /* Start of tes3mp addition */
+        virtual MWGui::ContainerWindow* getContainerWindow();
+        virtual MWGui::DialogueWindow* getDialogueWindow();
+        virtual void setConsolePtr(const MWWorld::Ptr& object);
+        virtual void clearConsolePtr();
+        virtual void setGlobalMapImage(int cellX, int cellY, const std::vector<char>& imageData);
+        virtual void finishDragDrop();
+        virtual void setQuickKey(int slot, int quickKeyType, MWWorld::Ptr item, const ESM::RefId& spellId = ESM::RefId{});
+        virtual void executeCommandInConsole(const ESM::RefId& command);
+        /* End of tes3mp addition */
+
         /// Make the player use an item, while updating GUI state accordingly
         void useItem(const MWWorld::Ptr& item, bool bypassBeastRestrictions = false) override;
 
@@ -274,6 +285,8 @@ namespace MWGui
         void removeStaticMessageBox() override;
         void interactiveMessageBox(std::string_view message, const std::vector<std::string>& buttons = {},
             bool block = false, int defaultFocus = -1) override;
+        void interactiveMessageBox(const ESM::RefId& message, const std::vector<ESM::RefId>& buttons = {},
+            bool block = false, bool hasServerOrigin = false) override;
 
         int readPressedButton() override; ///< returns the index of the pressed button or -1 if no button was pressed
                                           ///< (->MessageBoxmanager->InteractiveMessageBox)

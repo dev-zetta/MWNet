@@ -7,6 +7,15 @@
 #include <components/esm3/loadnpc.hpp>
 #include <components/esm3/loadrace.hpp>
 
+    /*
+    Start of tes3mp addition
+
+    Include additional headers for multiplayer purposes
+*/
+#include <components/openmw-mp/Utils.hpp>
+#include "../mwmp/Main.hpp"
+#include "../mwmp/Networking.hpp"
+/* End of tes3mp addition */
 #include "../mwbase/environment.hpp"
 #include "../mwbase/windowmanager.hpp"
 
@@ -193,6 +202,15 @@ namespace MWClass
         newItem.mData.mEnchant = static_cast<uint16_t>(enchCharge);
         newItem.mEnchant = enchId;
         const ESM::Clothing* record = MWBase::Environment::get().getESMStore()->insert(newItem);
+
+            /*
+            Start of tes3mp addition
+
+            Send the newly created record to the server and expect it to be
+            returned with a server-set id
+        */
+        mwmp::Main::get().getNetworking()->getWorldstate()->sendClothingRecord(&newItem, ref->mBase->mId.getRefIdString());
+        /* End of tes3mp addition */
         return record->mId;
     }
 

@@ -122,6 +122,9 @@ namespace MWMechanics
         std::vector<ActiveSpellParams> mQueue;
         std::queue<Predicate> mPurges;
         bool mIterating;
+        /* Start of tes3mp addition */
+        int mActorId = 0;
+        /* End of tes3mp addition */
 
         void addToSpells(const MWWorld::Ptr& ptr, const ActiveSpellParams& spell, UpdateContext& context);
 
@@ -173,6 +176,16 @@ namespace MWMechanics
         void skipWorsenings(double hours);
 
         void unloadActor(const MWWorld::Ptr& ptr);
+
+        /* Start of tes3mp addition */
+        void addSpell(const ESM::RefId& id, bool stack, std::vector<ActiveEffect> effects,
+                      const std::string& displayName, int casterActorId);
+        bool removeSpellByTimestamp(const ESM::RefId& id, MWWorld::TimeStamp timestamp);
+        void purgeEffectByArg(short effectId, int effectArg);
+        float getEffectDuration(short effectId, ESM::RefId sourceId);
+        int getActorId() const;
+        void setActorId(int actorId);
+        /* End of tes3mp addition */
     };
 }
 

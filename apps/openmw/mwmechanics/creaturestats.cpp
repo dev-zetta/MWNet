@@ -9,6 +9,14 @@
 #include <components/esm3/esmwriter.hpp>
 #include <components/esm3/loadmgef.hpp>
 
+    /*
+    Start of tes3mp addition
+
+    Include additional headers for multiplayer purposes
+*/
+#include <components/openmw-mp/TimedLog.hpp>
+#include "summoning.hpp"
+/* End of tes3mp addition */
 #include "../mwworld/class.hpp"
 #include "../mwworld/esmstore.hpp"
 #include "../mwworld/player.hpp"
@@ -113,6 +121,13 @@ namespace MWMechanics
 
     ActiveSpells& CreatureStats::getActiveSpells()
     {
+        /*
+            Start of tes3mp addition
+
+            Set the actorId associated with these ActiveSpells so it can be used inside them
+        */
+        mActiveSpells.setActorId(getActorId());
+        /* End of tes3mp addition */
         return mActiveSpells;
     }
 
@@ -283,6 +298,17 @@ namespace MWMechanics
     {
         return mFriendlyHits;
     }
+
+    /*
+        Start of tes3mp addition
+
+        Make it possible to set the number of friendly hits from elsewhere
+    */
+    void CreatureStats::setFriendlyHits(int hits)
+    {
+        mFriendlyHits = hits;
+    }
+    /* End of tes3mp addition */
 
     void CreatureStats::friendlyHit()
     {
@@ -657,12 +683,16 @@ namespace MWMechanics
     void CreatureStats::updateAwareness(float duration)
     {
         mAwarenessTimer += duration;
-        // Only reroll for awareness every 5 seconds
         if (mAwarenessTimer >= 5.f)
         {
             mAwarenessTimer = 0.f;
             mAwarenessRoll = -1;
         }
+    }
+
+    void CreatureStats::updateAwarenessTimer(float duration)
+    {
+        updateAwareness(duration);
     }
 
     int CreatureStats::getAwarenessRoll()

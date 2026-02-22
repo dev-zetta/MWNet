@@ -26,6 +26,16 @@ namespace Translation
 
         void setEncoder(ToUTF8::Utf8Encoder* encoder);
 
+        bool hasTranslation() const;
+
+        /*
+            Start of tes3mp addition
+
+            Get the localized version of an English topic ID
+        */
+        std::string getLocalizedTopicId(const std::string& englishTopicId) const;
+        /* End of tes3mp addition */
+
     private:
         typedef std::map<std::string, std::string, std::less<>> ContainerType;
 

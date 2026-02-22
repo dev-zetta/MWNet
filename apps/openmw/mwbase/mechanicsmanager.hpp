@@ -111,6 +111,14 @@ namespace MWBase
             const MWWorld::Ptr& ptr, const MWWorld::Ptr& target, const std::set<MWWorld::Ptr>* targetAllies)
             = 0;
 
+        /*
+            Start of tes3mp addition
+
+            Make it possible to set the number of deaths for an actor with the given refId
+        */
+        virtual void setDeaths(const ESM::RefId& refId, int number) = 0;
+        /* End of tes3mp addition */
+
         /// Removes an actor and its allies from combat with the actor's targets.
         virtual void stopCombat(const MWWorld::Ptr& ptr) = 0;
 
@@ -253,6 +261,16 @@ namespace MWBase
 
         virtual void clear() = 0;
 
+        virtual bool isAggressive(const MWWorld::Ptr& ptr, const MWWorld::Ptr& target) = 0;
+
+        /*
+            Start of tes3mp addition
+
+            Make it possible to set the attackingOrSpell state from elsewhere in the code
+        */
+        virtual void setAttackingOrSpell(const MWWorld::Ptr& ptr, bool state) const = 0;
+        /* End of tes3mp addition */
+
         /// Resurrects the player if necessary
         virtual void resurrect(const MWWorld::Ptr& ptr) = 0;
 
@@ -283,6 +301,15 @@ namespace MWBase
         virtual bool isItemStolenFrom(const ESM::RefId& itemid, const MWWorld::Ptr& ptr) = 0;
 
         virtual bool isBoundItem(const MWWorld::Ptr& item) = 0;
+
+        /*
+            Start of tes3mp addition
+
+            Make it possible to check if an itemId corresponds to a bound item
+        */
+        virtual bool isBoundItem(const ESM::RefId& itemId) = 0;
+        /* End of tes3mp addition */
+
         virtual bool isAllowedToUse(const MWWorld::Ptr& ptr, const MWWorld::Ptr& target, MWWorld::Ptr& victim) = 0;
 
         /// Turn actor into werewolf or normal form.

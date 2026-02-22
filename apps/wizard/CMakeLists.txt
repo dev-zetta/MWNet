@@ -57,7 +57,18 @@ if(WIN32)
     set(QT_USE_QTMAIN TRUE)
 endif(WIN32)
 
-QT_ADD_RESOURCES(RCC_SRCS ${WIZARD_RES})
+# Manually compile Qt resources using rcc
+foreach(res_file ${WIZARD_RES})
+    get_filename_component(res_name ${res_file} NAME_WE)
+    set(res_output ${CMAKE_CURRENT_BINARY_DIR}/qrc_${res_name}.cpp)
+    add_custom_command(
+        OUTPUT ${res_output}
+        COMMAND Qt5::rcc ${res_file} -o ${res_output}
+        DEPENDS ${res_file}
+        COMMENT "Compiling Qt resource ${res_file}"
+    )
+    list(APPEND RCC_SRCS ${res_output})
+endforeach()
 
 if (OPENMW_USE_UNSHIELD)
     include_directories(${LIBUNSHIELD_INCLUDE_DIRS})

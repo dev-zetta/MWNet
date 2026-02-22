@@ -4,6 +4,20 @@
 
 #include <MyGUI_LanguageManager.h>
 
+/*
+    Start of tes3mp addition
+
+    Include additional headers for multiplayer purposes
+*/
+#include "../mwmp/Main.hpp"
+#include "../mwmp/Networking.hpp"
+#include "../mwmp/LocalPlayer.hpp"
+#include "../mwmp/PlayerList.hpp"
+#include "../mwmp/ObjectList.hpp"
+#include "../mwmp/ScriptController.hpp"
+#include <components/interpreter/context.hpp>
+/* End of tes3mp addition */
+
 #include <components/debug/debuglog.hpp>
 
 #include <components/compiler/opcodes.hpp>
@@ -110,6 +124,30 @@ namespace MWScript
 
                 if (item == "gold_005" || item == "gold_010" || item == "gold_025" || item == "gold_100")
                     item = MWWorld::ContainerStore::sGoldId;
+
+                /*
+                    Start of tes3mp addition
+
+                    Send an ID_CONTAINER packet every time an item is added to a Ptr
+                    that doesn't belong to a DedicatedPlayer
+                */
+                if (mwmp::Main::get().getLocalPlayer()->isLoggedIn() && ptr.isInCell() &&
+                    (!ptr.getClass().isActor() || !mwmp::PlayerList::isDedicatedPlayer(ptr)))
+                {
+                    unsigned char packetOrigin = ScriptController::getPacketOriginFromContextType(static_cast<const MWScript::InterpreterContext&>(runtime.getContext()).getContextType());
+                    mwmp::ObjectList *objectList = mwmp::Main::get().getNetworking()->getObjectList();
+                    objectList->reset();
+                    objectList->packetOrigin = packetOrigin;
+                    objectList->originClientScript = static_cast<const MWScript::InterpreterContext&>(runtime.getContext()).getCurrentScriptName();
+                    objectList->cell = ptr.getCell()->getCell()->getEsm3();
+                    objectList->action = mwmp::BaseObjectList::ADD;
+                    objectList->containerSubAction = mwmp::BaseObjectList::NONE;
+                    mwmp::BaseObject baseObject = objectList->getBaseObjectFromPtr(ptr);
+                    objectList->addContainerItem(baseObject, item.getRefIdString(), count, 0);
+                    objectList->addBaseObject(baseObject);
+                    objectList->sendContainer();
+                }
+                /* End of tes3mp addition */
 
                 // Check if "item" can be placed in a container
                 MWWorld::ManualRef manualRef(*MWBase::Environment::get().getESMStore(), item, 1);
@@ -279,6 +317,31 @@ namespace MWScript
                         break;
                     }
                 }
+
+                /*
+                    Start of tes3mp addition
+
+                    Send an ID_CONTAINER packet every time an item is removed from a Ptr
+                    that doesn't belong to a DedicatedPlayer
+                */
+                if (mwmp::Main::get().getLocalPlayer()->isLoggedIn() && ptr.isInCell() &&
+                    (!ptr.getClass().isActor() || !mwmp::PlayerList::isDedicatedPlayer(ptr)))
+                {
+                    unsigned char packetOrigin = ScriptController::getPacketOriginFromContextType(static_cast<const MWScript::InterpreterContext&>(runtime.getContext()).getContextType());
+                    mwmp::ObjectList *objectList = mwmp::Main::get().getNetworking()->getObjectList();
+                    objectList->reset();
+                    objectList->packetOrigin = packetOrigin;
+                    objectList->originClientScript = static_cast<const MWScript::InterpreterContext&>(runtime.getContext()).getCurrentScriptName();
+                    objectList->cell = ptr.getCell()->getCell()->getEsm3();
+                    objectList->action = mwmp::BaseObjectList::REMOVE;
+                    objectList->containerSubAction = mwmp::BaseObjectList::NONE;
+
+                    mwmp::BaseObject baseObject = objectList->getBaseObjectFromPtr(ptr);
+                    objectList->addContainerItem(baseObject, item.getRefIdString(), 0, count);
+                    objectList->addBaseObject(baseObject);
+                    objectList->sendContainer();
+                }
+                /* End of tes3mp addition */
 
                 int numRemoved = store.remove(item, count);
 

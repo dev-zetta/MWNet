@@ -33,6 +33,21 @@
 
 #include <components/sceneutil/positionattitudetransform.hpp>
 
+/*
+    Start of tes3mp addition
+
+    Include additional headers for multiplayer purposes
+*/
+#include <components/openmw-mp/TimedLog.hpp>
+#include "../mwmp/Main.hpp"
+#include "../mwmp/LocalPlayer.hpp"
+#include "../mwmp/LocalActor.hpp"
+#include "../mwmp/PlayerList.hpp"
+#include "../mwmp/DedicatedPlayer.hpp"
+#include "../mwmp/CellController.hpp"
+#include "../mwmp/MechanicsHelper.hpp"
+/* End of tes3mp addition */
+
 #include "../mwrender/animation.hpp"
 
 #include "../mwbase/environment.hpp"
@@ -1660,6 +1675,17 @@ namespace MWMechanics
                                 startKey, stopKey, 0.0f, 0);
                             mUpperBodyState = UpperBodyState::Casting;
                         }
+
+                        /*
+                            Start of tes3mp addition
+
+                            Record the attack animation chosen so we can send it in the next PlayerAttack packet
+                        */
+                        mwmp::Attack *localAttack = MechanicsHelper::getLocalAttack(mPtr);
+
+                        if (localAttack)
+                            localAttack->attackAnimation = mAttackType;
+                        /* End of tes3mp addition */
                     }
                 }
                 else
@@ -1700,6 +1726,14 @@ namespace MWMechanics
                             if (mAttackType == "")
                                 mAttackType = getRandomAttackType();
                         }
+                        /* Start of tes3mp addition */
+                        else
+                        {
+                            mwmp::Attack *dedicatedAttack = MechanicsHelper::getDedicatedAttack(mPtr);
+                            if (dedicatedAttack)
+                                mAttackType = dedicatedAttack->attackAnimation;
+                        }
+                        /* End of tes3mp addition */
 
                         // else if (mPtr != getPlayer()) use mAttackType set by AiCombat
                         startKey = mAttackType + ' ' + startKey;
@@ -2686,7 +2720,23 @@ namespace MWMechanics
         if (playImmediately)
             playAnimQueue(mode == 2);
 
+        /* Start of tes3mp addition */
+        if (mwmp::Main::get().getCellController()->isLocalActor(mPtr))
+        {
+            mwmp::LocalActor *actor = mwmp::Main::get().getCellController()->getLocalActor(mPtr);
+            actor->animation.groupname = std::string(groupname);
+            actor->animation.mode = mode;
+            actor->animation.count = count;
+            actor->animation.persist = scripted;
+        }
+        /* End of tes3mp addition */
+
         return true;
+    }
+
+    std::string CharacterController::getAttackType() const
+    {
+        return mAttackType;
     }
 
     bool CharacterController::playGroupLua(std::string_view groupname, float speed, std::string_view startKey,
@@ -2834,6 +2884,13 @@ namespace MWMechanics
 
         resetCurrentDeathState();
         mWeaponType = ESM::Weapon::None;
+
+        /* Start of tes3mp addition */
+        if (mwmp::Main::get().getCellController()->isLocalActor(mPtr))
+        {
+            mwmp::Main::get().getCellController()->getLocalActor(mPtr)->creatureStats.mDeathAnimationFinished = true;
+        }
+        /* End of tes3mp addition */
     }
 
     void CharacterController::updateContinuousVfx() const

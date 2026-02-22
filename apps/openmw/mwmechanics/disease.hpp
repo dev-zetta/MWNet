@@ -5,6 +5,15 @@
 #include <components/misc/rng.hpp>
 #include <components/misc/strings/format.hpp>
 
+
+    /*
+    Start of tes3mp addition
+
+    Include additional headers for multiplayer purposes
+*/
+#include "../mwmp/Main.hpp"
+#include "../mwmp/LocalPlayer.hpp"
+/* End of tes3mp addition */
 #include "../mwbase/environment.hpp"
 #include "../mwbase/windowmanager.hpp"
 #include "../mwbase/world.hpp"
@@ -80,6 +89,14 @@ namespace MWMechanics
                                           ->mValue.getString();
                     msg = Misc::StringUtils::format(msg, spell->mName);
                     MWBase::Environment::get().getWindowManager()->messageBox(msg);
+
+                    /*
+                        Start of tes3mp addition
+
+                        Send an ID_PLAYER_SPELLBOOK packet every time a player gains a disease
+                    */
+                    mwmp::Main::get().getLocalPlayer()->sendSpellChange(spell->mId.getRefIdString(), mwmp::SpellbookChanges::ADD);
+                    /* End of tes3mp addition */
                 }
             }
         }

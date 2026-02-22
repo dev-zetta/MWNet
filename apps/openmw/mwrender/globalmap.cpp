@@ -5,6 +5,8 @@
 #include <osg/Image>
 #include <osg/Texture2D>
 
+#include <osgDB/ReadFile>
+#include <osgDB/Registry>
 #include <osgDB/WriteFile>
 
 #include <components/files/memorystream.hpp>
@@ -662,5 +664,43 @@ namespace MWRender
         // Use deep copy to avoid any sychronization
         mWritePng = new WritePng(new osg::Image(*mOverlayImage, osg::CopyOp::DEEP_COPY_ALL));
         mWorkQueue->addWorkItem(mWritePng, /*front=*/true);
+    }
+
+    void GlobalMap::setImage(int cellX, int cellY, const std::vector<char>& imageData)
+    {
+        Files::IMemStream istream(imageData.data(), imageData.size());
+
+        osgDB::ReaderWriter* reader = osgDB::Registry::instance()->getReaderWriterForExtension("png");
+        if (!reader)
+        {
+            Log(Debug::Error) << "Error: Failed to read map tile image data, no png readerwriter found";
+            return;
+        }
+        osgDB::ReaderWriter::ReadResult result = reader->readImage(istream);
+
+        if (!result.success())
+        {
+            Log(Debug::Error) << "Error: Can't read map tile image: " << result.message() << " code " << result.status();
+            return;
+        }
+
+        osg::ref_ptr<osg::Image> image = result.getImage();
+
+        const int cellSize = Settings::map().mGlobalMapCellSize;
+        int posX = (cellX - mMinX) * cellSize;
+        int posY = (cellY - mMinY + 1) * cellSize;
+
+        if (cellX > mMaxX || cellX < mMinX || cellY > mMaxY || cellY < mMinY)
+            return;
+
+        osg::ref_ptr<osg::Texture2D> texture(new osg::Texture2D);
+        texture->setImage(image);
+        texture->setWrap(osg::Texture::WRAP_S, osg::Texture::CLAMP_TO_EDGE);
+        texture->setWrap(osg::Texture::WRAP_T, osg::Texture::CLAMP_TO_EDGE);
+        texture->setFilter(osg::Texture::MIN_FILTER, osg::Texture::LINEAR);
+        texture->setFilter(osg::Texture::MAG_FILTER, osg::Texture::LINEAR);
+        texture->setResizeNonPowerOfTwoHint(false);
+
+        requestOverlayTextureUpdate(posX, mHeight - posY, cellSize, cellSize, texture, true, false);
     }
 }

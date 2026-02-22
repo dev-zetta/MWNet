@@ -497,7 +497,7 @@ bool Launcher::MainDialog::writeSettings()
     }
 
     // Game settings
-    QFile file(userPath / Files::openmwCfgFile);
+    QFile file(QString::fromStdString((userPath / Files::openmwCfgFile).string()));
 
     if (!file.open(QIODevice::ReadWrite | QIODevice::Text))
     {
@@ -594,7 +594,7 @@ void Launcher::MainDialog::play()
 
     // Launch the game detached
 
-    if (mGameInvoker->startProcess(QLatin1String("openmw"), true))
+    if (mGameInvoker->startProcess(QLatin1String("tes3mp-browser"), true))
         return qApp->quit();
 }
 

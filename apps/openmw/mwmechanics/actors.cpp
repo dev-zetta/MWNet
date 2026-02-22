@@ -19,6 +19,23 @@
 #include <components/esm3/loadstat.hpp>
 
 #include "../mwworld/cellstore.hpp"
+
+    /*
+    Start of tes3mp addition
+
+    Include additional headers for multiplayer purposes
+*/
+#include <components/openmw-mp/TimedLog.hpp>
+#include <components/openmw-mp/Utils.hpp>
+#include "../mwmp/Main.hpp"
+#include "../mwmp/Networking.hpp"
+#include "../mwmp/LocalPlayer.hpp"
+#include "../mwmp/PlayerList.hpp"
+#include "../mwmp/DedicatedPlayer.hpp"
+#include "../mwmp/CellController.hpp"
+#include "../mwmp/MechanicsHelper.hpp"
+#include "../mwmp/ObjectList.hpp"
+/* End of tes3mp addition */
 #include "../mwworld/class.hpp"
 #include "../mwworld/datetimemanager.hpp"
 #include "../mwworld/esmstore.hpp"
@@ -728,6 +745,16 @@ namespace MWMechanics
                 if (!isPlayerFollowerOrEscorter)
                     aggressive = isAggressive(actor1, actor2);
             }
+            /*
+                Start of tes3mp addition
+
+                Make aggressive actors initiate combat with DedicatedPlayers
+            */
+            else if (mwmp::PlayerList::isDedicatedPlayer(actor2))
+            {
+                aggressive = MWBase::Environment::get().getMechanicsManager()->isAggressive(actor1, actor2);
+            }
+            /* End of tes3mp addition */
         }
 
         // Make guards go aggressive with hostile creatures and werewolves that are in combat
@@ -1048,7 +1075,15 @@ namespace MWMechanics
         /**
          * Automatically equip NPCs torches at night and unequip them at day
          */
-        if (!isPlayer)
+
+        /*
+            Start of tes3mp change (major)
+
+            We need DedicatedPlayers and DedicatedActors to not automatically
+            equip their light-emitting items, so additional conditions have been
+            added for them
+        */
+        if (!isPlayer && !mwmp::PlayerList::isDedicatedPlayer(ptr) && !mwmp::Main::get().getCellController()->isDedicatedActor(ptr))
         {
             auto torchIter = std::find_if(std::begin(inventoryStore), std::end(inventoryStore), [&](auto entry) {
                 return entry.getType() == ESM::Light::sRecordId && entry.getClass().canBeEquipped(entry, ptr).first;
@@ -1206,6 +1241,24 @@ namespace MWMechanics
 
                 // Update witness crime id
                 npcStats.setCrimeId(-1);
+
+                /* Start of tes3mp addition */
+                if (mwmp::Main::get().getLocalPlayer()->diedSinceArrestAttempt && creatureStats.getAiSequence().isInCombat(player))
+                {
+                    if (difftime(mwmp::Main::get().getLocalPlayer()->deathTime, npcStats.getCrimeTime()) > 0)
+                    {
+                        creatureStats.getAiSequence().stopCombat();
+                        creatureStats.setAttacked(false);
+                        creatureStats.setAlarmed(false);
+                        creatureStats.setAiSetting(AiSetting::Fight, ptr.getClass().getBaseFightRating(ptr));
+
+                        npcStats.setCrimeId(-1);
+                        npcStats.setCrimeTime(time(0));
+                        LOG_MESSAGE_SIMPLE(TimedLog::LOG_INFO, "NPC %s %i-%i has forgiven player's crimes after the player's death",
+                            ptr.getCellRef().getRefId().getRefIdString().c_str(), ptr.getCellRef().getRefNum().mIndex, ptr.getCellRef().getMpNum());
+                    }
+                }
+                /* End of tes3mp addition */
             }
         }
     }
@@ -1573,6 +1626,7 @@ namespace MWMechanics
                     if (playerHitNum.isSet() && playerHitNum == actor.getPtr().getCellRef().getRefNum())
                         player.getClass().getCreatureStats(player).setHitAttemptActor({});
                 }
+                /* End of tes3mp change (major)*/
 
                 const Misc::TimerStatus engageCombatTimerStatus = actor.updateEngageCombatTimer(duration);
 
@@ -1604,9 +1658,18 @@ namespace MWMechanics
                         return; // for now abort update of the old cell when cell changes by teleportation magic effect
                                 // a better solution might be to apply cell changes at the end of the frame
                     }
-                    if (aiActive && inProcessingRange)
+
+                    /*
+                        Start of tes3mp change (major)
+
+                        Allow AI processing for LocalActors and partially for DedicatedActors
+                    */
+                    bool isLocalActor = mwmp::Main::get().getCellController()->isLocalActor(actor.getPtr());
+                    bool isDedicatedActor = mwmp::Main::get().getCellController()->isDedicatedActor(actor.getPtr());
+
+                    if (inProcessingRange && (aiActive || isLocalActor || isDedicatedActor))
                     {
-                        if (engageCombatTimerStatus == Misc::TimerStatus::Elapsed)
+                        if (engageCombatTimerStatus == Misc::TimerStatus::Elapsed && (isLocalActor || aiActive))
                         {
                             if (!isPlayer)
                                 adjustCommandedActor(actor.getPtr());
@@ -1645,6 +1708,7 @@ namespace MWMechanics
                         CreatureStats& stats = actor.getPtr().getClass().getCreatureStats(actor.getPtr());
                         stats.getAiSequence().execute(actor.getPtr(), ctrl, duration, /*outOfRange*/ true);
                     }
+                    /* End of tes3mp change (major)*/
 
                     if (inProcessingRange && actor.getPtr().getClass().isNpc())
                     {
@@ -1855,7 +1919,12 @@ namespace MWMechanics
         const MWWorld::Ptr ptr = MWBase::Environment::get().getWorldModel()->getPtr(creature);
         if (!ptr.isEmpty())
         {
-            MWBase::Environment::get().getWorld()->deleteObject(ptr);
+            mwmp::ObjectList *objectList = mwmp::Main::get().getNetworking()->getObjectList();
+            objectList->reset();
+            objectList->packetOrigin = mwmp::CLIENT_GAMEPLAY;
+            objectList->addObjectGeneric(ptr);
+            objectList->sendObjectDelete();
+        /* End of tes3mp change (major)*/
 
             const ESM::Static* fx = MWBase::Environment::get().getESMStore()->get<ESM::Static>().search(
                 ESM::RefId::stringRefId("VFX_Summon_End"));
@@ -1977,6 +2046,14 @@ namespace MWMechanics
                 if (sidingActors.find(observer) != sidingActors.cend())
                     continue;
 
+                    /*
+                    Start of tes3mp addition
+
+                    Don't make allied players break each other's sneaking
+                */
+                if (MechanicsHelper::isTeamMember(observer, player))
+                    continue;
+                /* End of tes3mp addition */
                 if (world->getLOS(player, observer))
                 {
                     if (MWBase::Environment::get().getMechanicsManager()->awarenessCheck(player, observer))
@@ -2030,6 +2107,11 @@ namespace MWMechanics
         if (iter != mDeathCount.end())
             return iter->second;
         return 0;
+    }
+
+    void Actors::setDeaths(const ESM::RefId& refId, int number)
+    {
+        mDeathCount[refId] = number;
     }
 
     void Actors::forceStateUpdate(const MWWorld::Ptr& ptr) const
@@ -2156,6 +2238,37 @@ namespace MWMechanics
             // An actor counts as siding with this actor if Follow or Escort is the current AI package, or there are
             // only Wander packages before the Follow/Escort package Actors that are targeted by this actor's Follow or
             // Escort packages also side with them
+
+                /*
+                Start of tes3mp addition
+
+                If we're checking the LocalPlayer and the iteratedActor is a DedicatedPlayer belonging to this one's alliedPlayers,
+                include the iteratedActor in the actors siding with the player
+
+                Alternatively, if we're checking a DedicatedPlayer and the iteratedActor is a LocalPlayer or DedicatedPlayer
+                belonging to their alliedPlayers, include the iteratedActor in the actors siding with them
+            */
+            if (actorPtr == getPlayer() && mwmp::PlayerList::isDedicatedPlayer(iteratedActor))
+            {
+                if (Utils::vectorContains(mwmp::Main::get().getLocalPlayer()->alliedPlayers, mwmp::PlayerList::getPlayer(iteratedActor)->guid))
+                {
+                    list.push_back(iteratedActor);
+                }
+            }
+            else if (mwmp::PlayerList::isDedicatedPlayer(actorPtr))
+            {
+                if (iteratedActor == getPlayer() &&
+                    Utils::vectorContains(mwmp::PlayerList::getPlayer(actorPtr)->alliedPlayers, mwmp::Main::get().getLocalPlayer()->guid))
+                {
+                    list.push_back(iteratedActor);
+                }
+                else if (mwmp::PlayerList::isDedicatedPlayer(iteratedActor) &&
+                    Utils::vectorContains(mwmp::PlayerList::getPlayer(actorPtr)->alliedPlayers, mwmp::PlayerList::getPlayer(iteratedActor)->guid))
+                {
+                    list.push_back(iteratedActor);
+                }
+            }
+            /* End of tes3mp addition */
             for (const auto& package : stats.getAiSequence())
             {
                 if (excludeInfighting && !sameActor && package->getTypeId() == AiPackageTypeId::Combat
@@ -2370,6 +2483,20 @@ namespace MWMechanics
 
         return it->second->getCharacterController().isAttackingOrSpell();
     }
+
+    /*
+        Start of tes3mp addition
+
+        Make it possible to set the attackingOrSpell state from elsewhere in the code
+    */
+    void Actors::setAttackingOrSpell(const MWWorld::Ptr& ptr, bool state) const
+    {
+        const auto it = mIndex.find(ptr.mRef);
+        if (it == mIndex.end())
+            return;
+        it->second->getCharacterController().setAttackingOrSpell(state);
+    }
+    /* End of tes3mp addition */
 
     int Actors::getGreetingTimer(const MWWorld::Ptr& ptr) const
     {

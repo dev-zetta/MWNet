@@ -6,6 +6,16 @@
 #include <components/esm3/doorstate.hpp>
 #include <components/esm3/loaddoor.hpp>
 #include <components/esm3/loadmgef.hpp>
+
+    /*
+    Start of tes3mp addition
+
+    Include additional headers for multiplayer purposes
+*/
+#include "../mwmp/Main.hpp"
+#include "../mwmp/Networking.hpp"
+#include "../mwmp/ObjectList.hpp"
+/* End of tes3mp addition */
 #include <components/sceneutil/positionattitudetransform.hpp>
 
 #include "../mwbase/environment.hpp"
@@ -167,7 +177,34 @@ namespace MWClass
                 MWBase::Environment::get().getSoundManager()->playSound3D(
                     ptr, ESM::RefId::stringRefId("Disarm Trap"), 1.0f, 1.0f);
                 isTrapped = false;
+
+                /*
+                    Start of tes3mp addition
+
+                    Send an ID_OBJECT_TRAP packet every time a trap is disarmed
+                */
+                mwmp::ObjectList *objectList = mwmp::Main::get().getNetworking()->getObjectList();
+                objectList->reset();
+                objectList->packetOrigin = mwmp::CLIENT_GAMEPLAY;
+                objectList->addObjectTrap(ptr, ptr.getRefData().getPosition(), true);
+                objectList->sendObjectTrap();
+                /* End of tes3mp addition */
             }
+
+            /*
+                Start of tes3mp addition
+
+                Send an ID_OBJECT_LOCK packet every time a door is unlocked here
+            */
+            if (isLocked)
+            {
+                mwmp::ObjectList *objectList = mwmp::Main::get().getNetworking()->getObjectList();
+                objectList->reset();
+                objectList->packetOrigin = mwmp::CLIENT_GAMEPLAY;
+                objectList->addObjectLock(ptr, 0);
+                objectList->sendObjectLock();
+            }
+            /* End of tes3mp addition */
         }
 
         if (!isLocked || hasKey)
@@ -301,6 +338,14 @@ namespace MWClass
         std::string_view dest = MWBase::Environment::get().getWorld()->getCellName(
             &MWBase::Environment::get().getWorldModel()->getCell(door.mRef.getDestCell()));
 
+        /* Start of tes3mp addition */
+        {
+            auto& overrides = mwmp::Main::get().getNetworking()->getWorldstate()->destinationOverrides;
+            std::string destStr{ dest };
+            if (overrides.count(destStr) != 0)
+                dest = overrides[destStr];
+        }
+        /* End of tes3mp addition */
         return "#{sCell=" + std::string{ dest } + "}";
     }
 

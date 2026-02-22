@@ -5,6 +5,18 @@
 #include <components/misc/rng.hpp>
 #include <components/settings/values.hpp>
 
+
+    /*
+    Start of tes3mp addition
+
+    Include additional headers for multiplayer purposes
+*/
+#include <components/openmw-mp/TimedLog.hpp>
+#include "../mwmp/Main.hpp"
+#include "../mwmp/Networking.hpp"
+#include "../mwmp/LocalPlayer.hpp"
+#include "../mwmp/Worldstate.hpp"
+/* End of tes3mp addition */
 #include "../mwworld/class.hpp"
 #include "../mwworld/containerstore.hpp"
 #include "../mwworld/esmstore.hpp"
@@ -112,6 +124,9 @@ namespace MWMechanics
         // Add the new item to player inventory and remove the old one
         store.remove(mOldItemPtr, count);
         store.add(newItemId, count);
+
+        mwmp::Main::get().getLocalPlayer()->storeLastEnchantmentQuantity(count);
+        /* End of tes3mp change (major)*/
 
         return true;
     }

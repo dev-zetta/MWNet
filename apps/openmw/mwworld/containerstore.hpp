@@ -446,6 +446,9 @@ namespace MWWorld
         bool isResolved() const;
 
         void resolve();
+        /* Start of tes3mp addition */
+        void setResolved(bool state);
+        /* End of tes3mp addition */
         ResolutionHandle resolveTemporarily();
         void unresolve();
 

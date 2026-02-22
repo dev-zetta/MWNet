@@ -122,11 +122,20 @@ namespace MWClass
 
             MWWorld::ManualRef manualRef(store, id);
             manualRef.getPtr().getCellRef().setPosition(ptr.getCellRef().getPosition());
+
+            /*
+                Start of tes3mp change (major)
+
+                Don't spawn leveled creatures in multiplayer; they'll be spawned when the server requests them
+            */
+            /*
             manualRef.getPtr().getCellRef().setScale(ptr.getCellRef().getScale());
             MWWorld::Ptr placed = MWBase::Environment::get().getWorld()->placeObject(
                 manualRef.getPtr(), ptr.getCell(), ptr.getRefData().getPosition());
             MWBase::Environment::get().getWorldModel()->registerPtr(placed);
             customData.mSpawnedActor = placed.getCellRef().getRefNum();
+            */
+            /* End of tes3mp change (major)*/
             customData.mSpawn = false;
         }
         else

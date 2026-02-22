@@ -15,10 +15,7 @@
 
 #include <components/sdlutil/events.hpp>
 
-namespace ESM
-{
-    class RefId;
-}
+#include <components/esm/refid.hpp>
 
 namespace Loading
 {
@@ -167,7 +164,21 @@ namespace MWBase
         virtual void useItem(const MWWorld::Ptr& item, bool force = false) = 0;
 
         virtual void updateSpellWindow() = 0;
+                /*
+                Start of tes3mp addition
 
+                Make it possible to get the ContainerWindow from elsewhere
+                in the code
+            */
+            virtual MWGui::ContainerWindow* getContainerWindow() = 0;
+            /* End of tes3mp addition */
+                /*
+                Start of tes3mp addition
+
+                Make it possible to get the DialogueWindow from elsewhere
+            */
+            virtual MWGui::DialogueWindow* getDialogueWindow() = 0;
+            /* End of tes3mp addition */
         virtual void setConsoleSelectedObject(const MWWorld::Ptr& object) = 0;
         virtual MWWorld::Ptr getConsoleSelectedObject() const = 0;
         virtual void setConsoleMode(std::string_view mode) = 0;
@@ -183,7 +194,23 @@ namespace MWBase
         /// @param time time left to start drowning
         /// @param maxTime how long we can be underwater (in total) until drowning starts
         virtual void setDrowningTimeLeft(float time, float maxTime) = 0;
+                /*
+                Start of tes3mp addition
 
+                Allow the direct setting of a console's Ptr, without the assumption that an object
+                was clicked and that key focus should be restored to the console window, for console
+                commands executed via server scripts
+            */
+            virtual void setConsolePtr(const MWWorld::Ptr& object) = 0;
+            /* End of tes3mp addition */
+                /*
+                Start of tes3mp addition
+
+                Allow the clearing of the console's Ptr from elsewhere in the code, so that
+                Ptrs used in console commands run from server scripts do not stay selected
+            */
+            virtual void clearConsolePtr() = 0;
+            /* End of tes3mp addition */
         virtual void changeCell(const MWWorld::CellStore* cell) = 0;
         ///< change the active cell
 
@@ -196,7 +223,21 @@ namespace MWBase
         virtual void getMousePosition(float& x, float& y) = 0;
         virtual void setDragDrop(bool dragDrop) = 0;
         virtual bool getWorldMouseOver() = 0;
+                /*
+                Start of tes3mp addition
 
+                Allow the setting of the image data for a global map tile from elsewhere
+                in the code
+            */
+            virtual void setGlobalMapImage(int cellX, int cellY, const std::vector<char>& imageData) = 0;
+            /* End of tes3mp addition */
+                /*
+                Start of tes3mp addition
+
+                Allow the completion of a drag and drop from elsewhere in the code
+            */
+            virtual void finishDragDrop() = 0;
+            /* End of tes3mp addition */
         virtual float getScalingFactor() const = 0;
 
         virtual bool toggleFogOfWar() = 0;
@@ -235,7 +276,13 @@ namespace MWBase
         virtual void showCrosshair(bool show) = 0;
         virtual bool setHudVisibility(bool show) = 0;
         virtual bool isHudVisible() const = 0;
+                /*
+                Start of tes3mp addition
 
+                Make it possible to add quickKeys from elsewhere in the code
+            */
+            virtual void setQuickKey(int slot, int quickKeyType, MWWorld::Ptr item, const ESM::RefId& spellId = ESM::RefId{}) = 0;
+            /* End of tes3mp addition */
         virtual void disallowMouse() = 0;
         virtual void allowMouse() = 0;
         virtual void notifyInputActionBound() = 0;
@@ -265,6 +312,16 @@ namespace MWBase
         /// returns the index of the pressed button or -1 if no button was pressed
         /// (->MessageBoxmanager->InteractiveMessageBox)
         virtual int readPressedButton() = 0;
+                /*
+                Start of tes3mp change (major)
+
+                Add a hasServerOrigin boolean to the list of arguments so those messageboxes
+                can be differentiated from client-only ones
+            */
+            virtual void interactiveMessageBox (const ESM::RefId& message,
+                                                const std::vector<ESM::RefId>& buttons = std::vector<ESM::RefId>(), bool block=false, bool hasServerOrigin=false) = 0;
+            /*
+                /* End of tes3mp change (major) */
 
         virtual void updateConsoleObjectPtr(const MWWorld::Ptr& currentPtr, const MWWorld::Ptr& newPtr) = 0;
 
@@ -289,7 +346,13 @@ namespace MWBase
         virtual void wakeUpPlayer() = 0;
 
         virtual void showSoulgemDialog(MWWorld::Ptr item) = 0;
+                /*
+                Start of tes3mp addition
 
+                Allow the execution of console commands from elsewhere in the code
+            */
+            virtual void executeCommandInConsole(const ESM::RefId& command) = 0;
+            /* End of tes3mp addition */
         virtual void changePointer(const std::string& name) = 0;
 
         virtual void setEnemy(const MWWorld::Ptr& enemy) = 0;

@@ -264,6 +264,8 @@ Programmers
     Yuri Krupenin
     Yury Stepovikov
     zelurker
+    Noah Gooder
+    Andrew Appuhamy (andrew-app)
 
 Documentation
 -------------

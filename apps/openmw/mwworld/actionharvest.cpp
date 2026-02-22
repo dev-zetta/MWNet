@@ -6,6 +6,16 @@
 
 #include <components/misc/strings/format.hpp>
 
+    /*
+    Start of tes3mp addition
+
+    Include additional headers for multiplayer purposes
+*/
+#include "../mwmp/Main.hpp"
+#include "../mwmp/Networking.hpp"
+#include "../mwmp/LocalPlayer.hpp"
+#include "../mwmp/ObjectList.hpp"
+/* End of tes3mp addition */
 #include "../mwbase/environment.hpp"
 #include "../mwbase/mechanicsmanager.hpp"
 #include "../mwbase/windowmanager.hpp"
@@ -31,6 +41,22 @@ namespace MWWorld
 
         MWWorld::Ptr target = getTarget();
         MWWorld::ContainerStore& store = target.getClass().getContainerStore(target);
+
+            /*
+            Start of tes3mp addition
+
+            Prepare an ID_CONTAINER packet that will let the server know about the
+            items removed from the harvested objects
+        */
+        mwmp::ObjectList* objectList = mwmp::Main::get().getNetworking()->getObjectList();
+        objectList->reset();
+        objectList->packetOrigin = mwmp::CLIENT_GAMEPLAY;
+        objectList->cell = target.getCell()->getCell()->getEsm3();
+        objectList->action = mwmp::BaseObjectList::REMOVE;
+        objectList->containerSubAction = mwmp::BaseObjectList::NONE;
+
+        mwmp::BaseObject baseObject = objectList->getBaseObjectFromPtr(target);
+        /* End of tes3mp addition */
         store.resolve();
         MWWorld::ContainerStore& actorStore = actor.getClass().getContainerStore(actor);
         std::map<std::string, int> takenMap;
@@ -48,7 +74,27 @@ namespace MWWorld
             store.remove(*it, itemCount);
             std::string name{ it->getClass().getName(*it) };
             takenMap[name] += itemCount;
+
+                /*
+                Start of tes3mp addition
+
+                Track this item removal in the ID_CONTAINER packet being prepared
+            */
+            objectList->addContainerItem(baseObject, *it, 0, itemCount);
+            /* End of tes3mp addition */
         }
+
+        /*
+            Start of tes3mp addition
+
+            Send an ID_CONTAINER packet if the local player is logged in
+        */
+        if (mwmp::Main::get().getLocalPlayer()->isLoggedIn())
+        {
+            objectList->addBaseObject(baseObject);
+            objectList->sendContainer();
+        }
+        /* End of tes3mp addition */
 
         // Spawn a messagebox (only for items added to player's inventory)
         if (actor == MWBase::Environment::get().getWorld()->getPlayerPtr())

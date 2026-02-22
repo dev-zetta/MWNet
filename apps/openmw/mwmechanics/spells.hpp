@@ -71,6 +71,13 @@ namespace MWMechanics
 
         Collection::const_iterator begin() const;
 
+                /*
+                Start of tes3mp addition
+
+                Make it possible to set timestamps for power cooldowns, necessary for ID_PLAYER_COOLDOWNS packets
+            */
+            void setPowerUseTimestamp(const ESM::Spell* spell, int startDay, float startHour);
+            /* End of tes3mp addition */
         Collection::const_iterator end() const;
 
         bool hasSpell(const ESM::RefId& spell) const;

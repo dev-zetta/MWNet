@@ -13,6 +13,16 @@
 #include <components/resource/resourcesystem.hpp>
 #include <components/settings/values.hpp>
 
+    /*
+    Start of tes3mp addition
+
+    Include additional headers for multiplayer purposes
+*/
+#include "../mwmp/Main.hpp"
+#include "../mwmp/Networking.hpp"
+#include "../mwmp/ObjectList.hpp"
+#include "../mwworld/cellstore.hpp"
+/* End of tes3mp addition */
 #include "../mwbase/environment.hpp"
 #include "../mwbase/inputmanager.hpp"
 #include "../mwbase/windowmanager.hpp"
@@ -209,7 +219,24 @@ namespace MWGui
             {
                 // pick up object
                 if (!object.isEmpty())
-                    winMgr->getInventoryWindow()->pickUpObject(object);
+                /*
+                    Start of tes3mp change (major)
+
+                    Disable unilateral picking up of objects on this client
+
+                    Instead, send an ID_OBJECT_ACTIVATE packet every time an item is made to pick up
+                    an item here, and expect the server's reply to our packet to cause the actual
+                    picking up of items
+                */
+                    //winMgr->getInventoryWindow()->pickUpObject(object);
+                {
+                    mwmp::ObjectList *objectList = mwmp::Main::get().getNetworking()->getObjectList();
+                    objectList->reset();
+                    objectList->packetOrigin = mwmp::CLIENT_GAMEPLAY;
+                    objectList->addObjectActivate(object, MWMechanics::getPlayer());
+                    objectList->sendObjectActivate();
+                }
+                /* End of tes3mp change (major) */
             }
         }
     }

@@ -325,6 +325,7 @@ namespace MWWorld
     {
         T::sRecordId;
     };
+
 }
 
 #endif

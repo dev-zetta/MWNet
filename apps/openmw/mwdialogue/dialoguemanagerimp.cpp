@@ -28,6 +28,17 @@
 
 #include <components/settings/values.hpp>
 
+/*
+    Start of tes3mp addition
+
+    Include additional headers for multiplayer purposes
+*/
+#include "../mwmp/Main.hpp"
+#include "../mwmp/CellController.hpp"
+#include "../mwmp/LocalPlayer.hpp"
+#include "../mwmp/LocalActor.hpp"
+/* End of tes3mp addition */
+
 #include "../mwbase/environment.hpp"
 #include "../mwbase/journal.hpp"
 #include "../mwbase/luamanager.hpp"
@@ -102,6 +113,13 @@ namespace MWDialogue
         return mKeywordSearch;
     }
 
+    /* Start of tes3mp addition */
+    bool DialogueManager::isNewTopic(const ESM::RefId& topic)
+    {
+        return (!mKnownTopics.count(topic));
+    }
+    /* End of tes3mp addition */
+
     std::vector<ESM::RefId> DialogueManager::parseTopicIdsFromText(const std::string& text) const
     {
         std::vector<ESM::RefId> topicIdList;
@@ -122,6 +140,15 @@ namespace MWDialogue
         {
             if (mActorKnownTopics.count(topicId))
                 mKnownTopics.insert(topicId);
+
+                /*
+                Start of tes3mp addition
+
+                Send an ID_PLAYER_TOPIC packet every time a new topic becomes known
+            */
+            if (mActorKnownTopics.count(topicId) && isNewTopic(topicId))
+                mwmp::Main::get().getLocalPlayer()->sendTopic(topicId.getRefIdString());
+            /* End of tes3mp addition */
         }
     }
 
@@ -257,6 +284,17 @@ namespace MWDialogue
             try
             {
                 MWScript::InterpreterContext interpreterContext(&actor.getRefData().getLocals(), actor);
+
+                /*
+                    Start of tes3mp addition
+
+                    Mark this InterpreterContext as having a DIALOGUE context,
+                    so that packets sent by the Interpreter can have their
+                    origin determined by serverside scripts
+                */
+                //interpreterContext.trackContextType(Interpreter::Context::DIALOGUE);
+                /* End of tes3mp addition */
+
                 Interpreter::Interpreter interpreter;
                 MWScript::installOpcodes(interpreter);
                 interpreter.run(*program, interpreterContext);
@@ -658,6 +696,19 @@ namespace MWDialogue
                 sndMgr->say(actor, Misc::ResourceHelpers::correctSoundPath(VFS::Path::Normalized(info->mSound)));
             if (!info->mResultScript.empty())
                 executeScript(info->mResultScript, actor);
+
+            /*
+                Start of tes3mp addition
+
+                If we are the cell authority over this actor, we need to record this new
+                sound for it
+            */
+            if (mwmp::Main::get().getCellController()->isLocalActor(actor))
+            {
+                mwmp::LocalActor *localActor = mwmp::Main::get().getCellController()->getLocalActor(actor);
+                localActor->sound = info->mSound;
+            }
+            /* End of tes3mp addition */
             MWBase::Environment::get().getLuaManager()->onDialogueResponse(actor, *info, *dial);
         }
         return info != nullptr;
@@ -761,4 +812,30 @@ namespace MWDialogue
                 mLastTopic, actor.getClass().getName(actor));
         }
     }
+
+    /*
+        Start of tes3mp addition
+
+        Make it possible to get the caption of a voice dialogue
+    */
+    ESM::RefId DialogueManager::getVoiceCaption(const ESM::RefId& sound) const
+    {
+        const MWWorld::Store<ESM::Dialogue>& dialogues = MWBase::Environment::get().getWorld()->getStore().get<ESM::Dialogue>();
+
+        for (MWWorld::Store<ESM::Dialogue>::iterator dialogueIter = dialogues.begin(); dialogueIter != dialogues.end(); ++dialogueIter)
+        {
+            if (dialogueIter->mType == ESM::Dialogue::Voice)
+            {
+                for (ESM::Dialogue::InfoContainer::const_iterator infoIter = dialogueIter->mInfo.begin();
+                    infoIter != dialogueIter->mInfo.end(); ++infoIter)
+                {
+                    if (!infoIter->mSound.empty() && Misc::StringUtils::ciEqual(sound.getRefIdString(), infoIter->mSound))
+                        return ESM::RefId::stringRefId(infoIter->mResponse);
+                }
+            }
+        }
+
+        return ESM::RefId::stringRefId("???");
+    }
+    /* End of tes3mp addition */
 }

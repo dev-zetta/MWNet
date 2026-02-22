@@ -9,6 +9,18 @@
 #include <fstream>
 #include <regex>
 
+/*
+    Start of tes3mp addition
+
+    Include additional headers for multiplayer purposes
+*/
+#include <components/openmw-mp/TimedLog.hpp>
+#include "../mwmp/Main.hpp"
+#include "../mwmp/Networking.hpp"
+#include "../mwmp/LocalPlayer.hpp"
+#include "../mwmp/ObjectList.hpp"
+/* End of tes3mp addition */
+
 #include <components/compiler/exception.hpp>
 #include <components/compiler/extensions0.hpp>
 #include <components/compiler/lineparser.hpp>
@@ -250,6 +262,33 @@ namespace MWGui
             try
             {
                 ConsoleInterpreterContext interpreterContext(*this, mPtr);
+
+                    /*
+                    Start of tes3mp addition
+
+                    Send an ID_CONSOLE_COMMAND packet to the server with the
+                    command and target used
+
+                    Mark this InterpreterContext as having a CONSOLE context,
+                    so that packets sent by the Interpreter can have their
+                    origin determined by serverside scripts
+                */
+                interpreterContext.trackContextType(Interpreter::Context::CONSOLE);
+
+                mwmp::ObjectList *objectList = mwmp::Main::get().getNetworking()->getObjectList();
+                objectList->reset();
+                objectList->packetOrigin = mwmp::CLIENT_CONSOLE;
+                objectList->consoleCommand = command;
+                
+                if (mPtr.isEmpty())
+                    objectList->cell = mwmp::Main::get().getLocalPlayer()->cell;
+                else
+                {
+                    objectList->addObjectGeneric(mPtr);
+                }
+
+                objectList->sendConsoleCommand();
+                /* End of tes3mp addition */
                 Interpreter::Interpreter interpreter;
                 MWScript::installOpcodes(interpreter, mConsoleOnlyScripts);
                 const Interpreter::Program program = output.getProgram();
@@ -815,6 +854,19 @@ namespace MWGui
         mConsoleMode = std::string(mode);
         updateConsoleTitle();
     }
+
+    /*
+        Start of tes3mp addition
+
+        Allow the direct setting of a console's Ptr, without the assumption that an object
+        was clicked and that key focus should be restored to the console window, for console
+        commands executed via server scripts
+    */
+    void Console::setPtr(const MWWorld::Ptr& object)
+    {
+        mPtr = object;
+    }
+    /* End of tes3mp addition */
 
     void Console::onReferenceUnavailable()
     {

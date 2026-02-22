@@ -13,6 +13,19 @@
 #include <components/esm3/loadsoun.hpp>
 
 #include "../mwbase/dialoguemanager.hpp"
+
+    /*
+    Start of tes3mp addition
+
+    Include additional headers for multiplayer purposes
+*/
+#include <components/openmw-mp/TimedLog.hpp>
+#include "../mwmp/Main.hpp"
+#include "../mwmp/LocalPlayer.hpp"
+#include "../mwmp/PlayerList.hpp"
+#include "../mwmp/CellController.hpp"
+#include "../mwmp/MechanicsHelper.hpp"
+/* End of tes3mp addition */
 #include "../mwbase/environment.hpp"
 #include "../mwbase/luamanager.hpp"
 #include "../mwbase/mechanicsmanager.hpp"
@@ -149,7 +162,6 @@ namespace MWMechanics
 
             // Reduce shield durability by incoming damage
             int shieldhealth = shield->getClass().getItemHealth(*shield);
-
             shieldhealth -= std::min(shieldhealth, int(damage));
             shield->getCellRef().setCharge(shieldhealth);
             if (shieldhealth == 0)
@@ -227,6 +239,25 @@ namespace MWMechanics
         MWBase::World* world = MWBase::Environment::get().getWorld();
         const MWWorld::Store<ESM::GameSetting>& gmst = world->getStore().get<ESM::GameSetting>();
 
+            /*
+            Start of tes3mp addition
+
+            Ignore projectiles fired by DedicatedPlayers and DedicatedActors
+
+            If fired by LocalPlayers and LocalActors, get the associated LocalAttack and set its type
+            to RANGED while also marking it as a hit
+        */
+        if (mwmp::PlayerList::isDedicatedPlayer(attacker) || mwmp::Main::get().getCellController()->isDedicatedActor(attacker))
+            return;
+
+        mwmp::Attack *localAttack = MechanicsHelper::getLocalAttack(attacker);
+
+        if (localAttack)
+        {
+            localAttack->type = mwmp::Attack::RANGED;
+            localAttack->isHit = true;
+        }
+        /* End of tes3mp addition */
         bool validVictim = !victim.isEmpty() && victim.getClass().isActor();
 
         ESM::RefId weaponSkill = ESM::Skill::Marksman;
@@ -246,6 +277,15 @@ namespace MWMechanics
                 MWBase::Environment::get().getLuaManager()->onHit(attacker, victim, weapon, projectile, 0,
                     attackStrength, attackWindUp, damage, false, hitPosition, false,
                     MWMechanics::DamageSourceType::Ranged);
+
+                /*
+                    Start of tes3mp addition
+
+                    Mark this as a failed LocalAttack now that the hit roll has failed
+                */
+                if (localAttack)
+                    localAttack->success = false;
+                /* End of tes3mp addition */
                 MWMechanics::reduceWeaponCondition(damage, false, weapon, attacker);
                 return;
             }
@@ -292,6 +332,16 @@ namespace MWMechanics
         // Apply "On hit" effect of the projectile
         bool appliedEnchantment = applyOnStrikeEnchantment(attacker, victim, projectile, hitPosition, true);
 
+        /*
+            Start of tes3mp change (minor)
+
+            Track whether the strike enchantment is successful for attacks by the
+            LocalPlayer or LocalActors for their projectile
+        */
+        if (localAttack)
+            localAttack->applyAmmoEnchantment = appliedEnchantment;
+        /* End of tes3mp change (minor)*/
+
         if (validVictim)
         {
             // Non-enchanted arrows shot at enemies have a chance to turn up in their inventory
@@ -310,6 +360,17 @@ namespace MWMechanics
             MWBase::Environment::get().getLuaManager()->onHit(attacker, victim, weapon, projectile, 0, attackStrength,
                 attackWindUp, damage, true, hitPosition, true, MWMechanics::DamageSourceType::Ranged);
         }
+        /*
+            Start of tes3mp addition
+
+            If this is a local attack that had no victim, send a packet for it here
+        */
+        else if (localAttack)
+        {
+            localAttack->hitPosition = MechanicsHelper::getPositionFromVector(hitPosition);
+            localAttack->shouldSend = true;
+        }
+        /* End of tes3mp addition */
     }
 
     float getHitChance(const MWWorld::Ptr& attacker, const MWWorld::Ptr& victim, int skillValue)

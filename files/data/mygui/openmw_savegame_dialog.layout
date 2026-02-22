@@ -55,6 +55,18 @@
 
         </Widget>
 
+        <!--
+            Start of tes3mp addition
+
+            Note that saves are singleplayer-only
+        -->
+        <Widget type="TextBox" skin="NormalText" position="58 58 500 18" align="Left Top" name="SaveWarning">
+            <Property key="Caption" value="Note: You will create an OpenMW singleplayer-only save."/>
+        </Widget>
+        <!--
+            End of tes3mp addition
+        -->
+
         <Widget type="HBox" skin="">
             <Property key="Spacing" value="4"/>
 

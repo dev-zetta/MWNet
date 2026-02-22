@@ -10,6 +10,16 @@
 #include <components/misc/strings/algorithm.hpp>
 #include <components/settings/values.hpp>
 
+/*
+    Start of tes3mp addition
+
+    Include additional headers for multiplayer purposes
+*/
+#include <components/openmw-mp/TimedLog.hpp>
+#include "../mwmp/Main.hpp"
+#include "../mwmp/GUIController.hpp"
+/* End of tes3mp addition */
+
 #include "../mwbase/environment.hpp"
 #include "../mwbase/inputmanager.hpp"
 #include "../mwbase/windowmanager.hpp"
@@ -87,6 +97,16 @@ namespace MWGui
         if (mInterMessageBoxe != nullptr && mInterMessageBoxe->mMarkedToDelete)
         {
             mLastButtonPressed = mInterMessageBoxe->readPressedButton();
+
+            /*
+                Start of tes3mp addition
+
+                If this message box was created by the server, send the input back to it
+            */
+            if (mInterMessageBoxe->mHasServerOrigin)
+                mwmp::Main::get().getGUIController()->processCustomMessageBoxInput(mLastButtonPressed);
+            /* End of tes3mp addition */
+
             mInterMessageBoxe->setVisible(false);
             mInterMessageBoxe.reset();
             MWBase::Environment::get().getInputManager()->changeInputMode(
@@ -128,7 +148,7 @@ namespace MWGui
     }
 
     bool MessageBoxManager::createInteractiveMessageBox(
-        std::string_view message, const std::vector<std::string>& buttons, bool immediate, int defaultFocus)
+        std::string_view message, const std::vector<std::string>& buttons, bool immediate, int defaultFocus, bool hasServerOrigin)
     {
         if (mInterMessageBoxe != nullptr)
         {
@@ -138,6 +158,14 @@ namespace MWGui
 
         mInterMessageBoxe
             = std::make_unique<InteractiveMessageBox>(*this, std::string{ message }, buttons, immediate, defaultFocus);
+
+            /*
+            Start of tes3mp addition
+
+            Track whether the message box has a server origin
+        */
+        mInterMessageBoxe->mHasServerOrigin = hasServerOrigin;
+        /* End of tes3mp addition */
         mLastButtonPressed = -1;
 
         return true;

@@ -11,6 +11,13 @@ namespace Interpreter
     class Context
     {
     public:
+        /* Start of tes3mp addition */
+        static constexpr unsigned short SCRIPT_LOCAL = 0;
+        static constexpr unsigned short SCRIPT_GLOBAL = 1;
+        static constexpr unsigned short SCRIPT_CONSOLE = 2;
+        static constexpr unsigned short CONSOLE = 3;
+        /* End of tes3mp addition */
+
         virtual ~Context() {}
 
         virtual ESM::RefId getTarget() const = 0;

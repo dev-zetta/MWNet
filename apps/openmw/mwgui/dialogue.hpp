@@ -146,6 +146,22 @@ namespace MWGui
 
         void notifyLinkClicked(TypesetBook::InteractiveId link);
 
+        /*
+            Start of tes3mp addition
+
+            Make it possible to activate any dialogue choice from elsewhere in the code
+        */
+        void activateDialogueChoice(unsigned char dialogueChoiceType, std::string topic = "");
+        /* End of tes3mp addition */
+
+        /*
+            Start of tes3mp addition
+
+            Make it possible to get the Ptr of the actor involved in the dialogue
+        */
+        MWWorld::Ptr getPtr();
+        /* End of tes3mp addition */
+
         void setPtr(const MWWorld::Ptr& actor) override;
 
         /// @return true if stale keywords were updated successfully
@@ -168,6 +184,16 @@ namespace MWGui
         void updateTopicsPane();
         bool isCompanion(const MWWorld::Ptr& actor);
         bool isCompanion();
+
+        /*
+            Start of tes3mp addition
+
+            A different event that should be used in multiplayer when clicking on choices
+            in the dialogue screen, sending DialogueChoice packets to the server so they can
+            be approved or denied
+        */
+        void sendDialogueChoicePacket(const std::string& topic);
+        /* End of tes3mp addition */
 
         void onSelectListItem(const std::string& topic, int id);
         void onByeClicked(MyGUI::Widget* sender);

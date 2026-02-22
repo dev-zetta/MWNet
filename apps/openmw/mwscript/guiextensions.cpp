@@ -1,5 +1,14 @@
 #include "guiextensions.hpp"
 
+/*
+    Start of tes3mp addition
+
+    Include additional headers for multiplayer purposes
+*/
+#include "../mwmp/Main.hpp"
+#include "../mwmp/LocalPlayer.hpp"
+/* End of tes3mp addition */
+
 #include <components/compiler/opcodes.hpp>
 
 #include <components/interpreter/context.hpp>

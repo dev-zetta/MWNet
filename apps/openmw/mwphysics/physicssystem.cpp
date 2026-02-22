@@ -951,4 +951,20 @@ namespace MWPhysics
     {
         return lhs.mRawActors == rhs.mRawActors;
     }
+
+    void PhysicsSystem::setPhysicsFramerate(float physFramerate)
+    {
+        if (physFramerate > 0 && physFramerate < 100)
+        {
+            mPhysicsDt = 1.f / physFramerate;
+            mTaskScheduler->setPhysicsDt(mPhysicsDt);
+
+            Log(Debug::Warning) << "Warning: physics framerate was overridden (a new value is " << physFramerate << ").";
+        }
+        else
+        {
+            Log(Debug::Warning) << "Warning: attempted to override physics framerate with new value of " << physFramerate
+                                << ", but it was outside accepted values.";
+        }
+    }
 }

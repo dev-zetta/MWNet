@@ -5,6 +5,7 @@
 #include <components/esm/refid.hpp>
 #include <string>
 #include <string_view>
+#include "../mwworld/ptr.hpp"
 
 namespace ESM
 {
@@ -34,8 +35,16 @@ namespace MWMechanics
 
         void writeState(ESM::AiSequence::AiSequence& sequence) const override;
 
+        /* Start of tes3mp addition */
+        explicit AiActivate(MWWorld::Ptr object);
+        /* End of tes3mp addition */
+
     private:
         const ESM::RefId mObjectId;
+
+        /* Start of tes3mp addition */
+        MWWorld::Ptr mObjectPtr;
+        /* End of tes3mp addition */
     };
 }
 #endif // GAME_MWMECHANICS_AIACTIVATE_H

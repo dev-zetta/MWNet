@@ -7,6 +7,19 @@
 #include <components/debug/debuglog.hpp>
 #include <components/esm/records.hpp>
 
+/*
+    Start of tes3mp addition
+
+    Include additional headers for multiplayer purposes
+*/
+#include <components/openmw-mp/TimedLog.hpp>
+#include "../mwmp/Main.hpp"
+#include "../mwmp/Networking.hpp"
+#include "../mwmp/LocalPlayer.hpp"
+#include "../mwmp/ObjectList.hpp"
+#include "../mwmp/ScriptController.hpp"
+/* End of tes3mp addition */
+
 #include "../mwworld/esmstore.hpp"
 
 #include "../mwbase/environment.hpp"
@@ -26,6 +39,28 @@
 
 namespace MWScript
 {
+    /* Start of tes3mp addition */
+    unsigned short InterpreterContext::getContextType() const
+    {
+        return mContextType;
+    }
+
+    std::string InterpreterContext::getCurrentScriptName() const
+    {
+        return mCurrentScriptName;
+    }
+
+    void InterpreterContext::trackContextType(unsigned short contextType)
+    {
+        mContextType = contextType;
+    }
+
+    void InterpreterContext::trackCurrentScriptName(const std::string& name)
+    {
+        mCurrentScriptName = name;
+    }
+    /* End of tes3mp addition */
+
     const MWWorld::Ptr InterpreterContext::getReferenceImp(const ESM::RefId& id, bool activeOnly, bool doThrow) const
     {
         if (!id.empty())
@@ -171,7 +206,30 @@ namespace MWScript
         if (!mLocals)
             throw std::runtime_error("local variables not available in this context");
 
+        /*
+            Start of tes3mp addition
+
+            Avoid setting a local to a value it already is, preventing packet spam
+        */
+        if (mLocals->mShorts.at(index) == static_cast<Interpreter::Type_Short>(value)) return;
+        /* End of tes3mp addition */
         mLocals->mShorts.at(index) = static_cast<Interpreter::Type_Short>(value);
+        /*
+            Start of tes3mp addition
+
+            Send an ID_CLIENT_SCRIPT_LOCAL packet when a local short changes its value if
+            it is being set in a script that has been approved for packet sending
+        */
+        if (sendPackets)
+        {
+            mwmp::ObjectList *objectList = mwmp::Main::get().getNetworking()->getObjectList();
+            objectList->reset();
+            objectList->packetOrigin = ScriptController::getPacketOriginFromContextType(getContextType());
+            objectList->originClientScript = getCurrentScriptName();
+            objectList->addClientScriptLocal(mReference, index, value, mwmp::VARIABLE_TYPE::SHORT);
+            objectList->sendClientScriptLocal();
+        }
+        /* End of tes3mp addition */
     }
 
     void InterpreterContext::setLocalLong(int index, int value)
@@ -180,6 +238,30 @@ namespace MWScript
             throw std::runtime_error("local variables not available in this context");
 
         mLocals->mLongs.at(index) = value;
+
+            /*
+            Start of tes3mp addition
+
+            Avoid setting a local to a value it already is, preventing packet spam
+        */
+        if (mLocals->mLongs.at(index) == value) return;
+        /* End of tes3mp addition */
+            /*
+            Start of tes3mp addition
+
+            Send an ID_CLIENT_SCRIPT_LOCAL packet when a local long changes its value if
+            it is being set in a script that has been approved for packet sending
+        */
+        if (sendPackets)
+        {
+            mwmp::ObjectList *objectList = mwmp::Main::get().getNetworking()->getObjectList();
+            objectList->reset();
+            objectList->packetOrigin = ScriptController::getPacketOriginFromContextType(getContextType());
+            objectList->originClientScript = getCurrentScriptName();
+            objectList->addClientScriptLocal(mReference, index, value, mwmp::VARIABLE_TYPE::LONG);
+            objectList->sendClientScriptLocal();
+        }
+        /* End of tes3mp addition */
     }
 
     void InterpreterContext::setLocalFloat(int index, float value)
@@ -188,6 +270,36 @@ namespace MWScript
             throw std::runtime_error("local variables not available in this context");
 
         mLocals->mFloats.at(index) = value;
+
+            /*
+            Start of tes3mp addition
+
+            Avoid setting a local to a value it already is, preventing packet spam
+
+            Additionally, record the old value to check it below when determining if
+            it has changed enough to warrant sending a packet about it
+        */
+        float oldValue = mLocals->mFloats.at(index);
+
+        if (oldValue == value) return;
+        /* End of tes3mp addition */
+            /*
+            Start of tes3mp addition
+
+            Send an ID_CLIENT_SCRIPT_LOCAL packet when a local float changes its value if
+            its value has changed enough and it is being set in a script that has been approved
+            for packet sending
+        */
+        if (floor(oldValue) != floor(value) && sendPackets)
+        {
+            mwmp::ObjectList *objectList = mwmp::Main::get().getNetworking()->getObjectList();
+            objectList->reset();
+            objectList->packetOrigin = ScriptController::getPacketOriginFromContextType(getContextType());
+            objectList->originClientScript = getCurrentScriptName();
+            objectList->addClientScriptLocal(mReference, index, value);
+            objectList->sendClientScriptLocal();
+        }
+        /* End of tes3mp addition */
     }
 
     void InterpreterContext::messageBox(std::string_view message, const std::vector<std::string>& buttons)
@@ -219,16 +331,81 @@ namespace MWScript
     void InterpreterContext::setGlobalShort(std::string_view name, int value)
     {
         MWBase::Environment::get().getWorld()->setGlobalInt(name, value);
+
+            /*
+            Start of tes3mp addition
+
+            Avoid setting a global to a value it already is, preventing packet spam
+        */
+        if (getGlobalShort(name) == value) return;
+        /* End of tes3mp addition */
+            /*
+            Start of tes3mp addition
+
+            Send an ID_CLIENT_SCRIPT_GLOBAL packet when a global short changes its value if
+            it is being set in a script that has been approved for packet sending or the global
+            itself has been set to always be synchronized
+        */
+        if (sendPackets || mwmp::Main::isValidPacketGlobal(std::string(name)))
+        {
+            mwmp::Main::get().getNetworking()->getWorldstate()->sendClientGlobal(std::string(name), value, mwmp::VARIABLE_TYPE::SHORT);
+        }
+        /* End of tes3mp addition */
     }
 
     void InterpreterContext::setGlobalLong(std::string_view name, int value)
     {
         MWBase::Environment::get().getWorld()->setGlobalInt(name, value);
+
+            /*
+            Start of tes3mp addition
+
+            Avoid setting a global to a value it already is, preventing packet spam
+        */
+        if (getGlobalLong(name) == value) return;
+        /* End of tes3mp addition */
+            /*
+            Start of tes3mp addition
+
+            Send an ID_CLIENT_SCRIPT_GLOBAL packet when a global long changes its value if
+            it is being set in a script that has been approved for packet sending or the global
+            itself has been set to always be synchronized
+        */
+        if (sendPackets || mwmp::Main::isValidPacketGlobal(std::string(name)))
+        {
+            mwmp::Main::get().getNetworking()->getWorldstate()->sendClientGlobal(std::string(name), value, mwmp::VARIABLE_TYPE::LONG);
+        }
+        /* End of tes3mp addition */
     }
 
     void InterpreterContext::setGlobalFloat(std::string_view name, float value)
     {
         MWBase::Environment::get().getWorld()->setGlobalFloat(name, value);
+
+            /*
+            Start of tes3mp addition
+
+            Avoid setting a global to a value it already is, preventing packet spam
+
+            Additionally, record the old value to check it below when determining if
+            it has changed enough to warrant sending a packet about it
+        */
+        float oldValue = getGlobalFloat(name);
+
+        if (oldValue == value) return;
+        /* End of tes3mp addition */
+            /*
+            Start of tes3mp addition
+
+            Send an ID_CLIENT_SCRIPT_GLOBAL packet when a global float changes its value if
+            its value has changed enough and it is being set in a script that has been approved
+            for packet sending or the global itself has been set to always be synchronized
+        */
+        if (floor(oldValue) != floor(value) && (sendPackets || mwmp::Main::isValidPacketGlobal(std::string(name))))
+        {
+            mwmp::Main::get().getNetworking()->getWorldstate()->sendClientGlobal(std::string(name), value);
+        }
+        /* End of tes3mp addition */
     }
 
     std::vector<std::string> InterpreterContext::getGlobals() const
@@ -484,6 +661,22 @@ namespace MWScript
         Locals& locals = getMemberLocals(global, id);
 
         locals.mShorts[findLocalVariableIndex(id, name, 's')] = static_cast<Interpreter::Type_Short>(value);
+        /*
+            Start of tes3mp addition
+
+            Send an ID_SCRIPT_MEMBER_SHORT packet every time a member short changes its value
+            in a script approved for packet sending
+        */
+        if (sendPackets && !global)
+        {
+            mwmp::ObjectList *objectList = mwmp::Main::get().getNetworking()->getObjectList();
+            objectList->reset();
+            objectList->packetOrigin = ScriptController::getPacketOriginFromContextType(mContextType);
+            objectList->originClientScript = mCurrentScriptName;
+            objectList->addScriptMemberShort(id.getRefIdString(), findLocalVariableIndex(id, name, 's'), value);
+            objectList->sendScriptMemberShort();
+        }
+        /* End of tes3mp addition */
     }
 
     void InterpreterContext::setMemberLong(ESM::RefId id, std::string_view name, int value, bool global)

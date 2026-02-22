@@ -12,6 +12,12 @@
 #include "movement.hpp"
 #include "steering.hpp"
 
+/* Start of tes3mp addition */
+#include "../mwmp/Main.hpp"
+#include "../mwmp/Networking.hpp"
+#include "../mwmp/ObjectList.hpp"
+/* End of tes3mp addition */
+
 namespace MWMechanics
 {
     AiActivate::AiActivate(const ESM::RefId& objectId, bool repeat)
@@ -46,6 +52,15 @@ namespace MWMechanics
             // Note: we intentionally do not cancel package after activation here for backward compatibility with
             // original engine.
             MWBase::Environment::get().getLuaManager()->objectActivated(target, actor);
+            /* Start of tes3mp addition */
+            {
+                mwmp::ObjectList *objectList = mwmp::Main::get().getNetworking()->getObjectList();
+                objectList->reset();
+                objectList->packetOrigin = mwmp::CLIENT_GAMEPLAY;
+                objectList->addObjectActivate(target, actor);
+                objectList->sendObjectActivate();
+            }
+            /* End of tes3mp addition */
         }
         return false;
     }
@@ -66,4 +81,12 @@ namespace MWMechanics
         : AiActivate(activate->mTargetId, activate->mRepeat)
     {
     }
+
+    /* Start of tes3mp addition */
+    AiActivate::AiActivate(MWWorld::Ptr object)
+        : mObjectId(ESM::RefId{})
+    {
+        mObjectPtr = object;
+    }
+    /* End of tes3mp addition */
 }

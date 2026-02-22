@@ -5,6 +5,17 @@
 
 #include <components/esm3/loadnpc.hpp>
 #include <components/esm3/loadweap.hpp>
+
+    /*
+    Start of tes3mp addition
+
+    Include additional headers for multiplayer purposes
+*/
+#include <components/openmw-mp/Utils.hpp>
+#include "../mwmp/Main.hpp"
+#include "../mwmp/Networking.hpp"
+#include "../mwmp/LocalPlayer.hpp"
+/* End of tes3mp addition */
 #include <components/misc/constants.hpp>
 #include <components/settings/values.hpp>
 
@@ -265,6 +276,17 @@ namespace MWClass
         newItem.mEnchant = enchId;
         newItem.mData.mFlags |= ESM::Weapon::Magical;
         const ESM::Weapon* record = MWBase::Environment::get().getESMStore()->insert(newItem);
+
+            /*
+            Start of tes3mp addition
+
+            Send the newly created record to the server and expect it to be
+            returned with a server-set id
+        */
+        unsigned int quantity = mwmp::Main::get().getLocalPlayer()->lastEnchantmentQuantity;
+
+        mwmp::Main::get().getNetworking()->getWorldstate()->sendWeaponRecord(&newItem, ref->mBase->mId.getRefIdString(), quantity);
+        /* End of tes3mp addition */
         return record->mId;
     }
 

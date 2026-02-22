@@ -104,4 +104,25 @@ namespace Translation
     {
         mEncoder = encoder;
     }
+    bool Storage::hasTranslation() const
+    {
+        return !mCellNamesTranslations.empty() || !mKeywords.empty() || !mPhraseForms.empty();
+    }
+
+    /*
+        Start of tes3mp addition
+
+        Get the localized version of an English topic ID
+    */
+    std::string Storage::getLocalizedTopicId(const std::string& englishTopicId) const
+    {
+        for (const auto& [localizedTopicId, topicId] : mKeywords)
+        {
+            if (Misc::StringUtils::ciEqual(englishTopicId, topicId))
+                return localizedTopicId;
+        }
+
+        return "";
+    }
+    /* End of tes3mp addition */
 }

@@ -19,6 +19,7 @@ endfunction(enable_unity_build)
 macro (add_openmw_dir dir)
     set (files)
     set (cppfiles)
+
     foreach (u ${ARGN})
 
         # Add cpp and hpp to OPENMW_FILES
@@ -37,11 +38,12 @@ macro (add_openmw_dir dir)
     endforeach (u)
 
     if (OPENMW_UNITY_BUILD)
-        enable_unity_build(${dir} "${cppfiles}")
-        list (APPEND OPENMW_FILES ${CMAKE_CURRENT_BINARY_DIR}/ub_${dir}.cpp)
+        enable_unity_build(${newDir} "${cppfiles}")
+        list (APPEND OPENMW_FILES ${CMAKE_CURRENT_BINARY_DIR}/ub_${newDir}.cpp)
     endif()
 
-    source_group ("apps\\openmw\\${dir}" FILES ${files})
+    string(REGEX REPLACE "/" "\\\\" newDir ${dir})
+    source_group ("apps\\openmw\\${newDir}" FILES ${files})
 endmacro (add_openmw_dir)
 
 macro (add_component_dir dir)
@@ -65,11 +67,12 @@ macro (add_component_dir dir)
     endforeach (u)
 
     if (OPENMW_UNITY_BUILD)
-        enable_unity_build(${dir} "${cppfiles}")
-        list (APPEND COMPONENT_FILES ${CMAKE_CURRENT_BINARY_DIR}/ub_${dir}.cpp)
+        enable_unity_build(${newDir} "${cppfiles}")
+        list (APPEND COMPONENT_FILES ${CMAKE_CURRENT_BINARY_DIR}/ub_${newDir}.cpp)
     endif()
 
-    source_group ("components\\${dir}" FILES ${files})
+    string(REGEX REPLACE "/" "\\\\" newDir ${dir})
+    source_group ("components\\${newDir}" FILES ${files})
 endmacro (add_component_dir)
 
 macro (add_component_qt_dir dir)

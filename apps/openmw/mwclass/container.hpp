@@ -69,6 +69,13 @@ namespace MWClass
         ESM::RefId getScript(const MWWorld::ConstPtr& ptr) const override;
         ///< Return name of the script attached to ptr
 
+                /*
+                Start of tes3mp addition
+
+                Make it possible to check whether a class has a container store
+            */
+            virtual bool hasContainerStore(const MWWorld::Ptr &ptr) const { return true; }
+            /* End of tes3mp addition */
         float getCapacity(const MWWorld::Ptr& ptr) const override;
         ///< Return total weight that fits into the object. Throws an exception, if the object can't
         /// hold other objects.
