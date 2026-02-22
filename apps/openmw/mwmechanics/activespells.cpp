@@ -306,8 +306,12 @@ namespace MWMechanics
                         MWWorld::Ptr actorPtr = MWBase::Environment::get().getWorld()->searchPtrViaActorId(getActorId());
 
                         if (mwmp::Main::get().getCellController()->isLocalActor(actorPtr))
-                            mwmp::Main::get().getCellController()->getLocalActor(actorPtr)->sendSpellsActiveRemoval(spellIt->getSourceSpellId().getRefIdString(),
+                        {
+                            mwmp::LocalActor *spellActor = mwmp::Main::get().getCellController()->getLocalActor(actorPtr);
+                            if (spellActor) spellActor->sendSpellsActiveRemoval(spellIt->getSourceSpellId().getRefIdString(),
                                 MechanicsHelper::isStackingSpell(spellIt->getSourceSpellId().getRefIdString()), spellIt->mNextWorsening);
+                            else Log(Debug::Warning) << "activespells: getLocalActor returned nullptr for " << actorPtr.getCellRef().getRefId();
+                        }
                     }
                     /* End of tes3mp addition */
                 }

@@ -405,9 +405,14 @@ namespace MWMechanics
                 else
                 {
                     localCast = MechanicsHelper::getLocalCast(mCaster);
-                    localCast->success = MechanicsHelper::getSpellSuccess(mId.getRefIdString(), mCaster);
-                    localCast->pressed = false;
-                    localCast->shouldSend = true;
+                    if (localCast)
+                    {
+                        localCast->success = MechanicsHelper::getSpellSuccess(mId.getRefIdString(), mCaster);
+                        localCast->pressed = false;
+                        localCast->shouldSend = true;
+                    }
+                    else
+                        LOG_MESSAGE_SIMPLE(TimedLog::LOG_WARN, "spellcasting: getLocalCast returned nullptr for %s", mCaster.getCellRef().getRefId().getRefIdString().c_str());
                 }
 
                 // Check success

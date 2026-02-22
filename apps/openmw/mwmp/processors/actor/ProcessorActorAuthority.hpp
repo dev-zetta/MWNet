@@ -27,6 +27,11 @@ namespace mwmp
             {
                 cellController->initializeCell(actorList.cell);
                 mwmp::Cell *cell = cellController->getCell(actorList.cell);
+                if (!cell)
+                {
+                    LOG_MESSAGE_SIMPLE(TimedLog::LOG_WARN, "ProcessorActorAuthority: getCell returned nullptr for %s", actorList.cell.getDescription().c_str());
+                    return;
+                }
                 cell->setAuthority(guid);
 
                 if (isLocal())

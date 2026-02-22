@@ -110,8 +110,11 @@ Attack *MechanicsHelper::getLocalAttack(const MWWorld::Ptr& ptr)
     if (ptr == MWMechanics::getPlayer())
         return &mwmp::Main::get().getLocalPlayer()->attack;
     else if (mwmp::Main::get().getCellController()->isLocalActor(ptr))
-        return &mwmp::Main::get().getCellController()->getLocalActor(ptr)->attack;
-
+    {
+        auto* a = mwmp::Main::get().getCellController()->getLocalActor(ptr);
+        if (a) return &a->attack;
+        else LOG_MESSAGE_SIMPLE(TimedLog::LOG_WARN, "getLocalAttack: getLocalActor nullptr for %s", ptr.getCellRef().getRefId().getRefIdString().c_str());
+    }
     return nullptr;
 }
 
@@ -120,8 +123,11 @@ Attack *MechanicsHelper::getDedicatedAttack(const MWWorld::Ptr& ptr)
     if (mwmp::PlayerList::isDedicatedPlayer(ptr))
         return &mwmp::PlayerList::getPlayer(ptr)->attack;
     else if (mwmp::Main::get().getCellController()->isDedicatedActor(ptr))
-        return &mwmp::Main::get().getCellController()->getDedicatedActor(ptr)->attack;
-
+    {
+        auto* a = mwmp::Main::get().getCellController()->getDedicatedActor(ptr);
+        if (a) return &a->attack;
+        else LOG_MESSAGE_SIMPLE(TimedLog::LOG_WARN, "getDedicatedAttack: getDedicatedActor nullptr for %s", ptr.getCellRef().getRefId().getRefIdString().c_str());
+    }
     return nullptr;
 }
 
@@ -130,8 +136,11 @@ Cast *MechanicsHelper::getLocalCast(const MWWorld::Ptr& ptr)
     if (ptr == MWMechanics::getPlayer())
         return &mwmp::Main::get().getLocalPlayer()->cast;
     else if (mwmp::Main::get().getCellController()->isLocalActor(ptr))
-        return &mwmp::Main::get().getCellController()->getLocalActor(ptr)->cast;
-
+    {
+        auto* a = mwmp::Main::get().getCellController()->getLocalActor(ptr);
+        if (a) return &a->cast;
+        else LOG_MESSAGE_SIMPLE(TimedLog::LOG_WARN, "getLocalCast: getLocalActor nullptr for %s", ptr.getCellRef().getRefId().getRefIdString().c_str());
+    }
     return nullptr;
 }
 
@@ -140,8 +149,11 @@ Cast *MechanicsHelper::getDedicatedCast(const MWWorld::Ptr& ptr)
     if (mwmp::PlayerList::isDedicatedPlayer(ptr))
         return &mwmp::PlayerList::getPlayer(ptr)->cast;
     else if (mwmp::Main::get().getCellController()->isDedicatedActor(ptr))
-        return &mwmp::Main::get().getCellController()->getDedicatedActor(ptr)->cast;
-
+    {
+        auto* a = mwmp::Main::get().getCellController()->getDedicatedActor(ptr);
+        if (a) return &a->cast;
+        else LOG_MESSAGE_SIMPLE(TimedLog::LOG_WARN, "getDedicatedCast: getDedicatedActor nullptr for %s", ptr.getCellRef().getRefId().getRefIdString().c_str());
+    }
     return nullptr;
 }
 
@@ -178,11 +190,15 @@ unsigned int MechanicsHelper::getActorId(const mwmp::Target& target)
         auto controller = mwmp::Main::get().getCellController();
         if (controller->isLocalActor(target.refNum, target.mpNum))
         {
-            targetPtr = controller->getLocalActor(target.refNum, target.mpNum)->getPtr();
+            auto* la = controller->getLocalActor(target.refNum, target.mpNum);
+            if (la) targetPtr = la->getPtr();
+            else LOG_MESSAGE_SIMPLE(TimedLog::LOG_WARN, "MechanicsHelper::getActorId: getLocalActor nullptr for %i-%i", target.refNum, target.mpNum);
         }
         else if (controller->isDedicatedActor(target.refNum, target.mpNum))
         {
-            targetPtr = controller->getDedicatedActor(target.refNum, target.mpNum)->getPtr();
+            auto* da = controller->getDedicatedActor(target.refNum, target.mpNum);
+            if (da) targetPtr = da->getPtr();
+            else LOG_MESSAGE_SIMPLE(TimedLog::LOG_WARN, "MechanicsHelper::getActorId: getDedicatedActor nullptr for %i-%i", target.refNum, target.mpNum);
         }
     }
 

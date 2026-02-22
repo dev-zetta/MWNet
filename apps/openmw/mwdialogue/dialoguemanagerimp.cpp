@@ -706,7 +706,8 @@ namespace MWDialogue
             if (mwmp::Main::get().getCellController()->isLocalActor(actor))
             {
                 mwmp::LocalActor *localActor = mwmp::Main::get().getCellController()->getLocalActor(actor);
-                localActor->sound = info->mSound;
+                if (localActor) localActor->sound = info->mSound;
+                else Log(Debug::Warning) << "dialoguemanagerimp: getLocalActor returned nullptr for " << actor.getCellRef().getRefId();
             }
             /* End of tes3mp addition */
             MWBase::Environment::get().getLuaManager()->onDialogueResponse(actor, *info, *dial);

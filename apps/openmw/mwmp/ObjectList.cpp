@@ -307,7 +307,9 @@ void ObjectList::editContainers(MWWorld::CellStore* cellStore)
             {
                 MWWorld::InventoryStore& invStore = ptrFound.getClass().getInventoryStore(ptrFound);
                 invStore.autoEquip();
-                mwmp::Main::get().getCellController()->getLocalActor(ptrFound)->updateEquipment(true, true);
+                auto* la = mwmp::Main::get().getCellController()->getLocalActor(ptrFound);
+                if (la) la->updateEquipment(true, true);
+                else Log(Debug::Warning) << "ObjectList: getLocalActor nullptr for " << ptrFound.getCellRef().getRefId();
             }
 
             // If this container can be harvested, disable and then enable it again to refresh its animation

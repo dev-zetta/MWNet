@@ -1727,11 +1727,17 @@ namespace MWMechanics
                                 mAttackType = getRandomAttackType();
                         }
                         /* Start of tes3mp addition */
-                        else
+                        else if (mwmp::Main::get().getCellController()->isDedicatedActor(mPtr))
                         {
                             mwmp::Attack *dedicatedAttack = MechanicsHelper::getDedicatedAttack(mPtr);
                             if (dedicatedAttack)
                                 mAttackType = dedicatedAttack->attackAnimation;
+                        }
+                        else
+                        {
+                            mAttackType = getDesiredAttackType();
+                            if (mAttackType.empty())
+                                mAttackType = getRandomAttackType();
                         }
                         /* End of tes3mp addition */
 
@@ -2724,10 +2730,14 @@ namespace MWMechanics
         if (mwmp::Main::get().getCellController()->isLocalActor(mPtr))
         {
             mwmp::LocalActor *actor = mwmp::Main::get().getCellController()->getLocalActor(mPtr);
-            actor->animation.groupname = std::string(groupname);
-            actor->animation.mode = mode;
-            actor->animation.count = count;
-            actor->animation.persist = scripted;
+            if (actor)
+            {
+                actor->animation.groupname = std::string(groupname);
+                actor->animation.mode = mode;
+                actor->animation.count = count;
+                actor->animation.persist = scripted;
+            }
+            else Log(Debug::Warning) << "character::playGroup: getLocalActor returned nullptr for " << mPtr.getCellRef().getRefId();
         }
         /* End of tes3mp addition */
 
@@ -2888,7 +2898,9 @@ namespace MWMechanics
         /* Start of tes3mp addition */
         if (mwmp::Main::get().getCellController()->isLocalActor(mPtr))
         {
-            mwmp::Main::get().getCellController()->getLocalActor(mPtr)->creatureStats.mDeathAnimationFinished = true;
+            mwmp::LocalActor *deathActor = mwmp::Main::get().getCellController()->getLocalActor(mPtr);
+            if (deathActor) deathActor->creatureStats.mDeathAnimationFinished = true;
+            else Log(Debug::Warning) << "character::deathAnimation: getLocalActor returned nullptr for " << mPtr.getCellRef().getRefId();
         }
         /* End of tes3mp addition */
     }

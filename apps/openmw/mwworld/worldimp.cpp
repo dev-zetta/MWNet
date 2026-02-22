@@ -784,9 +784,17 @@ namespace MWWorld
                     if (newPtr.getClass().isActor())
                     {
                         if (mwmp::Main::get().getCellController()->isLocalActor(refNum, mpNum))
-                            mwmp::Main::get().getCellController()->getLocalActor(refNum, mpNum)->setPtr(newPtr);
+                        {
+                            auto* la = mwmp::Main::get().getCellController()->getLocalActor(refNum, mpNum);
+                            if (la) la->setPtr(newPtr);
+                            else Log(Debug::Warning) << "worldimp: getLocalActor nullptr for " << refNum << "-" << mpNum;
+                        }
                         else if (mwmp::Main::get().getCellController()->isDedicatedActor(refNum, mpNum))
-                            mwmp::Main::get().getCellController()->getDedicatedActor(refNum, mpNum)->setPtr(newPtr);
+                        {
+                            auto* da = mwmp::Main::get().getCellController()->getDedicatedActor(refNum, mpNum);
+                            if (da) da->setPtr(newPtr);
+                            else Log(Debug::Warning) << "worldimp: getDedicatedActor nullptr for " << refNum << "-" << mpNum;
+                        }
                     }
                 }
             }
@@ -1180,7 +1188,7 @@ namespace MWWorld
                 return ptr;
             }
             else if (mwmp::Main::get().getCellController()->isDedicatedActor(ptr) &&
-                !mwmp::Main::get().getCellController()->isSameCell(mwmp::Main::get().getCellController()->getDedicatedActor(ptr)->cell, newCell->getCell()->getEsm3()))
+                [&]{ auto* da = mwmp::Main::get().getCellController()->getDedicatedActor(ptr); return da && !mwmp::Main::get().getCellController()->isSameCell(da->cell, newCell->getCell()->getEsm3()); }())
             {
                 ptr.getRefData().setPosition(originalPos);
                 return ptr;
@@ -1262,9 +1270,17 @@ namespace MWWorld
                     Update the Ptrs of LocalActors, DedicatedPlayers and DedicatedActors
                 */
                 if (mwmp::Main::get().getCellController()->isLocalActor(ptr))
-                    mwmp::Main::get().getCellController()->getLocalActor(ptr)->setPtr(newPtr);
+                {
+                    auto* la = mwmp::Main::get().getCellController()->getLocalActor(ptr);
+                    if (la) la->setPtr(newPtr);
+                    else Log(Debug::Warning) << "worldimp: getLocalActor nullptr for " << ptr.getCellRef().getRefId();
+                }
                 else if (mwmp::Main::get().getCellController()->isDedicatedActor(ptr))
-                    mwmp::Main::get().getCellController()->getDedicatedActor(ptr)->setPtr(newPtr);
+                {
+                    auto* da = mwmp::Main::get().getCellController()->getDedicatedActor(ptr);
+                    if (da) da->setPtr(newPtr);
+                    else Log(Debug::Warning) << "worldimp: getDedicatedActor nullptr for " << ptr.getCellRef().getRefId();
+                }
                 else if (mwmp::PlayerList::isDedicatedPlayer(ptr))
                     mwmp::PlayerList::getPlayer(ptr)->setPtr(newPtr);
                 /* End of tes3mp addition */

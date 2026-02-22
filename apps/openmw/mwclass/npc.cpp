@@ -948,7 +948,9 @@ namespace MWClass
         {
             if (getCreatureStats(ptr).isDead())
             {
-                mwmp::Main::get().getCellController()->getLocalActor(ptr)->killer = MechanicsHelper::getTarget(attacker);
+                auto* la = mwmp::Main::get().getCellController()->getLocalActor(ptr);
+                if (la) la->killer = MechanicsHelper::getTarget(attacker);
+                else Log(Debug::Warning) << "npc.cpp: getLocalActor returned nullptr for " << ptr.getCellRef().getRefId();
             }
         }
         /* End of tes3mp addition */

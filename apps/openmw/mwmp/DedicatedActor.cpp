@@ -254,9 +254,17 @@ void DedicatedActor::setAi()
         else
         {
             if (mwmp::Main::get().getCellController()->isLocalActor(aiTarget.refNum, aiTarget.mpNum))
-                targetPtr = mwmp::Main::get().getCellController()->getLocalActor(aiTarget.refNum, aiTarget.mpNum)->getPtr();
+            {
+                auto* la = mwmp::Main::get().getCellController()->getLocalActor(aiTarget.refNum, aiTarget.mpNum);
+                if (la) targetPtr = la->getPtr();
+                else LOG_MESSAGE_SIMPLE(TimedLog::LOG_WARN, "DedicatedActor::setAi: getLocalActor returned nullptr for %i-%i", aiTarget.refNum, aiTarget.mpNum);
+            }
             else if (mwmp::Main::get().getCellController()->isDedicatedActor(aiTarget.refNum, aiTarget.mpNum))
-                targetPtr = mwmp::Main::get().getCellController()->getDedicatedActor(aiTarget.refNum, aiTarget.mpNum)->getPtr();
+            {
+                auto* da = mwmp::Main::get().getCellController()->getDedicatedActor(aiTarget.refNum, aiTarget.mpNum);
+                if (da) targetPtr = da->getPtr();
+                else LOG_MESSAGE_SIMPLE(TimedLog::LOG_WARN, "DedicatedActor::setAi: getDedicatedActor returned nullptr for %i-%i", aiTarget.refNum, aiTarget.mpNum);
+            }
             else if (aiAction == mwmp::BaseActorList::ACTIVATE)
                 targetPtr = MWBase::Environment::get().getWorld()->searchPtrViaUniqueIndex(aiTarget.refNum, aiTarget.mpNum);
 
