@@ -1527,7 +1527,19 @@ namespace MWGui
         try
         {
             for (WindowBase* window : mGuiModeStates[mode].mWindows)
+            {
+                /*
+                    Start of tes3mp change (minor)
+
+                    If the dialogue window is already open for this actor, skip setPtr to avoid
+                    re-running startDialogue (which would add a duplicate greeting). This happens
+                    when a greeting script calls ForceGreeting while the window is already open.
+                */
+                if (mode == GM_Dialogue && !arg.isEmpty() && mDialogueWindow->getPtr() == arg)
+                    continue;
+                /* End of tes3mp change (minor) */
                 window->setPtr(arg);
+            }
         }
         catch (...)
         {

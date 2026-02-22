@@ -37,6 +37,7 @@
 #include "../mwmp/CellController.hpp"
 #include "../mwmp/LocalPlayer.hpp"
 #include "../mwmp/LocalActor.hpp"
+#include "../mwgui/dialogue.hpp"
 /* End of tes3mp addition */
 
 #include "../mwbase/environment.hpp"
@@ -691,7 +692,20 @@ namespace MWDialogue
         {
             MWBase::WindowManager* winMgr = MWBase::Environment::get().getWindowManager();
             if (Settings::gui().mSubtitles)
-                winMgr->messageBox(info->mResponse);
+            {
+                /*
+                    Start of tes3mp change (minor)
+
+                    If the dialogue window is already open for this actor, don't inject the
+                    say() subtitle into it - startDialogue() already added the greeting text,
+                    so showing it again via messageBox would cause a duplicate greeting.
+                */
+                bool actorInDialogue = winMgr->containsMode(MWGui::GM_Dialogue)
+                    && static_cast<MWGui::DialogueWindow*>(winMgr->getDialogueWindow())->getPtr() == actor;
+                winMgr->messageBox(info->mResponse,
+                    actorInDialogue ? MWGui::ShowInDialogueMode_Never : MWGui::ShowInDialogueMode_IfPossible);
+                /* End of tes3mp change (minor) */
+            }
             if (!info->mSound.empty())
                 sndMgr->say(actor, Misc::ResourceHelpers::correctSoundPath(VFS::Path::Normalized(info->mSound)));
             if (!info->mResultScript.empty())

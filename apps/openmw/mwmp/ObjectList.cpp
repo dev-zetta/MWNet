@@ -1014,25 +1014,35 @@ void ObjectList::makeDialogueChoices(MWWorld::CellStore* cellStore)
 
             if (ptrFound.getClass().isActor())
             {
+                MWBase::WindowManager* winMgr = MWBase::Environment::get().getWindowManager();
+                bool hasDialogue = winMgr->containsMode(MWGui::GM_Dialogue);
+                bool sameActor = hasDialogue && winMgr->getDialogueWindow()->getPtr() == ptrFound;
+                bool dialogueAlreadyOpen = hasDialogue && sameActor;
+
                 // Ensure the dialogue window has the correct Ptr set for it
-                if (MWBase::Environment::get().getWindowManager()->containsMode(MWGui::GM_Dialogue))
+                if (!dialogueAlreadyOpen)
                 {
-                    if (MWBase::Environment::get().getWindowManager()->getDialogueWindow()->getPtr() != ptrFound)
+                    if (winMgr->containsMode(MWGui::GM_Dialogue))
                     {
-                        MWBase::Environment::get().getWindowManager()->getDialogueWindow()->setPtr(ptrFound);
+                        // Different actor - switch to new one
+                        winMgr->getDialogueWindow()->setPtr(ptrFound);
+                    }
+                    else
+                    {
+                        winMgr->pushGuiMode(MWGui::GM_Dialogue, ptrFound);
                     }
                 }
-                else
-                {
-                    MWBase::Environment::get().getWindowManager()->pushGuiMode(MWGui::GM_Dialogue, ptrFound);
-                }
-                
+
                 LOG_APPEND(TimedLog::LOG_VERBOSE, "-- Making dialogue choice of type %i", baseObject.dialogueChoiceType);
 
                 if (baseObject.dialogueChoiceType == DialogueChoiceType::TOPIC)
                 {
                     LOG_APPEND(TimedLog::LOG_VERBOSE, "-- topic was %s", baseObject.topicId.c_str());
                 }
+
+                // Skip empty topic - this is the initial dialogue open, greeting already shown by setPtr/startDialogue
+                if (baseObject.dialogueChoiceType == DialogueChoiceType::TOPIC && baseObject.topicId.empty())
+                    return;
 
                 std::string topic = baseObject.topicId;
 
