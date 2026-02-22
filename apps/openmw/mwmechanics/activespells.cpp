@@ -792,7 +792,9 @@ namespace MWMechanics
         if (idx >= 0)
             purgeEffectByArg(static_cast<short>(idx), effectArg);
     }
+    /* End of tes3mp addition */
 
+    /* Start of tes3mp addition */
     void ActiveSpells::purgeEffectByArg(short effectId, int effectArg)
     {
         const ESM::RefId effectRefId = ESM::MagicEffect::indexToRefId(effectId);

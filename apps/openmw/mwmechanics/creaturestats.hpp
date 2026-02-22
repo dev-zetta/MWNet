@@ -76,7 +76,11 @@ namespace MWMechanics
         // actor attacks. It is cleared when combat ends.
         ESM::RefNum mHitAttemptActor;
 
-        /* Start of tes3mp addition */
+        /*
+            Start of tes3mp addition
+
+            Track actor ID for TES3MP multiplayer lookup
+        */
         int mActorId = 0;
         /* End of tes3mp addition */
 
@@ -245,16 +249,17 @@ namespace MWMechanics
 
         std::multimap<ESM::RefId, ESM::RefNum>& getSummonedCreatureMap(); // <Effect, summoned creature>
 
-         /*
+        /*
             Start of tes3mp addition
 
             Make it possible to set a new actorId for summoned creatures, necessary for properly
             initializing them after syncing them across players
-         */
+        */
         void setSummonedCreatureActorId(ESM::RefId refId, int actorId);
         int getActorId() const { return mActorId; }
         void setActorId(int actorId) { mActorId = actorId; }
         /* End of tes3mp addition */
+
 
         enum Flag
         {

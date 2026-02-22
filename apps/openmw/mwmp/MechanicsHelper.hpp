@@ -51,7 +51,7 @@ namespace MechanicsHelper
     bool isStackingSpell(const std::string& id);
     bool doesEffectListContainEffect(const ESM::EffectList& effectList, short effectId, short attributeId = -1, short skillId = -1);
     void unequipItemsByEffect(const MWWorld::Ptr& ptr, short enchantmentType, short effectId, short attributeId = -1, short skillId = -1);
-    void unequipItemsByEffect(const MWWorld::Ptr& ptr, short enchantmentType, const ESM::RefId& effectId, short attributeId = -1, short skillId = -1);
+    void unequipItemsByEffect(const MWWorld::Ptr& ptr, short enchantmentType, const ESM::RefId& effectId, short attributeId = -1, short skillId = -1); // ESM::RefId overload for Qt6/master API
 
     MWWorld::Ptr getItemPtrFromStore(const mwmp::Item& item, MWWorld::ContainerStore& store);
 }

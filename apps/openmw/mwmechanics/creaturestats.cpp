@@ -680,11 +680,14 @@ namespace MWMechanics
         return mSummonedCreatures;
     }
 
-    /* Start of tes3mp addition */
+    /*
+        Start of tes3mp addition
+
+        No-op stub: summoned creature map now uses ESM::RefNum instead of int actorId.
+        The RefNum is set directly via getSummonedCreatureMap().emplace() at spawn time.
+    */
     void CreatureStats::setSummonedCreatureActorId(ESM::RefId refId, int actorId)
     {
-        // No-op: summoned creature map now uses ESM::RefNum instead of int actorId.
-        // The RefNum is set directly via getSummonedCreatureMap().emplace() at spawn time.
         (void)refId;
         (void)actorId;
     }
