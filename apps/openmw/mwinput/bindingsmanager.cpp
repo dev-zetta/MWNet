@@ -726,15 +726,6 @@ namespace MWInput
             {
                 std::filesystem::rename(Files::pathFromUnicodeString(newFileName), mUserFile);
                 Log(Debug::Info) << "Saved input bindings: " << mUserFile;
-
-                        /*
-                        Start of tes3mp addition
-
-                        Prevent players from starting attacks while in the persuasion submenu in dialogue
-                    */
-                    if (MWBase::Environment::get().getWindowManager()->containsMode(MWGui::GM_Dialogue))
-                        return;
-                    /* End of tes3mp addition */
             }
             else
             {

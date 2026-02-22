@@ -459,6 +459,17 @@ OMW::Engine::~Engine()
     mMechanicsManager = nullptr;
     mDialogueManager = nullptr;
     mJournal = nullptr;
+
+        /*
+        Start of tes3mp addition
+
+        Free up memory allocated by multiplayer's GUIController before mWindowManager
+        is destroyed, to prevent use-after-free in GUIChat/MyGUI widget destruction.
+    */
+    if (mwmp::Main::isInitialized())
+        mwmp::Main::get().getGUIController()->cleanUp();
+    /* End of tes3mp addition */
+
     mWindowManager = nullptr;
     mScriptManager = nullptr;
     mWorld = nullptr;
@@ -467,19 +478,8 @@ OMW::Engine::~Engine()
     mInputManager = nullptr;
     mStateManager = nullptr;
     mLuaWorker = nullptr;
-    mLuaManager = nullptr;
+    try { mLuaManager = nullptr; } catch (...) {}
     mL10nManager = nullptr;
-
-
-        /*
-        Start of tes3mp addition
-
-        Free up memory allocated by multiplayer's GUIController, but make sure
-        mwmp::Main has actually been initialized
-    */
-    if (mwmp::Main::isInitialized())
-        mwmp::Main::get().getGUIController()->cleanUp();
-    /* End of tes3mp addition */
         /*
         Start of tes3mp addition
 
@@ -1012,9 +1012,15 @@ void OMW::Engine::go()
     /*
         Start of tes3mp change (major)
 
-        Attempt multiplayer initialization and proceed no further if it fails
+        Attempt multiplayer initialization and proceed no further if it fails.
+        Strip OpenMW-internal entries (builtin.omwscripts) that TES3MP 0.8.1
+        servers don't know about before sending the content list.
     */
-    if (!mwmp::Main::init(mContentFiles, mFileCollections))
+    std::vector<std::string> mpContentFiles;
+    for (const auto& f : mContentFiles)
+        if (f != "builtin.omwscripts")
+            mpContentFiles.push_back(f);
+    if (!mwmp::Main::init(mpContentFiles, mFileCollections))
         return;
     /* End of tes3mp change (major)*/
 
@@ -1043,6 +1049,16 @@ void OMW::Engine::go()
     mViewer->setUseConfigureAffinity(false);
 
     mEnvironment.setFrameRateLimit(Settings::video().mFramerateLimit);
+
+    /*
+        Start of tes3mp change (minor)
+
+        Set mSkipMenu before prepareEngine() so the company logo video
+        is not played during data loading. The video's inner render loop
+        calls Main::frame() before the world is ready, causing a crash.
+    */
+    mSkipMenu = true;
+    /* End of tes3mp change (minor) */
 
     prepareEngine();
 
@@ -1078,9 +1094,9 @@ void OMW::Engine::go()
     /*
         Start of tes3mp change (major)
 
-        Always skip the main menu in multiplayer
+        Always skip the main menu in multiplayer (mSkipMenu already set before prepareEngine)
     */
-    mSkipMenu = true;
+    // mSkipMenu already set to true before prepareEngine() above
     /* End of tes3mp change (major)*/
 
     // Setup profiler
@@ -1115,9 +1131,16 @@ void OMW::Engine::go()
         if (!logo.empty())
             mWindowManager->playVideo(logo, /*allowSkipping*/ true, /*overrideSounds*/ false);
     }
-    else
+    else if (!mwmp::Main::isInitialized() || mStateManager->getState() != MWState::StateManager::State_Running)
     {
+        /*
+            Start of tes3mp change (minor)
+
+            Skip redundant newGame() if TES3MP postInit() already started the game.
+            The cleanup() inside newGame() would destroy the multiplayer state.
+        */
         mStateManager->newGame(!mNewGame);
+        /* End of tes3mp change (minor) */
     }
 
     if (!mStartupScript.empty() && mStateManager->getState() == MWState::StateManager::State_Running)
@@ -1175,7 +1198,14 @@ void OMW::Engine::go()
     // Save user settings
     Settings::Manager::saveUser(mCfgMgr.getUserConfigPath() / "settings.cfg");
     Settings::ShaderManager::get().save();
-    mLuaManager->savePermanentStorage(mCfgMgr.getUserConfigPath());
+    try
+    {
+        mLuaManager->savePermanentStorage(mCfgMgr.getUserConfigPath());
+    }
+    catch (const std::exception& e)
+    {
+        Log(Debug::Warning) << "Failed to save Lua permanent storage: " << e.what();
+    }
 }
 
 void OMW::Engine::setCompileAll(bool all)

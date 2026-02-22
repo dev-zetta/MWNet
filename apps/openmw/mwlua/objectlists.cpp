@@ -1,5 +1,7 @@
 #include "objectlists.hpp"
 
+#include <components/debug/debuglog.hpp>
+#include <components/esm/refid.hpp>
 #include <components/misc/resourcehelpers.hpp>
 
 #include "../mwbase/environment.hpp"
@@ -52,6 +54,16 @@ namespace MWLua
 
     void ObjectLists::objectAddedToScene(const MWWorld::Ptr& ptr)
     {
+        /* Start of tes3mp addition - skip DedicatedPlayer objects with Generated RefIds */
+        {
+            const ESM::RefId& refId = ptr.getCellRef().getRefId();
+            if (!refId.is<ESM::StringRefId>() && !refId.is<ESM::EmptyRefId>())
+            {
+                Log(Debug::Verbose) << "ObjectLists::objectAddedToScene: skipping non-string RefId " << refId;
+                return;
+            }
+        }
+        /* End of tes3mp addition */
         MWBase::Environment::get().getWorldModel()->registerPtr(ptr);
         ObjectGroup* group = chooseGroup(ptr);
         if (group)

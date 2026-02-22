@@ -277,14 +277,21 @@ namespace MWLua
             sol::table res(thisState, sol::create);
             int i = 1;
             for (MWGui::GuiMode m : windowManager->getGuiModeStack())
-                res[i++] = modeToName.at(m);
+            {
+                const auto it = modeToName.find(m);
+                if (it != modeToName.end())
+                    res[i++] = it->second;
+            }
             return res;
         };
         api["_setUiModeStack"]
             = [windowManager, luaManager = context.mLuaManager](sol::table modes, sol::optional<LObject> arg) {
                   std::vector<MWGui::GuiMode> newStack(modes.size());
                   for (unsigned i = 0; i < newStack.size(); ++i)
-                      newStack[i] = nameToMode.at(LuaUtil::cast<std::string_view>(modes[LuaUtil::toLuaIndex(i)]));
+                  {
+                      const auto it = nameToMode.find(LuaUtil::cast<std::string_view>(modes[LuaUtil::toLuaIndex(i)]));
+                      newStack[i] = (it != nameToMode.end()) ? it->second : MWGui::GM_None;
+                  }
                   luaManager->addAction(
                       [windowManager, newStack = std::move(newStack), arg = std::move(arg)]() {
                           MWWorld::Ptr ptr;
@@ -313,8 +320,10 @@ namespace MWLua
         };
         api["_getAllowedWindows"] = [windowManager](sol::this_state thisState, std::string_view mode) {
             sol::table res(thisState, sol::create);
-            for (std::string_view name : windowManager->getAllowedWindowIds(nameToMode.at(mode)))
-                res[name] = name;
+            const auto it = nameToMode.find(mode);
+            if (it != nameToMode.end())
+                for (std::string_view name : windowManager->getAllowedWindowIds(it->second))
+                    res[name] = name;
             return res;
         };
         api["_setWindowDisabled"]

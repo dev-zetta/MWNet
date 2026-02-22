@@ -118,7 +118,7 @@ namespace MWScript
             }
             catch (const std::exception& e)
             {
-                Log(Debug::Error) << "Execution of script " << name << " failed: " << e.what();
+                Log(Debug::Error) << "Script '" << name << "' blacklisted: " << e.what();
 
                 iter->second.mInactive.insert(target); // don't execute again.
             }

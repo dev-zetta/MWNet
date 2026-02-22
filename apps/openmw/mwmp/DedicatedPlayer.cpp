@@ -78,6 +78,9 @@ DedicatedPlayer::~DedicatedPlayer()
 
 void DedicatedPlayer::update(float dt)
 {
+    if (ptr.isEmpty())
+        return;
+
     // Only move and set anim flags if the framerate isn't too low
     if (dt < 0.1)
     {
@@ -182,6 +185,7 @@ void DedicatedPlayer::setBaseInfo()
 
 void DedicatedPlayer::setStatsDynamic()
 {
+    if (ptr.isEmpty()) return;
     MWMechanics::CreatureStats* ptrCreatureStats = &getPtr().getClass().getCreatureStats(getPtr());
     MWMechanics::DynamicStat<float> value;
 
@@ -194,6 +198,7 @@ void DedicatedPlayer::setStatsDynamic()
 
 void DedicatedPlayer::setAnimFlags()
 {
+    if (ptr.isEmpty()) return;
     using namespace MWMechanics;
 
     MWBase::World *world = MWBase::Environment::get().getWorld();
@@ -237,6 +242,7 @@ void DedicatedPlayer::setAnimFlags()
 
 void DedicatedPlayer::setAttributes()
 {
+    if (ptr.isEmpty()) return;
     MWMechanics::CreatureStats *ptrCreatureStats = &ptr.getClass().getCreatureStats(ptr);
     MWMechanics::AttributeValue attributeValue;
 
@@ -249,6 +255,7 @@ void DedicatedPlayer::setAttributes()
 
 void DedicatedPlayer::setSkills()
 {
+    if (ptr.isEmpty()) return;
     // Go no further if the player is disguised as a creature
     if (ptr.getType() != ESM::NPC::sRecordId) return;
 
@@ -264,6 +271,7 @@ void DedicatedPlayer::setSkills()
 
 void DedicatedPlayer::setEquipment()
 {
+    if (ptr.isEmpty()) return;
     // Go no further if the player is disguised as a creature
     if (!ptr.getClass().hasInventoryStore(ptr)) return;
 
@@ -324,12 +332,13 @@ void DedicatedPlayer::setEquipment()
 
 void DedicatedPlayer::setShapeshift()
 {
+    if (ptr.isEmpty() && !reference) return;
     MWBase::World* world = MWBase::Environment::get().getWorld();
 
     bool isNpc = false;
 
     if (reference)
-        isNpc = ptr.getType() == ESM::NPC::sRecordId;
+        isNpc = !ptr.isEmpty() && ptr.getType() == ESM::NPC::sRecordId;
 
     if (creatureRefId != previousCreatureRefId || displayCreatureName != previousDisplayCreatureName)
     {
@@ -379,7 +388,7 @@ void DedicatedPlayer::setShapeshift()
         previousDisplayCreatureName = displayCreatureName;
     }
 
-    if (ptr.getType() == ESM::NPC::sRecordId)
+    if (!ptr.isEmpty() && ptr.getType() == ESM::NPC::sRecordId)
     {
         MWBase::Environment::get().getMechanicsManager()->setWerewolf(ptr, isWerewolf);
 
@@ -387,7 +396,8 @@ void DedicatedPlayer::setShapeshift()
             setEquipment();
     }
 
-    MWBase::Environment::get().getWorld()->scaleObject(ptr, scale);
+    if (!ptr.isEmpty())
+        MWBase::Environment::get().getWorld()->scaleObject(ptr, scale);
 }
 
 void DedicatedPlayer::setCell()
@@ -467,6 +477,7 @@ void DedicatedPlayer::playSpeech()
 
 void DedicatedPlayer::equipItem(std::string itemId, bool noSound)
 {
+    if (ptr.isEmpty()) return;
     for (const auto& itemPtr : ptr.getClass().getInventoryStore(ptr))
     {
         if (::Misc::StringUtils::ciEqual(itemPtr.getCellRef().getRefId().getRefIdString(), itemId))
@@ -480,6 +491,7 @@ void DedicatedPlayer::equipItem(std::string itemId, bool noSound)
 
 void DedicatedPlayer::die()
 {
+    if (ptr.isEmpty()) return;
     MWMechanics::DynamicStat<float> health;
     creatureStats.mDead = true;
     health.readState(creatureStats.mDynamic[0]);
@@ -505,6 +517,7 @@ void DedicatedPlayer::resurrect()
 
 void DedicatedPlayer::addSpellsActive()
 {
+    if (ptr.isEmpty()) return;
     MWMechanics::ActiveSpells& activeSpells = getPtr().getClass().getCreatureStats(getPtr()).getActiveSpells();
 
     for (const auto& activeSpell : spellsActiveChanges.activeSpells)
@@ -521,6 +534,7 @@ void DedicatedPlayer::addSpellsActive()
 
 void DedicatedPlayer::removeSpellsActive()
 {
+    if (ptr.isEmpty()) return;
     MWMechanics::ActiveSpells& activeSpells = getPtr().getClass().getCreatureStats(getPtr()).getActiveSpells();
 
     for (const auto& activeSpell : spellsActiveChanges.activeSpells)

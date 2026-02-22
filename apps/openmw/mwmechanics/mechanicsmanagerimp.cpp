@@ -4,6 +4,7 @@
 
 #include <osg/Stats>
 
+#include <components/debug/debuglog.hpp>
 #include <components/misc/rng.hpp>
 
 #include <components/esm/records.hpp>

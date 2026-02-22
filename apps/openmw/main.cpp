@@ -253,6 +253,14 @@ namespace
 
 int runApplication(int argc, char* argv[])
 {
+    /*
+        Start of tes3mp addition
+
+        Initialize the logger added for multiplayer
+    */
+    LOG_INIT(TimedLog::LOG_INFO);
+    /* End of tes3mp addition */
+
     Platform::init();
 
 #ifdef __APPLE__
@@ -283,14 +291,6 @@ int main(int argc, char** argv)
 #endif
 {
     return Debug::wrapApplication(&runApplication, argc, argv, "OpenMW");
-
-        /*
-        Start of tes3mp addition
-
-        Initialize the logger added for multiplayer
-    */
-    LOG_INIT(TimedLog::LOG_INFO);
-    /* End of tes3mp addition */
 }
 
 // Platform specific for Windows when there is no console built into the executable.

@@ -5,6 +5,7 @@
 #include <RakNetTypes.h>
 #include <BitStream.h>
 #include <PacketPriority.h>
+#include <components/esm/refid.hpp>
 
 
 namespace mwmp
@@ -117,6 +118,23 @@ namespace mwmp
                     str = std::string();
             }
             return res;
+        }
+
+        bool RW(ESM::RefId &refId, bool write, bool compress = false)
+        {
+            if (write)
+            {
+                std::string str = refId.getRefIdString();
+                return RW(str, write, compress);
+            }
+            else
+            {
+                std::string str;
+                bool res = RW(str, write, compress);
+                if (res)
+                    refId = ESM::RefId::stringRefId(str);
+                return res;
+            }
         }
 
     protected:

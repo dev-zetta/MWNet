@@ -34,7 +34,8 @@ namespace MWMechanics
         const MWWorld::Store<ESM::GameSetting>& gmst
             = MWBase::Environment::get().getESMStore()->get<ESM::GameSetting>();
         static const float fNPCbaseMagickaMult = gmst.find("fNPCbaseMagickaMult")->mValue.getFloat();
-        float baseMagicka = fNPCbaseMagickaMult * actorAttributes.at(ESM::Attribute::Intelligence).getBase();
+        const auto intellIt = actorAttributes.find(ESM::Attribute::Intelligence);
+        float baseMagicka = fNPCbaseMagickaMult * (intellIt != actorAttributes.end() ? intellIt->second.getBase() : 0.f);
 
         std::map<ESM::RefId, SchoolCaps> schoolCaps;
         for (const ESM::Skill& skill : MWBase::Environment::get().getESMStore()->get<ESM::Skill>())
@@ -142,7 +143,8 @@ namespace MWMechanics
         static const float fPCbaseMagickaMult
             = esmStore.get<ESM::GameSetting>().find("fPCbaseMagickaMult")->mValue.getFloat();
 
-        float baseMagicka = fPCbaseMagickaMult * actorAttributes.at(ESM::Attribute::Intelligence).getBase();
+        const auto intellIt2 = actorAttributes.find(ESM::Attribute::Intelligence);
+        float baseMagicka = fPCbaseMagickaMult * (intellIt2 != actorAttributes.end() ? intellIt2->second.getBase() : 0.f);
         bool reachedLimit = false;
         const ESM::Spell* weakestSpell = nullptr;
         int minCost = std::numeric_limits<int>::max();
@@ -316,9 +318,11 @@ namespace MWMechanics
             calcWeakestSchool(
                 spell, actorSkills, effectiveSchool, skillTerm); // Note effectiveSchool is unused after this
 
+        const auto willIt = actorAttributes.find(ESM::Attribute::Willpower);
+        const auto luckIt = actorAttributes.find(ESM::Attribute::Luck);
         float castChance = skillTerm - MWMechanics::calcSpellCost(*spell)
-            + 0.2f * actorAttributes.at(ESM::Attribute::Willpower).getBase()
-            + 0.1f * actorAttributes.at(ESM::Attribute::Luck).getBase();
+            + 0.2f * (willIt != actorAttributes.end() ? willIt->second.getBase() : 0.f)
+            + 0.1f * (luckIt != actorAttributes.end() ? luckIt->second.getBase() : 0.f);
         return castChance;
     }
 }

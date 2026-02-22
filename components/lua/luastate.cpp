@@ -52,7 +52,7 @@ namespace LuaUtil
             if (std::filesystem::exists(p2))
                 return p2;
         }
-        throw std::runtime_error("module not found: " + std::string(packageName));
+    throw std::runtime_error("module not found: " + std::string(packageName));
     }
 
     static const std::string safeFunctions[] = { "assert", "error", "ipairs", "next", "pairs", "pcall", "select",

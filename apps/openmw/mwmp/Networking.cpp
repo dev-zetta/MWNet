@@ -197,7 +197,6 @@ Networking::Networking(): peer(RakNet::RakPeerInterface::GetInstance()), systemP
     playerPacketController(peer), actorPacketController(peer), objectPacketController(peer),
     worldstatePacketController(peer)
 {
-
     RakNet::SocketDescriptor sd;
     sd.port=0;
     auto b = peer->Startup(1, &sd, 1);
@@ -255,7 +254,6 @@ void Networking::update()
                 break;
             default:
                 receiveMessage(packet);
-                //LOG_MESSAGE_SIMPLE(TimedLog::LOG_INFO, "Message with identifier %i has arrived.", packet->data[0]);
                 break;
         }
     }
@@ -278,7 +276,7 @@ void Networking::connect(const std::string &ip, unsigned short port, std::vector
     std::stringstream sstr;
     sstr << TES3MP_VERSION;
     sstr << TES3MP_PROTO_VERSION;
-    std::string commitHashString = std::string(Version::getVersion());
+    std::string commitHashString = TES3MP_COMPAT_COMMITHASH;
     // Remove carriage returns added to version file on Windows
     commitHashString.erase(std::remove(commitHashString.begin(), commitHashString.end(), '\r'), commitHashString.end());
     sstr << commitHashString;
@@ -347,9 +345,10 @@ void Networking::connect(const std::string &ip, unsigned short port, std::vector
         SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR, "tes3mp", errmsg.c_str(), 0);
     }
     else
+    {
         preInit(content, collections);
-
-    getLocalPlayer()->guid = getLocalSystem()->guid = peer->GetMyGUID();
+        getLocalPlayer()->guid = getLocalSystem()->guid = peer->GetMyGUID();
+    }
 }
 
 void Networking::preInit(std::vector<std::string> &content, Files::Collections &collections)
@@ -359,7 +358,11 @@ void Networking::preInit(std::vector<std::string> &content, Files::Collections &
     for (int idx = 0; it != content.end(); ++it, ++idx)
     {
         boost::filesystem::path filename(*it);
-        const Files::MultiDirCollection& col = collections.getCollection(filename.extension().string());
+        std::string ext = filename.extension().string();
+        // MultiDirCollection expects extension WITHOUT leading dot
+        if (!ext.empty() && ext[0] == '.')
+            ext = ext.substr(1);
+        const Files::MultiDirCollection& col = collections.getCollection(ext);
         if (col.doesExist(*it))
         {
             PacketPreInit::HashList hashList;
@@ -370,7 +373,12 @@ void Networking::preInit(std::vector<std::string> &content, Files::Collections &
             LOG_APPEND(TimedLog::LOG_WARN, "idx: %d\tchecksum: %X\tfile: %s\n", idx, crc32, col.getPath(*it).string().c_str());
         }
         else
-            throw std::runtime_error("Plugin doesn't exist.");
+        {
+            std::string errmsg = "Plugin not found: \"" + *it + "\" (extension: \"" + filename.extension().string() + "\")";
+            LOG_MESSAGE_SIMPLE(TimedLog::LOG_ERROR, "%s", errmsg.c_str());
+            SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR, "tes3mp - Plugin not found", errmsg.c_str(), 0);
+            throw std::runtime_error(errmsg);
+        }
     }
 
     PacketPreInit packetPreInit(peer);
@@ -415,9 +423,10 @@ void Networking::preInit(std::vector<std::string> &content, Files::Collections &
     if (!checksumsResponse.empty()) // something wrong
     {
         std::string errmsg = listDiscrepancies(checksums, checksumsResponse);
+        std::string comparison = listComparison(checksums, checksumsResponse, true);
 
-        LOG_MESSAGE_SIMPLE(TimedLog::LOG_ERROR, listDiscrepancies(checksums, checksumsResponse).c_str());
-        LOG_MESSAGE_SIMPLE(TimedLog::LOG_ERROR, listComparison(checksums, checksumsResponse, true).c_str());
+        LOG_MESSAGE_SIMPLE(TimedLog::LOG_ERROR, "%s", errmsg.c_str());
+        LOG_MESSAGE_SIMPLE(TimedLog::LOG_ERROR, "%s", comparison.c_str());
         SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR, "tes3mp", errmsg.c_str(), 0);
         connected = false;
     }

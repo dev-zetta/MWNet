@@ -1,5 +1,6 @@
 #include "engineevents.hpp"
 
+#include <components/esm/refid.hpp>
 #include <components/debug/debuglog.hpp>
 #include <components/settings/values.hpp>
 
@@ -27,6 +28,16 @@ namespace MWLua
             MWWorld::Ptr ptr = getPtr(event.mObject);
             if (ptr.isEmpty())
                 return;
+            /* Start of tes3mp addition - skip Generated RefIds (DedicatedPlayers) */
+            {
+                const ESM::RefId& refId = ptr.getCellRef().getRefId();
+                if (!refId.is<ESM::StringRefId>() && !refId.is<ESM::EmptyRefId>())
+                {
+                    Log(Debug::Verbose) << "EngineEvents::OnActive: skipping non-string RefId " << refId;
+                    return;
+                }
+            }
+            /* End of tes3mp addition */
             if (ptr.getCellRef().getRefId() == "player")
                 mGlobalScripts.playerAdded(GObject(ptr));
             else

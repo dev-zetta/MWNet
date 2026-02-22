@@ -91,7 +91,17 @@ namespace MWLua
 
     LuaManager::~LuaManager()
     {
-        LuaUi::clearSettings();
+        try
+        {
+            mGlobalScripts.removeAllScripts();
+            mMenuScripts.removeAllScripts();
+            LuaUi::clearSettings();
+        }
+        catch (const std::exception& e)
+        {
+            Log(Debug::Warning) << "LuaManager cleanup error: " << e.what();
+        }
+        catch (...) {}
     }
 
     void LuaManager::initConfiguration(bool reload)
@@ -709,6 +719,19 @@ namespace MWLua
 
     void LuaManager::objectAddedToScene(const MWWorld::Ptr& ptr)
     {
+        if (ptr.isEmpty())
+            return;
+        /* Start of tes3mp addition - DedicatedPlayer objects have Generated:0x RefIds
+           that Lua scripts cannot serialize, causing "RefId is not a string" errors */
+        {
+            const ESM::RefId& refId = ptr.getCellRef().getRefId();
+            if (!refId.is<ESM::StringRefId>() && !refId.is<ESM::EmptyRefId>())
+            {
+                Log(Debug::Verbose) << "LuaManager::objectAddedToScene: skipping non-string RefId " << refId;
+                return;
+            }
+        }
+        /* End of tes3mp addition */
         mObjectLists.objectAddedToScene(ptr); // assigns generated RefNum if it is not set yet.
         mEngineEvents.addToQueue(EngineEvents::OnActive{ getId(ptr) });
 

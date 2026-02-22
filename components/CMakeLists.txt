@@ -62,6 +62,7 @@ add_component_dir (lua
     shapes/box inputactions yamlloader scripttracker luastateptr
     )
 copy_resource_file("lua/util.lua" "${OPENMW_RESOURCES_ROOT}" "resources/lua_libs/util.lua")
+copy_resource_file("lua_ui/content.lua" "${OPENMW_RESOURCES_ROOT}" "resources/lua_libs/content.lua")
 
 add_component_dir (l10n
     messagebundles manager

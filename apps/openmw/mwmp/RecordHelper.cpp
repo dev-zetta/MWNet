@@ -362,6 +362,7 @@ void RecordHelper::overrideRecord(const mwmp::CellRecord& record)
         const ESM::Cell *baseData = world->getStore().get<ESM::Cell>().search(ESM::RefId::stringRefId(record.baseId));
         ESM::Cell finalData = *baseData;
         finalData.mName = recordData.mName;
+        finalData.mId = ESM::RefId::stringRefId(finalData.mName);
 
         world->unloadCell(finalData);
         world->clearCellStore(finalData);
@@ -1586,11 +1587,23 @@ void RecordHelper::createPlaceholderInteriorCell()
 {
     MWBase::World* world = MWBase::Environment::get().getWorld();
 
+    // Skip if already created (search by name in dynamic interior map)
+    if (world->getStore().get<ESM::Cell>().search(placeholderInteriorCellName) != nullptr)
+        return;
+
     ESM::Cell placeholderInterior;
     placeholderInterior.mData.mFlags |= ESM::Cell::Flags::Interior;
     placeholderInterior.mName = placeholderInteriorCellName;
+    placeholderInterior.mId = ESM::RefId::stringRefId(placeholderInteriorCellName);
 
-    world->getModifiableStore().insert(placeholderInterior);
+    try
+    {
+        world->getModifiableStore().insert(placeholderInterior);
+    }
+    catch (const std::exception&)
+    {
+        // Cell already exists (e.g. created by a prior changeToInteriorCell call) - that's fine
+    }
 }
 
 const std::string RecordHelper::getPlaceholderInteriorCellName()

@@ -449,6 +449,8 @@ namespace MWScript
                 if (isPlayer)
                     world->getPlayer().setTeleported(true);
 
+                if (isPlayer)
+                    Log(Debug::Info) << "PositionCell player -> '" << cellID << "'";
                 MWWorld::CellStore* store = worldModel->findCell(cellID);
 
                 if (store != nullptr && store->isExterior())

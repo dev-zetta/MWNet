@@ -46,6 +46,7 @@
 #include "CellController.hpp"
 #include "GUIController.hpp"
 #include "MechanicsHelper.hpp"
+#include "RecordHelper.hpp"
 
 using namespace mwmp;
 
@@ -137,8 +138,10 @@ bool LocalPlayer::processCharGen()
     }
 
     // If the current stage of CharGen is not the last one,
-    // move to the next one
-    else if (charGenState.currentStage < charGenState.endStage)
+    // move to the next one. For new characters (endStage > 1) always show
+    // the dialog even if we received baseinfo from the server already.
+    else if (charGenState.currentStage < charGenState.endStage
+        && (!receivedCharacter || charGenState.endStage > 1))
     {
         switch (charGenState.currentStage)
         {
@@ -168,31 +171,39 @@ bool LocalPlayer::processCharGen()
     // corresponding packets and mark CharGen as finished
     else if (!charGenState.isFinished)
     {
-        MWBase::World *world = MWBase::Environment::get().getWorld();
-        MWWorld::Ptr ptrPlayer = world->getPlayerPtr();
-        npc = *ptrPlayer.get<ESM::NPC>()->mBase;
-        birthsign = world->getPlayer().getBirthSign().getRefIdString();
-
-        LOG_MESSAGE_SIMPLE(TimedLog::LOG_INFO, "Sending ID_PLAYER_BASEINFO to server with my CharGen info");
-        getNetworking()->getPlayerPacket(ID_PLAYER_BASEINFO)->setPlayer(this);
-        getNetworking()->getPlayerPacket(ID_PLAYER_BASEINFO)->Send();
-
-        // Send stats packets if this is the 2nd round of CharGen that
-        // only happens for new characters
-        if (charGenState.endStage != 1)
+        if (receivedCharacter && charGenState.endStage == 1)
         {
-            updateStatsDynamic(true);
-            updateAttributes(true);
-            updateSkills(true);
-            updateLevel(true);
-            sendClass();
-            sendSpellbook();
-            getNetworking()->getPlayerPacket(ID_PLAYER_CHARGEN)->setPlayer(this);
-            getNetworking()->getPlayerPacket(ID_PLAYER_CHARGEN)->Send();
+            // Returning character: server already sent our data, just mark finished
+            charGenState.isFinished = true;
         }
+        else
+        {
+            MWBase::World *world = MWBase::Environment::get().getWorld();
+            MWWorld::Ptr ptrPlayer = world->getPlayerPtr();
+            npc = *ptrPlayer.get<ESM::NPC>()->mBase;
+            birthsign = world->getPlayer().getBirthSign().getRefIdString();
 
-        // Mark character generation as finished until overridden by a new ID_PLAYER_CHARGEN packet
-        charGenState.isFinished = true;
+            LOG_MESSAGE_SIMPLE(TimedLog::LOG_INFO, "Sending ID_PLAYER_BASEINFO to server with my CharGen info");
+            getNetworking()->getPlayerPacket(ID_PLAYER_BASEINFO)->setPlayer(this);
+            getNetworking()->getPlayerPacket(ID_PLAYER_BASEINFO)->Send();
+
+            // Send stats packets if this is the 2nd round of CharGen that
+            // only happens for new characters
+            if (charGenState.endStage != 1)
+            {
+                updateStatsDynamic(true);
+                updateAttributes(true);
+                updateSkills(true);
+                updateLevel(true);
+                sendClass();
+                sendSpellbook();
+                getNetworking()->getPlayerPacket(ID_PLAYER_CHARGEN)->setPlayer(this);
+                getNetworking()->getPlayerPacket(ID_PLAYER_CHARGEN)->Send();
+            }
+
+            // Mark character generation as finished until overridden by a new ID_PLAYER_CHARGEN packet
+            charGenState.isFinished = true;
+        }
     }
 
     return true;
@@ -430,6 +441,13 @@ void LocalPlayer::updateCell(bool forceUpdate)
     // If the LocalPlayer's Ptr cell is different from the LocalPlayer's packet cell, proceed
     if (forceUpdate || !Main::get().getCellController()->isSameCell(*ptrCell, cell))
     {
+        /* Start of tes3mp addition - never report $Transitional Void to the server as the
+           player's real cell, or the server will save it and send the player back there on
+           every subsequent login */
+        if (ptrCell->mName == RecordHelper::getPlaceholderInteriorCellName())
+            return;
+        /* End of tes3mp addition */
+
         LOG_MESSAGE_SIMPLE(TimedLog::LOG_INFO, "Sending ID_PLAYER_CELL_CHANGE about LocalPlayer to server");
 
         LOG_APPEND(TimedLog::LOG_INFO, "- Moved from %s to %s", cell.getDescription().c_str(),
@@ -1155,7 +1173,7 @@ void LocalPlayer::setCell()
         // packet about our position in that cell
         catch (std::exception&)
         {
-            LOG_APPEND(TimedLog::LOG_INFO, "%s", "- Cell doesn't exist on this client");
+            LOG_APPEND(TimedLog::LOG_INFO, "- Cell '%s' doesn't exist on this client", cell.mName.c_str());
             ignorePosPacket = true;
         }
     }
@@ -1436,6 +1454,8 @@ void LocalPlayer::setSelectedSpell()
     MWMechanics::CreatureStats& stats = ptrPlayer.getClass().getCreatureStats(ptrPlayer);
     MWMechanics::Spells& spells = stats.getSpells();
 
+    if (selectedSpellId.empty())
+        return;
     ESM::RefId spellRefId = ESM::RefId::stringRefId(selectedSpellId);
     if (!spells.hasSpell(spellRefId))
         return;

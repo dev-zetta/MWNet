@@ -6,7 +6,7 @@
 
 #include <components/esm3/esmwriter.hpp>
 #include <components/files/configurationmanager.hpp>
-#include <components/files/escape.hpp>
+#include <components/settings/parser.hpp>
 
 #include "../mwbase/environment.hpp"
 
@@ -62,10 +62,23 @@ std::string Main::getResDir()
 std::string loadSettings(Settings::Manager& settings)
 {
     Files::ConfigurationManager mCfgMgr;
-    const std::string settingspath = (mCfgMgr.getUserConfigPath() / "tes3mp-client.cfg").string();
-    // Use the new unified load API
-    Settings::Manager::load(mCfgMgr);
-    return settingspath;
+
+    // Load defaults first so all keys exist
+    const std::filesystem::path defaultPath = std::filesystem::path(Main::getResDir()) / ".." / "tes3mp-client-default.cfg";
+    if (std::filesystem::exists(defaultPath))
+    {
+        Settings::SettingsFileParser parser;
+        parser.loadSettingsFile(defaultPath, Settings::Manager::mDefaultSettings, false, true);
+    }
+
+    // Overlay user config
+    const std::filesystem::path settingspath = mCfgMgr.getUserConfigPath() / "tes3mp-client.cfg";
+    if (std::filesystem::exists(settingspath))
+    {
+        Settings::SettingsFileParser parser;
+        parser.loadSettingsFile(settingspath, Settings::Manager::mUserSettings, false, true);
+    }
+    return settingspath.string();
 }
 
 Main::Main()
@@ -106,7 +119,7 @@ void Main::configure(const boost::program_options::variables_map &variables)
 {
     Main::address = variables["connect"].as<std::string>();
     Main::serverPassword = variables["password"].as<std::string>();
-    resourceDir = variables["resources"].as<Files::EscapePath>().mPath.string();
+    resourceDir = variables["resources"].as<Files::MaybeQuotedPath>().string();
 }
 
 bool Main::init(std::vector<std::string> &content, Files::Collections &collections)
@@ -117,14 +130,21 @@ bool Main::init(std::vector<std::string> &content, Files::Collections &collectio
     Settings::Manager manager;
     loadSettings(manager);
 
-    int logLevel = manager.getInt("logLevel", "General");
+    auto safeGetInt = [](std::string_view key, std::string_view cat, int def) {
+        try { return Settings::Manager::getInt(key, cat); } catch (...) { return def; }
+    };
+    auto safeGetStr = [](std::string_view key, std::string_view cat, std::string def) {
+        try { return Settings::Manager::getString(key, cat); } catch (...) { return def; }
+    };
+
+    int logLevel = safeGetInt("logLevel", "General", 5);
     TimedLog::SetLevel(logLevel);
     if (address.empty())
     {
-        pMain->server = manager.getString("destinationAddress", "General");
-        pMain->port = (unsigned short) manager.getInt("port", "General");
+        pMain->server = safeGetStr("destinationAddress", "General", "mp.tes3mp.com");
+        pMain->port = (unsigned short) safeGetInt("port", "General", 25565);
 
-        serverPassword = manager.getString("password", "General");
+        serverPassword = safeGetStr("password", "General", "");
         if (serverPassword.empty())
             serverPassword = TES3MP_DEFAULT_PASSW;
     }
@@ -144,11 +164,6 @@ bool Main::init(std::vector<std::string> &content, Files::Collections &collectio
 void Main::postInit()
 {
     pMain->mGUIController->setupChat();
-
-    const MWBase::Environment &environment = MWBase::Environment::get();
-    environment.getStateManager()->newGame(true);
-    MWBase::Environment::get().getMechanicsManager()->toggleAI();
-    RecordHelper::createPlaceholderInteriorCell();
 }
 
 bool Main::isInitialized()
@@ -166,6 +181,32 @@ void Main::destroy()
 
 void Main::frame(float dt)
 {
+    /*
+        Start of tes3mp addition
+
+        On the first frame after the game is running, perform deferred post-init
+        steps that require the world and render loop to be fully started.
+    */
+    static bool postInitDone = false;
+    if (!postInitDone && MWBase::Environment::get().getStateManager()->getState() == MWBase::StateManager::State_Running)
+    {
+        postInitDone = true;
+        MWBase::Environment::get().getMechanicsManager()->toggleAI();
+        RecordHelper::createPlaceholderInteriorCell();
+        // Stop vanilla chargen scripts before they run - TES3MP handles chargen itself
+        MWBase::Environment::get().getScriptManager()->getGlobalScripts().removeScript(
+            ESM::RefId::stringRefId("CharGen"));
+        // Process the first network update immediately after setup so that
+        // ID_PLAYER_CELL_CHANGE packets find the placeholder cell already created.
+        get().getNetworking()->update();
+        PlayerList::update(dt);
+        get().getCellController()->updateDedicated(dt);
+        get().updateWorld(dt);
+        get().getGUIController()->update(dt);
+        return;
+    }
+    /* End of tes3mp addition */
+
     get().getNetworking()->update();
 
     PlayerList::update(dt);

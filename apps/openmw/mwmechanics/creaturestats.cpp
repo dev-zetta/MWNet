@@ -1,6 +1,7 @@
 #include "creaturestats.hpp"
 
 #include <algorithm>
+#include <components/debug/debuglog.hpp>
 #include <type_traits>
 
 #include <components/esm3/actoridconverter.hpp>
@@ -62,7 +63,14 @@ namespace MWMechanics
 
     const AttributeValue& CreatureStats::getAttribute(ESM::RefId id) const
     {
-        return mAttributes.at(id);
+        auto it = mAttributes.find(id);
+        if (it == mAttributes.end())
+        {
+            Log(Debug::Warning) << "CreatureStats::getAttribute: unknown attribute '" << id << "' - returning default";
+            static const AttributeValue sDefault;
+            return sDefault;
+        }
+        return it->second;
     }
 
     const DynamicStat<float>& CreatureStats::getHealth() const
@@ -145,7 +153,13 @@ namespace MWMechanics
 
     void CreatureStats::setAttribute(ESM::RefId id, const AttributeValue& value)
     {
-        const AttributeValue& currentValue = mAttributes.at(id);
+        auto attrIt = mAttributes.find(id);
+        if (attrIt == mAttributes.end())
+        {
+            Log(Debug::Warning) << "CreatureStats::setAttribute: unknown attribute '" << id << "' - ignoring";
+            return;
+        }
+        const AttributeValue& currentValue = attrIt->second;
 
         if (value != currentValue)
         {
