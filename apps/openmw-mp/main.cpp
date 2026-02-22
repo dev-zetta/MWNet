@@ -208,9 +208,10 @@ int main(int argc, char *argv[])
     std::stringstream sstr;
     sstr << TES3MP_VERSION;
     sstr << TES3MP_PROTO_VERSION;
+    std::string compatHash = TES3MP_COMPAT_COMMITHASH;
     // Remove carriage returns added to version file on Windows
-    commitHash.erase(std::remove(commitHash.begin(), commitHash.end(), '\r'), commitHash.end());
-    sstr << commitHash;
+    compatHash.erase(std::remove(compatHash.begin(), compatHash.end(), '\r'), compatHash.end());
+    sstr << compatHash;
 
     peer->SetIncomingPassword(sstr.str().c_str(), (int) sstr.str().size());
 
