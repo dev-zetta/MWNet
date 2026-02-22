@@ -43,7 +43,7 @@ namespace MWWorld
         }
         mTrapSource.getCellRef().setTrap(ESM::RefId());
 
-            /*
+        /*
             Start of tes3mp addition
 
             Send an ID_OBJECT_TRAP packet every time a trap is triggered
