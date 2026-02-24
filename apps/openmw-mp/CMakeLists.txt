@@ -25,11 +25,11 @@ if(BUILD_WITH_LUA)
     set(LuaScript_Sources
             Script/LangLua/LangLua.cpp
             Script/LangLua/LuaFunc.cpp)
-    set(LuaScript_Headers ${LUA_INCLUDE_DIR} ${CMAKE_SOURCE_DIR}/extern/LuaBridge ${CMAKE_SOURCE_DIR}/extern/LuaBridge/detail
+    set(LuaScript_Headers ${LUA_INCLUDE_DIR}
             Script/LangLua/LangLua.hpp)
 
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DENABLE_LUA")
-    include_directories(SYSTEM ${LuaJit_INCLUDE_DIRS} ${CMAKE_SOURCE_DIR}/extern/LuaBridge)
+    include_directories(SYSTEM ${LuaJit_INCLUDE_DIRS} ${SOL_INCLUDE_DIR} ${SOL_CONFIG_DIR})
 endif(BUILD_WITH_LUA)
 
 include_directories(${CMAKE_SOURCE_DIR}/extern/PicoSHA2)

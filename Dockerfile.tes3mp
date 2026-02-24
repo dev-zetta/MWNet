@@ -30,6 +30,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     libunshield-dev \
     liblz4-dev \
     libluajit-5.1-dev \
+    liblua5.4-dev \
     libncurses-dev \
     libtinyxml-dev \
     librecast-dev \

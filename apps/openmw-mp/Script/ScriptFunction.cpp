@@ -43,16 +43,18 @@ boost::any ScriptFunction::Call(const std::vector<boost::any> &args)
         switch (ret_type)
         {
             case 'i':
-                result = boost::any_cast<luabridge::LuaRef>(any).cast<unsigned int>();
+                result = boost::any_cast<unsigned int>(
+                    boost::any((unsigned int)boost::any_cast<double>(any)));
                 break;
             case 'q':
-                result = boost::any_cast<luabridge::LuaRef>(any).cast<signed int>();
+                result = boost::any_cast<signed int>(
+                    boost::any((signed int)boost::any_cast<double>(any)));
                 break;
             case 'f':
-                result = boost::any_cast<luabridge::LuaRef>(any).cast<double>();
+                result = boost::any_cast<double>(any);
                 break;
             case 's':
-                result = boost::any_cast<luabridge::LuaRef>(any).cast<const char*>();
+                result = boost::any_cast<std::string>(any).c_str();
                 break;
             case 'v':
                 result = boost::any();

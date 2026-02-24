@@ -3,8 +3,7 @@
 
 #include "lua.hpp"
 
-#include <extern/LuaBridge/LuaBridge.h>
-#include <LuaBridge.h>
+#include <sol/sol.hpp>
 #include <set>
 
 #include <boost/any.hpp>

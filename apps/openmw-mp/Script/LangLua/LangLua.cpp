@@ -62,7 +62,7 @@ struct LuaFunctionDispatcher {
         // Retrieve function data
         constexpr ScriptFunctionData const& functionData = ScriptFunctions::functions[FunctionIndex];
         // Retrieve argument from the Lua stack
-        auto argument = luabridge::Stack<typename CharType<functionData.func.types[ArgIndex - 1]>::type>::get(lua, ArgIndex);
+        auto argument = sol::stack::get<typename CharType<functionData.func.types[ArgIndex - 1]>::type>(lua, ArgIndex);
         // Recursively dispatch the Lua function
         return LuaFunctionDispatcher<ArgIndex - 1, FunctionIndex>::template Dispatch<ReturnType>(
             std::forward<lua_State*>(lua), argument, std::forward<Args>(args)...);
@@ -97,7 +97,7 @@ static typename std::enable_if<ScriptFunctions::functions[FunctionIndex].func.re
     auto result = LuaFunctionDispatcher<ScriptFunctions::functions[FunctionIndex].func.numargs, FunctionIndex>::template Dispatch<
         typename CharType<ScriptFunctions::functions[FunctionIndex].func.ret>::type>(std::forward<lua_State*>(lua));
     // Push the result onto the Lua stack
-    luabridge::Stack<typename CharType<ScriptFunctions::functions[FunctionIndex].func.ret>::type>::push(lua, result);
+    sol::stack::push(lua, result);
     return 1;
 }
 
@@ -190,12 +190,10 @@ void LangLua::LoadProgram(const char *filename)
 #else
     LuaFunctionData *functions_ = GetLuaFunctions<sizeof(ScriptFunctions::functions) / sizeof(ScriptFunctions::functions[0])>();
 #endif
-luabridge::Namespace tes3mp = luabridge::getGlobalNamespace(lua).beginNamespace("tes3mp");
-
-for (unsigned i = 0; i < functions_n; i++)
-    tes3mp.addCFunction(functions_[i].name, functions_[i].func);
-
-tes3mp.endNamespace();
+    sol::state_view solLua(lua);
+    sol::table tes3mp = solLua.create_named_table("tes3mp");
+    for (unsigned i = 0; i < functions_n; i++)
+        tes3mp.set_function(functions_[i].name, functions_[i].func);
 
 if ((err = lua_pcall(lua, 0, 0, 0)) != 0) // Run once script for load in memory.
     throw std::runtime_error("Lua script " + std::string(filename) + " error (" + std::to_string(err) + "): \"" +
@@ -211,7 +209,7 @@ int LangLua::FreeProgram()
 
 bool LangLua::IsCallbackPresent(const char *name)
 {
-    return luabridge::getGlobal(lua, name).isFunction();
+    return sol::state_view(lua)[name].get_type() == sol::type::function;
 }
 
 boost::any LangLua::Call(const char *name, const char *argl, int buf, ...)
@@ -228,35 +226,35 @@ boost::any LangLua::Call(const char *name, const char *argl, int buf, ...)
         switch (argl[index])
         {
             case 'i':
-                luabridge::Stack<unsigned int>::push(lua,va_arg(vargs, unsigned int));
+                sol::stack::push(lua, va_arg(vargs, unsigned int));
                 break;
 
             case 'q':
-                luabridge::Stack<signed int>::push(lua,va_arg(vargs, signed int));
+                sol::stack::push(lua, va_arg(vargs, signed int));
                 break;
 
             case 'l':
-                luabridge::Stack<unsigned long long>::push(lua, va_arg(vargs, unsigned long long));
+                sol::stack::push(lua, va_arg(vargs, unsigned long long));
                 break;
 
             case 'w':
-                luabridge::Stack<signed long long>::push(lua, va_arg(vargs, signed long long));
+                sol::stack::push(lua, va_arg(vargs, signed long long));
                 break;
 
             case 'f':
-                luabridge::Stack<double>::push(lua, va_arg(vargs, double));
+                sol::stack::push(lua, va_arg(vargs, double));
                 break;
 
             case 'p':
-                luabridge::Stack<void*>::push(lua, va_arg(vargs, void*));
+                sol::stack::push(lua, va_arg(vargs, void*));
                 break;
 
             case 's':
-                luabridge::Stack<const char*>::push(lua, va_arg(vargs, const char*));
+                sol::stack::push(lua, va_arg(vargs, const char*));
                 break;
 
             case 'b':
-                luabridge::Stack<bool>::push(lua, (bool) va_arg(vargs, int));
+                sol::stack::push(lua, (bool) va_arg(vargs, int));
                 break;
 
             default:
@@ -266,8 +264,14 @@ boost::any LangLua::Call(const char *name, const char *argl, int buf, ...)
 
     va_end(vargs);
 
-    luabridge::LuaException::pcall(lua, n_args, 1);
-    return boost::any(luabridge::LuaRef::fromStack(lua, -1));
+    if (lua_pcall(lua, n_args, 1, 0) != 0)
+        throw std::runtime_error(std::string("Lua error: ") + lua_tostring(lua, -1));
+    boost::any ret;
+    if (lua_isstring(lua, -1))       ret = boost::any(std::string(lua_tostring(lua, -1)));
+    else if (lua_isnumber(lua, -1))  ret = boost::any(lua_tonumber(lua, -1));
+    else if (lua_isboolean(lua, -1)) ret = boost::any((bool)lua_toboolean(lua, -1));
+    lua_pop(lua, 1);
+    return ret;
 }
 
 boost::any LangLua::Call(const char *name, const char *argl, const std::vector<boost::any> &args)
@@ -281,43 +285,49 @@ boost::any LangLua::Call(const char *name, const char *argl, const std::vector<b
         switch (argl[index])
         {
             case 'i':
-                luabridge::Stack<unsigned int>::push(lua, boost::any_cast<unsigned int>(args.at(index)));
+                sol::stack::push(lua, boost::any_cast<unsigned int>(args.at(index)));
                 break;
 
             case 'q':
-                luabridge::Stack<signed int>::push(lua, boost::any_cast<signed int>(args.at(index)));
+                sol::stack::push(lua, boost::any_cast<signed int>(args.at(index)));
                 break;
 
             case 'l':
-                luabridge::Stack<unsigned long long>::push(lua, boost::any_cast<unsigned long long>(args.at(index)));
+                sol::stack::push(lua, boost::any_cast<unsigned long long>(args.at(index)));
                 break;
 
             case 'w':
-                luabridge::Stack<signed long long>::push(lua, boost::any_cast<signed long long>(args.at(index)));
+                sol::stack::push(lua, boost::any_cast<signed long long>(args.at(index)));
                 break;
 
             case 'f':
-                luabridge::Stack<double>::push(lua, boost::any_cast<double>(args.at(index)));
+                sol::stack::push(lua, boost::any_cast<double>(args.at(index)));
                 break;
 
             case 'p':
-                luabridge::Stack<void *>::push(lua, boost::any_cast<void *>(args.at(index)));
+                sol::stack::push(lua, boost::any_cast<void *>(args.at(index)));
                 break;
 
             case 's':
-                luabridge::Stack<const char *>::push(lua, boost::any_cast<const char *>(args.at(index)));
+                sol::stack::push(lua, boost::any_cast<const char *>(args.at(index)));
                 break;
 
             case 'b':
-                luabridge::Stack<bool>::push(lua, boost::any_cast<int>(args.at(index)));
+                sol::stack::push(lua, (bool)boost::any_cast<int>(args.at(index)));
                 break;
             default:
                 throw std::runtime_error("Lua call: Unknown argument identifier " + argl[index]);
         }
     }
 
-    luabridge::LuaException::pcall(lua, n_args, 1);
-    return boost::any(luabridge::LuaRef::fromStack(lua, -1));
+    if (lua_pcall(lua, n_args, 1, 0) != 0)
+        throw std::runtime_error(std::string("Lua error: ") + lua_tostring(lua, -1));
+    boost::any ret;
+    if (lua_isstring(lua, -1))       ret = boost::any(std::string(lua_tostring(lua, -1)));
+    else if (lua_isnumber(lua, -1))  ret = boost::any(lua_tonumber(lua, -1));
+    else if (lua_isboolean(lua, -1)) ret = boost::any((bool)lua_toboolean(lua, -1));
+    lua_pop(lua, 1);
+    return ret;
 }
 
 void LangLua::AddPackagePath(const std::string& path)
