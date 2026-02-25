@@ -1,0 +1,89 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<MyGUI type="Layout" version="3.2.0">
+    <!-- Window: 860 x 560 -->
+    <Widget type="Window" skin="MW_Dialog" position="0 0 860 560" layer="Modal" name="_Main">
+
+        <!-- Title -->
+        <Widget type="TextBox" skin="ProgressText" position="8 8 400 20" align="Left Top" name="TitleLabel">
+            <Property key="Caption" value="Server Browser"/>
+            <Property key="TextAlign" value="Left"/>
+        </Widget>
+
+        <!-- Server list column headers (font matches ServerList MonoFont; x repositioned by C++) -->
+        <Widget type="TextBox" skin="ProgressText" position="14 30 285 18" align="Left Top">
+            <Property key="Caption" value="Name"/>
+            <Property key="TextAlign" value="Left"/>
+            <Property key="FontName" value="MonoFont"/>
+        </Widget>
+        <Widget type="TextBox" skin="ProgressText" position="303 30 62 18" align="Left Top" name="ColHeaderPlayers">
+            <Property key="Caption" value="Players"/>
+            <Property key="TextAlign" value="Left"/>
+            <Property key="FontName" value="MonoFont"/>
+        </Widget>
+        <Widget type="TextBox" skin="ProgressText" position="368 30 48 18" align="Left Top" name="ColHeaderPing">
+            <Property key="Caption" value="Ping"/>
+            <Property key="TextAlign" value="Left"/>
+            <Property key="FontName" value="MonoFont"/>
+        </Widget>
+        <Widget type="TextBox" skin="ProgressText" position="418 30 178 18" align="Left Top" name="ColHeaderGamemode">
+            <Property key="Caption" value="Game mode"/>
+            <Property key="TextAlign" value="Left"/>
+            <Property key="FontName" value="MonoFont"/>
+        </Widget>
+
+        <!-- Player list header -->
+        <Widget type="TextBox" skin="ProgressText" position="588 30 264 18" align="Left Top">
+            <Property key="Caption" value="Players online"/>
+            <Property key="TextAlign" value="Left"/>
+        </Widget>
+
+        <!-- Server list (left panel) -->
+        <Widget type="ListBox" skin="MW_MonoList" position="8 50 572 350" align="Left Top" name="ServerList">
+        </Widget>
+
+        <!-- Player list (right panel) -->
+        <Widget type="ListBox" skin="MW_List" position="588 50 264 350" align="Left Top" name="PlayerList">
+        </Widget>
+
+        <!-- Selected server detail values -->
+        <Widget type="TextBox" skin="ProgressText" position="14 408 285 18" align="Left Top" name="ServerName">
+            <Property key="Caption" value=""/>
+            <Property key="TextAlign" value="Left"/>
+        </Widget>
+        <Widget type="TextBox" skin="ProgressText" position="303 408 62 18" align="Left Top" name="ServerPlayers">
+            <Property key="Caption" value=""/>
+            <Property key="TextAlign" value="Left"/>
+        </Widget>
+        <Widget type="TextBox" skin="ProgressText" position="368 408 48 18" align="Left Top" name="ServerPing">
+            <Property key="Caption" value=""/>
+            <Property key="TextAlign" value="Left"/>
+        </Widget>
+        <Widget type="TextBox" skin="ProgressText" position="418 408 438 18" align="Left Top" name="ServerGamemode">
+            <Property key="Caption" value=""/>
+            <Property key="TextAlign" value="Left"/>
+        </Widget>
+
+        <!-- Address bar + buttons -->
+        <Widget type="EditBox" skin="MW_TextEdit" position="8 436 580 28" align="Left Bottom HStretch" name="EditAddress"/>
+        <Widget type="AutoSizedButton" skin="MW_Button" position="596 436 70 28" align="Left Bottom" name="ButtonRefresh">
+            <Property key="ExpandDirection" value="Right"/>
+            <Property key="Caption" value="Refresh"/>
+        </Widget>
+        <Widget type="AutoSizedButton" skin="MW_Button" position="690 436 80 28" align="Left Bottom" name="ButtonConnect">
+            <Property key="ExpandDirection" value="Right"/>
+            <Property key="Caption" value="Connect"/>
+        </Widget>
+        <Widget type="AutoSizedButton" skin="MW_Button" position="778 436 70 28" align="Left Bottom" name="ButtonCancel">
+            <Property key="ExpandDirection" value="Right"/>
+            <Property key="Caption" value="Cancel"/>
+        </Widget>
+
+        <!-- Status label -->
+        <Widget type="TextBox" skin="ProgressText" position="8 474 844 20" align="Left Bottom HStretch" name="StatusLabel">
+            <Property key="Caption" value="Querying master server..."/>
+            <Property key="TextAlign" value="Left"/>
+        </Widget>
+
+    </Widget>
+    <CodeGeneratorSettings/>
+</MyGUI>

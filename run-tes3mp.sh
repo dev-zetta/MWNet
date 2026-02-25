@@ -4,4 +4,4 @@ export LD_LIBRARY_PATH="$SCRIPT_DIR/build/lib:$LD_LIBRARY_PATH"
 export OSG_LIBRARY_PATH="$SCRIPT_DIR/build/osgPlugins-3.6.5"
 export OPENMW_DISABLE_CRASH_CATCHER=1
 export LD_PRELOAD=/tmp/throw_trace.so
-exec "$SCRIPT_DIR/build/tes3mp" --connect=94.130.220.235:25565 "$@"
+exec "$SCRIPT_DIR/build/tes3mp" "$@"

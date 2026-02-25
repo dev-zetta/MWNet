@@ -121,6 +121,7 @@ add_openmw_dir (mwmp Main Networking LocalSystem LocalPlayer DedicatedPlayer Pla
     )
 
 add_openmw_dir (mwmp/GUI GUIChat GUILogin PlayerMarkerCollection GUIDialogList TextInputDialog
+    GUIServerBrowser MasterQuery
     )
 
 add_openmw_dir(mwmp/processors BaseClientPacketProcessor SystemProcessor PlayerProcessor ObjectProcessor ActorProcessor

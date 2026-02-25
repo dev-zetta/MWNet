@@ -40,6 +40,8 @@ namespace MWBase
 
         virtual void requestQuit() = 0;
 
+        virtual void cleanup(bool force = false) = 0;
+
         virtual bool hasQuitRequest() const = 0;
 
         virtual void askLoadRecent() = 0;

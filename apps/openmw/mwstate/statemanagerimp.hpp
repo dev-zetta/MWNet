@@ -28,8 +28,6 @@ namespace MWState
         double mTimePlayed;
         std::filesystem::path mLastSavegame;
 
-        void cleanup(bool force = false);
-
         void printSavegameFormatError(const std::string& exceptionText, const std::string& messageBoxText);
 
         bool confirmLoading(const std::vector<std::string_view>& missingFiles) const;
@@ -42,6 +40,8 @@ namespace MWState
         StateManager(const std::filesystem::path& saves, const std::vector<std::string>& contentFiles);
 
         void requestQuit() override;
+
+        void cleanup(bool force = false) override;
 
         bool hasQuitRequest() const override;
 

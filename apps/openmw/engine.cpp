@@ -975,7 +975,7 @@ void OMW::Engine::prepareEngine()
     auto dataLoading = std::async(std::launch::async,
         [&] { mWorld->loadData(mFileCollections, mContentFiles, mGroundcoverFiles, mEncoder.get(), &asyncListener); });
 
-    if (!mSkipMenu)
+    if (!mSkipMenu && !mwmp::Main::isInitialized())
     {
         std::string_view logo = Fallback::Map::getString("Movies_Company_Logo");
         if (!logo.empty())
@@ -1067,11 +1067,13 @@ void OMW::Engine::go()
     /*
         Start of tes3mp change (minor)
 
-        Set mSkipMenu before prepareEngine() so the company logo video
-        is not played during data loading. The video's inner render loop
-        calls Main::frame() before the world is ready, causing a crash.
+        When --connect was provided, skip the main menu entirely.
+        When no --connect was given, show the main menu so the server browser
+        can appear. Either way, suppress the company logo video: its inner
+        render loop calls Main::frame() before the world is ready, causing a crash.
     */
-    mSkipMenu = true;
+    if (!mwmp::Main::getAddress().empty())
+        mSkipMenu = true;
     /* End of tes3mp change (minor) */
 
     prepareEngine();
@@ -1141,9 +1143,19 @@ void OMW::Engine::go()
         else
             Log(Debug::Warning) << "Title music not found";
 
-        std::string_view logo = Fallback::Map::getString("Movies_Morrowind_Logo");
-        if (!logo.empty())
-            mWindowManager->playVideo(logo, /*allowSkipping*/ true, /*overrideSounds*/ false);
+        /*
+            Start of tes3mp change (minor)
+
+            Skip the Morrowind title video in multiplayer — its inner render loop
+            calls Main::frame() before the world is ready, causing a crash.
+        */
+        if (!mwmp::Main::isInitialized())
+        {
+            std::string_view logo = Fallback::Map::getString("Movies_Morrowind_Logo");
+            if (!logo.empty())
+                mWindowManager->playVideo(logo, /*allowSkipping*/ true, /*overrideSounds*/ false);
+        }
+        /* End of tes3mp change (minor) */
     }
     else if (!mwmp::Main::isInitialized() || mStateManager->getState() != MWState::StateManager::State_Running)
     {
@@ -1168,6 +1180,31 @@ void OMW::Engine::go()
     const std::chrono::steady_clock::duration maxSimulationInterval(std::chrono::milliseconds(200));
     while (!mViewer->done() && !mStateManager->hasQuitRequest())
     {
+        /*
+            Start of tes3mp addition
+
+            If the in-game server browser connected to a server, start the
+            game world from here (the main loop) rather than from the GUI
+            callback, so that newGame()'s cleanup() runs at a safe point.
+        */
+        if (mwmp::Main::isInitialized() && mwmp::Main::isNewGamePending())
+        {
+            mwmp::Main::clearNewGamePending();
+            mWindowManager->removeGuiMode(MWGui::GM_MainMenu);
+            mStateManager->newGame(true);
+        }
+
+        if (mwmp::Main::isInitialized() && mwmp::Main::isPendingReturnToBrowser())
+        {
+            mwmp::Main::clearPendingReturnToBrowser();
+            mwmp::Main::get().getGUIController()->destroyServerBrowser();
+            mStateManager->cleanup();
+            mwmp::Main::postInit();
+            mWindowManager->pushGuiMode(MWGui::GM_MainMenu);
+            mwmp::Main::get().getGUIController()->showServerBrowser();
+        }
+        /* End of tes3mp addition */
+
         const double dt = std::chrono::duration_cast<std::chrono::duration<double>>(
                               std::min(frameRateLimiter.getLastFrameDuration(), maxSimulationInterval))
                               .count()

@@ -20,7 +20,8 @@ cmake .. \
     -DBUILD_BROWSER=ON \
     -DBUILD_LAUNCHER=ON \
     -DBUILD_WIZARD=OFF \
-    -DBUILD_OPENCS=OFF
+    -DBUILD_OPENCS=OFF \
+    -DUSE_LUAJIT=ON
 
 echo ""
 # Cap parallel jobs to avoid OOM - Sol3/template compilation uses ~1-2GB RAM per job

@@ -24,9 +24,20 @@ namespace mwmp
         static bool init(std::vector<std::string> &content, Files::Collections &collections);
         static void postInit();
         static bool isInitialized();
+        static bool isConnected();
+        static const std::string &getAddress();
         static void destroy();
         static const Main &get();
         static void frame(float dt);
+
+        // Deferred connect: called by in-game server browser after init()
+        static bool connectTo(const std::string &host, unsigned short port);
+        static bool isNewGamePending();
+        static void clearNewGamePending();
+        static bool isPostInitDone();
+        static bool isPendingReturnToBrowser();
+        static void clearPendingReturnToBrowser();
+        static void requestReturnToBrowser();
 
         static bool isValidPacketScript(std::string scriptId);
         static bool isValidPacketGlobal(std::string globalId);
@@ -45,6 +56,10 @@ namespace mwmp
         static std::string resourceDir;
         static std::string address;
         static std::string serverPassword;
+        static std::vector<std::string> sContentFiles;
+        static Files::Collections sFileCollections;
+        static bool sNewGamePending;
+        static bool sPendingReturnToBrowser;
         Main (const Main&);
         ///< not implemented
         Main& operator= (const Main&);
@@ -59,6 +74,8 @@ namespace mwmp
 
         std::string server;
         unsigned short port;
+        bool mPostInitDone;
+        bool mWorldInitDone;
     };
 }
 

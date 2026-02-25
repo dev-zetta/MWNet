@@ -104,6 +104,8 @@ set(MYGUI_FILES
     tes3mp_chat.layout
     tes3mp_chat.skin.xml
     tes3mp_text_input.layout
+    tes3mp_server_browser.layout
+    tes3mp_multilist.skin.xml
     RussoOne-Regular.ttf
 )
 

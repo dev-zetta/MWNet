@@ -746,15 +746,15 @@ namespace MWGui
                 mCharGen->spawnDialog(mode);
                 break;
             default:
-                break;
-
                 /*
-                Start of tes3mp addition
+                    Start of tes3mp addition
 
-                Pass the GuiMode further on to the multiplayer-specific GUI controller
-            */
-            mwmp::Main::get().getGUIController()->WM_UpdateVisible(mode);
-            /* End of tes3mp addition */
+                    Pass the GuiMode further on to the multiplayer-specific GUI controller
+                */
+                if (mwmp::Main::isInitialized())
+                    mwmp::Main::get().getGUIController()->WM_UpdateVisible(mode);
+                /* End of tes3mp addition */
+                break;
         }
     }
 

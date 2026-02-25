@@ -4,6 +4,7 @@
 #include <RakPeerInterface.h>
 #include <BitStream.h>
 #include <string>
+#include <vector>
 
 #include <components/openmw-mp/NetworkMessages.hpp>
 
@@ -44,6 +45,9 @@ namespace mwmp
         }
 
         bool isConnected();
+        void disconnect();
+        void setLastError(const std::string& msg) { lastError = msg; }
+        const std::string& getLastError() const { return lastError; }
 
         LocalSystem *getLocalSystem();
         LocalPlayer *getLocalPlayer();
@@ -53,6 +57,8 @@ namespace mwmp
 
     private:
         bool connected;
+        std::string lastError;
+        std::vector<std::vector<unsigned char>> pendingPackets;
         RakNet::RakPeerInterface *peer;
         RakNet::SystemAddress serverAddr;
         RakNet::BitStream bsOut;

@@ -24,6 +24,14 @@
 #include "settingswindow.hpp"
 #include "videowidget.hpp"
 
+/*
+    Start of tes3mp addition
+*/
+#include "../mwmp/Main.hpp"
+#include "../mwmp/GUIController.hpp"
+#include "../mwmp/Networking.hpp"
+/* End of tes3mp addition */
+
 namespace MWGui
 {
     void MenuVideo::run()
@@ -155,6 +163,20 @@ namespace MWGui
 
     void MainMenu::onNewGameConfirmed()
     {
+        /*
+            Start of tes3mp change (minor)
+
+            If TES3MP is connected, "New Game" from the ESC menu means
+            "disconnect and return to server browser" rather than starting
+            a singleplayer game, to avoid crashing mid-connection.
+        */
+        if (mwmp::Main::isConnected())
+        {
+            MWBase::Environment::get().getWindowManager()->removeGuiMode(MWGui::GM_MainMenu);
+            mwmp::Main::get().getNetworking()->disconnect();
+            return;
+        }
+        /* End of tes3mp change (minor) */
         MWBase::Environment::get().getWindowManager()->removeGuiMode(MWGui::GM_MainMenu);
         MWBase::Environment::get().getStateManager()->newGame();
     }
@@ -189,6 +211,17 @@ namespace MWGui
         }
         else if (name == "newgame")
         {
+            /*
+                Start of tes3mp change (major)
+
+                In multiplayer, New Game opens the server browser.
+            */
+            if (mwmp::Main::isInitialized())
+            {
+                mwmp::Main::get().getGUIController()->showServerBrowser();
+            }
+            else
+            /* End of tes3mp change (major) */
             if (MWBase::Environment::get().getStateManager()->getState() == MWBase::StateManager::State_NoGame)
                 onNewGameConfirmed();
             else
@@ -318,25 +351,15 @@ namespace MWGui
         /*
             Start of tes3mp change (major)
 
-            In multiplayer, the main menu should not have options for starting or loading the game,
-            so they have been removed
-
-            Saving the game should still be possible, as long as it's clear that the resulting
-            save is singleplayer-only; this will prevent players from completely losing their
-            characters and houses on servers if those servers ever go down
+            In multiplayer, New Game opens the server browser instead of starting a SP game.
+            Load Game is kept so players can resume a previous session.
+            Save Game is removed (saves are SP-only and confusing in MP context).
         */
+        buttons.emplace_back("newgame");
 
-        //buttons.emplace_back("newgame");
-
-        //if (state == MWBase::StateManager::State_Running
-        //    && MWBase::Environment::get().getWorld()->getGlobalInt(MWWorld::Globals::sCharGenState) == -1
-        //    && MWBase::Environment::get().getWindowManager()->isSavingAllowed())
-        //    buttons.emplace_back("savegame");
-
-        //if (MWBase::Environment::get().getStateManager()->characterBegin()
-        //    != MWBase::Environment::get().getStateManager()->characterEnd())
-        //    buttons.emplace_back("loadgame");
-
+        if (MWBase::Environment::get().getStateManager()->characterBegin()
+            != MWBase::Environment::get().getStateManager()->characterEnd())
+            buttons.emplace_back("loadgame");
         /* End of tes3mp change (major)*/
 
         buttons.emplace_back("options");

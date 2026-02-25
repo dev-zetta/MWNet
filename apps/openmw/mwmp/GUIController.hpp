@@ -8,6 +8,7 @@
 #include <components/openmw-mp/Base/BasePlayer.hpp>
 #include "GUI/PlayerMarkerCollection.hpp"
 #include "GUI/TextInputDialog.hpp"
+#include "GUI/GUIServerBrowser.hpp"
 
 namespace MWGui
 {
@@ -26,8 +27,8 @@ namespace mwmp
         {
             GM_VR_MetaMenu = MWGui::GM_QuickKeysMenu + 1, // Put this dummy GuiMode here because it's used in VR
             GM_TES3MP_InputBox,
-            GM_TES3MP_ListBox
-
+            GM_TES3MP_ListBox,
+            GM_TES3MP_ServerBrowser
         };
         GUIController();
         ~GUIController();
@@ -45,6 +46,10 @@ namespace mwmp
         void showInputBox(const BasePlayer::GUIMessageBox &guiMessageBox);
 
         void showDialogList(const BasePlayer::GUIMessageBox &guiMessageBox);
+
+        void showServerBrowser();
+        void requestShowBrowser();
+        void destroyServerBrowser();
 
         /// Returns 0 if there was no events
         bool pressedKey(int key);
@@ -75,6 +80,8 @@ namespace mwmp
         long id;
         TextInputDialog *mInputBox;
         GUIDialogList *mListBox;
+        GUIServerBrowser *mServerBrowser;
+        bool mPendingShowBrowser;
         void onInputBoxDone(MWGui::WindowBase* parWindow);
         //MyGUI::Widget *oldFocusWidget, *currentFocusWidget;
     };

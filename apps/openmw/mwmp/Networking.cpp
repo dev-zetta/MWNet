@@ -31,13 +31,13 @@
 
 #include "Networking.hpp"
 #include "Main.hpp"
+#include "GUIController.hpp"
 #include "processors/ProcessorInitializer.hpp"
 #include "processors/SystemProcessor.hpp"
 #include "processors/PlayerProcessor.hpp"
 #include "processors/ObjectProcessor.hpp"
 #include "processors/ActorProcessor.hpp"
 #include "processors/WorldstateProcessor.hpp"
-#include "GUIController.hpp"
 #include "CellController.hpp"
 
 using namespace mwmp;
@@ -224,6 +224,19 @@ void Networking::update()
     RakNet::Packet *packet;
     std::string errmsg = "";
 
+    // Replay one buffered packet per update() call (after postInitDone) so the GUI
+    // has a full frame to react between packets (e.g. password box before baseinfo).
+    if (!pendingPackets.empty() && mwmp::Main::isPostInitDone())
+    {
+        std::vector<unsigned char> data = std::move(pendingPackets.front());
+        pendingPackets.erase(pendingPackets.begin());
+        RakNet::Packet fake;
+        fake.data = data.data();
+        fake.length = (unsigned int)data.size();
+        fake.systemAddress = serverAddr;
+        receiveMessage(&fake);
+    }
+
     for (packet=peer->Receive(); packet; peer->DeallocatePacket(packet), packet=peer->Receive())
     {
         switch (packet->data[0])
@@ -247,11 +260,15 @@ void Networking::update()
                 errmsg = "The server is full.";
                 break;
             case ID_DISCONNECTION_NOTIFICATION:
-                errmsg = "We have been disconnected.";
-                break;
+                LOG_MESSAGE_SIMPLE(TimedLog::LOG_INFO, "Disconnected from server.");
+                connected = false;
+                Main::get().getGUIController()->requestShowBrowser();
+                return;
             case ID_CONNECTION_LOST:
-                errmsg = "Connection lost.";
-                break;
+                LOG_MESSAGE_SIMPLE(TimedLog::LOG_WARN, "Connection to server lost.");
+                connected = false;
+                Main::get().getGUIController()->requestShowBrowser();
+                return;
             default:
                 receiveMessage(packet);
                 break;
@@ -261,8 +278,9 @@ void Networking::update()
     if (!errmsg.empty())
     {
         LOG_MESSAGE_SIMPLE(TimedLog::LOG_ERROR, errmsg.c_str());
-        SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR, "tes3mp", errmsg.c_str(), 0);
-        MWBase::Environment::get().getStateManager()->requestQuit();
+        lastError = errmsg;
+        connected = false;
+        Main::get().getGUIController()->requestShowBrowser();
     }
 }
 
@@ -293,23 +311,19 @@ void Networking::connect(const std::string &ip, unsigned short port, std::vector
             {
                 case ID_CONNECTION_ATTEMPT_FAILED:
                 {
-                    errmsg = "Connection failed.\n"
-                            "Either the IP address is wrong or a firewall on either system is blocking\n"
-                            "UDP packets on the port you have chosen.";
+                    errmsg = "Connection failed. The server may be offline or a firewall is blocking the connection.";
                     queue = false;
                     break;
                 }
                 case ID_INVALID_PASSWORD:
                 {
-                    errmsg = "Version mismatch!\nYour client is on version " TES3MP_VERSION "\n"
-                        "Please make sure the server is on the same version.";
+                    errmsg = "Version mismatch! Your client is on version " TES3MP_VERSION ". Please make sure the server is on the same version.";
                     queue = false;
                     break;
                 }
                 case ID_INCOMPATIBLE_PROTOCOL_VERSION:
                 {
-                    errmsg = "Network protocol mismatch!\nMake sure your client is really on the same version\n"
-                        "as the server you are trying to connect to.";
+                    errmsg = "Network protocol mismatch! Make sure your client is on the same version as the server.";
                     queue = false;
                     break;
                 }
@@ -327,11 +341,17 @@ void Networking::connect(const std::string &ip, unsigned short port, std::vector
                     break;
                 }
                 case ID_DISCONNECTION_NOTIFICATION:
-                    throw std::runtime_error("ID_DISCONNECTION_NOTIFICATION.\n");
+                    errmsg = "Disconnected during connection attempt.";
+                    queue = false;
+                    break;
                 case ID_CONNECTION_BANNED:
-                    throw std::runtime_error("You have been banned from this server.\n");
+                    errmsg = "You have been banned from this server.";
+                    queue = false;
+                    break;
                 case ID_CONNECTION_LOST:
-                    throw std::runtime_error("ID_CONNECTION_LOST.\n");
+                    errmsg = "Connection lost during connection attempt.";
+                    queue = false;
+                    break;
                 default:
                     LOG_MESSAGE_SIMPLE(TimedLog::LOG_INFO, "Connection message with identifier %i has arrived in initialization.",
                                        packet->data[0]);
@@ -342,12 +362,38 @@ void Networking::connect(const std::string &ip, unsigned short port, std::vector
     if (!errmsg.empty())
     {
         LOG_MESSAGE_SIMPLE(TimedLog::LOG_ERROR, errmsg.c_str());
-        SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR, "tes3mp", errmsg.c_str(), 0);
+        lastError = errmsg;
     }
     else
     {
         preInit(content, collections);
         getLocalPlayer()->guid = getLocalSystem()->guid = peer->GetMyGUID();
+
+        if (connected)
+        {
+            // Buffer packets the server sends immediately after preInit
+            // (ID_PLAYER_BASEINFO, ID_PLAYER_CELL_CHANGE etc.) so they can be
+            // replayed via receiveMessage() on the first update() call once the
+            // game world exists. newGame() blocks ~300ms so we wait long enough
+            // for the server's initial burst to arrive.
+            pendingPackets.clear();
+            RakSleep(50);
+            for (RakNet::Packet *p = peer->Receive(); p; peer->DeallocatePacket(p), p = peer->Receive())
+            {
+                if (p->data[0] == ID_DISCONNECTION_NOTIFICATION || p->data[0] == ID_CONNECTION_LOST)
+                {
+                    LOG_MESSAGE_SIMPLE(TimedLog::LOG_WARN, "Server closed connection after preInit.");
+                    connected = false;
+                    peer->DeallocatePacket(p);
+                    return;
+                }
+                // Buffer all packets; they are replayed one-per-frame in update()
+                // so the GUI has time to react between each packet (e.g. password box
+                // must be shown and answered before ID_PLAYER_BASEINFO fires).
+                pendingPackets.push_back(std::vector<unsigned char>(p->data, p->data + p->length));
+            }
+            LOG_MESSAGE_SIMPLE(TimedLog::LOG_INFO, "Buffered %d post-preInit packet(s) for replay.", (int)pendingPackets.size());
+        }
     }
 }
 
@@ -407,6 +453,8 @@ void Networking::preInit(std::vector<std::string> &content, Files::Collections &
         {
             case ID_DISCONNECTION_NOTIFICATION:
             case ID_CONNECTION_LOST:
+                LOG_MESSAGE_SIMPLE(TimedLog::LOG_WARN, "Server closed connection during preInit.");
+                connected = false;
                 done = true;
                 break;
             case ID_GAME_PREINIT:
@@ -427,7 +475,7 @@ void Networking::preInit(std::vector<std::string> &content, Files::Collections &
 
         LOG_MESSAGE_SIMPLE(TimedLog::LOG_ERROR, "%s", errmsg.c_str());
         LOG_MESSAGE_SIMPLE(TimedLog::LOG_ERROR, "%s", comparison.c_str());
-        SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR, "tes3mp", errmsg.c_str(), 0);
+        lastError = errmsg;
         connected = false;
     }
 }
@@ -517,4 +565,13 @@ Worldstate *Networking::getWorldstate()
 bool Networking::isConnected()
 {
     return connected;
+}
+
+void Networking::disconnect()
+{
+    if (connected)
+    {
+        peer->CloseConnection(serverAddr, true, 0);
+        connected = false;
+    }
 }

@@ -130,6 +130,11 @@ bool LocalPlayer::processCharGen()
 {
     MWBase::WindowManager *windowManager = MWBase::Environment::get().getWindowManager();
 
+    // Block while a TES3MP input box (e.g. password prompt) is open, even after
+    // charGenState.isFinished - the server expects the user to respond first.
+    if (windowManager->containsMode(static_cast<MWGui::GuiMode>(mwmp::GUIController::GM_TES3MP_InputBox)))
+        return false;
+
     // If we haven't finished CharGen and we're in a menu, it must be
     // one of the CharGen menus, so go no further until it's closed
     if (windowManager->isGuiMode() && !charGenState.isFinished)

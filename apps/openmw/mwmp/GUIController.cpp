@@ -18,6 +18,8 @@
 #include "../mwbase/environment.hpp"
 #include "../mwbase/windowmanager.hpp"
 #include "../mwbase/inputmanager.hpp"
+#include "../mwbase/statemanager.hpp"
+#include "../mwgui/mode.hpp"
 
 #include "../mwgui/mapwindow.hpp"
 
@@ -38,7 +40,7 @@
 #include "PlayerList.hpp"
 
 
-mwmp::GUIController::GUIController(): mInputBox(0), mListBox(0)
+mwmp::GUIController::GUIController(): mInputBox(0), mListBox(0), mServerBrowser(nullptr), mPendingShowBrowser(false)
 {
     mChat = nullptr;
     keySay = SDL_SCANCODE_Y;
@@ -56,6 +58,12 @@ void mwmp::GUIController::cleanUp()
     if (mChat != nullptr)
         delete mChat;
     mChat = nullptr;
+    if (mServerBrowser != nullptr)
+    {
+        MWBase::Environment::get().getWindowManager()->removeDialog(
+            std::unique_ptr<MWGui::Layout>(mServerBrowser));
+        mServerBrowser = nullptr;
+    }
 }
 
 void mwmp::GUIController::refreshGuiMode(MWGui::GuiMode guiMode)
@@ -93,7 +101,40 @@ void mwmp::GUIController::printChatMessage(std::string &msg)
 
 void mwmp::GUIController::setChatVisible(bool chatVisible)
 {
-    mChat->setVisible(chatVisible);
+    if (mChat != nullptr)
+        mChat->setVisible(chatVisible);
+}
+
+void mwmp::GUIController::requestShowBrowser()
+{
+    Main::requestReturnToBrowser();
+}
+
+void mwmp::GUIController::destroyServerBrowser()
+{
+    // Null out mChat - cleanup() will destroy its MyGUI widgets via windowManager->clear().
+    // We'll recreate it via setupChat() after cleanup.
+    if (mChat != nullptr)
+    {
+        delete mChat;
+        mChat = nullptr;
+    }
+    if (mServerBrowser != nullptr)
+    {
+        MWBase::Environment::get().getWindowManager()->removeDialog(
+            std::unique_ptr<MWGui::Layout>(mServerBrowser));
+        mServerBrowser = nullptr;
+    }
+}
+
+void mwmp::GUIController::showServerBrowser()
+{
+    if (mServerBrowser == nullptr)
+        mServerBrowser = new GUIServerBrowser();
+    else
+        mServerBrowser->refresh();
+
+    mServerBrowser->setVisible(true);
 }
 
 void mwmp::GUIController::showDialogList(const mwmp::BasePlayer::GUIMessageBox &guiMessageBox)

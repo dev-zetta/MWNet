@@ -1,0 +1,94 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<MyGUI type="Resource" version="1.1">
+
+    <!-- Column header button: reuse MW_Button look -->
+    <Resource type="ResourceSkin" name="MW_MultiListButton" size="32 20">
+        <Property key="FontName" value="Default"/>
+        <Property key="TextAlign" value="Left VCenter"/>
+
+        <BasisSkin type="SimpleText" offset="4 0 24 20" align="Stretch">
+            <State name="normal"      colour="#{fontcolour=header}"         shift="0"/>
+            <State name="highlighted" colour="#{fontcolour=normal_over}"    shift="0"/>
+            <State name="pushed"      colour="#{fontcolour=normal_pressed}" shift="0"/>
+            <State name="disabled"    colour="#{fontcolour=disabled}"       shift="0"/>
+        </BasisSkin>
+    </Resource>
+
+    <!-- Monospace list line: identical to MW_ListLine except FontName=MonoFont -->
+    <Resource type="ResourceSkin" name="MW_MonoListLine" size="5 5">
+        <Property key="FontName" value="MonoFont"/>
+        <Property key="TextAlign" value="Left VCenter"/>
+
+        <BasisSkin type="SimpleText" offset="2 0 1 5" align="Stretch">
+            <State name="disabled"            colour="#{fontcolour=disabled}"       shift="0"/>
+            <State name="normal"              colour="#{fontcolour=normal}"          shift="0"/>
+            <State name="highlighted"         colour="#{fontcolour=normal_over}"     shift="0"/>
+            <State name="pushed"              colour="#{fontcolour=normal_pressed}"  shift="0"/>
+            <State name="disabled_checked"    colour="#{fontcolour=disabled}"        shift="0"/>
+            <State name="normal_checked"      colour="#{fontcolour=active}"          shift="0"/>
+            <State name="highlighted_checked" colour="#{fontcolour=active_over}"     shift="0"/>
+            <State name="pushed_checked"      colour="#{fontcolour=active_pressed}"  shift="0"/>
+        </BasisSkin>
+    </Resource>
+
+    <!-- MW_MonoList: like MW_List but uses MW_MonoListLine for column alignment -->
+    <Resource type="ResourceLayout" name="MW_MonoList" size="516 516" align="Left Top">
+        <Widget type="Widget" position="0 0 516 516" name="Root">
+            <Property key="NeedKey" value="true"/>
+            <UserString key="SkinLine" value="MW_MonoListLine"/>
+            <UserString key="HeightLine" value="18"/>
+            <Widget type="Widget" skin="MW_Box" position="0 0 516 516" align="Stretch"/>
+            <Widget type="ScrollBar" skin="MW_VScroll" position="498 4 14 508" align="Right VStretch" name="VScroll"/>
+            <Widget type="Widget" skin="" position="3 4 493 508" align="Stretch" name="Client"/>
+        </Widget>
+    </Resource>
+
+    <!-- List item skin with hardcoded visible color (avoids fontcolour tag resolution issues) -->
+    <Resource type="ResourceSkin" name="MW_MultiListLine" size="5 18">
+        <Property key="FontName" value="Default"/>
+        <Property key="TextAlign" value="Left VCenter"/>
+
+        <BasisSkin type="SimpleText" offset="2 0 1 18" align="Stretch">
+            <State name="normal"           colour="0.98 0.78 0.49 1" shift="0"/>
+            <State name="highlighted"      colour="1 1 0.7 1"        shift="0"/>
+            <State name="pushed"           colour="1 1 0.5 1"        shift="0"/>
+            <State name="disabled"         colour="0.5 0.5 0.5 1"    shift="0"/>
+            <State name="normal_checked"   colour="0.98 0.98 0.3 1"  shift="0"/>
+            <State name="highlighted_checked" colour="1 1 0.3 1"     shift="0"/>
+            <State name="pushed_checked"   colour="1 1 0.2 1"        shift="0"/>
+            <State name="disabled_checked" colour="0.5 0.5 0.5 1"    shift="0"/>
+        </BasisSkin>
+    </Resource>
+
+    <!--
+        MW_MultiListColumn: ResourceSkin for ListBox used as a column inside MultiListBox.
+        Property key maps to UserString for the ListBox widget.
+        No VScroll — MultiListBox synchronises all column scrollbars itself.
+    -->
+    <Resource type="ResourceSkin" name="MW_MultiListColumn" size="100 100">
+        <Property key="SkinLine"   value="MW_MultiListLine"/>
+        <Property key="HeightLine" value="18"/>
+
+        <Child type="Widget" skin="" offset="0 0 100 100" align="Stretch" name="Client"/>
+    </Resource>
+
+    <!--
+        MW_MultiList: ResourceSkin for MultiListBox.
+        Child entries populate mWidgetChildSkin so assignWidget() finds them.
+          - HeaderPlace: 20px top strip where MultiListBox places column header buttons
+          - Client: remaining area where MultiListBox places per-column ListBoxes
+    -->
+    <Resource type="ResourceSkin" name="MW_MultiList" size="516 516">
+
+        <!-- Background -->
+        <Child type="Widget" skin="MW_Box" offset="0 0 516 516" align="Stretch"/>
+
+        <!-- Header strip (20px) -->
+        <Child type="Widget" skin="" offset="0 0 516 20" align="Top HStretch" name="HeaderPlace"/>
+
+        <!-- Client area (below header) -->
+        <Child type="Widget" skin="" offset="0 20 516 496" align="Stretch" name="Client"/>
+
+    </Resource>
+
+</MyGUI>

@@ -53,6 +53,10 @@ Main *Main::pMain = 0;
 std::string Main::address = "";
 std::string Main::serverPassword = TES3MP_DEFAULT_PASSW;
 std::string Main::resourceDir = "";
+std::vector<std::string> Main::sContentFiles;
+Files::Collections Main::sFileCollections;
+bool Main::sNewGamePending = false;
+bool Main::sPendingReturnToBrowser = false;
 
 std::string Main::getResDir()
 {
@@ -92,6 +96,8 @@ Main::Main()
 
     server = "mp.tes3mp.com";
     port = 25565;
+    mPostInitDone = false;
+    mWorldInitDone = false;
 }
 
 Main::~Main()
@@ -139,26 +145,85 @@ bool Main::init(std::vector<std::string> &content, Files::Collections &collectio
 
     int logLevel = safeGetInt("logLevel", "General", 5);
     TimedLog::SetLevel(logLevel);
+    sContentFiles    = content;
+    sFileCollections = collections;
+
+    serverPassword = safeGetStr("password", "General", "");
+    if (serverPassword.empty())
+        serverPassword = TES3MP_DEFAULT_PASSW;
+
     if (address.empty())
     {
-        pMain->server = safeGetStr("destinationAddress", "General", "mp.tes3mp.com");
-        pMain->port = (unsigned short) safeGetInt("port", "General", 25565);
+        /*
+            Start of tes3mp change (major)
 
-        serverPassword = safeGetStr("password", "General", "");
-        if (serverPassword.empty())
-            serverPassword = TES3MP_DEFAULT_PASSW;
+            No --connect CLI arg provided: skip connecting here and let
+            the in-game server browser handle it via connectTo().
+        */
+        get().mLocalSystem->serverPassword = serverPassword;
+        return true;
+        /* End of tes3mp change (major) */
     }
-    else
-    {
-        size_t delimPos = address.find(':');
-        pMain->server = address.substr(0, delimPos);
-        pMain->port = atoi(address.substr(delimPos + 1).c_str());
-    }
+
+    size_t delimPos = address.find(':');
+    pMain->server = address.substr(0, delimPos);
+    pMain->port = atoi(address.substr(delimPos + 1).c_str());
     get().mLocalSystem->serverPassword = serverPassword;
 
     pMain->mNetworking->connect(pMain->server, pMain->port, content, collections);
 
     return pMain->mNetworking->isConnected();
+}
+
+bool Main::connectTo(const std::string &host, unsigned short port)
+{
+    assert(pMain);
+    pMain->server = host;
+    pMain->port   = port;
+    get().mLocalSystem->serverPassword = serverPassword;
+    // Reset per-connection flags so post-init and world-init run again
+    pMain->mPostInitDone = false;
+    pMain->mWorldInitDone = false;
+    // Reset chargen state so password/chargen flow runs fresh on reconnect
+    pMain->mLocalPlayer->receivedCharacter = false;
+    pMain->mLocalPlayer->charGenState.currentStage = 0;
+    pMain->mLocalPlayer->charGenState.endStage = 1;
+    pMain->mLocalPlayer->charGenState.isFinished = false;
+    pMain->mNetworking->connect(host, port, sContentFiles, sFileCollections);
+    bool connected = pMain->mNetworking->isConnected();
+    if (connected)
+        sNewGamePending = true;
+    return connected;
+}
+
+bool Main::isNewGamePending()
+{
+    return sNewGamePending;
+}
+
+bool Main::isPostInitDone()
+{
+    return pMain && pMain->mPostInitDone;
+}
+
+void Main::clearNewGamePending()
+{
+    sNewGamePending = false;
+}
+
+bool Main::isPendingReturnToBrowser()
+{
+    return sPendingReturnToBrowser;
+}
+
+void Main::clearPendingReturnToBrowser()
+{
+    sPendingReturnToBrowser = false;
+}
+
+void Main::requestReturnToBrowser()
+{
+    sPendingReturnToBrowser = true;
 }
 
 void Main::postInit()
@@ -171,6 +236,16 @@ bool Main::isInitialized()
     return pMain != nullptr;
 }
 
+bool Main::isConnected()
+{
+    return pMain != nullptr && pMain->mNetworking->isConnected();
+}
+
+const std::string &Main::getAddress()
+{
+    return address;
+}
+
 void Main::destroy()
 {
     assert(pMain);
@@ -181,16 +256,19 @@ void Main::destroy()
 
 void Main::frame(float dt)
 {
+    // Skip all world-dependent calls when not in-game (e.g. after cleanup() on disconnect)
+    if (MWBase::Environment::get().getStateManager()->getState() == MWBase::StateManager::State_NoGame)
+        return;
+
     /*
         Start of tes3mp addition
 
         On the first frame after the game is running, perform deferred post-init
         steps that require the world and render loop to be fully started.
     */
-    static bool postInitDone = false;
-    if (!postInitDone && MWBase::Environment::get().getStateManager()->getState() == MWBase::StateManager::State_Running)
+    if (!pMain->mPostInitDone && MWBase::Environment::get().getStateManager()->getState() == MWBase::StateManager::State_Running)
     {
-        postInitDone = true;
+        pMain->mPostInitDone = true;
         MWBase::Environment::get().getMechanicsManager()->toggleAI();
         RecordHelper::createPlaceholderInteriorCell();
         // Stop vanilla chargen scripts before they run - TES3MP handles chargen itself
@@ -222,10 +300,9 @@ void Main::updateWorld(float dt) const
     if (!mLocalPlayer->processCharGen())
         return;
 
-    static bool init = true;
-    if (init)
+    if (!pMain->mWorldInitDone)
     {
-        init = false;
+        pMain->mWorldInitDone = true;
         LOG_MESSAGE_SIMPLE(TimedLog::LOG_INFO, "Sending ID_PLAYER_BASEINFO to server");
 
         mNetworking->getPlayerPacket(ID_PLAYER_BASEINFO)->setPlayer(getLocalPlayer());
