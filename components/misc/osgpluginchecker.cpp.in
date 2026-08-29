@@ -30,7 +30,9 @@ namespace Misc
 
     namespace
     {
-        constexpr auto USED_OSG_PLUGIN_NAMES = std::to_array<std::string_view>({${USED_OSG_PLUGIN_NAMES_FORMATTED}});
+        constexpr std::array<std::string_view, ${USED_OSG_PLUGIN_NAMES_COUNT}> USED_OSG_PLUGIN_NAMES{
+            ${USED_OSG_PLUGIN_NAMES_FORMATTED}
+        };
     }
 
     bool checkRequiredOSGPluginsArePresent()

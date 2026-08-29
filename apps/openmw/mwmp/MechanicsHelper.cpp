@@ -601,7 +601,8 @@ void MechanicsHelper::createSpellGfx(const MWWorld::Ptr& targetPtr, const std::v
         MWRender::Animation* anim = MWBase::Environment::get().getWorld()->getAnimation(targetPtr);
         if (anim && !castStatic->mModel.empty())
         {
-            anim->addEffect("meshes\\" + castStatic->mModel, "", loop, "", magicEffect->mParticle);
+            anim->addEffect("meshes\\" + castStatic->mModel.getOriginal(), "", loop, "",
+                magicEffect->mParticle.getOriginal());
         }
     }
 }

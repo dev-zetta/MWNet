@@ -2,6 +2,7 @@
 
 #include <components/openmw-mp/NetworkMessages.hpp>
 #include <components/esm3/creaturestats.hpp>
+#include <components/esm3/loadskil.hpp>
 
 using namespace mwmp;
 
@@ -18,7 +19,8 @@ void PacketPlayerSkill::Packet(RakNet::BitStream *newBitstream, bool send)
 
     if (player->exchangeFullInfo)
     {
-        RW(player->npcStats.mSkills, send);
+        for (int skillIndex = 0; skillIndex < ESM::Skill::Length; ++skillIndex)
+            RW(player->npcStats.mSkills[ESM::Skill::indexToRefId(skillIndex)], send);
     }
     else
     {
@@ -43,7 +45,7 @@ void PacketPlayerSkill::Packet(RakNet::BitStream *newBitstream, bool send)
                 packetValid = false;
                 return;
             }
-            RW(player->npcStats.mSkills[skillId], send);
+            RW(player->npcStats.mSkills[ESM::Skill::indexToRefId(skillId)], send);
         }
     }
 }

@@ -598,8 +598,8 @@ namespace MWWorld
             otherCell->mMovedHere.erase(reference.first);
         }
 
-        mMovedHere.empty();
-        mMovedToAnotherCell.empty();
+        mMovedHere.clear();
+        mMovedToAnotherCell.clear();
     }
     /* End of tes3mp addition */
 

@@ -70,7 +70,8 @@ namespace MWMechanics
         const ESM::Static* absorbStatic = esmStore.get<ESM::Static>().find("VFX_Absorb");
         MWRender::Animation* animation = MWBase::Environment::get().getWorld()->getAnimation(target);
         if (animation && !absorbStatic->mModel.empty())
-            animation->addEffect( "meshes\\" + absorbStatic->mModel, ESM::MagicEffect::SpellAbsorption, false, std::string());
+            animation->addEffect("meshes\\" + absorbStatic->mModel.getOriginal(), ESM::MagicEffect::SpellAbsorption,
+                false, std::string());
         const ESM::Spell* spell = esmStore.get<ESM::Spell>().search(spellId);
         int spellCost = 0;
         if (spell)

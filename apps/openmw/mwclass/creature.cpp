@@ -495,6 +495,7 @@ namespace MWClass
         if (!object.empty())
             stats.setLastHitObject(object);
 
+        float healthDamage = 0.f;
         for (auto& [stat, damage] : damages)
         {
             if (damage < 0.001f)
@@ -502,6 +503,7 @@ namespace MWClass
 
             if (stat == "health")
             {
+                healthDamage = damage;
                 MWMechanics::DynamicStat<float> health(getCreatureStats(ptr).getHealth());
                 health.setCurrent(health.getCurrent() - damage);
                 stats.setHealth(health);

@@ -520,7 +520,7 @@ void ObjectList::spawnObjects(MWWorld::CellStore* cellStore)
                         const ESM::Static* fx = MWBase::Environment::get().getWorld()->getStore().get<ESM::Static>()
                             .search(ESM::RefId::stringRefId("VFX_Summon_Start"));
                         if (fx)
-                            anim->addEffect("meshes\\" + fx->mModel, "", false);
+                            anim->addEffect("meshes\\" + fx->mModel.getOriginal(), "", false);
                     }
 
                     int creatureActorId = newPtr.getClass().getCreatureStats(newPtr).getActorId();
@@ -1363,7 +1363,12 @@ void ObjectList::addObjectDialogueChoice(const MWWorld::Ptr& ptr, std::string di
 
         // For translated versions of the game, make sure we translate the topic back into English first
         if (MWBase::Environment::get().getWindowManager()->getTranslationDataStorage().hasTranslation())
-            baseObject.topicId = dialogueChoice + "|" + std::string(MWBase::Environment::get().getWindowManager()->getTranslationDataStorage().topicID(dialogueChoice));
+        {
+            const auto& translations
+                = MWBase::Environment::get().getWindowManager()->getTranslationDataStorage();
+            baseObject.topicId = dialogueChoice + "|"
+                + std::string(translations.topicKeyword(translations.topicStandardForm(dialogueChoice)));
+        }
         else
             baseObject.topicId = dialogueChoice;
     }

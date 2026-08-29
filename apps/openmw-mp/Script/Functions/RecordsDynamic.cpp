@@ -177,7 +177,7 @@ const char *RecordsDynamicFunctions::GetRecordModel(unsigned int index) noexcept
     unsigned short readRecordsType = RecordsDynamicFunctions::GetRecordType();
 
     if (readRecordsType == mwmp::RECORD_TYPE::POTION)
-        return WorldstateFunctions::readWorldstate->potionRecords.at(index).data.mModel.c_str();
+        return WorldstateFunctions::readWorldstate->potionRecords.at(index).data.mModel.getOriginal().c_str();
 
     return "invalid";
 }
@@ -187,7 +187,7 @@ const char *RecordsDynamicFunctions::GetRecordIcon(unsigned int index) noexcept
     unsigned short readRecordsType = RecordsDynamicFunctions::GetRecordType();
 
     if (readRecordsType == mwmp::RECORD_TYPE::POTION)
-        return WorldstateFunctions::readWorldstate->potionRecords.at(index).data.mIcon.c_str();
+        return WorldstateFunctions::readWorldstate->potionRecords.at(index).data.mIcon.getOriginal().c_str();
 
     return "invalid";
 }
@@ -1161,7 +1161,7 @@ void RecordsDynamicFunctions::SetRecordSkillId(int skillId) noexcept
     unsigned short writeRecordsType = WorldstateFunctions::writeWorldstate.recordsType;
 
     if (writeRecordsType == mwmp::RECORD_TYPE::BOOK)
-        tempBook.data.mData.mSkillId = skillId;
+        tempBook.data.mData.mSkillId = ESM::Skill::indexToRefId(skillId);
     else
     {
         LOG_MESSAGE_SIMPLE(TimedLog::LOG_ERROR, "Tried to set skill id for record type %i which lacks that property", writeRecordsType);

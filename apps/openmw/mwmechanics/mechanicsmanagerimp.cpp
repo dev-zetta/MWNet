@@ -1910,6 +1910,11 @@ namespace MWMechanics
         mRaceSelected = false;
     }
 
+    bool MechanicsManager::isAggressive(const MWWorld::Ptr& ptr, const MWWorld::Ptr& target)
+    {
+        return MWMechanics::isAggressive(ptr, target);
+    }
+
     void MechanicsManager::resurrect(const MWWorld::Ptr& ptr)
     {
         CreatureStats& stats = ptr.getClass().getCreatureStats(ptr);

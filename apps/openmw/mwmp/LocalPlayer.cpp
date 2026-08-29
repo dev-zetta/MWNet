@@ -287,15 +287,15 @@ void LocalPlayer::updateAttributes(bool forceUpdate)
     for (int i = 0; i < 8; ++i)
     {
         ESM::RefId attrId = ESM::Attribute::indexToRefId(i);
-        if (ptrNpcStats.getAttribute(attrId).getBase() != creatureStats.mAttributes[i].mBase ||
-            ptrNpcStats.getAttribute(attrId).getModifier() != creatureStats.mAttributes[i].mMod ||
-            ptrNpcStats.getAttribute(attrId).getDamage() != creatureStats.mAttributes[i].mDamage ||
-            ptrNpcStats.getSkillIncrease(i) != npcStats.mSkillIncrease[i] ||
+        if (ptrNpcStats.getAttribute(attrId).getBase() != creatureStats.mAttributes[attrId].mBase ||
+            ptrNpcStats.getAttribute(attrId).getModifier() != creatureStats.mAttributes[attrId].mMod ||
+            ptrNpcStats.getAttribute(attrId).getDamage() != creatureStats.mAttributes[attrId].mDamage ||
+            ptrNpcStats.getSkillIncrease(i) != npcStats.mSkillIncrease[attrId] ||
             forceUpdate)
         {
             attributeIndexChanges.push_back(i);
-            ptrNpcStats.getAttribute(attrId).writeState(creatureStats.mAttributes[i]);
-            npcStats.mSkillIncrease[i] = ptrNpcStats.getSkillIncrease(i);
+            ptrNpcStats.getAttribute(attrId).writeState(creatureStats.mAttributes[attrId]);
+            npcStats.mSkillIncrease[attrId] = ptrNpcStats.getSkillIncrease(i);
         }
     }
 
@@ -323,14 +323,14 @@ void LocalPlayer::updateSkills(bool forceUpdate)
     {
         ESM::RefId skillId = ESM::Skill::indexToRefId(i);
         // Update a skill if its base value has changed at all or its progress has changed enough
-        if (ptrNpcStats.getSkill(skillId).getBase() != npcStats.mSkills[i].mBase ||
-            ptrNpcStats.getSkill(skillId).getModifier() != npcStats.mSkills[i].mMod ||
-            ptrNpcStats.getSkill(skillId).getDamage() != npcStats.mSkills[i].mDamage ||
-            abs(ptrNpcStats.getSkill(skillId).getProgress() - npcStats.mSkills[i].mProgress) > 0.75 ||
+        if (ptrNpcStats.getSkill(skillId).getBase() != npcStats.mSkills[skillId].mBase ||
+            ptrNpcStats.getSkill(skillId).getModifier() != npcStats.mSkills[skillId].mMod ||
+            ptrNpcStats.getSkill(skillId).getDamage() != npcStats.mSkills[skillId].mDamage ||
+            abs(ptrNpcStats.getSkill(skillId).getProgress() - npcStats.mSkills[skillId].mProgress) > 0.75 ||
             forceUpdate)
         {
             skillIndexChanges.push_back(i);
-            ptrNpcStats.getSkill(skillId).writeState(npcStats.mSkills[i]);
+            ptrNpcStats.getSkill(skillId).writeState(npcStats.mSkills[skillId]);
         }
     }
 
@@ -1023,27 +1023,29 @@ void LocalPlayer::setAttributes()
 
     for (int attributeIndex = 0; attributeIndex < 8; ++attributeIndex)
     {
+        const ESM::RefId attributeId = ESM::Attribute::indexToRefId(attributeIndex);
+
         // If the server wants to clear our attribute's non-zero modifier, we need to remove
         // the spell effect causing it, to avoid an infinite loop where the effect keeps resetting
         // the modifier
-        if (creatureStats.mAttributes[attributeIndex].mMod == 0 && ptrNpcStats->getAttribute(ESM::Attribute::indexToRefId(attributeIndex)).getModifier() > 0)
+        if (creatureStats.mAttributes[attributeId].mMod == 0 && ptrNpcStats->getAttribute(attributeId).getModifier() > 0)
         {
             ptrNpcStats->getActiveSpells().purgeEffectByArg(ESM::MagicEffect::FortifyAttribute, attributeIndex);
             MWBase::Environment::get().getMechanicsManager()->updateMagicEffects(ptrPlayer);
 
             // Is the modifier for this attribute still higher than 0? If so, unequip items that
             // fortify the attribute
-            if (ptrNpcStats->getAttribute(ESM::Attribute::indexToRefId(attributeIndex)).getModifier() > 0)
+            if (ptrNpcStats->getAttribute(attributeId).getModifier() > 0)
             {
                 MechanicsHelper::unequipItemsByEffect(ptrPlayer, ESM::Enchantment::ConstantEffect, ESM::MagicEffect::FortifyAttribute, attributeIndex, -1);
                 mwmp::Main::get().getGUIController()->refreshGuiMode(MWGui::GM_Inventory);
             }
         }
 
-        attributeValue.readState(creatureStats.mAttributes[attributeIndex]);
-        ptrNpcStats->setAttribute(ESM::Attribute::indexToRefId(attributeIndex), attributeValue);
+        attributeValue.readState(creatureStats.mAttributes[attributeId]);
+        ptrNpcStats->setAttribute(attributeId, attributeValue);
 
-        ptrNpcStats->setSkillIncrease(attributeIndex, npcStats.mSkillIncrease[attributeIndex]);
+        ptrNpcStats->setSkillIncrease(attributeIndex, npcStats.mSkillIncrease[attributeId]);
     }
 }
 
@@ -1056,25 +1058,27 @@ void LocalPlayer::setSkills()
 
     for (int skillIndex = 0; skillIndex < 27; ++skillIndex)
     {
+        const ESM::RefId skillId = ESM::Skill::indexToRefId(skillIndex);
+
         // If the server wants to clear our skill's non-zero modifier, we need to remove
         // the spell effect causing it, to avoid an infinite loop where the effect keeps resetting
         // the modifier
-        if (npcStats.mSkills[skillIndex].mMod == 0 && ptrNpcStats->getSkill(ESM::Skill::indexToRefId(skillIndex)).getModifier() > 0)
+        if (npcStats.mSkills[skillId].mMod == 0 && ptrNpcStats->getSkill(skillId).getModifier() > 0)
         {
             ptrNpcStats->getActiveSpells().purgeEffectByArg(ESM::MagicEffect::FortifySkill, skillIndex);
             MWBase::Environment::get().getMechanicsManager()->updateMagicEffects(ptrPlayer);
 
             // Is the modifier for this skill still higher than 0? If so, unequip items that
             // fortify the skill
-            if (ptrNpcStats->getSkill(ESM::Skill::indexToRefId(skillIndex)).getModifier() > 0)
+            if (ptrNpcStats->getSkill(skillId).getModifier() > 0)
             {
                 MechanicsHelper::unequipItemsByEffect(ptrPlayer, ESM::Enchantment::ConstantEffect, ESM::MagicEffect::FortifySkill, -1, skillIndex);
                 mwmp::Main::get().getGUIController()->refreshGuiMode(MWGui::GM_Inventory);
             }
         }
 
-        skillValue.readState(npcStats.mSkills[skillIndex]);
-        ptrNpcStats->setSkill(ESM::Skill::indexToRefId(skillIndex), skillValue);
+        skillValue.readState(npcStats.mSkills[skillId]);
+        ptrNpcStats->setSkill(skillId, skillValue);
     }
 }
 
@@ -1843,7 +1847,11 @@ void LocalPlayer::sendTopic(const std::string& topicId)
 
     // For translated versions of the game, make sure we translate the topic back into English first
     if (MWBase::Environment::get().getWindowManager()->getTranslationDataStorage().hasTranslation())
-        topic.topicId = MWBase::Environment::get().getWindowManager()->getTranslationDataStorage().topicID(topicId);
+    {
+        const auto& translations
+            = MWBase::Environment::get().getWindowManager()->getTranslationDataStorage();
+        topic.topicId = translations.topicKeyword(translations.topicStandardForm(topicId));
+    }
     else
         topic.topicId = topicId;
 

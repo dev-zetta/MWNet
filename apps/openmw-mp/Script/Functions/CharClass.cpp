@@ -1,5 +1,7 @@
 #include "CharClass.hpp"
 
+#include <components/esm/attr.hpp>
+#include <components/esm3/loadskil.hpp>
 #include <components/openmw-mp/NetworkMessages.hpp>
 
 #include <apps/openmw-mp/Networking.hpp>
@@ -37,7 +39,7 @@ int CharClassFunctions::GetClassMajorAttribute(unsigned short pid, unsigned char
     if (slot > 1)
         throw std::invalid_argument("Incorrect attribute slot id");
 
-    return player->charClass.mData.mAttribute[slot];
+    return ESM::Attribute::refIdToIndex(player->charClass.mData.mAttribute[slot]);
 }
 
 int CharClassFunctions::GetClassSpecialization(unsigned short pid) noexcept
@@ -56,7 +58,7 @@ int CharClassFunctions::GetClassMajorSkill(unsigned short pid, unsigned char slo
     if (slot > 4)
         throw std::invalid_argument("Incorrect skill slot id");
 
-    return player->charClass.mData.mSkills[slot][1];
+    return ESM::Skill::refIdToIndex(player->charClass.mData.mSkills[slot][1]);
 }
 
 int CharClassFunctions::GetClassMinorSkill(unsigned short pid, unsigned char slot)
@@ -67,7 +69,7 @@ int CharClassFunctions::GetClassMinorSkill(unsigned short pid, unsigned char slo
     if (slot > 4)
         throw std::invalid_argument("Incorrect skill slot id");
 
-    return player->charClass.mData.mSkills[slot][0];
+    return ESM::Skill::refIdToIndex(player->charClass.mData.mSkills[slot][0]);
 }
 
 int CharClassFunctions::IsClassDefault(unsigned short pid) noexcept
@@ -108,7 +110,7 @@ void CharClassFunctions::SetClassMajorAttribute(unsigned short pid, unsigned cha
     if (slot > 1)
         throw std::invalid_argument("Incorrect attribute slot id");
 
-    player->charClass.mData.mAttribute[slot] = attrId;
+    player->charClass.mData.mAttribute[slot] = ESM::Attribute::indexToRefId(attrId);
 
 }
 void CharClassFunctions::SetClassSpecialization(unsigned short pid, int spec) noexcept
@@ -126,7 +128,7 @@ void CharClassFunctions::SetClassMajorSkill(unsigned short pid, unsigned char sl
     if (slot > 4)
         throw std::invalid_argument("Incorrect skill slot id");
 
-    player->charClass.mData.mSkills[slot][1] = skillId;
+    player->charClass.mData.mSkills[slot][1] = ESM::Skill::indexToRefId(skillId);
 }
 void CharClassFunctions::SetClassMinorSkill(unsigned short pid, unsigned char slot, int skillId)
 {
@@ -136,7 +138,7 @@ void CharClassFunctions::SetClassMinorSkill(unsigned short pid, unsigned char sl
     if (slot > 4)
         throw std::invalid_argument("Incorrect skill slot id");
 
-    player->charClass.mData.mSkills[slot][0] = skillId;
+    player->charClass.mData.mSkills[slot][0] = ESM::Skill::indexToRefId(skillId);
 }
 
 void CharClassFunctions::SendClass(unsigned short pid) noexcept

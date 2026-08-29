@@ -557,6 +557,7 @@ endif(HAVE_MULTIVIEW)
 set(BOOST_COMPONENTS iostreams program_options filesystem)
 
 find_package(Boost 1.70.0 CONFIG REQUIRED COMPONENTS ${BOOST_COMPONENTS} OPTIONAL_COMPONENTS ${BOOST_OPTIONAL_COMPONENTS})
+find_package(ZLIB REQUIRED)
 
 # Start of tes3mp addition
 #

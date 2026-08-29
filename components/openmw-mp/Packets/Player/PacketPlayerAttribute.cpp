@@ -1,5 +1,6 @@
 #include "PacketPlayerAttribute.hpp"
 
+#include <components/esm/attr.hpp>
 #include <components/openmw-mp/NetworkMessages.hpp>
 
 using namespace mwmp;
@@ -17,8 +18,10 @@ void PacketPlayerAttribute::Packet(RakNet::BitStream *newBitstream, bool send)
 
     if (player->exchangeFullInfo)
     {
-        RW(player->creatureStats.mAttributes, send);
-        RW(player->npcStats.mSkillIncrease, send);
+        for (int attributeIndex = 0; attributeIndex < ESM::Attribute::Length; ++attributeIndex)
+            RW(player->creatureStats.mAttributes[ESM::Attribute::indexToRefId(attributeIndex)], send);
+        for (int attributeIndex = 0; attributeIndex < ESM::Attribute::Length; ++attributeIndex)
+            RW(player->npcStats.mSkillIncrease[ESM::Attribute::indexToRefId(attributeIndex)], send);
     }
     else
     {
@@ -45,8 +48,9 @@ void PacketPlayerAttribute::Packet(RakNet::BitStream *newBitstream, bool send)
                 return;
             }
 
-            RW(player->creatureStats.mAttributes[attributeIndex], send);
-            RW(player->npcStats.mSkillIncrease[attributeIndex], send);
+            const ESM::RefId attributeId = ESM::Attribute::indexToRefId(attributeIndex);
+            RW(player->creatureStats.mAttributes[attributeId], send);
+            RW(player->npcStats.mSkillIncrease[attributeId], send);
         }
     }
 }

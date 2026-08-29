@@ -1,4 +1,6 @@
 #include <boost/algorithm/clamp.hpp>
+#include <components/esm/attr.hpp>
+#include <components/esm3/loadskil.hpp>
 #include <components/openmw-mp/TimedLog.hpp>
 #include <components/vfs/pathutil.hpp>
 #include <apps/openmw/mwmechanics/steering.hpp>
@@ -248,8 +250,9 @@ void DedicatedPlayer::setAttributes()
 
     for (int i = 0; i < 8; ++i)
     {
-        attributeValue.readState(creatureStats.mAttributes[i]);
-        ptrCreatureStats->setAttribute(ESM::Attribute::indexToRefId(i), attributeValue);
+        const ESM::RefId attributeId = ESM::Attribute::indexToRefId(i);
+        attributeValue.readState(creatureStats.mAttributes[attributeId]);
+        ptrCreatureStats->setAttribute(attributeId, attributeValue);
     }
 }
 
@@ -264,8 +267,9 @@ void DedicatedPlayer::setSkills()
 
     for (int i = 0; i < 27; ++i)
     {
-        skillValue.readState(npcStats.mSkills[i]);
-        ptrNpcStats->setSkill(ESM::Skill::indexToRefId(i), skillValue);
+        const ESM::RefId skillId = ESM::Skill::indexToRefId(i);
+        skillValue.readState(npcStats.mSkills[skillId]);
+        ptrNpcStats->setSkill(skillId, skillValue);
     }
 }
 

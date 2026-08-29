@@ -113,7 +113,7 @@ const char* StatsFunctions::GetModel(unsigned short pid) noexcept
     Player* player;
     GET_PLAYER(pid, player, 0);
 
-    return player->npc.mModel.c_str();
+    return player->npc.mModel.getOriginal().c_str();
 }
 
 const char *StatsFunctions::GetBirthsign(unsigned short pid) noexcept
@@ -196,7 +196,7 @@ int StatsFunctions::GetAttributeBase(unsigned short pid, unsigned short attribut
     if (attributeId >= ESM::Attribute::Length)
         return 0;
 
-    return player->creatureStats.mAttributes[attributeId].mBase;
+    return player->creatureStats.mAttributes[ESM::Attribute::indexToRefId(attributeId)].mBase;
 }
 
 int StatsFunctions::GetAttributeModifier(unsigned short pid, unsigned short attributeId) noexcept
@@ -207,7 +207,7 @@ int StatsFunctions::GetAttributeModifier(unsigned short pid, unsigned short attr
     if (attributeId >= ESM::Attribute::Length)
         return 0;
 
-    return player->creatureStats.mAttributes[attributeId].mMod;
+    return player->creatureStats.mAttributes[ESM::Attribute::indexToRefId(attributeId)].mMod;
 }
 
 double StatsFunctions::GetAttributeDamage(unsigned short pid, unsigned short attributeId) noexcept
@@ -218,7 +218,7 @@ double StatsFunctions::GetAttributeDamage(unsigned short pid, unsigned short att
     if (attributeId >= ESM::Attribute::Length)
         return 0;
 
-    return player->creatureStats.mAttributes[attributeId].mDamage;
+    return player->creatureStats.mAttributes[ESM::Attribute::indexToRefId(attributeId)].mDamage;
 }
 
 int StatsFunctions::GetSkillBase(unsigned short pid, unsigned short skillId) noexcept
@@ -229,7 +229,7 @@ int StatsFunctions::GetSkillBase(unsigned short pid, unsigned short skillId) noe
     if (skillId >= ESM::Skill::Length)
         return 0;
 
-    return player->npcStats.mSkills[skillId].mBase;
+    return player->npcStats.mSkills[ESM::Skill::indexToRefId(skillId)].mBase;
 }
 
 int StatsFunctions::GetSkillModifier(unsigned short pid, unsigned short skillId) noexcept
@@ -240,7 +240,7 @@ int StatsFunctions::GetSkillModifier(unsigned short pid, unsigned short skillId)
     if (skillId >= ESM::Skill::Length)
         return 0;
 
-    return player->npcStats.mSkills[skillId].mMod;
+    return player->npcStats.mSkills[ESM::Skill::indexToRefId(skillId)].mMod;
 }
 
 double StatsFunctions::GetSkillDamage(unsigned short pid, unsigned short skillId) noexcept
@@ -251,7 +251,7 @@ double StatsFunctions::GetSkillDamage(unsigned short pid, unsigned short skillId
     if (skillId >= ESM::Skill::Length)
         return 0;
 
-    return player->npcStats.mSkills[skillId].mDamage;
+    return player->npcStats.mSkills[ESM::Skill::indexToRefId(skillId)].mDamage;
 }
 
 double StatsFunctions::GetSkillProgress(unsigned short pid, unsigned short skillId) noexcept
@@ -262,7 +262,7 @@ double StatsFunctions::GetSkillProgress(unsigned short pid, unsigned short skill
     if (skillId >= ESM::Skill::Length)
         return 0;
 
-    return player->npcStats.mSkills[skillId].mProgress;
+    return player->npcStats.mSkills[ESM::Skill::indexToRefId(skillId)].mProgress;
 }
 
 int StatsFunctions::GetSkillIncrease(unsigned short pid, unsigned int attributeId) noexcept
@@ -270,10 +270,10 @@ int StatsFunctions::GetSkillIncrease(unsigned short pid, unsigned int attributeI
     Player *player;
     GET_PLAYER(pid, player, 0);
 
-    if (attributeId > ESM::Attribute::Length)
+    if (attributeId >= ESM::Attribute::Length)
         return 0;
 
-    return player->npcStats.mSkillIncrease[attributeId];
+    return player->npcStats.mSkillIncrease[ESM::Attribute::indexToRefId(attributeId)];
 }
 
 int StatsFunctions::GetBounty(unsigned short pid) noexcept
@@ -344,7 +344,7 @@ void StatsFunctions::SetModel(unsigned short pid, const char *model) noexcept
     Player* player;
     GET_PLAYER(pid, player, );
 
-    if (player->npc.mModel == model)
+    if (player->npc.mModel.getOriginal() == model)
         return;
 
     player->npc.mModel = model;
@@ -459,7 +459,7 @@ void StatsFunctions::SetAttributeBase(unsigned short pid, unsigned short attribu
     if (attributeId >= ESM::Attribute::Length)
         return;
 
-    player->creatureStats.mAttributes[attributeId].mBase = value;
+    player->creatureStats.mAttributes[ESM::Attribute::indexToRefId(attributeId)].mBase = value;
 
     if (!Utils::vectorContains(player->attributeIndexChanges, attributeId))
         player->attributeIndexChanges.push_back(attributeId);
@@ -473,7 +473,7 @@ void StatsFunctions::ClearAttributeModifier(unsigned short pid, unsigned short a
     if (attributeId >= ESM::Attribute::Length)
         return;
 
-    player->creatureStats.mAttributes[attributeId].mMod = 0;
+    player->creatureStats.mAttributes[ESM::Attribute::indexToRefId(attributeId)].mMod = 0;
 
     if (!Utils::vectorContains(player->attributeIndexChanges, attributeId))
         player->attributeIndexChanges.push_back(attributeId);
@@ -487,7 +487,7 @@ void StatsFunctions::SetAttributeDamage(unsigned short pid, unsigned short attri
     if (attributeId >= ESM::Attribute::Length)
         return;
 
-    player->creatureStats.mAttributes[attributeId].mDamage = value;
+    player->creatureStats.mAttributes[ESM::Attribute::indexToRefId(attributeId)].mDamage = value;
 
     if (!Utils::vectorContains(player->attributeIndexChanges, attributeId))
         player->attributeIndexChanges.push_back(attributeId);
@@ -501,7 +501,7 @@ void StatsFunctions::SetSkillBase(unsigned short pid, unsigned short skillId, in
     if (skillId >= ESM::Skill::Length)
         return;
 
-    player->npcStats.mSkills[skillId].mBase = value;
+    player->npcStats.mSkills[ESM::Skill::indexToRefId(skillId)].mBase = value;
 
     if (!Utils::vectorContains(player->skillIndexChanges, skillId))
         player->skillIndexChanges.push_back(skillId);
@@ -515,7 +515,7 @@ void StatsFunctions::ClearSkillModifier(unsigned short pid, unsigned short skill
     if (skillId >= ESM::Skill::Length)
         return;
 
-    player->npcStats.mSkills[skillId].mMod = 0;
+    player->npcStats.mSkills[ESM::Skill::indexToRefId(skillId)].mMod = 0;
 
     if (!Utils::vectorContains(player->skillIndexChanges, skillId))
         player->skillIndexChanges.push_back(skillId);
@@ -529,7 +529,7 @@ void StatsFunctions::SetSkillDamage(unsigned short pid, unsigned short skillId, 
     if (skillId >= ESM::Skill::Length)
         return;
 
-    player->npcStats.mSkills[skillId].mDamage = value;
+    player->npcStats.mSkills[ESM::Skill::indexToRefId(skillId)].mDamage = value;
 
     if (!Utils::vectorContains(player->skillIndexChanges, skillId))
         player->skillIndexChanges.push_back(skillId);
@@ -543,7 +543,7 @@ void StatsFunctions::SetSkillProgress(unsigned short pid, unsigned short skillId
     if (skillId >= ESM::Skill::Length)
         return;
 
-    player->npcStats.mSkills[skillId].mProgress = value;
+    player->npcStats.mSkills[ESM::Skill::indexToRefId(skillId)].mProgress = value;
 
     if (!Utils::vectorContains(player->skillIndexChanges, skillId))
         player->skillIndexChanges.push_back(skillId);
@@ -554,10 +554,10 @@ void StatsFunctions::SetSkillIncrease(unsigned short pid, unsigned int attribute
     Player *player;
     GET_PLAYER(pid, player,);
 
-    if (attributeId > ESM::Attribute::Length)
+    if (attributeId >= ESM::Attribute::Length)
         return;
 
-    player->npcStats.mSkillIncrease[attributeId] = value;
+    player->npcStats.mSkillIncrease[ESM::Attribute::indexToRefId(attributeId)] = value;
 
     if (!Utils::vectorContains(player->attributeIndexChanges, attributeId))
         player->attributeIndexChanges.push_back(attributeId);
