@@ -8,6 +8,85 @@ env:
   BUILD_TYPE: RelWithDebInfo
 
 jobs:
+  SourceChecks:
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v6
+      with:
+        fetch-depth: 0
+
+    - name: Check patch whitespace
+      shell: bash
+      run: |
+        base="${{ github.event.pull_request.base.sha }}"
+        if [[ -z "$base" ]]; then
+          base="$(git rev-parse HEAD^)"
+        fi
+        git diff --check "$base"...HEAD
+
+    - name: Check CMake formatting
+      run: CI/check_cmake_format.sh
+
+  ProtocolLinux:
+    name: protocol-${{ matrix.compiler }}-${{ matrix.sanitizer }}
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+        - compiler: gcc
+          cc: gcc
+          cxx: g++
+          sanitizer: none
+          flags: ""
+        - compiler: clang
+          cc: clang
+          cxx: clang++
+          sanitizer: none
+          flags: ""
+        - compiler: clang
+          cc: clang
+          cxx: clang++
+          sanitizer: asan-ubsan
+          flags: -fsanitize=address,undefined -fno-omit-frame-pointer
+        - compiler: clang
+          cc: clang
+          cxx: clang++
+          sanitizer: tsan
+          flags: -fsanitize=thread -fno-omit-frame-pointer
+
+    steps:
+    - uses: actions/checkout@v6
+    - name: Configure protocol tests
+      env:
+        CC: ${{ matrix.cc }}
+        CXX: ${{ matrix.cxx }}
+      run: >
+        cmake -S . -B build-protocol
+        -D TES3MP_TESTS_ONLY=ON
+        -D CMAKE_BUILD_TYPE=Debug
+        -D CMAKE_CXX_FLAGS="${{ matrix.flags }}"
+        -D CMAKE_EXE_LINKER_FLAGS="${{ matrix.flags }}"
+    - name: Build protocol tests
+      run: cmake --build build-protocol --parallel 2
+    - name: Run protocol tests
+      run: ctest --test-dir build-protocol --output-on-failure
+
+  ProtocolMSVC:
+    name: protocol-msvc
+    runs-on: windows-latest
+
+    steps:
+    - uses: actions/checkout@v6
+    - uses: ilammy/msvc-dev-cmd@v1
+    - name: Configure protocol tests
+      run: cmake -S . -B build-protocol -D TES3MP_TESTS_ONLY=ON
+    - name: Build protocol tests
+      run: cmake --build build-protocol --config Debug --parallel 2
+    - name: Run protocol tests
+      run: ctest --test-dir build-protocol -C Debug --output-on-failure
+
   Ubuntu:
     runs-on: ubuntu-latest
 
@@ -28,26 +107,21 @@ jobs:
 
     - name: Configure
       run: >
-        cmake .
+        cmake -S . -B build
         -D CMAKE_BUILD_TYPE=${{env.BUILD_TYPE}}
         -D OPENMW_USE_SYSTEM_RECASTNAVIGATION=ON
         -D USE_SYSTEM_TINYXML=ON
         -D BUILD_COMPONENTS_TESTS=ON
         -D BUILD_OPENMW_TESTS=ON
         -D BUILD_OPENCS_TESTS=ON
+        -D BUILD_TES3MP_TESTS=ON
         -D CMAKE_INSTALL_PREFIX=install
 
     - name: Build
-      run: cmake --build . -- -j$(nproc)
+      run: cmake --build build --parallel $(nproc)
 
-    - name: Run components tests
-      run: ./components-tests
-
-    - name: Run OpenMW tests
-      run: ./openmw-tests
-
-    - name: Run OpenMW-CS tests
-      run: ./openmw-cs-tests
+    - name: Run tests
+      run: ctest --test-dir build --output-on-failure
 
     # - name: Install
     #   shell: bash

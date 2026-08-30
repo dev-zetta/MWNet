@@ -1,10 +1,12 @@
-1.0.0 (unreleased)
-------------------
+1.0.0-alpha.1 (unreleased)
+--------------------------
 
-This is a major compatibility and maintenance release. It brings TES3MP forward from its OpenMW 0.47 base to OpenMW 0.52 and includes all fork changes since 0.8.1. Clients and servers must both use TES3MP 1.0.0.
+This is the first hardening milestone for the major OpenMW 0.52 compatibility and maintenance release. It includes all fork changes since 0.8.1 and intentionally starts protocol 11; protocol 10 clients and servers are unsupported.
 
 ### Engine and build modernization
 
+* Restore the upstream OpenMW build and test options, remove duplicate target registration, add TES3MP test and fuzz targets, and modernize vendored dependency CMake policies
+* Bind new alpha servers to loopback and disable legacy public master announcements by default
 * Update the multiplayer client, dedicated server and tools onto OpenMW 0.52, including its current rendering, input, Lua, navigation and content APIs
 * Port TES3MP-specific code to C++20, Qt 6 and the current `ESM::RefId`, settings, resource and world APIs
 * Vendor CrabNet in `extern/crabnet` so client and server builds no longer depend on a separately cloned networking repository

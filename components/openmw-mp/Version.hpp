@@ -1,8 +1,8 @@
 #ifndef OPENMW_VERSION_HPP
 #define OPENMW_VERSION_HPP
 
-#define TES3MP_VERSION "1.0.0"
-#define TES3MP_PROTO_VERSION 10
+#define TES3MP_VERSION "1.0.0-alpha.1"
+#define TES3MP_PROTO_VERSION 11
 
 // Commit hash used in the RakNet connection password. Must match on client and server.
 // Empty string matches original TES3MP 0.8.1 public servers.

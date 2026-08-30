@@ -17,7 +17,7 @@ FIND_LIBRARY (RakNet_LIBRARY_RELEASE NAMES RakNetLibStatic
     /opt/local/lib
     $ENV{RAKNET_ROOT}/lib
     )
-	
+
 FIND_LIBRARY (RakNet_LIBRARY_DEBUG NAMES RakNetLibStaticd
     PATHS
     ENV LD_LIBRARY_PATH
@@ -28,16 +28,16 @@ FIND_LIBRARY (RakNet_LIBRARY_DEBUG NAMES RakNetLibStaticd
     /usr/local/lib
     /opt/local/lib
     $ENV{RAKNET_ROOT}/lib
-    )	
-	
-	
+    )
+
+
 
 FIND_PATH (RakNet_INCLUDES raknet/RakPeer.h
     ENV CPATH
     /usr/include
     /usr/local/include
     /opt/local/include
-	$ENV{RAKNET_ROOT}/include
+    $ENV{RAKNET_ROOT}/include
     )
  
 MESSAGE(STATUS ${RakNet_INCLUDES})
@@ -53,16 +53,16 @@ IF(RakNet_FOUND)
   
    IF (CMAKE_CONFIGURATION_TYPES OR CMAKE_BUILD_TYPE)
         SET(RakNet_LIBRARY optimized ${RakNet_LIBRARY_RELEASE} debug ${RakNet_LIBRARY_DEBUG})
-		IF(WIN32)
-			SET(RakNet_LIBRARY optimized ${RakNet_LIBRARY_RELEASE} debug ${RakNet_LIBRARY_DEBUG} ws2_32.lib)
-		ENDIF(WIN32)
+        IF(WIN32)
+            SET(RakNet_LIBRARY optimized ${RakNet_LIBRARY_RELEASE} debug ${RakNet_LIBRARY_DEBUG} ws2_32.lib)
+        ENDIF(WIN32)
    ELSE()
         # if there are no configuration types and CMAKE_BUILD_TYPE has no value
         # then just use the release libraries
         SET(RakNet_LIBRARY ${RakNet_LIBRARY_RELEASE} )
-		IF(WIN32)
-			SET(RakNet_LIBRARY ${RakNet_LIBRARY_RELEASE} ws2_32.lib)
-		ENDIF(WIN32)
+        IF(WIN32)
+            SET(RakNet_LIBRARY ${RakNet_LIBRARY_RELEASE} ws2_32.lib)
+        ENDIF(WIN32)
    ENDIF()
    
   IF(NOT RakNet_FIND_QUIETLY)
@@ -74,4 +74,3 @@ ELSE(RakNet_FOUND)
     MESSAGE(FATAL_ERROR "Could not find RakNet")
   ENDIF(RakNet_FIND_REQUIRED)
 ENDIF(RakNet_FOUND)
-

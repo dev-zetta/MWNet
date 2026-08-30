@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.5)
+cmake_minimum_required(VERSION 3.10...4.2)
 
 project(CrabNet)
 
@@ -41,7 +41,9 @@ option(CRABNET_ENABLE_LIBCAT_SECURITY "Enable secure connection support." FALSE)
 set(CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/CmakeIncludes)
 
 include(CmakeMacros)
-include(PVS-Studio)
+if (CRABNET_ENABLE_PVS)
+    include(PVS-Studio)
+endif()
 
 if (MSVC)
     FIXLINKOPTIONS()

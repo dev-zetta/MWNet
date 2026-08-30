@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.16.0)
+cmake_minimum_required(VERSION 3.16...4.2)
 
 #  set the timestamps of extracted contents to the time of extraction
 # remove if cmake version is >= 3.24
@@ -42,15 +42,23 @@ option(BUILD_WITH_CODE_COVERAGE "Enable code coverage with gconv" OFF)
 option(BUILD_COMPONENTS_TESTS   "Build components library tests" OFF)
 option(BUILD_BENCHMARKS         "Build benchmarks with Google Benchmark" OFF)
 option(BUILD_OPENMW_MP          "Build OpenMW-MP" ON)
-option(BUILD_BROWSER            "Build tes3mp Server Browser" ON)
+option(BUILD_BROWSER            "Build the legacy TES3MP standalone server browser" OFF)
 option(BUILD_MASTER             "Build tes3mp Master Server" OFF)
+option(BUILD_NAVMESHTOOL        "Build navmesh tool" ON)
+option(BUILD_BULLETOBJECTTOOL   "Build Bullet object tool" ON)
+option(BUILD_OPENCS_TESTS       "Build OpenMW Construction Set tests" OFF)
+option(BUILD_OPENMW_TESTS       "Build OpenMW tests" OFF)
+option(BUILD_TES3MP_TESTS       "Build TES3MP protocol and server tests" OFF)
+option(BUILD_TES3MP_FUZZERS     "Build TES3MP libFuzzer targets" OFF)
+option(TES3MP_TESTS_ONLY        "Configure only dependency-free TES3MP protocol tests" OFF)
+option(PRECOMPILE_HEADERS_WITH_MSVC "Precompile most common used headers with MSVC (alternative to ccache)" ON)
 
 set(OpenGL_GL_PREFERENCE LEGACY)  # Use LEGACY as we use GL2; GLNVD is for GL3 and up.
 
-if (NOT BUILD_LAUNCHER AND NOT BUILD_BROWSER AND NOT BUILD_OPENCS AND NOT BUILD_WIZARD)
-   set(USE_QT FALSE)
-else()
+if (BUILD_LAUNCHER OR BUILD_BROWSER OR BUILD_OPENCS OR BUILD_WIZARD OR BUILD_OPENCS_TESTS)
     set(USE_QT TRUE)
+else()
+    set(USE_QT FALSE)
 endif()
 
 # If the user doesn't supply a CMAKE_BUILD_TYPE via command line, choose one for them.
@@ -60,6 +68,19 @@ IF(NOT CMAKE_BUILD_TYPE)
         FORCE)
     set_property(CACHE CMAKE_BUILD_TYPE PROPERTY STRINGS None Debug Release RelWithDebInfo MinSizeRel)
 ENDIF()
+
+# Keep the security-critical protocol tests runnable on clean builders without
+# first installing the complete OpenMW rendering and editor dependency stack.
+if (TES3MP_TESTS_ONLY)
+    enable_testing()
+    add_subdirectory(apps/tes3mp_tests)
+
+    if (BUILD_TES3MP_FUZZERS)
+        add_subdirectory(apps/tes3mp_fuzz)
+    endif()
+
+    return()
+endif()
 
 if (APPLE)
     set(CMAKE_FIND_FRAMEWORK LAST) # prefer dylibs over frameworks
@@ -675,7 +696,7 @@ if (NOT WIN32 AND NOT APPLE)
     configure_file(${OpenMW_SOURCE_DIR}/files/openmw.appdata.xml
         "${OpenMW_BINARY_DIR}/openmw.appdata.xml")
     configure_file(${OpenMW_SOURCE_DIR}/files/tes3mp-browser.desktop
-	    "${OpenMW_BINARY_DIR}/tes3mp-browser.desktop")
+        "${OpenMW_BINARY_DIR}/tes3mp-browser.desktop")
     configure_file(${OpenMW_SOURCE_DIR}/files/org.openmw.cs.desktop
         "${OpenMW_BINARY_DIR}/org.openmw.cs.desktop")
 endif()
@@ -727,139 +748,30 @@ endif()
 ENDIF(BUILD_OPENMW OR BUILD_OPENCS)
 # End of tes3mp addition
 
-# Components
-add_subdirectory (components)
-target_compile_definitions(components PRIVATE OPENMW_DOC_BASEURL="${OPENMW_DOC_BASEURL}")
+if (CMAKE_CXX_COMPILER_ID STREQUAL "MSVC" OR CMAKE_CXX_COMPILER_FRONTEND_VARIANT STREQUAL "MSVC")
+    add_compile_options("/W4")
 
-# Apps and tools
-if (BUILD_OPENMW_MP)
-    add_subdirectory( apps/openmw-mp )
-endif()
-
-if (BUILD_MASTER)
-    add_subdirectory( apps/master )
-endif()
-
-if (BUILD_OPENMW)
-    add_subdirectory( apps/openmw )
-endif()
-
-if (BUILD_BSATOOL)
-  add_subdirectory( apps/bsatool )
-endif()
-
-if (BUILD_ESMTOOL)
-  add_subdirectory( apps/esmtool )
-endif()
-
-if (BUILD_LAUNCHER)
-   add_subdirectory( apps/launcher )
-endif()
-
-if (BUILD_BROWSER)
-    add_subdirectory( apps/browser )
-endif()
-
-if (BUILD_MWINIIMPORTER)
-   add_subdirectory( apps/mwiniimporter )
-endif()
-
-if (BUILD_ESSIMPORTER)
-   add_subdirectory (apps/essimporter )
-endif()
-
-if (BUILD_OPENCS)
-   add_subdirectory (apps/opencs)
-endif()
-
-if (BUILD_WIZARD)
-   add_subdirectory(apps/wizard)
-endif()
-
-if (BUILD_NIFTEST)
-    add_subdirectory(apps/niftest)
-endif(BUILD_NIFTEST)
-
-# UnitTests
-if (BUILD_UNITTESTS)
-  add_subdirectory( apps/openmw_test_suite )
-endif()
-
-if (BUILD_BENCHMARKS)
-  add_subdirectory(apps/benchmarks)
-endif()
-
-if (WIN32)
-  if (MSVC)
-    if (OPENMW_MP_BUILD)
-        set( MT_BUILD "/MP")
-    endif()
-
-    foreach( OUTPUTCONFIG ${CMAKE_CONFIGURATION_TYPES} )
-        string( TOUPPER ${OUTPUTCONFIG} OUTPUTCONFIG )
-        set( CMAKE_RUNTIME_OUTPUT_DIRECTORY_${OUTPUTCONFIG} "$(SolutionDir)$(Configuration)" )
-        set( CMAKE_LIBRARY_OUTPUT_DIRECTORY_${OUTPUTCONFIG} "$(ProjectDir)$(Configuration)" )
-    endforeach( OUTPUTCONFIG )
-
-    if (USE_DEBUG_CONSOLE AND BUILD_OPENMW)
-      set_target_properties(tes3mp PROPERTIES LINK_FLAGS_DEBUG "/SUBSYSTEM:CONSOLE")
-      set_target_properties(tes3mp PROPERTIES LINK_FLAGS_RELWITHDEBINFO "/SUBSYSTEM:CONSOLE")
-      set_target_properties(tes3mp PROPERTIES COMPILE_DEFINITIONS $<$<CONFIG:Debug>:_CONSOLE>)
-    elseif (BUILD_OPENMW)
-      # Turn off debug console, debug output will be written to visual studio output instead
-      set_target_properties(tes3mp PROPERTIES LINK_FLAGS_DEBUG "/SUBSYSTEM:WINDOWS")
-      set_target_properties(tes3mp PROPERTIES LINK_FLAGS_RELWITHDEBINFO "/SUBSYSTEM:WINDOWS")
-    endif()
-
-    if (BUILD_OPENMW)
-        # Release builds don't use the debug console
-        set_target_properties(tes3mp PROPERTIES LINK_FLAGS_RELEASE "/SUBSYSTEM:WINDOWS")
-        set_target_properties(tes3mp PROPERTIES LINK_FLAGS_MINSIZEREL "/SUBSYSTEM:WINDOWS")
-    endif()
-
-    # Play a bit with the warning levels
-
-    set(WARNINGS "/W4")
-
-    set(WARNINGS_DISABLE
-        4100 # Unreferenced formal parameter (-Wunused-parameter)
-        4127 # Conditional expression is constant
-        4996 # Function was declared deprecated
-        5054 # Deprecated operations between enumerations of different types caused by Qt headers
-        )
-
-    foreach(d ${WARNINGS_DISABLE})
-        add_compile_options("/wd${d}")
-    endforeach(d)
-
-    set(WARNINGS_EXTRA
-        4855 # implicit capture of 'this' via '[=]' is deprecated in 'version'
-        )
-
-    foreach(d ${WARNINGS_EXTRA})
-        add_compile_options("/w1${d}")
-    endforeach(d)
+    foreach(disabledWarning 4100 4127 4996 5054)
+        add_compile_options("/wd${disabledWarning}")
+    endforeach()
+    add_compile_options("/w14855")
 
     if(OPENMW_MSVC_WERROR)
         add_compile_options("/WX")
     endif()
-else ()
-    add_compile_options("-Wall" "-Wextra" "-Wundef" "-Wextra-semi" "-Wno-unused-parameter" "-pedantic" "-Wno-long-long" "-Wnon-virtual-dtor" "-Wunused" "-Wshadow")
+else()
+    add_compile_options("-Wall" "-Wextra" "-Wundef" "-Wextra-semi" "-Wno-unused-parameter" "-pedantic"
+        "-Wno-long-long" "-Wnon-virtual-dtor" "-Wunused" "-Wshadow")
 
-    if (BUILD_OPENMW)
-        set_target_properties(osg-ffmpeg-videoplayer PROPERTIES COMPILE_FLAGS "${WARNINGS} ${MT_BUILD}")
-    endif()
-    
-    if (MSVC_VERSION GREATER_EQUAL 1915 AND MSVC_VERSION LESS 1920)
-        target_compile_definitions(components INTERFACE _ENABLE_EXTENDED_ALIGNED_STORAGE)
+    if (CMAKE_CXX_COMPILER_ID STREQUAL Clang AND NOT APPLE)
+        add_compile_options("-Wno-potentially-evaluated-expression")
     endif()
 
     if (CMAKE_CXX_COMPILER_ID STREQUAL GNU)
         add_compile_options("-Wno-unused-but-set-parameter" "-Wduplicated-branches" "-Wduplicated-cond" "-Wlogical-op")
-        # https://gcc.gnu.org/bugzilla/show_bug.cgi?id=105438
         add_compile_options("-Wno-array-bounds")
     endif()
-endif ()
+endif()
 
 if (OPENMW_CXX_FLAGS)
     separate_arguments(OPENMW_CXX_FLAGS NATIVE_COMMAND "${OPENMW_CXX_FLAGS}")
@@ -867,46 +779,114 @@ if (OPENMW_CXX_FLAGS)
 endif()
 
 # Components
-add_subdirectory (components)
+add_subdirectory(components)
+target_compile_definitions(components PRIVATE OPENMW_DOC_BASEURL="${OPENMW_DOC_BASEURL}")
 
-# Apps and tools
+# Applications and tools
 if (BUILD_OPENMW OR BUILD_OPENMW_TESTS)
-    add_subdirectory( apps/openmw )
+    add_subdirectory(apps/openmw)
 endif()
 
-    if (BUILD_BROWSER)
-        set_target_properties(tes3mp-browser PROPERTIES COMPILE_FLAGS "${WARNINGS} ${MT_BUILD}")
-    endif()
+if (BUILD_OPENMW_MP)
+    add_subdirectory(apps/openmw-mp)
+endif()
 
-    if (BUILD_MWINIIMPORTER)
-        set_target_properties(openmw-iniimporter PROPERTIES COMPILE_FLAGS "${WARNINGS} ${MT_BUILD}")
-    endif()
+if (BUILD_MASTER)
+    add_subdirectory(apps/master)
+endif()
+
+if (BUILD_BROWSER)
+    add_subdirectory(apps/browser)
+endif()
+
+if (BUILD_BSATOOL)
+    add_subdirectory(apps/bsatool)
+endif()
 
 if (BUILD_ESMTOOL)
-    add_subdirectory( apps/esmtool )
+    add_subdirectory(apps/esmtool)
 endif()
 
+if (BUILD_LAUNCHER)
+    add_subdirectory(apps/launcher)
+endif()
+
+if (BUILD_MWINIIMPORTER)
+    add_subdirectory(apps/mwiniimporter)
+endif()
+
+if (BUILD_ESSIMPORTER)
+    add_subdirectory(apps/essimporter)
+endif()
+
+if (BUILD_OPENCS OR BUILD_OPENCS_TESTS)
+    add_subdirectory(apps/opencs)
+endif()
+
+if (BUILD_WIZARD)
+    add_subdirectory(apps/wizard)
+endif()
+
+if (BUILD_NIFTEST)
+    add_subdirectory(apps/niftest)
+endif()
+
+if (BUILD_COMPONENTS_TESTS)
+    add_subdirectory(apps/components_tests)
+endif()
+
+if (BUILD_OPENCS_TESTS)
+    add_subdirectory(apps/opencs_tests)
+endif()
+
+if (BUILD_OPENMW_TESTS)
+    add_subdirectory(apps/openmw_tests)
+endif()
+
+if (BUILD_TES3MP_TESTS)
+    enable_testing()
+    add_subdirectory(apps/tes3mp_tests)
+endif()
+
+if (BUILD_TES3MP_FUZZERS)
+    add_subdirectory(apps/tes3mp_fuzz)
+endif()
+
+if (BUILD_BENCHMARKS)
+    add_subdirectory(apps/benchmarks)
+endif()
+
+if (BUILD_NAVMESHTOOL)
+    add_subdirectory(apps/navmeshtool)
+endif()
+
+if (BUILD_BULLETOBJECTTOOL)
+    add_subdirectory(apps/bulletobjecttool)
+endif()
+
+if (WIN32 AND MSVC)
+    foreach(outputConfig ${CMAKE_CONFIGURATION_TYPES})
+        string(TOUPPER ${outputConfig} outputConfigUpper)
+        set(CMAKE_RUNTIME_OUTPUT_DIRECTORY_${outputConfigUpper} "$(SolutionDir)$(Configuration)")
+        set(CMAKE_LIBRARY_OUTPUT_DIRECTORY_${outputConfigUpper} "$(ProjectDir)$(Configuration)")
+    endforeach()
+
+    if (USE_DEBUG_CONSOLE AND BUILD_OPENMW)
+        set_target_properties(tes3mp PROPERTIES LINK_FLAGS_DEBUG "/SUBSYSTEM:CONSOLE")
+        set_target_properties(tes3mp PROPERTIES LINK_FLAGS_RELWITHDEBINFO "/SUBSYSTEM:CONSOLE")
+    elseif (BUILD_OPENMW)
+        set_target_properties(tes3mp PROPERTIES LINK_FLAGS_DEBUG "/SUBSYSTEM:WINDOWS")
+        set_target_properties(tes3mp PROPERTIES LINK_FLAGS_RELWITHDEBINFO "/SUBSYSTEM:WINDOWS")
+    endif()
+
     if (BUILD_OPENMW)
-        if (OPENMW_UNITY_BUILD)
-            set_target_properties(tes3mp PROPERTIES COMPILE_FLAGS "${WARNINGS} ${MT_BUILD} /bigobj")
-        else()
-            set_target_properties(tes3mp PROPERTIES COMPILE_FLAGS "${WARNINGS} ${MT_BUILD}")
-        endif()
+        set_target_properties(tes3mp PROPERTIES LINK_FLAGS_RELEASE "/SUBSYSTEM:WINDOWS")
+        set_target_properties(tes3mp PROPERTIES LINK_FLAGS_MINSIZEREL "/SUBSYSTEM:WINDOWS")
+    endif()
 
-        if (BUILD_OPENMW)
-            # Release builds don't use the debug console
-            set_target_properties(openmw PROPERTIES LINK_FLAGS_RELEASE "/SUBSYSTEM:WINDOWS")
-            set_target_properties(openmw PROPERTIES LINK_FLAGS_MINSIZEREL "/SUBSYSTEM:WINDOWS")
-        endif()
-
-        if (MSVC_VERSION GREATER_EQUAL 1915 AND MSVC_VERSION LESS 1920)
-            target_compile_definitions(components INTERFACE _ENABLE_EXTENDED_ALIGNED_STORAGE)
-        endif()
-    endif(MSVC)
-
-    # TODO: At some point release builds should not use the console but rather write to a log file
-    #set_target_properties(tes3mp PROPERTIES LINK_FLAGS_RELEASE "/SUBSYSTEM:WINDOWS")
-    #set_target_properties(tes3mp PROPERTIES LINK_FLAGS_MINSIZEREL "/SUBSYSTEM:WINDOWS")
+    if (MSVC_VERSION GREATER_EQUAL 1915 AND MSVC_VERSION LESS 1920)
+        target_compile_definitions(components INTERFACE _ENABLE_EXTENDED_ALIGNED_STORAGE)
+    endif()
 endif()
 
 

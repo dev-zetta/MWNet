@@ -5,9 +5,9 @@ TES3MP is an open-source multiplayer fork of [OpenMW](https://gitlab.com/OpenMW/
 
 Stock OpenMW 0.52 is a single-player engine. TES3MP adds a dedicated server, a multiplayer client, an in-game server browser, synchronized gameplay systems, and a server-side Lua API.
 
-* TES3MP version: 1.0.0
+* TES3MP version: 1.0.0-alpha.1
 * OpenMW base version: 0.52.0
-* Network protocol version: 10
+* Network protocol version: 11
 * License: GPLv3 with additional allowed terms (see [LICENSE](LICENSE))
 * Upstream engine: [OpenMW on GitLab](https://gitlab.com/OpenMW/openmw)
 * Maintainer: Gabriel Max ([dev-zetta](https://github.com/dev-zetta))
@@ -15,7 +15,7 @@ Stock OpenMW 0.52 is a single-player engine. TES3MP adds a dedicated server, a m
 Current status
 --------------
 
-TES3MP 1.0.0 is the first major release of this maintained fork. It updates the engine base from OpenMW 0.47 to 0.52 while preserving TES3MP's multiplayer architecture and server scripting API.
+TES3MP 1.0.0-alpha.1 is an unreleased hardening build on OpenMW 0.52. Protocol 11 is intentionally incompatible with legacy clients and servers while the multiplayer transport, parser, authority and persistence boundaries are rebuilt.
 
 The underlying OpenMW engine supports completing the main quests in Morrowind, Tribunal, and Bloodmoon. Multiplayer adds more state and authority boundaries than single-player OpenMW, so server scripts, load order, content files, and TES3MP versions must match between the server and every client. A local server is recommended when testing gameplay or diagnosing synchronization problems.
 
