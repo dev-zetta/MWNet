@@ -1,7 +1,10 @@
 #include <components/openmw-mp/Security/AccountAuthentication.hpp>
+#include <components/openmw-mp/Security/AccountStore.hpp>
 #include <components/openmw-mp/Security/AuthenticationRateLimiter.hpp>
 
 #include <chrono>
+#include <filesystem>
+#include <fstream>
 #include <iostream>
 #include <optional>
 #include <string>
@@ -139,11 +142,85 @@ namespace
         EXPECT(capacity.trackedAccountAddresses() == 1);
         EXPECT(capacity.trackedAddresses() == 1);
     }
+
+    std::string readFile(const std::filesystem::path& path)
+    {
+        std::ifstream input(path, std::ios::binary);
+        return { std::istreambuf_iterator<char>(input), std::istreambuf_iterator<char>() };
+    }
+
+    void testAccountStore()
+    {
+        const auto unique = std::to_string(
+            std::chrono::steady_clock::now().time_since_epoch().count());
+        const auto directory = std::filesystem::temp_directory_path()
+            / ("tes3mp-account-store-" + unique);
+        const auto credentials = directory / "accounts";
+        const auto players = directory / "player";
+        std::filesystem::create_directories(players);
+
+        std::string error;
+        auto password = PasswordBuffer::copyFrom("correct horse battery staple", error);
+        auto wrongPassword = PasswordBuffer::copyFrom("incorrect password", error);
+        EXPECT(password.has_value());
+        EXPECT(wrongPassword.has_value());
+        if (!password || !wrongPassword)
+            return;
+
+        AccountStore store(credentials, players);
+        auto result = store.authenticate("New Player", *password, true);
+        EXPECT(result.status == AccountStoreStatus::Registered);
+        EXPECT(result.authenticated());
+        EXPECT(result.isNewAccount);
+        EXPECT(store.authenticate("new player", *wrongPassword, false).status
+            == AccountStoreStatus::InvalidCredentials);
+        EXPECT(store.authenticate("NEW PLAYER", *password, false).authenticated());
+        EXPECT(store.authenticate("New Player", *password, true).status
+            == AccountStoreStatus::AccountAlreadyExists);
+
+        const auto legacyPath = players / "Manio.json";
+        {
+            std::ofstream legacy(legacyPath, std::ios::binary);
+            legacy << "{\n"
+                "  \"login\":{\"name\":\"Manio\","
+                "\"passwordHash\":\"0774be374bdab4fb47ad1b85baddc3b9cbaee98d9a7abb34de6a8467afbfd231\","
+                "\"passwordSalt\":\"0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz+-\"},\n"
+                "  \"stats\":{\"level\":1,\"alive\":true}\n"
+                "}\n";
+        }
+        result = store.authenticate("manio", *password, false);
+        EXPECT(result.status == AccountStoreStatus::AuthenticatedMigrated);
+        EXPECT(result.authenticated());
+        EXPECT(result.legacyMaterialRemoved);
+        const std::string migrated = readFile(legacyPath);
+        EXPECT(migrated.find("passwordHash") == std::string::npos);
+        EXPECT(migrated.find("passwordSalt") == std::string::npos);
+        EXPECT(migrated.find("\"schemaVersion\":1") != std::string::npos);
+        EXPECT(migrated.find("\"level\":1") != std::string::npos);
+        EXPECT(migrated.find("\"alive\":true") != std::string::npos);
+        EXPECT(store.authenticate("MANIO", *password, false).authenticated());
+
+        mwmp::persistence::AtomicWriteOptions injected;
+        injected.injectFailure = [](mwmp::persistence::AtomicWriteStage stage) {
+            return stage == mwmp::persistence::AtomicWriteStage::BeforeReplace;
+        };
+        AccountStore failing(directory / "failing-accounts", players, injected);
+        result = failing.authenticate("Another Player", *password, true);
+        EXPECT(result.status == AccountStoreStatus::PersistenceFailed);
+        EXPECT(!result.authenticated());
+
+        EXPECT(store.authenticate("bad\nname", *password, true).status
+            == AccountStoreStatus::InvalidAccountName);
+
+        std::error_code cleanupError;
+        std::filesystem::remove_all(directory, cleanupError);
+    }
 }
 
 int runAuthenticationTests()
 {
     testArgon2idAndMigration();
     testRateLimits();
+    testAccountStore();
     return sFailures;
 }

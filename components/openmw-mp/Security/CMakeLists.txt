@@ -1,5 +1,6 @@
 add_library(tes3mp-security STATIC
     AccountAuthentication.cpp
+    AccountStore.cpp
     AuthenticationRateLimiter.cpp
     PasswordHash.cpp
     SecureSession.cpp
@@ -10,7 +11,7 @@ add_library(tes3mp-security STATIC
 
 target_include_directories(tes3mp-security PUBLIC ${CMAKE_SOURCE_DIR})
 target_compile_features(tes3mp-security PUBLIC cxx_std_20)
-target_link_libraries(tes3mp-security PUBLIC tes3mp-protocol-codec sodium::sodium)
+target_link_libraries(tes3mp-security PUBLIC tes3mp-persistence tes3mp-protocol-codec sodium::sodium)
 
 if (MSVC)
     target_compile_options(tes3mp-security PRIVATE /W4 /WX)
