@@ -2,6 +2,7 @@
 #include <components/openmw-mp/Protocol/ProtocolLimits.hpp>
 #include <components/openmw-mp/Transport/ApplicationPacketBridge.hpp>
 #include <components/openmw-mp/Transport/ApplicationPacketDispatcher.hpp>
+#include <components/openmw-mp/Transport/ApplicationPacketReceiver.hpp>
 #include <components/openmw-mp/Transport/SnapshotSequenceTracker.hpp>
 #include <components/openmw-mp/Transport/TransportCodec.hpp>
 #include <components/openmw-mp/Transport/TransportQueue.hpp>
@@ -265,6 +266,60 @@ namespace
             77, { 2 }, body, error));
         EXPECT(error.code == TransportErrorCode::Closed);
     }
+
+    void testApplicationPacketReceiver()
+    {
+        constexpr TransportConnectionId connection{ 41 };
+        const std::vector<std::byte> body{ std::byte{ 4 }, std::byte{ 2 } };
+        TransportMessage message;
+        protocol::CodecError error = protocol::CodecError::None;
+        EXPECT(encodeApplicationPacket(protocol::ApplicationPacketId::PlayerPosition,
+            ApplicationPacketFlow::ClientToServer, connection, 73, 8,
+            body, message, error));
+
+        ApplicationPacketReceiver receiver(ApplicationPacketFlow::ClientToServer, 2);
+        ReceivedApplicationPacket packet;
+        auto result = receiver.receive(message, packet);
+        EXPECT(static_cast<bool>(result));
+        EXPECT(result.status == ApplicationReceiveStatus::Accepted);
+        EXPECT(packet.sender == connection);
+        EXPECT(packet.id == protocol::ApplicationPacketId::PlayerPosition);
+        EXPECT(packet.subject == 73);
+        EXPECT(packet.sequence == 8);
+        EXPECT(packet.payload == body);
+
+        packet.subject = 999;
+        result = receiver.receive(message, packet);
+        EXPECT(!result);
+        EXPECT(result.status == ApplicationReceiveStatus::StaleSnapshot);
+        EXPECT(packet.subject == 999);
+
+        message.sequence = 9;
+        result = receiver.receive(message, packet);
+        EXPECT(static_cast<bool>(result));
+        EXPECT(packet.sequence == 9);
+
+        TransportMessage invalid = message;
+        invalid.messageType = static_cast<std::uint16_t>(protocol::MessageType::CombatResult);
+        packet.subject = 999;
+        result = receiver.receive(invalid, packet);
+        EXPECT(!result);
+        EXPECT(result.status == ApplicationReceiveStatus::Invalid);
+        EXPECT(result.decode.error == protocol::CodecError::InvalidValue);
+        EXPECT(packet.subject == 999);
+
+        receiver.removeConnection(connection);
+        message.sequence = 1;
+        EXPECT(static_cast<bool>(receiver.receive(message, packet)));
+
+        TransportMessage reliable;
+        EXPECT(encodeApplicationPacket(protocol::ApplicationPacketId::ChatMessage,
+            ApplicationPacketFlow::ClientToServer, connection, 73, 1,
+            body, reliable, error));
+        EXPECT(static_cast<bool>(receiver.receive(reliable, packet)));
+        EXPECT(static_cast<bool>(receiver.receive(reliable, packet)));
+        receiver.clear();
+    }
 }
 
 int runTransportTests()
@@ -274,5 +329,6 @@ int runTransportTests()
     testTransportCodec();
     testApplicationPacketBridge();
     testApplicationPacketDispatcher();
+    testApplicationPacketReceiver();
     return sFailures;
 }
