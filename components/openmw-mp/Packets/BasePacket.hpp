@@ -19,6 +19,11 @@
 #include <components/esm3/statstate.hpp>
 #include <components/openmw-mp/Protocol/PacketCodec.hpp>
 
+namespace mwmp::transport
+{
+    class ApplicationPacketDispatcher;
+}
+
 
 namespace mwmp
 {
@@ -40,6 +45,7 @@ namespace mwmp
         void SetReadStream(RakNet::BitStream *bitStream);
         void SetSendStream(RakNet::BitStream *bitStream);
         void SetStreams(RakNet::BitStream *inStream, RakNet::BitStream *outStream);
+        void SetApplicationPacketDispatcher(transport::ApplicationPacketDispatcher* dispatcher);
         virtual uint32_t RequestData(RakNet::RakNetGUID targetGuid);
 
         static inline uint32_t headerSize()
@@ -400,6 +406,11 @@ namespace mwmp
         bool readResult(bool result);
         bool finishWrite();
         bool finishRead();
+        bool prepareWrite();
+        std::span<const std::byte> writePayload() const noexcept;
+        uint32_t dispatchRequest(RakNet::RakNetGUID targetGuid);
+        uint32_t dispatchPacket(RakNet::AddressOrGUID destination);
+        uint32_t dispatchPacket(bool toOther);
 
         uint8_t packetID;
         PacketReliability reliability;
@@ -409,6 +420,7 @@ namespace mwmp
         std::optional<protocol::PacketReader> mReader;
         std::optional<protocol::PacketWriter> mWriter;
         RakNet::RakPeerInterface *peer;
+        transport::ApplicationPacketDispatcher* mDispatcher = nullptr;
         RakNet::RakNetGUID guid;
         bool packetValid;
         protocol::CodecError codecError;

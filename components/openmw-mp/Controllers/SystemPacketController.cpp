@@ -27,6 +27,13 @@ void mwmp::SystemPacketController::SetStream(RakNet::BitStream *inStream, RakNet
         packet.second->SetStreams(inStream, outStream);
 }
 
+void mwmp::SystemPacketController::SetApplicationPacketDispatcher(
+    transport::ApplicationPacketDispatcher* dispatcher)
+{
+    for (const auto& packet : packets)
+        packet.second->SetApplicationPacketDispatcher(dispatcher);
+}
+
 bool mwmp::SystemPacketController::ContainsPacket(RakNet::MessageID id)
 {
     for(const auto &packet : packets)

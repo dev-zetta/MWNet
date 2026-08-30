@@ -1,4 +1,6 @@
 #include <components/openmw-mp/NetworkMessages.hpp>
+#include <components/openmw-mp/Protocol/ApplicationPacketId.hpp>
+#include <components/openmw-mp/Transport/ApplicationPacketDispatcher.hpp>
 #include <PacketPriority.h>
 #include <RakPeer.h>
 #include "BasePacket.hpp"
@@ -69,8 +71,16 @@ void BasePacket::SetStreams(RakNet::BitStream *inStream, RakNet::BitStream *outS
         bsSend = outStream;
 }
 
+void BasePacket::SetApplicationPacketDispatcher(
+    transport::ApplicationPacketDispatcher* dispatcher)
+{
+    mDispatcher = dispatcher;
+}
+
 uint32_t BasePacket::RequestData(RakNet::RakNetGUID targetGuid)
 {
+    if (mDispatcher != nullptr)
+        return dispatchRequest(targetGuid);
     if (bsSend == nullptr || peer == nullptr)
         return 0;
 
@@ -82,6 +92,8 @@ uint32_t BasePacket::RequestData(RakNet::RakNetGUID targetGuid)
 
 uint32_t BasePacket::Send(RakNet::AddressOrGUID destination)
 {
+    if (mDispatcher != nullptr)
+        return dispatchPacket(destination);
     if (bsSend == nullptr || peer == nullptr)
         return 0;
 
@@ -94,6 +106,8 @@ uint32_t BasePacket::Send(RakNet::AddressOrGUID destination)
 
 uint32_t BasePacket::Send(bool toOther)
 {
+    if (mDispatcher != nullptr)
+        return dispatchPacket(toOther);
     if (bsSend == nullptr || peer == nullptr)
         return 0;
 
@@ -142,7 +156,7 @@ bool BasePacket::readResult(bool result)
 
 bool BasePacket::finishWrite()
 {
-    if (!packetValid || !mWriter || !mWriter->valid() || bsSend == nullptr)
+    if (!prepareWrite() || bsSend == nullptr)
         return false;
     bsSend->Write(packetID);
     bsSend->Write(guid.g);
@@ -152,6 +166,83 @@ bool BasePacket::finishWrite()
     if (bsSend->GetNumberOfBytesUsed() > protocol::limits::normalMessageBytes + headerSize())
         return invalidate(protocol::CodecError::LimitExceeded);
     return true;
+}
+
+bool BasePacket::prepareWrite()
+{
+    if (!packetValid || !mWriter || !mWriter->valid())
+        return false;
+    if (mWriter->bytes().size() > protocol::limits::normalMessageBytes)
+        return invalidate(protocol::CodecError::LimitExceeded);
+    return true;
+}
+
+std::span<const std::byte> BasePacket::writePayload() const noexcept
+{
+    return mWriter ? mWriter->bytes() : std::span<const std::byte>{};
+}
+
+uint32_t BasePacket::dispatchRequest(RakNet::RakNetGUID targetGuid)
+{
+    if (mDispatcher == nullptr || !protocol::isApplicationPacketId(packetID))
+        return 0;
+
+    transport::TransportError error;
+    const auto id = static_cast<protocol::ApplicationPacketId>(packetID);
+    bool sent = false;
+    if (mDispatcher->flow() == transport::ApplicationPacketFlow::ClientToServer)
+        sent = mDispatcher->sendToServer(id, targetGuid.g, {}, error);
+    else
+        sent = mDispatcher->sendTo(id, targetGuid.g,
+            transport::TransportConnectionId{ targetGuid.g }, {}, error);
+    return sent ? 1U : 0U;
+}
+
+uint32_t BasePacket::dispatchPacket(RakNet::AddressOrGUID destination)
+{
+    if (mDispatcher == nullptr || bsSend == nullptr
+        || !protocol::isApplicationPacketId(packetID))
+        return 0;
+
+    bsSend->ResetWritePointer();
+    Packet(bsSend, true);
+    if (!prepareWrite())
+        return 0;
+
+    transport::TransportError error;
+    const auto id = static_cast<protocol::ApplicationPacketId>(packetID);
+    bool sent = false;
+    if (mDispatcher->flow() == transport::ApplicationPacketFlow::ClientToServer)
+        sent = mDispatcher->sendToServer(id, guid.g, writePayload(), error);
+    else if (destination.rakNetGuid != RakNet::UNASSIGNED_CRABNET_GUID)
+        sent = mDispatcher->sendTo(id, guid.g,
+            transport::TransportConnectionId{ destination.rakNetGuid.g }, writePayload(), error);
+    return sent ? 1U : 0U;
+}
+
+uint32_t BasePacket::dispatchPacket(bool toOther)
+{
+    if (mDispatcher == nullptr || bsSend == nullptr
+        || !protocol::isApplicationPacketId(packetID))
+        return 0;
+
+    bsSend->ResetWritePointer();
+    Packet(bsSend, true);
+    if (!prepareWrite())
+        return 0;
+
+    transport::TransportError error;
+    const auto id = static_cast<protocol::ApplicationPacketId>(packetID);
+    bool sent = false;
+    if (mDispatcher->flow() == transport::ApplicationPacketFlow::ClientToServer)
+        sent = mDispatcher->sendToServer(id, guid.g, writePayload(), error);
+    else if (toOther)
+        sent = mDispatcher->sendToAll(id, guid.g, writePayload(), error,
+            transport::TransportConnectionId{ guid.g });
+    else
+        sent = mDispatcher->sendTo(id, guid.g,
+            transport::TransportConnectionId{ guid.g }, writePayload(), error);
+    return sent ? 1U : 0U;
 }
 
 bool BasePacket::finishRead()

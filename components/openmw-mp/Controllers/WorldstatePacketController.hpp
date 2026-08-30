@@ -9,12 +9,14 @@
 
 namespace mwmp
 {
+    namespace transport { class ApplicationPacketDispatcher; }
     class WorldstatePacketController
     {
     public:
         WorldstatePacketController(RakNet::RakPeerInterface *peer);
         WorldstatePacket *GetPacket(RakNet::MessageID id);
         void SetStream(RakNet::BitStream *inStream, RakNet::BitStream *outStream);
+        void SetApplicationPacketDispatcher(transport::ApplicationPacketDispatcher* dispatcher);
 
         bool ContainsPacket(RakNet::MessageID id);
 
