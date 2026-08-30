@@ -1,6 +1,7 @@
 #include <components/openmw-mp/Protocol/PacketCodec.hpp>
 #include <components/openmw-mp/Protocol/ProtocolLimits.hpp>
 #include <components/openmw-mp/Transport/ApplicationPacketBridge.hpp>
+#include <components/openmw-mp/Transport/ApplicationPacketDispatcher.hpp>
 #include <components/openmw-mp/Transport/SnapshotSequenceTracker.hpp>
 #include <components/openmw-mp/Transport/TransportCodec.hpp>
 #include <components/openmw-mp/Transport/TransportQueue.hpp>
@@ -196,6 +197,74 @@ namespace
             ApplicationPacketFlow::ClientToServer, route));
         EXPECT(route.lane == MessageLane::Player);
     }
+
+    class RecordingTransport final : public ITransport
+    {
+    public:
+        bool listen(const ListenOptions&, TransportError&) override { return true; }
+        bool connect(const ConnectOptions&, TransportConnectionId&, TransportError&) override
+        {
+            return true;
+        }
+        bool send(TransportMessage message, TransportError&) override
+        {
+            sent.push_back(std::move(message));
+            return true;
+        }
+        std::optional<TransportEvent> poll(std::chrono::milliseconds) override
+        {
+            return std::nullopt;
+        }
+        void disconnect(TransportConnectionId) override {}
+        void shutdown(std::chrono::milliseconds) override {}
+
+        std::vector<TransportMessage> sent;
+    };
+
+    void testApplicationPacketDispatcher()
+    {
+        RecordingTransport clientTransport;
+        ApplicationPacketDispatcher client(
+            clientTransport, ApplicationPacketFlow::ClientToServer, 1);
+        EXPECT(client.addConnection({ 8 }));
+        EXPECT(client.addConnection({ 8 }));
+        EXPECT(!client.addConnection({ 9 }));
+        EXPECT(client.connectionCount() == 1);
+
+        TransportError error;
+        const std::vector<std::byte> body{ std::byte{ 7 } };
+        EXPECT(client.sendToServer(protocol::ApplicationPacketId::PlayerPosition,
+            55, body, error));
+        EXPECT(clientTransport.sent.size() == 1);
+        EXPECT(clientTransport.sent.front().connection == TransportConnectionId{ 8 });
+        EXPECT(clientTransport.sent.front().sequence == 1);
+        EXPECT(clientTransport.sent.front().delivery == DeliveryMode::Unreliable);
+        EXPECT(!client.sendTo(protocol::ApplicationPacketId::ChatMessage,
+            55, { 8 }, body, error));
+
+        RecordingTransport serverTransport;
+        ApplicationPacketDispatcher server(
+            serverTransport, ApplicationPacketFlow::ServerToClient, 3);
+        EXPECT(server.addConnection({ 3 }));
+        EXPECT(server.addConnection({ 1 }));
+        EXPECT(server.addConnection({ 2 }));
+        EXPECT(server.sendToAll(protocol::ApplicationPacketId::ChatMessage,
+            77, body, error, TransportConnectionId{ 2 }));
+        EXPECT(serverTransport.sent.size() == 2);
+        EXPECT(serverTransport.sent[0].connection == TransportConnectionId{ 1 });
+        EXPECT(serverTransport.sent[1].connection == TransportConnectionId{ 3 });
+        EXPECT(serverTransport.sent[0].sequence < serverTransport.sent[1].sequence);
+        EXPECT(server.sendTo(protocol::ApplicationPacketId::PlayerAttack,
+            77, { 2 }, body, error));
+        EXPECT(serverTransport.sent.back().messageType
+            == static_cast<std::uint16_t>(protocol::MessageType::CombatResult));
+
+        server.removeConnection({ 2 });
+        EXPECT(!server.contains({ 2 }));
+        EXPECT(!server.sendTo(protocol::ApplicationPacketId::ChatMessage,
+            77, { 2 }, body, error));
+        EXPECT(error.code == TransportErrorCode::Closed);
+    }
 }
 
 int runTransportTests()
@@ -204,5 +273,6 @@ int runTransportTests()
     testSnapshotSequences();
     testTransportCodec();
     testApplicationPacketBridge();
+    testApplicationPacketDispatcher();
     return sFailures;
 }
