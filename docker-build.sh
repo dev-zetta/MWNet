@@ -6,7 +6,7 @@ echo "=========================================="
 echo "TES3MP Merged Branch Docker Build"
 echo "=========================================="
 
-# Build TES3MP (CrabNet is vendored in extern/crabnet and built automatically by CMake)
+# Build TES3MP with its pinned transport dependencies.
 echo ""
 echo ">> Building TES3MP merged branch..."
 mkdir -p /tes3mp/build
@@ -17,11 +17,12 @@ cmake .. \
     -DCMAKE_CXX_STANDARD=20 \
     -DBUILD_OPENMW=ON \
     -DBUILD_OPENMW_MP=ON \
-    -DBUILD_BROWSER=ON \
+    -DBUILD_BROWSER=OFF \
     -DBUILD_LAUNCHER=ON \
     -DBUILD_WIZARD=OFF \
     -DBUILD_OPENCS=OFF \
-    -DUSE_LUAJIT=ON
+    -DUSE_LUAJIT=ON \
+    -DTES3MP_FETCH_DEPS=ON
 
 echo ""
 # Cap parallel jobs to avoid OOM - Sol3/template compilation uses ~1-2GB RAM per job

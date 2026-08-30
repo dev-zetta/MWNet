@@ -37,7 +37,8 @@ declare -rA GROUPED_DEPS=(
     libsdl2-dev libqt6opengl6-dev qt6-tools-dev qt6-tools-dev-tools libopenal-dev
     libunshield-dev libtinyxml-dev libbullet-dev liblz4-dev libpng-dev libjpeg-dev
     libluajit-5.1-dev librecast-dev libsqlite3-dev ca-certificates libicu-dev
-    libyaml-cpp-dev libqt6svg6 libqt6svg6-dev
+    libyaml-cpp-dev libqt6svg6 libqt6svg6-dev libprotobuf-dev protobuf-compiler
+    libsodium-dev libssl-dev
   "
 
   # These dependencies can alternatively be built and linked statically.

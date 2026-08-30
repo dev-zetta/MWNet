@@ -37,6 +37,11 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     libyaml-cpp-dev \
     libcollada-dom-dev \
     libsqlite3-dev \
+    libprotobuf-dev \
+    protobuf-compiler \
+    libsodium-dev \
+    libssl-dev \
+    ninja-build \
     libqt6svg6-dev \
     libfreetype-dev \
     && rm -rf /var/lib/apt/lists/*

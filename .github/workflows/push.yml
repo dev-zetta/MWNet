@@ -115,6 +115,7 @@ jobs:
         -D BUILD_OPENMW_TESTS=ON
         -D BUILD_OPENCS_TESTS=ON
         -D BUILD_TES3MP_TESTS=ON
+        -D TES3MP_FETCH_DEPS=ON
         -D CMAKE_INSTALL_PREFIX=install
 
     - name: Build
@@ -142,6 +143,7 @@ jobs:
         -D BUILD_BROWSER=OFF
         -D BUILD_MASTER=OFF
         -D BUILD_TES3MP_TESTS=ON
+        -D TES3MP_FETCH_DEPS=ON
 
     - name: Build dedicated server and protocol tests
       run: cmake --build build-server --target tes3mp-server tes3mp-tests --parallel $(nproc)

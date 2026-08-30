@@ -51,6 +51,7 @@ option(BUILD_OPENMW_TESTS       "Build OpenMW tests" OFF)
 option(BUILD_TES3MP_TESTS       "Build TES3MP protocol and server tests" OFF)
 option(BUILD_TES3MP_FUZZERS     "Build TES3MP libFuzzer targets" OFF)
 option(TES3MP_TESTS_ONLY        "Configure only dependency-free TES3MP protocol tests" OFF)
+option(TES3MP_FETCH_DEPS        "Fetch pinned TES3MP dependencies that are not installed" OFF)
 option(PRECOMPILE_HEADERS_WITH_MSVC "Precompile most common used headers with MSVC (alternative to ccache)" ON)
 
 set(OpenGL_GL_PREFERENCE LEGACY)  # Use LEGACY as we use GL2; GLNVD is for GL3 and up.
@@ -781,6 +782,10 @@ if (OPENMW_CXX_FLAGS)
 endif()
 
 # Components
+if (BUILD_OPENMW_MP)
+    include(TES3MPDependencies)
+endif()
+
 add_subdirectory(components/openmw-mp/Protocol)
 add_subdirectory(components/openmw-mp/Transport)
 add_subdirectory(components)

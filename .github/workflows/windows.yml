@@ -68,6 +68,10 @@ jobs:
       working-directory: ${{ github.workspace }}/deps
       run: 7z x -y -ovcpkg-x64-windows-${{ inputs.msvc }}-${{ env.VCPKG_TAG }} $env:archive
 
+    - name: Install TES3MP transport dependencies
+      working-directory: ${{ github.workspace }}/deps/vcpkg-x64-windows-${{ inputs.msvc }}-${{ env.VCPKG_TAG }}
+      run: .\vcpkg.exe install libsodium:x64-windows protobuf:x64-windows openssl:x64-windows
+
     - name: Cache Qt
       id: qt-cache
       uses: actions/cache@v5
@@ -112,6 +116,7 @@ jobs:
         -D OPENMW_USE_SYSTEM_SQLITE3=OFF
         -D OPENMW_USE_SYSTEM_YAML_CPP=OFF
         -D OPENMW_LTO_BUILD=ON
+        -D TES3MP_FETCH_DEPS=ON
         ${{ inputs.package && '-D "VCREDIST64=$env:VCToolsRedistDir/vc_redist.x64.exe"' || '' }}
         -D CMAKE_EXPORT_COMPILE_COMMANDS=ON
 
