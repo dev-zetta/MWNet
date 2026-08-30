@@ -1,5 +1,6 @@
 #include <components/openmw-mp/Protocol/PacketCodec.hpp>
 #include <components/openmw-mp/Protocol/ProtocolLimits.hpp>
+#include <components/openmw-mp/Transport/ApplicationPacketBridge.hpp>
 #include <components/openmw-mp/Transport/SnapshotSequenceTracker.hpp>
 #include <components/openmw-mp/Transport/TransportCodec.hpp>
 #include <components/openmw-mp/Transport/TransportQueue.hpp>
@@ -125,6 +126,76 @@ namespace
             encoded, connection, MessageLane::Actor, DeliveryMode::ReliableOrdered, unchanged));
         EXPECT(unchanged.messageType == 5);
     }
+
+    void testApplicationPacketBridge()
+    {
+        constexpr TransportConnectionId connection{ 17 };
+        const std::vector<std::byte> body{ std::byte{ 1 }, std::byte{ 2 } };
+        TransportMessage message;
+        protocol::CodecError error = protocol::CodecError::InvalidValue;
+        EXPECT(encodeApplicationPacket(protocol::ApplicationPacketId::PlayerPosition,
+            ApplicationPacketFlow::ClientToServer, connection, 44, 9, body, message, error));
+        EXPECT(error == protocol::CodecError::None);
+        EXPECT(message.connection == connection);
+        EXPECT(message.delivery == DeliveryMode::Unreliable);
+        EXPECT(message.lane == MessageLane::Player);
+        EXPECT(message.messageType
+            == static_cast<std::uint16_t>(protocol::MessageType::MovementSnapshot));
+        EXPECT(message.subject == 44);
+
+        ApplicationPacket packet;
+        EXPECT(static_cast<bool>(decodeApplicationPacket(
+            message, ApplicationPacketFlow::ClientToServer, packet)));
+        EXPECT(packet.id == protocol::ApplicationPacketId::PlayerPosition);
+        EXPECT(packet.subject == 44);
+        EXPECT(packet.sequence == 9);
+        EXPECT(packet.payload == body);
+
+        TransportMessage tampered = message;
+        tampered.lane = MessageLane::Actor;
+        packet.subject = 99;
+        EXPECT(!decodeApplicationPacket(
+            tampered, ApplicationPacketFlow::ClientToServer, packet));
+        EXPECT(packet.subject == 99);
+
+        EXPECT(!encodeApplicationPacket(protocol::ApplicationPacketId::PlayerPosition,
+            ApplicationPacketFlow::ClientToServer, connection, 44, 0, body, message, error));
+        EXPECT(error == protocol::CodecError::InvalidValue);
+
+        ApplicationPacketRoute route;
+        EXPECT(applicationPacketRoute(protocol::ApplicationPacketId::PlayerAttack,
+            ApplicationPacketFlow::ClientToServer, route));
+        EXPECT(route.messageType == protocol::MessageType::AttackIntent);
+        EXPECT(applicationPacketRoute(protocol::ApplicationPacketId::PlayerAttack,
+            ApplicationPacketFlow::ServerToClient, route));
+        EXPECT(route.messageType == protocol::MessageType::CombatResult);
+        EXPECT(applicationPacketRoute(protocol::ApplicationPacketId::ActorAuthority,
+            ApplicationPacketFlow::ServerToClient, route));
+        EXPECT(route.messageType == protocol::MessageType::AuthorityLease);
+        EXPECT(applicationPacketRoute(protocol::ApplicationPacketId::Container,
+            ApplicationPacketFlow::ClientToServer, route));
+        EXPECT(route.messageType == protocol::MessageType::ContainerActionIntent);
+        EXPECT(!applicationPacketRoute(protocol::ApplicationPacketId::UserMyId,
+            ApplicationPacketFlow::ClientToServer, route));
+
+        for (std::uint16_t value = protocol::firstApplicationPacketId + 1;
+             value <= protocol::lastApplicationPacketId; ++value)
+        {
+            const auto id = static_cast<protocol::ApplicationPacketId>(value);
+            EXPECT(applicationPacketRoute(id, ApplicationPacketFlow::ClientToServer, route));
+            EXPECT(applicationPacketRoute(id, ApplicationPacketFlow::ServerToClient, route));
+        }
+
+        EXPECT(applicationPacketRoute(protocol::ApplicationPacketId::ClientScriptGlobal,
+            ApplicationPacketFlow::ClientToServer, route));
+        EXPECT(route.lane == MessageLane::Worldstate);
+        EXPECT(applicationPacketRoute(protocol::ApplicationPacketId::ActorSpellsActive,
+            ApplicationPacketFlow::ClientToServer, route));
+        EXPECT(route.lane == MessageLane::Actor);
+        EXPECT(applicationPacketRoute(protocol::ApplicationPacketId::PlayerCooldowns,
+            ApplicationPacketFlow::ClientToServer, route));
+        EXPECT(route.lane == MessageLane::Player);
+    }
 }
 
 int runTransportTests()
@@ -132,5 +203,6 @@ int runTransportTests()
     testQueueBoundsAndAccounting();
     testSnapshotSequences();
     testTransportCodec();
+    testApplicationPacketBridge();
     return sFailures;
 }

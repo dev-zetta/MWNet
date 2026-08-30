@@ -39,6 +39,7 @@ namespace mwmp::protocol
             MessageType::RespawnResult,
             MessageType::JailDecisionIntent,
             MessageType::JailResult,
+            MessageType::PlayerStateIntent,
             MessageType::ActorSimulationUpdate,
             MessageType::AuthorityLease,
             MessageType::ActorStateSnapshot,

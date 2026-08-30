@@ -3,6 +3,8 @@
 
 #include <MessageIdentifiers.h>
 
+#include <components/openmw-mp/Protocol/ApplicationPacketId.hpp>
+
 enum GameMessages
 {
     _ID_UNUSED = ID_USER_PACKET_ENUM+1,
@@ -125,6 +127,11 @@ enum OrderingChannel
     CHANNEL_MASTER,
     CHANNEL_WORLDSTATE
 };
+
+static_assert(ID_USER_MYID
+    == static_cast<int>(mwmp::protocol::ApplicationPacketId::UserMyId));
+static_assert(ID_PLAYER_COOLDOWNS
+    == static_cast<int>(mwmp::protocol::ApplicationPacketId::PlayerCooldowns));
 
 
 #endif //OPENMW_NETWORKMESSAGES_HPP

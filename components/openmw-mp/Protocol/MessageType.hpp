@@ -40,6 +40,7 @@ namespace mwmp::protocol
         RespawnResult = 0x100a,
         JailDecisionIntent = 0x100b,
         JailResult = 0x100c,
+        PlayerStateIntent = 0x100d,
 
         ActorSimulationUpdate = 0x2000,
         AuthorityLease = 0x2001,

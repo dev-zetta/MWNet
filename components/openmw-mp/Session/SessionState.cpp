@@ -51,6 +51,7 @@ namespace mwmp::session
             MessageType::ChatIntent,
             MessageType::CommandIntent,
             MessageType::MovementSnapshot,
+            MessageType::PlayerStateIntent,
             MessageType::AttackIntent,
             MessageType::CastIntent,
             MessageType::InventoryActionIntent,
