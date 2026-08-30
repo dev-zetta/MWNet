@@ -7,6 +7,7 @@ int runProtocolTests();
 int runTransportTests();
 #if defined(TES3MP_HAS_GNS_TRANSPORT)
 int runGameNetworkingSocketsTests();
+int runSecurityTests();
 #endif
 
 int main()
@@ -22,6 +23,7 @@ int main()
     int failures = runProtocolTests() + runTransportTests();
 #if defined(TES3MP_HAS_GNS_TRANSPORT)
     failures += runGameNetworkingSocketsTests();
+    failures += runSecurityTests();
 #endif
     return failures == 0 ? 0 : 1;
 }
