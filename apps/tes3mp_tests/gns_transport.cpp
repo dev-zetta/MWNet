@@ -1,4 +1,5 @@
 #include <components/openmw-mp/Transport/GameNetworkingSocketsTransport.hpp>
+#include <components/openmw-mp/Transport/Protocol11Endpoint.hpp>
 #include <components/openmw-mp/Transport/SecureTransport.hpp>
 
 #include <components/openmw-mp/Security/ServerIdentity.hpp>
@@ -271,6 +272,104 @@ namespace
         std::error_code cleanupError;
         std::filesystem::remove_all(directory, cleanupError);
     }
+
+    void testProtocol11Endpoint()
+    {
+        const auto unique = std::to_string(
+            std::chrono::steady_clock::now().time_since_epoch().count());
+        const auto directory = std::filesystem::temp_directory_path()
+            / ("tes3mp-protocol11-endpoint-" + unique);
+        std::string persistenceError;
+        auto server = Protocol11Endpoint::createServer(
+            directory / "server-identity.key", persistenceError);
+        auto client = Protocol11Endpoint::createClient(
+            directory / "trusted-servers.json", persistenceError);
+        EXPECT(server != nullptr);
+        EXPECT(client != nullptr);
+        if (!server || !client)
+            return;
+
+        TransportError error;
+        ListenOptions listen;
+        listen.address = "127.0.0.1";
+        listen.maximumConnections = 2;
+        listen.timeouts.handshake = 5s;
+        listen.timeouts.read = 10s;
+        bool listening = false;
+        for (std::uint16_t port = 39130; port < 39160 && !listening; ++port)
+        {
+            listen.port = port;
+            listening = server->listen(listen, error);
+        }
+        EXPECT(listening);
+        const auto fingerprint = server->serverFingerprint();
+        EXPECT(fingerprint.has_value());
+
+        ConnectOptions connect;
+        connect.host = listen.address;
+        connect.port = listen.port;
+        connect.trustedFingerprint = fingerprint;
+        connect.timeouts = listen.timeouts;
+        TransportConnectionId clientConnection;
+        EXPECT(client->connect(connect, clientConnection, error));
+
+        std::optional<TransportConnectionId> serverConnection;
+        bool clientConnected = false;
+        const auto deadline = std::chrono::steady_clock::now() + 5s;
+        while (std::chrono::steady_clock::now() < deadline
+            && (!clientConnected || !serverConnection))
+        {
+            if (auto event = client->poll(5ms))
+                clientConnected = clientConnected
+                    || event->type == TransportEventType::Connected;
+            if (auto event = server->poll(5ms);
+                event && event->type == TransportEventType::Connected)
+                serverConnection = event->connection;
+        }
+        EXPECT(clientConnected);
+        EXPECT(serverConnection.has_value());
+        if (!clientConnected || !serverConnection)
+            return;
+
+        EXPECT(client->state(clientConnection)
+            == std::optional(mwmp::session::State::TransportAuthenticated));
+        EXPECT(server->state(*serverConnection)
+            == std::optional(mwmp::session::State::TransportAuthenticated));
+
+        TransportMessage gameplay;
+        gameplay.connection = clientConnection;
+        gameplay.lane = MessageLane::Player;
+        gameplay.messageType = static_cast<std::uint16_t>(
+            mwmp::protocol::MessageType::ChatIntent);
+        EXPECT(!client->send(gameplay, error));
+        EXPECT(error.code == TransportErrorCode::SecurityFailure);
+
+        for (const auto state : { mwmp::session::State::ContentVerified,
+                 mwmp::session::State::AccountAuthenticated,
+                 mwmp::session::State::Spawned })
+        {
+            EXPECT(client->advance(clientConnection, state, error)
+                == mwmp::session::TransitionResult::Advanced);
+            EXPECT(server->advance(*serverConnection, state, error)
+                == mwmp::session::TransitionResult::Advanced);
+        }
+        EXPECT(client->send(gameplay, error));
+
+        bool received = false;
+        const auto messageDeadline = std::chrono::steady_clock::now() + 5s;
+        while (!received && std::chrono::steady_clock::now() < messageDeadline)
+        {
+            auto event = server->poll(20ms);
+            received = event && event->type == TransportEventType::Message
+                && event->message.messageType == gameplay.messageType;
+        }
+        EXPECT(received);
+
+        client->shutdown(1s);
+        server->shutdown(1s);
+        std::error_code cleanupError;
+        std::filesystem::remove_all(directory, cleanupError);
+    }
 }
 
 int runGameNetworkingSocketsTests()
@@ -334,5 +433,6 @@ int runGameNetworkingSocketsTests()
     client.shutdown(1s);
     server.shutdown(1s);
     testSecureTransport();
+    testProtocol11Endpoint();
     return sFailures;
 }
