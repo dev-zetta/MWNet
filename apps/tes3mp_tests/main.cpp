@@ -5,6 +5,9 @@
 
 int runProtocolTests();
 int runTransportTests();
+#if defined(TES3MP_HAS_GNS_TRANSPORT)
+int runGameNetworkingSocketsTests();
+#endif
 
 int main()
 {
@@ -16,6 +19,9 @@ int main()
         return 1;
     }
 
-    const int failures = runProtocolTests() + runTransportTests();
+    int failures = runProtocolTests() + runTransportTests();
+#if defined(TES3MP_HAS_GNS_TRANSPORT)
+    failures += runGameNetworkingSocketsTests();
+#endif
     return failures == 0 ? 0 : 1;
 }

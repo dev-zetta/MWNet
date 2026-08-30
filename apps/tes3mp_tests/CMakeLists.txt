@@ -7,6 +7,12 @@ add_executable(tes3mp-tests
 target_include_directories(tes3mp-tests PRIVATE ${CMAKE_SOURCE_DIR})
 target_link_libraries(tes3mp-tests PRIVATE tes3mp-protocol-codec tes3mp-transport)
 
+if (TARGET tes3mp-gns-transport)
+    target_sources(tes3mp-tests PRIVATE gns_transport.cpp)
+    target_link_libraries(tes3mp-tests PRIVATE tes3mp-gns-transport)
+    target_compile_definitions(tes3mp-tests PRIVATE TES3MP_HAS_GNS_TRANSPORT=1)
+endif()
+
 if (MSVC)
     target_compile_options(tes3mp-tests PRIVATE /W4 /WX)
 else()
