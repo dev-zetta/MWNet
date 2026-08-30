@@ -1,5 +1,7 @@
 #include "SecureSession.hpp"
 
+#include "SodiumInit.hpp"
+
 #include <components/openmw-mp/Protocol/PacketCodec.hpp>
 #include <components/openmw-mp/Protocol/ProtocolLimits.hpp>
 
@@ -215,8 +217,11 @@ namespace mwmp::security
 
     ClientHandshake::ClientHandshake()
     {
+        if (!initializeSodium())
+            return;
         crypto_kx_keypair(mHello.ephemeralPublicKey.data(), mSecretKey.data());
         randombytes_buf(mHello.nonce.data(), mHello.nonce.size());
+        mInitialized = true;
     }
 
     ClientHandshake::~ClientHandshake()
@@ -228,6 +233,11 @@ namespace mwmp::security
         const ServerHello& response, SecureSession& session, SecurityError& error) noexcept
     {
         error = SecurityError::None;
+        if (!mInitialized)
+        {
+            error = SecurityError::KeyExchangeFailed;
+            return false;
+        }
         if (mFinished)
         {
             error = SecurityError::ReplayDetected;

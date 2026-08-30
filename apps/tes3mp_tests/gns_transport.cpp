@@ -1,9 +1,16 @@
 #include <components/openmw-mp/Transport/GameNetworkingSocketsTransport.hpp>
+#include <components/openmw-mp/Transport/SecureTransport.hpp>
+
+#include <components/openmw-mp/Security/ServerIdentity.hpp>
+#include <components/openmw-mp/Security/TrustStore.hpp>
 
 #include <chrono>
 #include <cstddef>
+#include <filesystem>
 #include <iostream>
+#include <memory>
 #include <optional>
+#include <string>
 
 namespace
 {
@@ -33,6 +40,236 @@ namespace
                 return event;
         }
         return std::nullopt;
+    }
+
+    void testSecureTransport()
+    {
+        const auto unique = std::to_string(
+            std::chrono::steady_clock::now().time_since_epoch().count());
+        const auto directory = std::filesystem::temp_directory_path()
+            / ("tes3mp-secure-transport-" + unique);
+        const auto identityPath = directory / "server-identity.key";
+        const auto replacementIdentityPath = directory / "replacement-identity.key";
+        const auto trustPath = directory / "trusted-servers.json";
+        const auto automationTrustPath = directory / "automation-trusted-servers.json";
+        std::string persistenceError;
+        auto identity = mwmp::security::ServerIdentity::loadOrCreate(identityPath, persistenceError);
+        auto trustStore = mwmp::security::TrustStore::load(trustPath, persistenceError);
+        EXPECT(identity.has_value());
+        EXPECT(trustStore.has_value());
+        if (!identity || !trustStore)
+            return;
+        const std::string expectedFingerprint = identity->fingerprint();
+
+        std::uint16_t selectedPort = 0;
+        {
+            SecureTransport server(std::make_unique<GameNetworkingSocketsTransport>(),
+                std::move(*identity));
+            SecureTransport client(std::make_unique<GameNetworkingSocketsTransport>(),
+                std::move(*trustStore));
+            TransportError error;
+
+            ListenOptions listen;
+            listen.address = "127.0.0.1";
+            listen.maximumConnections = 2;
+            listen.timeouts.handshake = 5s;
+            listen.timeouts.read = 10s;
+            bool listening = false;
+            for (std::uint16_t port = 39100; port < 39130 && !listening; ++port)
+            {
+                listen.port = port;
+                listening = server.listen(listen, error);
+                if (listening)
+                    selectedPort = port;
+            }
+            EXPECT(listening);
+            EXPECT(server.serverFingerprint() == std::optional(expectedFingerprint));
+
+            ConnectOptions connect;
+            connect.host = "127.0.0.1";
+            connect.port = selectedPort;
+            connect.timeouts.handshake = 5s;
+            connect.timeouts.read = 10s;
+            TransportConnectionId clientConnection;
+            EXPECT(client.connect(connect, clientConnection, error));
+
+            std::optional<TransportConnectionId> serverConnection;
+            bool clientAuthenticated = false;
+            bool trustRequested = false;
+            const auto deadline = std::chrono::steady_clock::now() + 5s;
+            while (std::chrono::steady_clock::now() < deadline
+                && (!clientAuthenticated || !serverConnection))
+            {
+                if (auto event = client.poll(5ms))
+                {
+                    if (event->type == TransportEventType::TrustRequired)
+                    {
+                        trustRequested = true;
+                        EXPECT(event->detail == expectedFingerprint);
+
+                        TransportMessage premature;
+                        premature.connection = clientConnection;
+                        premature.messageType = 7;
+                        EXPECT(!client.send(premature, error));
+                        EXPECT(error.code == TransportErrorCode::SecurityFailure);
+                        EXPECT(client.confirmFingerprint(event->connection, event->detail, error));
+                    }
+                    else if (event->type == TransportEventType::Connected)
+                        clientAuthenticated = true;
+                }
+                if (auto event = server.poll(5ms);
+                    event && event->type == TransportEventType::Connected)
+                    serverConnection = event->connection;
+            }
+            EXPECT(trustRequested);
+            EXPECT(clientAuthenticated);
+            EXPECT(serverConnection.has_value());
+
+            TransportMessage outbound;
+            outbound.connection = clientConnection;
+            outbound.delivery = DeliveryMode::Unreliable;
+            outbound.lane = MessageLane::Player;
+            outbound.messageType = 91;
+            outbound.subject = 73;
+            outbound.sequence = 12;
+            outbound.payload = { std::byte{ 4 }, std::byte{ 5 } };
+            EXPECT(client.send(outbound, error));
+
+            std::optional<TransportEvent> received;
+            const auto messageDeadline = std::chrono::steady_clock::now() + 5s;
+            while (!received && std::chrono::steady_clock::now() < messageDeadline)
+            {
+                auto event = server.poll(20ms);
+                if (event && event->type == TransportEventType::Message)
+                    received = std::move(event);
+            }
+            EXPECT(received.has_value());
+            if (received && serverConnection)
+            {
+                EXPECT(received->connection == *serverConnection);
+                EXPECT(received->message.delivery == DeliveryMode::Unreliable);
+                EXPECT(received->message.lane == MessageLane::Player);
+                EXPECT(received->message.messageType == outbound.messageType);
+                EXPECT(received->message.subject == outbound.subject);
+                EXPECT(received->message.sequence == outbound.sequence);
+                EXPECT(received->message.payload == outbound.payload);
+            }
+
+            client.shutdown(1s);
+            server.shutdown(1s);
+        }
+
+        auto automationIdentity = mwmp::security::ServerIdentity::loadOrCreate(
+            identityPath, persistenceError);
+        auto automationTrust = mwmp::security::TrustStore::load(
+            automationTrustPath, persistenceError);
+        EXPECT(automationIdentity.has_value());
+        EXPECT(automationTrust.has_value());
+        if (automationIdentity && automationTrust)
+        {
+            SecureTransport server(std::make_unique<GameNetworkingSocketsTransport>(),
+                std::move(*automationIdentity));
+            SecureTransport client(std::make_unique<GameNetworkingSocketsTransport>(),
+                std::move(*automationTrust));
+            TransportError error;
+            ListenOptions listen;
+            listen.address = "127.0.0.1";
+            listen.port = selectedPort;
+            listen.timeouts.handshake = 5s;
+            listen.timeouts.read = 10s;
+            EXPECT(server.listen(listen, error));
+
+            ConnectOptions connect;
+            connect.host = "127.0.0.1";
+            connect.port = selectedPort;
+            connect.trustedFingerprint = expectedFingerprint;
+            connect.timeouts.handshake = 5s;
+            connect.timeouts.read = 10s;
+            TransportConnectionId connection;
+            EXPECT(client.connect(connect, connection, error));
+
+            bool clientAuthenticated = false;
+            bool serverAuthenticated = false;
+            bool prompted = false;
+            const auto deadline = std::chrono::steady_clock::now() + 5s;
+            while (std::chrono::steady_clock::now() < deadline
+                && (!clientAuthenticated || !serverAuthenticated))
+            {
+                if (auto event = client.poll(5ms))
+                {
+                    prompted = prompted || event->type == TransportEventType::TrustRequired;
+                    clientAuthenticated = clientAuthenticated
+                        || event->type == TransportEventType::Connected;
+                }
+                if (auto event = server.poll(5ms))
+                    serverAuthenticated = serverAuthenticated
+                        || event->type == TransportEventType::Connected;
+            }
+            EXPECT(clientAuthenticated);
+            EXPECT(serverAuthenticated);
+            EXPECT(!prompted);
+            client.shutdown(1s);
+            server.shutdown(1s);
+
+            auto storedAutomationTrust = mwmp::security::TrustStore::load(
+                automationTrustPath, persistenceError);
+            EXPECT(storedAutomationTrust.has_value());
+            if (storedAutomationTrust)
+                EXPECT(storedAutomationTrust->trustedFingerprint("127.0.0.1", selectedPort)
+                    == std::optional(expectedFingerprint));
+        }
+
+        auto replacementIdentity = mwmp::security::ServerIdentity::loadOrCreate(
+            replacementIdentityPath, persistenceError);
+        auto reloadedTrust = mwmp::security::TrustStore::load(trustPath, persistenceError);
+        EXPECT(replacementIdentity.has_value());
+        EXPECT(reloadedTrust.has_value());
+        if (replacementIdentity && reloadedTrust)
+        {
+            SecureTransport server(std::make_unique<GameNetworkingSocketsTransport>(),
+                std::move(*replacementIdentity));
+            SecureTransport client(std::make_unique<GameNetworkingSocketsTransport>(),
+                std::move(*reloadedTrust));
+            TransportError error;
+            ListenOptions listen;
+            listen.address = "127.0.0.1";
+            listen.port = selectedPort;
+            listen.timeouts.handshake = 5s;
+            listen.timeouts.read = 10s;
+            EXPECT(server.listen(listen, error));
+
+            ConnectOptions connect;
+            connect.host = "127.0.0.1";
+            connect.port = selectedPort;
+            connect.timeouts.handshake = 5s;
+            connect.timeouts.read = 10s;
+            TransportConnectionId connection;
+            EXPECT(client.connect(connect, connection, error));
+
+            bool mismatchBlocked = false;
+            bool insecureFallback = false;
+            const auto deadline = std::chrono::steady_clock::now() + 5s;
+            while (std::chrono::steady_clock::now() < deadline && !mismatchBlocked)
+            {
+                if (auto event = client.poll(5ms))
+                {
+                    if (event->type == TransportEventType::Disconnected
+                        && event->detail.find("fingerprint mismatch") != std::string::npos)
+                        mismatchBlocked = true;
+                    if (event->type == TransportEventType::TrustRequired
+                        || event->type == TransportEventType::Connected)
+                        insecureFallback = true;
+                }
+                (void)server.poll(5ms);
+            }
+            EXPECT(mismatchBlocked);
+            EXPECT(!insecureFallback);
+            client.shutdown(1s);
+            server.shutdown(1s);
+        }
+
+        std::error_code cleanupError;
+        std::filesystem::remove_all(directory, cleanupError);
     }
 }
 
@@ -96,5 +333,6 @@ int runGameNetworkingSocketsTests()
     EXPECT(waitFor(server, TransportEventType::Disconnected).has_value());
     client.shutdown(1s);
     server.shutdown(1s);
+    testSecureTransport();
     return sFailures;
 }

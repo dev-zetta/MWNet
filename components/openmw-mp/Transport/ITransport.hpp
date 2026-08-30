@@ -52,6 +52,7 @@ namespace mwmp::transport
         Connected,
         Disconnected,
         Message,
+        TrustRequired,
     };
 
     struct TransportEvent
@@ -71,6 +72,7 @@ namespace mwmp::transport
         Timeout,
         QueueFull,
         MessageRejected,
+        SecurityFailure,
         Closed,
         Internal,
     };

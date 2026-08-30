@@ -787,10 +787,10 @@ if (BUILD_OPENMW_MP)
 endif()
 
 add_subdirectory(components/openmw-mp/Protocol)
-add_subdirectory(components/openmw-mp/Transport)
 if (BUILD_OPENMW_MP)
     add_subdirectory(components/openmw-mp/Security)
 endif()
+add_subdirectory(components/openmw-mp/Transport)
 add_subdirectory(components)
 target_compile_definitions(components PRIVATE OPENMW_DOC_BASEURL="${OPENMW_DOC_BASEURL}")
 

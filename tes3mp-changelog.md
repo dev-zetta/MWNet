@@ -15,6 +15,7 @@ This is the first hardening milestone for the major OpenMW 0.52 compatibility an
 * Pin GameNetworkingSockets v1.5.1 for full TES3MP builds and make libsodium a required identity, authentication and secret-handling dependency
 * Add an owned GameNetworkingSockets backend with bounded queues, five traffic lanes, protocol-11 framing, connection/read deadlines, per-peer rate enforcement and loopback integration coverage
 * Add persistent owner-only Ed25519 server identities, signed ephemeral key exchange, replay-protected XChaCha20-Poly1305 sessions and an atomic canonical-host TOFU fingerprint store
+* Gate application traffic behind an identity-bound secure transport handshake with explicit first-use confirmation, automation fingerprints, hard mismatch failures and encrypted proof of key possession
 * Update the multiplayer client, dedicated server and tools onto OpenMW 0.52, including its current rendering, input, Lua, navigation and content APIs
 * Port TES3MP-specific code to C++20, Qt 6 and the current `ESM::RefId`, settings, resource and world APIs
 * Vendor CrabNet in `extern/crabnet` so client and server builds no longer depend on a separately cloned networking repository

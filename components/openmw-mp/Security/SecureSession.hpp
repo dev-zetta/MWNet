@@ -81,12 +81,14 @@ namespace mwmp::security
         ClientHandshake(const ClientHandshake&) = delete;
         ClientHandshake& operator=(const ClientHandshake&) = delete;
 
+        explicit operator bool() const noexcept { return mInitialized; }
         const ClientHello& hello() const noexcept { return mHello; }
         bool finish(const ServerHello& response, SecureSession& session, SecurityError& error) noexcept;
 
     private:
         ClientHello mHello;
         std::array<unsigned char, crypto_kx_SECRETKEYBYTES> mSecretKey{};
+        bool mInitialized = false;
         bool mFinished = false;
     };
 

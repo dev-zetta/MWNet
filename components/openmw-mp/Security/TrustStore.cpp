@@ -1,5 +1,7 @@
 #include "TrustStore.hpp"
 
+#include "SodiumInit.hpp"
+
 #include <boost/property_tree/json_parser.hpp>
 #include <boost/property_tree/ptree.hpp>
 
@@ -47,6 +49,8 @@ namespace mwmp::security
     std::optional<TrustStore> TrustStore::load(const std::filesystem::path& path, std::string& error)
     {
         error.clear();
+        if (!initializeSodium(&error))
+            return std::nullopt;
         TrustStore store(path);
         std::error_code filesystemError;
         if (!std::filesystem::exists(path, filesystemError))
@@ -189,6 +193,8 @@ namespace mwmp::security
 
     bool TrustStore::isValidFingerprint(std::string_view value) noexcept
     {
+        if (!initializeSodium())
+            return false;
         if (!value.starts_with(sFingerprintPrefix))
             return false;
         value.remove_prefix(sFingerprintPrefix.size());

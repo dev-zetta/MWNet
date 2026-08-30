@@ -1,6 +1,7 @@
 add_library(tes3mp-security STATIC
     SecureSession.cpp
     ServerIdentity.cpp
+    SodiumInit.cpp
     TrustStore.cpp
 )
 

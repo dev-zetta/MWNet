@@ -1,11 +1,12 @@
 #include "ServerIdentity.hpp"
 
+#include "SodiumInit.hpp"
+
 #include <algorithm>
 #include <array>
 #include <cerrno>
 #include <cstring>
 #include <fstream>
-#include <mutex>
 #include <span>
 #include <system_error>
 #include <vector>
@@ -26,16 +27,6 @@ namespace mwmp::security
     {
         constexpr std::array<unsigned char, 8> sIdentityMagic{ 'T', '3', 'I', 'D', 'E', 'N', 'T', 1 };
         constexpr std::size_t sIdentityBytes = sIdentityMagic.size() + crypto_sign_SECRETKEYBYTES;
-
-        bool initializeSodium(std::string& error)
-        {
-            static std::once_flag once;
-            static bool initialized = false;
-            std::call_once(once, [] { initialized = sodium_init() >= 0; });
-            if (!initialized)
-                error = "libsodium initialization failed";
-            return initialized;
-        }
 
         bool hasOwnerOnlyPermissions(const std::filesystem::path& path, std::string& error)
         {
@@ -184,7 +175,7 @@ namespace mwmp::security
         const std::filesystem::path& path, std::string& error)
     {
         error.clear();
-        if (!initializeSodium(error))
+        if (!initializeSodium(&error))
             return std::nullopt;
 
         std::array<unsigned char, crypto_sign_SECRETKEYBYTES> secretKey{};
