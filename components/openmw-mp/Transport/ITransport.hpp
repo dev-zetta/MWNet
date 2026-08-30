@@ -121,6 +121,11 @@ namespace mwmp::transport
             = 0;
         virtual bool send(TransportMessage message, TransportError& error) = 0;
         virtual std::optional<TransportEvent> poll(std::chrono::milliseconds timeout) = 0;
+        virtual std::optional<std::string> peerAddress(TransportConnectionId connection) const
+        {
+            (void)connection;
+            return std::nullopt;
+        }
         virtual void disconnect(TransportConnectionId connection) = 0;
         virtual void shutdown(std::chrono::milliseconds timeout) = 0;
     };

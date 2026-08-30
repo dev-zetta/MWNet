@@ -637,6 +637,12 @@ namespace mwmp::transport
         return mImpl->poll(timeout);
     }
 
+    std::optional<std::string> SecureTransport::peerAddress(
+        TransportConnectionId connection) const
+    {
+        return mImpl->transport->peerAddress(connection);
+    }
+
     void SecureTransport::disconnect(TransportConnectionId connection)
     {
         {

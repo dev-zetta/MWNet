@@ -75,6 +75,12 @@ namespace mwmp::transport
         return mTransport->poll(timeout);
     }
 
+    std::optional<std::string> Protocol11Endpoint::peerAddress(
+        TransportConnectionId connection) const
+    {
+        return mTransport->peerAddress(connection);
+    }
+
     void Protocol11Endpoint::disconnect(TransportConnectionId connection)
     {
         mTransport->disconnect(connection);

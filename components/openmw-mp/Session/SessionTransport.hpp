@@ -26,6 +26,8 @@ namespace mwmp::session
             transport::TransportConnectionId& connection, transport::TransportError& error) override;
         bool send(transport::TransportMessage message, transport::TransportError& error) override;
         std::optional<transport::TransportEvent> poll(std::chrono::milliseconds timeout) override;
+        std::optional<std::string> peerAddress(
+            transport::TransportConnectionId connection) const override;
         void disconnect(transport::TransportConnectionId connection) override;
         void shutdown(std::chrono::milliseconds timeout) override;
 

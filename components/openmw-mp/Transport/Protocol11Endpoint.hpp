@@ -38,6 +38,7 @@ namespace mwmp::transport
             TransportConnectionId& connection, TransportError& error);
         bool send(TransportMessage message, TransportError& error);
         std::optional<TransportEvent> poll(std::chrono::milliseconds timeout);
+        std::optional<std::string> peerAddress(TransportConnectionId connection) const;
         void disconnect(TransportConnectionId connection);
         void shutdown(std::chrono::milliseconds timeout);
 

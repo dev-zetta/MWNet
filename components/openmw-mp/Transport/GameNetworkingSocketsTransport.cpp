@@ -638,6 +638,21 @@ namespace mwmp::transport
             closeConnection(connectionHandle(id), "application disconnect", true);
         }
 
+        std::optional<std::string> peerAddress(TransportConnectionId id) const
+        {
+            const HSteamNetConnection handle = connectionHandle(id);
+            std::scoped_lock callbackLock(sCallbackMutex);
+            std::scoped_lock lock(stateMutex);
+            if (interface == nullptr || connections.find(handle) == connections.end())
+                return std::nullopt;
+            SteamNetConnectionInfo_t information;
+            if (!interface->GetConnectionInfo(handle, &information))
+                return std::nullopt;
+            char address[SteamNetworkingIPAddr::k_cchMaxString]{};
+            information.m_addrRemote.ToString(address, sizeof(address), false);
+            return std::string(address);
+        }
+
         void shutdown(std::chrono::milliseconds timeout)
         {
             (void)timeout;
@@ -732,6 +747,12 @@ namespace mwmp::transport
     std::optional<TransportEvent> GameNetworkingSocketsTransport::poll(std::chrono::milliseconds timeout)
     {
         return mImpl->incoming.waitPop(timeout);
+    }
+
+    std::optional<std::string> GameNetworkingSocketsTransport::peerAddress(
+        TransportConnectionId connection) const
+    {
+        return mImpl->peerAddress(connection);
     }
 
     void GameNetworkingSocketsTransport::disconnect(TransportConnectionId connection)

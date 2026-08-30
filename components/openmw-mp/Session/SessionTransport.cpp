@@ -72,6 +72,12 @@ namespace mwmp::session
         return process(std::move(*event));
     }
 
+    std::optional<std::string> SessionTransport::peerAddress(
+        transport::TransportConnectionId connection) const
+    {
+        return mTransport->peerAddress(connection);
+    }
+
     std::optional<transport::TransportEvent> SessionTransport::process(
         transport::TransportEvent event)
     {

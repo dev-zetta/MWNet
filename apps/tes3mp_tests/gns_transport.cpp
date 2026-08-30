@@ -330,6 +330,7 @@ namespace
         EXPECT(serverConnection.has_value());
         if (!clientConnected || !serverConnection)
             return;
+        EXPECT(server->peerAddress(*serverConnection) == std::optional("127.0.0.1"));
 
         EXPECT(client->state(clientConnection)
             == std::optional(mwmp::session::State::TransportAuthenticated));
@@ -404,6 +405,8 @@ int runGameNetworkingSocketsTests()
     const auto serverConnected = waitFor(server, TransportEventType::Connected);
     EXPECT(clientConnected.has_value());
     EXPECT(serverConnected.has_value());
+    if (serverConnected)
+        EXPECT(server.peerAddress(serverConnected->connection) == std::optional("127.0.0.1"));
 
     TransportMessage outbound;
     outbound.connection = clientConnection;
