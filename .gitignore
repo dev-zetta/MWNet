@@ -86,6 +86,9 @@ moc_*.cxx
 *.so
 venv/
 
+## local TES3MP test state
+/.tes3mp-test/
+
 ## operating system files
 .DS_Store
 Thumbs.db

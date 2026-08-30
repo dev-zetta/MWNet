@@ -2895,6 +2895,23 @@ namespace MWMechanics
         resetCurrentDeathState();
         mWeaponType = ESM::Weapon::None;
 
+        // Do not leave the actor's skeleton in its last death pose until the
+        // next mechanics update. This is particularly visible when a
+        // multiplayer resurrection teleports the player and starts a fade in
+        // before another frame has had a chance to select an idle animation.
+        if (!mSkipAnim && !isScriptedAnimPlaying())
+        {
+            const CreatureStats& stats = mPtr.getClass().getCreatureStats(mPtr);
+            CharacterState idle = CharState_Idle;
+            if (MWBase::Environment::get().getWorld()->isSwimming(mPtr))
+                idle = CharState_IdleSwim;
+            else if (stats.getStance(CreatureStats::Stance_Sneak))
+                idle = CharState_IdleSneak;
+
+            refreshCurrentAnims(idle, CharState_None, JumpState_None, true);
+            mAnimation->runAnimation(0.f);
+        }
+
         /* Start of tes3mp addition */
         if (mwmp::Main::get().getCellController()->isLocalActor(mPtr))
         {

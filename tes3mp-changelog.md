@@ -22,10 +22,13 @@ This is a major compatibility and maintenance release. It brings TES3MP forward 
 * Register the TES3MP chat edit skin in OpenMW's current MyGUI resource list and use its supported monospace font so typed text and the caret render correctly
 * Keep keyboard and SDL text-input focus on chat across OpenMW game-mode visibility refreshes until the message is sent or cancelled, route text directly to the focused edit box without requiring a mouse click, prevent chat keystrokes from triggering gameplay controls, let function keys retain their bindings, and make Escape cancel chat
 * Keep multiplayer simulation, NPC AI, physics, scripts and rendering time running while local menus, dialogue windows, consoles or message boxes are open
+* Restore server-driven death and respawn without opening OpenMW's single-player Return/New/Load/Options/Exit menu, and prevent the death animation from visibly replaying after the player is teleported
+* Add one-command local multiplayer test launchers that synchronize CoreScripts, create persistent client/server test state, seed display/input/camera settings from an existing OpenMW profile, bypass the single-player intro and chargen state, remember the Morrowind data path, manage the localhost server lifetime, and start the game
 * Fix the launcher OpenSceneGraph plugin path and the client/server connection-password hash used by matching builds
 * Remove duplicate NPC greetings in the dialogue window
 * Respawn a multiplayer player after death instead of ending the game as in single-player OpenMW
-* Disable the CoreScripts jail-based death penalty by default so normal resurrection does not open a blocking jail/menu flow
+* Restore the five-day CoreScripts death penalty after resurrection without teleporting the player or opening the single-player menu; show its revival notice and skill-change dialog, preserve server-controlled skill reductions, and clear the paid bounty
+* Restore post-death guard forgiveness by keeping the TES3MP crime-witness branch separate from OpenMW's already-paid-crime path
 
 ### Synchronization and gameplay fixes
 

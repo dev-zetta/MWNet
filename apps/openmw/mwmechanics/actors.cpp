@@ -1241,25 +1241,27 @@ namespace MWMechanics
 
                 // Update witness crime id
                 npcStats.setCrimeId(-1);
-
-                /* Start of tes3mp addition */
-                if (mwmp::Main::get().getLocalPlayer()->diedSinceArrestAttempt && creatureStats.getAiSequence().isInCombat(player))
-                {
-                    if (difftime(mwmp::Main::get().getLocalPlayer()->deathTime, npcStats.getCrimeTime()) > 0)
-                    {
-                        creatureStats.getAiSequence().stopCombat();
-                        creatureStats.setAttacked(false);
-                        creatureStats.setAlarmed(false);
-                        creatureStats.setAiSetting(AiSetting::Fight, ptr.getClass().getBaseFightRating(ptr));
-
-                        npcStats.setCrimeId(-1);
-                        npcStats.setCrimeTime(time(0));
-                        LOG_MESSAGE_SIMPLE(TimedLog::LOG_INFO, "NPC %s %i-%i has forgiven player's crimes after the player's death",
-                            ptr.getCellRef().getRefId().getRefIdString().c_str(), ptr.getCellRef().getRefNum().mIndex, ptr.getCellRef().getMpNum());
-                    }
-                }
-                /* End of tes3mp addition */
             }
+            /* Start of tes3mp addition */
+            else if (mwmp::Main::get().getLocalPlayer()->diedSinceArrestAttempt
+                && creatureStats.getAiSequence().isInCombat(player))
+            {
+                if (difftime(mwmp::Main::get().getLocalPlayer()->deathTime, npcStats.getCrimeTime()) > 0)
+                {
+                    creatureStats.getAiSequence().stopCombat();
+                    creatureStats.setAttacked(false);
+                    creatureStats.setAlarmed(false);
+                    creatureStats.setAiSetting(AiSetting::Fight, ptr.getClass().getBaseFightRating(ptr));
+
+                    npcStats.setCrimeId(-1);
+                    npcStats.setCrimeTime(time(0));
+                    LOG_MESSAGE_SIMPLE(TimedLog::LOG_INFO,
+                        "NPC %s %i-%i has forgiven player's crimes after the player's death",
+                        ptr.getCellRef().getRefId().getRefIdString().c_str(), ptr.getCellRef().getRefNum().mIndex,
+                        ptr.getCellRef().getMpNum());
+                }
+            }
+            /* End of tes3mp addition */
         }
     }
 
@@ -1902,8 +1904,14 @@ namespace MWMechanics
 
                 if (isPlayer)
                 {
-                    // player's death animation is over
-                    MWBase::Environment::get().getStateManager()->askLoadRecent();
+                    /*
+                        Start of tes3mp change (major)
+
+                        The server owns player resurrection, so do not open OpenMW's
+                        single-player load/main-menu flow after the death animation.
+                    */
+                    // MWBase::Environment::get().getStateManager()->askLoadRecent();
+                    /* End of tes3mp change (major) */
                 }
                 else
                 {

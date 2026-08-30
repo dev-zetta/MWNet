@@ -216,13 +216,11 @@ config.playersRespawn = true
 -- Time to stay dead before being respawned, in seconds
 config.deathTime = 5
 
--- The number of days spent in jail as a penalty for dying, when respawning.
--- Disabled by default because the jail screen is an inappropriate blocking
--- single-player flow for normal multiplayer resurrection.
-config.deathPenaltyJailDays = 0
+-- The number of days spent in jail as a penalty for dying, when respawning
+config.deathPenaltyJailDays = 5
 
 -- Whether players' bounties are reset to 0 after dying
-config.bountyResetOnDeath = false
+config.bountyResetOnDeath = true
 
 -- Whether players spend time in jail proportional to their bounty after dying
 -- Note: If deathPenaltyJailDays is also enabled, that penalty will be added to

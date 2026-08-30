@@ -67,3 +67,13 @@ blending_rules:
     to: "*"
     easing: "linear"
     duration: 0
+  # Resurrected actors must snap out of their corpse pose. Blending a death
+  # animation into idle makes the death motion visibly replay in reverse.
+  - from: "death*"
+    to: "*"
+    easing: "linear"
+    duration: 0
+  - from: "swimdeath*"
+    to: "*"
+    easing: "linear"
+    duration: 0

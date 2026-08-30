@@ -86,6 +86,7 @@ namespace MWLua
         {
             ESM::RefNum mActor;
             int mDays;
+            bool mIgnoreSkillIncreases;
         };
         struct OnDropped
         {

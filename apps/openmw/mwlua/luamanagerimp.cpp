@@ -668,9 +668,9 @@ namespace MWLua
             EngineEvents::OnSkillLevelUp{ getId(actor), skillId.serializeText(), std::string(source) });
     }
 
-    void LuaManager::jailTimeServed(const MWWorld::Ptr& actor, int days)
+    void LuaManager::jailTimeServed(const MWWorld::Ptr& actor, int days, bool ignoreSkillIncreases)
     {
-        mEngineEvents.addToQueue(EngineEvents::OnJailTimeServed{ getId(actor), days });
+        mEngineEvents.addToQueue(EngineEvents::OnJailTimeServed{ getId(actor), days, ignoreSkillIncreases });
     }
 
     void LuaManager::onHit(const MWWorld::Ptr& attacker, const MWWorld::Ptr& victim, const MWWorld::Ptr& weapon,

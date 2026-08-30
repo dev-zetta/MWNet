@@ -76,10 +76,21 @@ namespace MWGui
         if (mFadeTimeRemaining <= 0)
         {
             MWWorld::Ptr player = MWMechanics::getPlayer();
-            MWBase::Environment::get().getWorld()->teleportToClosestMarker(
-                player, ESM::RefId::stringRefId("prisonmarker"));
-            MWBase::Environment::get().getWindowManager()->fadeScreenOut(
-                0.f); // override fade-in caused by cell transition
+
+            /*
+                Start of tes3mp change (minor)
+
+                A server can use the jail flow for a death penalty without moving
+                the resurrected player away from the selected respawn marker.
+            */
+            if (!mwmp::Main::get().getLocalPlayer()->ignoreJailTeleportation)
+            {
+                MWBase::Environment::get().getWorld()->teleportToClosestMarker(
+                    player, ESM::RefId::stringRefId("prisonmarker"));
+                MWBase::Environment::get().getWindowManager()->fadeScreenOut(
+                    0.f); // override fade-in caused by cell transition
+            }
+            /* End of tes3mp change (minor) */
 
             setVisible(true);
             mTimeAdvancer.run(100);
@@ -120,7 +131,8 @@ namespace MWGui
 
         // We should not worsen corprus when in prison
         player.getClass().getCreatureStats(player).getActiveSpells().skipWorsenings(mDays * 24);
-        MWBase::Environment::get().getLuaManager()->jailTimeServed(player, mDays);
+        MWBase::Environment::get().getLuaManager()->jailTimeServed(
+            player, mDays, localPlayer->ignoreJailSkillIncreases);
 
             /*
             Start of tes3mp addition

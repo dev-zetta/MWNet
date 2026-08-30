@@ -69,21 +69,22 @@ Getting started
 Local server testing
 --------------------
 
-After building both targets, copy the bundled CoreScripts into the server's working directory:
+After building the client and server, start an isolated localhost test with one command:
 
 ```bash
-mkdir -p build/server
-cp -a files/tes3mp/core-scripts/. build/server/
+./run-tes3mp-local.sh
 ```
 
-Before starting an isolated LAN-only test, create `tes3mp-server.cfg` in the user's OpenMW configuration directory, set `localAddress = 127.0.0.1`, and set `enabled = false` under `[MasterServer]`. Then start the server:
+The launcher synchronizes CoreScripts, creates persistent client and server test state under `.tes3mp-test`, starts the server on `127.0.0.1:25565`, launches the client without the single-player intro and chargen sequence, and stops the server when the game closes. A new test client profile is seeded from the current OpenMW profile so its display, input, camera, and Lua settings are preserved. On the first run the launcher also detects the Morrowind data directory from OpenMW's configuration or asks for it and remembers the answer. Either source can be supplied explicitly:
 
 ```bash
-cd build
-LD_LIBRARY_PATH="$PWD/lib${LD_LIBRARY_PATH:+:$LD_LIBRARY_PATH}" ./tes3mp-server
+./run-tes3mp-local.sh \
+    --data-dir "/path/to/Morrowind/Data Files" \
+    --client-profile "/path/to/existing/openmw/profile" \
+    --server-profile "/path/to/existing/corescripts/server"
 ```
 
-Connect the client to `127.0.0.1` on the default port `25565`. Start with identical vanilla content and load order on both sides before adding mods.
+To run only the isolated server, use `./run-tes3mp-server.sh`. Run either script with `--help` for configuration overrides. Start with identical vanilla content and load order on both sides before adding mods.
 
 The data path
 -------------

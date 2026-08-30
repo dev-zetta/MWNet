@@ -26,19 +26,19 @@ This will:
 
 **Note:** CrabNet is vendored in `extern/crabnet/` and is built automatically.
 
-### 2. Run the Client
+### 2. Run a Local Multiplayer Test
+
+```bash
+./run-tes3mp-local.sh
+```
+
+This starts an isolated localhost server and the game together, bypassing the single-player intro and character-generation sequence before login. The first run copies display, input, camera, and Lua settings from your current OpenMW profile, asks for the Morrowind `Data Files` directory if it cannot be detected, then remembers both for later runs. Use `--client-profile PATH` to seed the test from another existing profile, or `--server-profile PATH` to migrate an existing CoreScripts server's accounts and world state.
+
+### 3. Run Only the Client or Server
 
 ```bash
 ./run-tes3mp.sh
-```
-
-### 3. Run the Server
-
-```bash
-mkdir -p build/server
-cp -a files/tes3mp/core-scripts/. build/server/
-cd build
-LD_LIBRARY_PATH="$PWD/lib${LD_LIBRARY_PATH:+:$LD_LIBRARY_PATH}" ./tes3mp-server
+./run-tes3mp-server.sh
 ```
 
 ## Common Build Scenarios

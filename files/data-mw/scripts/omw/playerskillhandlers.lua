@@ -116,7 +116,7 @@ local function skillLevelUpHandler(skillid, source, params)
     end
 end
 
-local function jailTimeServed(days)
+local function jailTimeServed(days, ignoreSkillIncreases)
     if not days or days <= 0 then
         return
     end
@@ -132,7 +132,12 @@ local function jailTimeServed(days)
     for day=1,days do
         local skillid = skillByNumber[math.random(#skillByNumber)]
         -- skillLevelUp() handles skill-based increase/decrease
-        I.SkillProgression.skillLevelUp(skillid, I.SkillProgression.SKILL_INCREASE_SOURCES.Jail)
+        if ignoreSkillIncreases and (skillid == 'security' or skillid == 'sneak') then
+            local skillStat = NPC.stats.skills[skillid](self)
+            skillStat.base = math.max(0, skillStat.base - 1)
+        else
+            I.SkillProgression.skillLevelUp(skillid, I.SkillProgression.SKILL_INCREASE_SOURCES.Jail)
+        end
     end
 
     local message = mechanicsL10n('ReleasedFromPrison', { days = days })
