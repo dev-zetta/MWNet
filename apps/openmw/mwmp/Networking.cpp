@@ -6,6 +6,11 @@
 #include <components/openmw-mp/Utils.hpp>
 #include <components/openmw-mp/Version.hpp>
 #include <components/openmw-mp/Packets/PacketPreInit.hpp>
+#include <components/openmw-mp/Protocol/MessageType.hpp>
+#include <components/openmw-mp/Security/AuthenticationMessages.hpp>
+#include <components/openmw-mp/Security/PasswordHash.hpp>
+#include <components/openmw-mp/Session/SessionState.hpp>
+#include <components/openmw-mp/Transport/LegacyPacketFrame.hpp>
 
 #include <components/esm3/cellid.hpp>
 #include <components/files/configurationmanager.hpp>
@@ -25,9 +30,9 @@
 #include "../mwworld/inventorystore.hpp"
 
 #include <SDL_messagebox.h>
-#include <RakSleep.h>
 #include <iomanip>
 #include <components/version/version.hpp>
+#include <sodium.h>
 
 #include "Networking.hpp"
 #include "Main.hpp"
@@ -41,6 +46,14 @@
 #include "CellController.hpp"
 
 using namespace mwmp;
+
+ClientConnectionOptions::~ClientConnectionOptions()
+{
+    if (!accountPassword.empty())
+        sodium_memzero(accountPassword.data(), accountPassword.size());
+    if (!serverAccessPassword.empty())
+        sodium_memzero(serverAccessPassword.data(), serverAccessPassword.size());
+}
 
 std::string listDiscrepancies(PacketPreInit::PluginContainer checksums, PacketPreInit::PluginContainer checksumsResponse)
 {
@@ -193,218 +206,144 @@ std::string listComparison(PacketPreInit::PluginContainer checksums, PacketPreIn
     return sstr.str();
 }
 
-Networking::Networking(): peer(RakNet::RakPeerInterface::GetInstance()), systemPacketController(peer),
+Networking::Networking(): peer(RakNet::RakPeerInterface::GetInstance()),
+    receiver(transport::ApplicationPacketFlow::ServerToClient), systemPacketController(peer),
     playerPacketController(peer), actorPacketController(peer), objectPacketController(peer),
     worldstatePacketController(peer)
 {
-    RakNet::SocketDescriptor sd;
-    sd.port=0;
-    auto b = peer->Startup(1, &sd, 1);
-    RakAssert(b==RakNet::CRABNET_STARTED);
+    Files::ConfigurationManager configuration;
+    std::string error;
+    endpoint = transport::Protocol11Endpoint::createClient(
+        configuration.getUserConfigPath() / "trusted-servers.json", error);
+    if (!endpoint)
+        throw std::runtime_error("Failed to initialize protocol-11 client transport: " + error);
+    dispatcher = std::make_unique<transport::ApplicationPacketDispatcher>(
+        endpoint->transport(), transport::ApplicationPacketFlow::ClientToServer, 1);
 
     systemPacketController.SetStream(0, &bsOut);
     playerPacketController.SetStream(0, &bsOut);
     actorPacketController.SetStream(0, &bsOut);
     objectPacketController.SetStream(0, &bsOut);
     worldstatePacketController.SetStream(0, &bsOut);
+    systemPacketController.SetApplicationPacketDispatcher(dispatcher.get());
+    playerPacketController.SetApplicationPacketDispatcher(dispatcher.get());
+    actorPacketController.SetApplicationPacketDispatcher(dispatcher.get());
+    objectPacketController.SetApplicationPacketDispatcher(dispatcher.get());
+    worldstatePacketController.SetApplicationPacketDispatcher(dispatcher.get());
 
-    connected = 0;
+    connected = false;
     ProcessorInitializer();
 }
 
 Networking::~Networking()
 {
-    peer->Shutdown(100);
-    peer->CloseConnection(peer->GetSystemAddressFromIndex(0), true, 0);
+    disconnect();
+    endpoint->shutdown(std::chrono::seconds(5));
     RakNet::RakPeerInterface::DestroyInstance(peer);
 }
 
 void Networking::update()
 {
-    RakNet::Packet *packet;
-    std::string errmsg = "";
-
-    // Replay one buffered packet per update() call (after postInitDone) so the GUI
-    // has a full frame to react between packets (e.g. password box before baseinfo).
     if (!pendingPackets.empty() && mwmp::Main::isPostInitDone())
     {
         std::vector<unsigned char> data = std::move(pendingPackets.front());
-        pendingPackets.erase(pendingPackets.begin());
-        RakNet::Packet fake;
+        pendingPackets.pop_front();
+        pendingPacketBytes -= data.size();
+        RakNet::Packet fake{};
         fake.data = data.data();
         fake.length = (unsigned int)data.size();
         fake.systemAddress = serverAddr;
+        fake.guid = RakNet::RakNetGUID(serverConnection.value);
         receiveMessage(&fake);
     }
 
-    for (packet=peer->Receive(); packet; peer->DeallocatePacket(packet), packet=peer->Receive())
+    for (std::size_t count = 0; connected && count < 256; ++count)
     {
-        if (packet->length == 0
-            || packet->length > protocol::limits::normalMessageBytes + BasePacket::headerSize())
-        {
-            LOG_MESSAGE_SIMPLE(TimedLog::LOG_WARN, "Dropped invalid-size packet from server");
-            continue;
-        }
-
-        switch (packet->data[0])
-        {
-            case ID_REMOTE_DISCONNECTION_NOTIFICATION:
-                LOG_MESSAGE_SIMPLE(TimedLog::LOG_INFO, "Another client has disconnected.");
-                break;
-            case ID_REMOTE_CONNECTION_LOST:
-                LOG_MESSAGE_SIMPLE(TimedLog::LOG_INFO, "Another client has lost connection.");
-                break;
-            case ID_REMOTE_NEW_INCOMING_CONNECTION:
-                LOG_MESSAGE_SIMPLE(TimedLog::LOG_INFO, "Another client has connected.");
-                break;
-            case ID_CONNECTION_REQUEST_ACCEPTED:
-                LOG_MESSAGE_SIMPLE(TimedLog::LOG_WARN, "Our connection request has been accepted.");
-                break;
-            case ID_NEW_INCOMING_CONNECTION:
-                LOG_MESSAGE_SIMPLE(TimedLog::LOG_INFO, "A connection is incoming.");
-                break;
-            case ID_NO_FREE_INCOMING_CONNECTIONS:
-                errmsg = "The server is full.";
-                break;
-            case ID_DISCONNECTION_NOTIFICATION:
-                LOG_MESSAGE_SIMPLE(TimedLog::LOG_INFO, "Disconnected from server.");
-                connected = false;
-                Main::get().getGUIController()->requestShowBrowser();
-                return;
-            case ID_CONNECTION_LOST:
-                LOG_MESSAGE_SIMPLE(TimedLog::LOG_WARN, "Connection to server lost.");
-                connected = false;
-                Main::get().getGUIController()->requestShowBrowser();
-                return;
-            default:
-                receiveMessage(packet);
-                break;
-        }
-    }
-
-    if (!errmsg.empty())
-    {
-        LOG_MESSAGE_SIMPLE(TimedLog::LOG_ERROR, errmsg.c_str());
-        lastError = errmsg;
-        connected = false;
-        Main::get().getGUIController()->requestShowBrowser();
+        auto event = endpoint->poll(std::chrono::milliseconds(0));
+        if (!event)
+            break;
+        processTransportEvent(std::move(*event));
     }
 }
 
-void Networking::connect(const std::string &ip, unsigned short port, std::vector<std::string> &content, Files::Collections &collections)
+void Networking::connect(const std::string& ip, unsigned short port,
+    std::vector<std::string>& content, Files::Collections& collections,
+    ClientConnectionOptions options)
 {
-    RakNet::SystemAddress master;
-    master.SetBinaryAddress(ip.c_str());
-    master.SetPortHostOrder(port);
-    std::string errmsg = "";
+    disconnect();
+    lastError.clear();
+    pendingPackets.clear();
+    pendingPacketBytes = 0;
+    receiver.clear();
+    serverAddr.SetBinaryAddress(ip.c_str());
+    serverAddr.SetPortHostOrder(port);
+    BaseClientPacketProcessor::SetServerAddr(serverAddr);
 
-    std::stringstream sstr;
-    sstr << TES3MP_VERSION;
-    sstr << TES3MP_PROTO_VERSION;
-    std::string commitHashString = TES3MP_COMPAT_COMMITHASH;
-    // Remove carriage returns added to version file on Windows
-    commitHashString.erase(std::remove(commitHashString.begin(), commitHashString.end(), '\r'), commitHashString.end());
-    sstr << commitHashString;
-
-    if (peer->Connect(master.ToString(false), master.GetPort(), sstr.str().c_str(), (int) sstr.str().size(), 0, 0, 3, 500, 0) != RakNet::CONNECTION_ATTEMPT_STARTED)
-        errmsg = "Connection attempt failed.\n";
-
-    bool queue = true;
-    while (queue)
+    transport::ConnectOptions connectOptions;
+    connectOptions.host = ip;
+    connectOptions.port = port;
+    connectOptions.trustedFingerprint = options.trustedFingerprint;
+    transport::TransportError error;
+    if (!endpoint->connect(connectOptions, serverConnection, error))
     {
-        for (RakNet::Packet *packet = peer->Receive(); packet; peer->DeallocatePacket(packet), packet = peer->Receive())
+        failConnection(error.detail.empty() ? "Connection attempt failed." : error.detail);
+        return;
+    }
+
+    const auto deadline = std::chrono::steady_clock::now()
+        + connectOptions.timeouts.connect + connectOptions.timeouts.handshake;
+    while (!connected && std::chrono::steady_clock::now() < deadline)
+    {
+        auto event = endpoint->poll(std::chrono::milliseconds(100));
+        if (!event)
+            continue;
+        if (event->connection != serverConnection)
+            continue;
+        if (event->type == transport::TransportEventType::TrustRequired)
         {
-            switch (packet->data[0])
+            if (!confirmServerFingerprint(ip, port, event->detail))
             {
-                case ID_CONNECTION_ATTEMPT_FAILED:
-                {
-                    errmsg = "Connection failed. The server may be offline or a firewall is blocking the connection.";
-                    queue = false;
-                    break;
-                }
-                case ID_INVALID_PASSWORD:
-                {
-                    errmsg = "Version mismatch! Your client is on version " TES3MP_VERSION ". Please make sure the server is on the same version.";
-                    queue = false;
-                    break;
-                }
-                case ID_INCOMPATIBLE_PROTOCOL_VERSION:
-                {
-                    errmsg = "Network protocol mismatch! Make sure your client is on the same version as the server.";
-                    queue = false;
-                    break;
-                }
-                case ID_CONNECTION_REQUEST_ACCEPTED:
-                {
-                    serverAddr = packet->systemAddress;
-                    BaseClientPacketProcessor::SetServerAddr(packet->systemAddress);
-
-                    connected = true;
-                    queue = false;
-
-                    LOG_MESSAGE_SIMPLE(TimedLog::LOG_WARN, "Received ID_CONNECTION_REQUESTED_ACCEPTED from %s",
-                                       serverAddr.ToString());
-
-                    break;
-                }
-                case ID_DISCONNECTION_NOTIFICATION:
-                    errmsg = "Disconnected during connection attempt.";
-                    queue = false;
-                    break;
-                case ID_CONNECTION_BANNED:
-                    errmsg = "You have been banned from this server.";
-                    queue = false;
-                    break;
-                case ID_CONNECTION_LOST:
-                    errmsg = "Connection lost during connection attempt.";
-                    queue = false;
-                    break;
-                default:
-                    LOG_MESSAGE_SIMPLE(TimedLog::LOG_INFO, "Connection message with identifier %i has arrived in initialization.",
-                                       packet->data[0]);
+                failConnection("The server fingerprint was not trusted.");
+                return;
+            }
+            if (!endpoint->confirmFingerprint(serverConnection, event->detail, error))
+            {
+                failConnection(error.detail.empty()
+                        ? "Failed to store the server fingerprint." : error.detail);
+                return;
             }
         }
-    }
-
-    if (!errmsg.empty())
-    {
-        LOG_MESSAGE_SIMPLE(TimedLog::LOG_ERROR, errmsg.c_str());
-        lastError = errmsg;
-    }
-    else
-    {
-        preInit(content, collections);
-        getLocalPlayer()->guid = getLocalSystem()->guid = peer->GetMyGUID();
-
-        if (connected)
+        else if (event->type == transport::TransportEventType::Connected)
         {
-            // Buffer packets the server sends immediately after preInit
-            // (ID_PLAYER_BASEINFO, ID_PLAYER_CELL_CHANGE etc.) so they can be
-            // replayed via receiveMessage() on the first update() call once the
-            // game world exists. newGame() blocks ~300ms so we wait long enough
-            // for the server's initial burst to arrive.
-            pendingPackets.clear();
-            RakSleep(50);
-            for (RakNet::Packet *p = peer->Receive(); p; peer->DeallocatePacket(p), p = peer->Receive())
+            if (!dispatcher->addConnection(serverConnection))
             {
-                if (p->data[0] == ID_DISCONNECTION_NOTIFICATION || p->data[0] == ID_CONNECTION_LOST)
-                {
-                    LOG_MESSAGE_SIMPLE(TimedLog::LOG_WARN, "Server closed connection after preInit.");
-                    connected = false;
-                    peer->DeallocatePacket(p);
-                    return;
-                }
-                // Buffer all packets; they are replayed one-per-frame in update()
-                // so the GUI has time to react between each packet (e.g. password box
-                // must be shown and answered before ID_PLAYER_BASEINFO fires).
-                pendingPackets.push_back(std::vector<unsigned char>(p->data, p->data + p->length));
+                failConnection("Failed to bind the server transport connection.");
+                return;
             }
-            LOG_MESSAGE_SIMPLE(TimedLog::LOG_INFO, "Buffered %d post-preInit packet(s) for replay.", (int)pendingPackets.size());
+            connected = true;
+        }
+        else if (event->type == transport::TransportEventType::Disconnected)
+        {
+            failConnection(event->detail.empty()
+                    ? "Connection closed during the secure handshake." : event->detail);
+            return;
         }
     }
+    if (!connected)
+    {
+        failConnection("Timed out while establishing the encrypted server session.");
+        return;
+    }
+
+    if (!preInit(content, collections) || !authenticate(options) || !requestSpawn())
+        return;
+
+    LOG_MESSAGE_SIMPLE(TimedLog::LOG_INFO,
+        "Protocol 11 session established with %s:%u",
+        ip.c_str(), static_cast<unsigned int>(port));
 }
 
-void Networking::preInit(std::vector<std::string> &content, Files::Collections &collections)
+bool Networking::preInit(std::vector<std::string>& content, Files::Collections& collections)
 {
     PacketPreInit::PluginContainer checksums;
     std::vector<std::string>::const_iterator it(content.begin());
@@ -430,76 +369,287 @@ void Networking::preInit(std::vector<std::string> &content, Files::Collections &
             std::string errmsg = "Plugin not found: \"" + *it + "\" (extension: \"" + filename.extension().string() + "\")";
             LOG_MESSAGE_SIMPLE(TimedLog::LOG_ERROR, "%s", errmsg.c_str());
             SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR, "tes3mp - Plugin not found", errmsg.c_str(), 0);
-            throw std::runtime_error(errmsg);
+            return failConnection(errmsg);
         }
     }
 
     PacketPreInit packetPreInit(peer);
     RakNet::BitStream bs;
-    RakNet::RakNetGUID guid;
     packetPreInit.setChecksums(&checksums);
-    packetPreInit.setGUID(guid);
+    packetPreInit.setGUID(RakNet::RakNetGUID(serverConnection.value));
     packetPreInit.SetSendStream(&bs);
-    packetPreInit.Send(serverAddr);
+    packetPreInit.SetApplicationPacketDispatcher(dispatcher.get());
+    if (packetPreInit.Send(serverAddr) == 0)
+        return failConnection("Failed to send the content manifest.");
 
     PacketPreInit::PluginContainer checksumsResponse;
-    bool done = false;
-    while (!done)
+    const auto deadline = std::chrono::steady_clock::now() + std::chrono::seconds(30);
+    bool receivedResponse = false;
+    while (std::chrono::steady_clock::now() < deadline)
     {
-        RakNet::Packet *packet = peer->Receive();
-        if (!packet)
-        {
-            RakSleep(500);
+        auto event = endpoint->poll(std::chrono::milliseconds(100));
+        if (!event)
             continue;
-        }
-
-        if (packet->length == 0
-            || packet->length > protocol::limits::normalMessageBytes + BasePacket::headerSize())
-        {
-            peer->DeallocatePacket(packet);
+        if (event->type == transport::TransportEventType::Disconnected)
+            return failConnection(event->detail.empty()
+                    ? "Server closed the connection during content verification." : event->detail);
+        if (event->type != transport::TransportEventType::Message)
             continue;
-        }
 
-        RakNet::BitStream bsIn(&packet->data[0], packet->length, false);
-        unsigned char packetId;
-        bsIn.Read(packetId);
-        switch(packetId)
-        {
-            case ID_DISCONNECTION_NOTIFICATION:
-            case ID_CONNECTION_LOST:
-                LOG_MESSAGE_SIMPLE(TimedLog::LOG_WARN, "Server closed connection during preInit.");
-                connected = false;
-                done = true;
-                break;
-            case ID_GAME_PREINIT:
-                if (packet->length < BasePacket::headerSize())
-                {
-                    connected = false;
-                    done = true;
-                    break;
-                }
-                bsIn.IgnoreBytes((unsigned) RakNet::RakNetGUID::size());
-                packetPreInit.setChecksums(&checksumsResponse);
-                packetPreInit.SetReadStream(&bsIn);
-                packetPreInit.Read();
-                if (!packetPreInit.isPacketValid())
-                    connected = false;
-                done = true;
-                break;
-        }
+        transport::ReceivedApplicationPacket application;
+        if (!receiveApplicationMessage(event->message, application)
+            || application.id != protocol::ApplicationPacketId::GamePreInit)
+            return failConnection("Received an invalid content-verification response.");
+        std::vector<unsigned char> frame;
+        protocol::CodecError codecError = protocol::CodecError::None;
+        if (!transport::buildLegacyPacketFrame(application, frame, codecError))
+            return failConnection("Failed to decode the content-verification response.");
 
-        peer->DeallocatePacket(packet);
+        RakNet::BitStream bsIn(&frame[1], frame.size() - 1, false);
+        bsIn.IgnoreBytes(static_cast<unsigned int>(RakNet::RakNetGUID::size()));
+        packetPreInit.setChecksums(&checksumsResponse);
+        packetPreInit.SetReadStream(&bsIn);
+        packetPreInit.Read();
+        if (!packetPreInit.isPacketValid())
+            return failConnection("The server sent an invalid content-verification response.");
+        receivedResponse = true;
+        break;
     }
+    if (!receivedResponse)
+        return failConnection("Timed out during content verification.");
 
-    if (!checksumsResponse.empty()) // something wrong
+    if (!checksumsResponse.empty())
     {
         std::string errmsg = listDiscrepancies(checksums, checksumsResponse);
         std::string comparison = listComparison(checksums, checksumsResponse, true);
 
         LOG_MESSAGE_SIMPLE(TimedLog::LOG_ERROR, "%s", errmsg.c_str());
         LOG_MESSAGE_SIMPLE(TimedLog::LOG_ERROR, "%s", comparison.c_str());
-        lastError = errmsg;
-        connected = false;
+        return failConnection(std::move(errmsg));
+    }
+
+    transport::TransportError error;
+    if (endpoint->advance(serverConnection, session::State::ContentVerified, error)
+        != session::TransitionResult::Advanced)
+        return failConnection(error.detail.empty()
+                ? "Failed to advance the verified content session." : error.detail);
+    return true;
+}
+
+bool Networking::authenticate(ClientConnectionOptions& options)
+{
+    std::string errorMessage;
+    auto password = security::PasswordBuffer::copyFrom(options.accountPassword, errorMessage);
+    if (!options.accountPassword.empty())
+        sodium_memzero(options.accountPassword.data(), options.accountPassword.size());
+    options.accountPassword.clear();
+    if (!password)
+        return failConnection(errorMessage);
+
+    std::optional<security::PasswordBuffer> accessPassword;
+    if (!options.serverAccessPassword.empty())
+    {
+        accessPassword = security::PasswordBuffer::copyFrom(
+            options.serverAccessPassword, errorMessage);
+        sodium_memzero(options.serverAccessPassword.data(), options.serverAccessPassword.size());
+        options.serverAccessPassword.clear();
+        if (!accessPassword)
+            return failConnection(errorMessage);
+    }
+
+    std::vector<std::byte> payload;
+    protocol::CodecError codecError = protocol::CodecError::None;
+    const auto operation = options.registerAccount
+        ? security::AuthenticationOperation::Register
+        : security::AuthenticationOperation::Login;
+    if (!security::encodeAuthenticationRequest(operation, options.accountName, *password,
+            accessPassword ? &*accessPassword : nullptr, payload, codecError))
+        return failConnection("Failed to encode the authentication request.");
+
+    transport::TransportMessage request;
+    request.connection = serverConnection;
+    request.delivery = transport::DeliveryMode::ReliableOrdered;
+    request.lane = transport::MessageLane::System;
+    request.messageType = static_cast<std::uint16_t>(options.registerAccount
+        ? protocol::MessageType::AccountRegister : protocol::MessageType::AccountLogin);
+    request.sequence = 1;
+    request.payload = std::move(payload);
+    transport::TransportError transportError;
+    if (!endpoint->send(std::move(request), transportError))
+        return failConnection(transportError.detail.empty()
+                ? "Failed to send the authentication request." : transportError.detail);
+
+    const auto deadline = std::chrono::steady_clock::now() + std::chrono::seconds(30);
+    while (std::chrono::steady_clock::now() < deadline)
+    {
+        auto event = endpoint->poll(std::chrono::milliseconds(100));
+        if (!event)
+            continue;
+        if (event->type == transport::TransportEventType::Disconnected)
+            return failConnection(event->detail.empty()
+                    ? "Server closed the connection during authentication." : event->detail);
+        if (event->type != transport::TransportEventType::Message)
+            continue;
+        if (event->message.messageType
+            != static_cast<std::uint16_t>(protocol::MessageType::AuthenticationResult))
+            return failConnection("Received an unexpected authentication message.");
+
+        security::AuthenticationResponse response;
+        if (!security::decodeAuthenticationResponse(event->message.payload, response))
+            return failConnection("Received an invalid authentication response.");
+        if (!response.authenticated())
+            return failConnection(response.message.empty()
+                    ? "Account authentication failed." : response.message);
+
+        getLocalPlayer()->guid = getLocalSystem()->guid
+            = RakNet::RakNetGUID(event->message.subject);
+        if (endpoint->advance(serverConnection, session::State::AccountAuthenticated,
+                transportError) != session::TransitionResult::Advanced)
+            return failConnection(transportError.detail.empty()
+                    ? "Failed to advance the authenticated account session."
+                    : transportError.detail);
+        return true;
+    }
+    return failConnection("Timed out during account authentication.");
+}
+
+bool Networking::requestSpawn()
+{
+    PlayerPacket* packet = getPlayerPacket(ID_LOADED);
+    packet->setPlayer(getLocalPlayer());
+    if (packet->Send() == 0)
+        return failConnection("Failed to send the spawn-ready message.");
+
+    const auto deadline = std::chrono::steady_clock::now() + std::chrono::seconds(30);
+    while (std::chrono::steady_clock::now() < deadline)
+    {
+        auto event = endpoint->poll(std::chrono::milliseconds(100));
+        if (!event)
+            continue;
+        if (event->type == transport::TransportEventType::Disconnected)
+            return failConnection(event->detail.empty()
+                    ? "Server closed the connection while spawning." : event->detail);
+        if (event->type != transport::TransportEventType::Message)
+            continue;
+
+        transport::ReceivedApplicationPacket application;
+        if (!receiveApplicationMessage(event->message, application)
+            || application.id != protocol::ApplicationPacketId::Loaded)
+            return failConnection("Received an invalid spawn response.");
+        transport::TransportError error;
+        if (endpoint->advance(serverConnection, session::State::Spawned, error)
+            != session::TransitionResult::Advanced)
+            return failConnection(error.detail.empty()
+                    ? "Failed to advance the spawned session." : error.detail);
+        return true;
+    }
+    return failConnection("Timed out while waiting for the spawn response.");
+}
+
+bool Networking::confirmServerFingerprint(std::string_view host, unsigned short port,
+    std::string_view fingerprint)
+{
+    const std::string message = "This is the first connection to " + std::string(host)
+        + ":" + std::to_string(port) + ".\n\nServer identity:\n"
+        + std::string(fingerprint)
+        + "\n\nOnly continue if this fingerprint is expected.";
+    const SDL_MessageBoxButtonData buttons[] = {
+        { SDL_MESSAGEBOX_BUTTON_ESCAPEKEY_DEFAULT, 0, "Cancel" },
+        { SDL_MESSAGEBOX_BUTTON_RETURNKEY_DEFAULT, 1, "Trust and connect" },
+    };
+    SDL_MessageBoxData box{};
+    box.flags = SDL_MESSAGEBOX_WARNING;
+    box.title = "TES3MP server identity";
+    box.message = message.c_str();
+    box.numbuttons = 2;
+    box.buttons = buttons;
+    int selected = 0;
+    return SDL_ShowMessageBox(&box, &selected) == 0 && selected == 1;
+}
+
+bool Networking::failConnection(std::string message)
+{
+    if (serverConnection)
+    {
+        dispatcher->removeConnection(serverConnection);
+        receiver.removeConnection(serverConnection);
+        endpoint->disconnect(serverConnection);
+    }
+    serverConnection = {};
+    connected = false;
+    lastError = std::move(message);
+    LOG_MESSAGE_SIMPLE(TimedLog::LOG_ERROR, "%s", lastError.c_str());
+    return false;
+}
+
+bool Networking::receiveApplicationMessage(const transport::TransportMessage& message,
+    transport::ReceivedApplicationPacket& packet)
+{
+    const auto result = receiver.receive(message, packet);
+    return result.status == transport::ApplicationReceiveStatus::Accepted;
+}
+
+void Networking::processTransportEvent(transport::TransportEvent event)
+{
+    switch (event.type)
+    {
+        case transport::TransportEventType::Connected:
+            break;
+        case transport::TransportEventType::TrustRequired:
+            failConnection("The server requested an unexpected trust confirmation.");
+            Main::get().getGUIController()->requestShowBrowser();
+            break;
+        case transport::TransportEventType::Disconnected:
+        {
+            dispatcher->removeConnection(event.connection);
+            receiver.removeConnection(event.connection);
+            serverConnection = {};
+            connected = false;
+            lastError = event.detail.empty() ? "Connection to server lost." : event.detail;
+            LOG_MESSAGE_SIMPLE(TimedLog::LOG_WARN, "%s", lastError.c_str());
+            Main::get().getGUIController()->requestShowBrowser();
+            break;
+        }
+        case transport::TransportEventType::Message:
+        {
+            transport::ReceivedApplicationPacket application;
+            if (!receiveApplicationMessage(event.message, application))
+            {
+                failConnection("Received an invalid protocol-11 application packet.");
+                Main::get().getGUIController()->requestShowBrowser();
+                return;
+            }
+            std::vector<unsigned char> frame;
+            protocol::CodecError codecError = protocol::CodecError::None;
+            if (!transport::buildLegacyPacketFrame(application, frame, codecError))
+            {
+                failConnection("Failed to adapt a protocol-11 application packet.");
+                Main::get().getGUIController()->requestShowBrowser();
+                return;
+            }
+            if (!Main::isPostInitDone())
+            {
+                if (pendingPackets.size() >= protocol::limits::defaultCollectionElements
+                    || frame.size() > protocol::limits::bulkTransferBytes - pendingPacketBytes)
+                {
+                    failConnection("Initial synchronization exceeded the bounded client queue.");
+                    Main::get().getGUIController()->requestShowBrowser();
+                    return;
+                }
+                pendingPacketBytes += frame.size();
+                pendingPackets.push_back(std::move(frame));
+            }
+            else
+            {
+                RakNet::Packet packet{};
+                packet.data = frame.data();
+                packet.length = static_cast<unsigned int>(frame.size());
+                packet.systemAddress = serverAddr;
+                packet.guid = RakNet::RakNetGUID(serverConnection.value);
+                receiveMessage(&packet);
+            }
+            break;
+        }
     }
 }
 
@@ -593,9 +743,14 @@ bool Networking::isConnected()
 
 void Networking::disconnect()
 {
-    if (connected)
+    if (serverConnection)
     {
-        peer->CloseConnection(serverAddr, true, 0);
-        connected = false;
+        dispatcher->removeConnection(serverConnection);
+        receiver.removeConnection(serverConnection);
+        endpoint->disconnect(serverConnection);
+        serverConnection = {};
     }
+    pendingPackets.clear();
+    pendingPacketBytes = 0;
+    connected = false;
 }

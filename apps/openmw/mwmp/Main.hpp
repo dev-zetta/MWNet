@@ -12,6 +12,7 @@ namespace mwmp
     class LocalSystem;
     class LocalPlayer;
     class Networking;
+    struct ClientConnectionOptions;
 
     class Main
     {
@@ -31,7 +32,8 @@ namespace mwmp
         static void frame(float dt);
 
         // Deferred connect: called by in-game server browser after init()
-        static bool connectTo(const std::string &host, unsigned short port);
+        static bool connectTo(const std::string& host, unsigned short port,
+            ClientConnectionOptions options);
         static bool isNewGamePending();
         static void clearNewGamePending();
         static bool isPostInitDone();
@@ -56,6 +58,10 @@ namespace mwmp
         static std::string resourceDir;
         static std::string address;
         static std::string serverPassword;
+        static std::string accountName;
+        static std::string accountPasswordFile;
+        static std::string trustedFingerprint;
+        static bool registerAccount;
         static std::vector<std::string> sContentFiles;
         static Files::Collections sFileCollections;
         static bool sNewGamePending;

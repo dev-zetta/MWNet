@@ -1,8 +1,10 @@
 #include <cstdlib>
+#include <fstream>
 
 #include <components/openmw-mp/Utils.hpp>
 #include <components/openmw-mp/TimedLog.hpp>
 #include <components/openmw-mp/Version.hpp>
+#include <components/openmw-mp/Protocol/ProtocolLimits.hpp>
 
 #include <components/esm3/esmwriter.hpp>
 #include <components/files/configurationmanager.hpp>
@@ -51,7 +53,11 @@ using namespace mwmp;
 
 Main *Main::pMain = 0;
 std::string Main::address = "";
-std::string Main::serverPassword = TES3MP_DEFAULT_PASSW;
+std::string Main::serverPassword;
+std::string Main::accountName;
+std::string Main::accountPasswordFile;
+std::string Main::trustedFingerprint;
+bool Main::registerAccount = false;
 std::string Main::resourceDir = "";
 std::vector<std::string> Main::sContentFiles;
 Files::Collections Main::sFileCollections;
@@ -117,15 +123,69 @@ void Main::optionsDesc(boost::program_options::options_description *desc)
     desc->add_options()
             ("connect", bpo::value<std::string>()->default_value(""),
                         "connect to server (e.g. --connect=127.0.0.1:25565)")
-            ("password", bpo::value<std::string>()->default_value(TES3MP_DEFAULT_PASSW),
-                        "сonnect to a secured server. (e.g. --password=AnyPassword");
+            ("password", bpo::value<std::string>()->default_value(""),
+                        "server access password")
+            ("account", bpo::value<std::string>()->default_value(""),
+                        "protocol-11 account name")
+            ("account-password-file", bpo::value<std::string>()->default_value(""),
+                        "read the account password from a file")
+            ("register-account", bpo::bool_switch()->default_value(false),
+                        "register the protocol-11 account on first connection")
+            ("trust-fingerprint", bpo::value<std::string>()->default_value(""),
+                        "require this server identity fingerprint");
 }
 
 void Main::configure(const boost::program_options::variables_map &variables)
 {
     Main::address = variables["connect"].as<std::string>();
     Main::serverPassword = variables["password"].as<std::string>();
+    Main::accountName = variables["account"].as<std::string>();
+    Main::accountPasswordFile = variables["account-password-file"].as<std::string>();
+    Main::registerAccount = variables["register-account"].as<bool>();
+    Main::trustedFingerprint = variables["trust-fingerprint"].as<std::string>();
     resourceDir = variables["resources"].as<Files::MaybeQuotedPath>().string();
+}
+
+namespace
+{
+    bool readAccountPassword(const std::string& path, std::string& password, std::string& error)
+    {
+        error.clear();
+        if (path.empty())
+        {
+            error = "An account password is required. Use the direct-connect screen or --account-password-file.";
+            return false;
+        }
+        std::ifstream input(path, std::ios::binary);
+        if (!input)
+        {
+            error = "Could not open the account password file.";
+            return false;
+        }
+        std::getline(input, password);
+        if (!password.empty() && password.back() == '\r')
+            password.pop_back();
+        if (password.empty() || password.size() > protocol::limits::passwordBytes)
+        {
+            error = "The account password file must contain between 1 and 128 bytes.";
+            return false;
+        }
+        return true;
+    }
+
+    ClientConnectionOptions commandLineConnectionOptions(const std::string& accountName,
+        const std::string& accountPasswordFile, const std::string& serverPassword,
+        bool registerAccount, const std::string& trustedFingerprint, std::string& error)
+    {
+        ClientConnectionOptions options;
+        options.accountName = accountName;
+        options.serverAccessPassword = serverPassword;
+        options.registerAccount = registerAccount;
+        if (!trustedFingerprint.empty())
+            options.trustedFingerprint = trustedFingerprint;
+        readAccountPassword(accountPasswordFile, options.accountPassword, error);
+        return options;
+    }
 }
 
 bool Main::init(std::vector<std::string> &content, Files::Collections &collections)
@@ -139,18 +199,10 @@ bool Main::init(std::vector<std::string> &content, Files::Collections &collectio
     auto safeGetInt = [](std::string_view key, std::string_view cat, int def) {
         try { return Settings::Manager::getInt(key, cat); } catch (...) { return def; }
     };
-    auto safeGetStr = [](std::string_view key, std::string_view cat, std::string def) {
-        try { return Settings::Manager::getString(key, cat); } catch (...) { return def; }
-    };
-
     int logLevel = safeGetInt("logLevel", "General", 5);
     TimedLog::SetLevel(logLevel);
     sContentFiles    = content;
     sFileCollections = collections;
-
-    serverPassword = safeGetStr("password", "General", "");
-    if (serverPassword.empty())
-        serverPassword = TES3MP_DEFAULT_PASSW;
 
     if (address.empty())
     {
@@ -160,7 +212,7 @@ bool Main::init(std::vector<std::string> &content, Files::Collections &collectio
             No --connect CLI arg provided: skip connecting here and let
             the in-game server browser handle it via connectTo().
         */
-        get().mLocalSystem->serverPassword = serverPassword;
+        get().mLocalSystem->serverPassword.clear();
         return true;
         /* End of tes3mp change (major) */
     }
@@ -168,19 +220,29 @@ bool Main::init(std::vector<std::string> &content, Files::Collections &collectio
     size_t delimPos = address.find(':');
     pMain->server = address.substr(0, delimPos);
     pMain->port = atoi(address.substr(delimPos + 1).c_str());
-    get().mLocalSystem->serverPassword = serverPassword;
-
-    pMain->mNetworking->connect(pMain->server, pMain->port, content, collections);
+    get().mLocalSystem->serverPassword.clear();
+    std::string credentialError;
+    auto connectionOptions = commandLineConnectionOptions(accountName,
+        accountPasswordFile, serverPassword, registerAccount, trustedFingerprint,
+        credentialError);
+    if (!credentialError.empty())
+    {
+        pMain->mNetworking->setLastError(credentialError);
+        return false;
+    }
+    pMain->mNetworking->connect(pMain->server, pMain->port, content, collections,
+        std::move(connectionOptions));
 
     return pMain->mNetworking->isConnected();
 }
 
-bool Main::connectTo(const std::string &host, unsigned short port)
+bool Main::connectTo(const std::string& host, unsigned short port,
+    ClientConnectionOptions options)
 {
     assert(pMain);
     pMain->server = host;
     pMain->port   = port;
-    get().mLocalSystem->serverPassword = serverPassword;
+    get().mLocalSystem->serverPassword.clear();
     // Reset per-connection flags so post-init and world-init run again
     pMain->mPostInitDone = false;
     pMain->mWorldInitDone = false;
@@ -189,7 +251,8 @@ bool Main::connectTo(const std::string &host, unsigned short port)
     pMain->mLocalPlayer->charGenState.currentStage = 0;
     pMain->mLocalPlayer->charGenState.endStage = 1;
     pMain->mLocalPlayer->charGenState.isFinished = false;
-    pMain->mNetworking->connect(host, port, sContentFiles, sFileCollections);
+    pMain->mNetworking->connect(host, port, sContentFiles, sFileCollections,
+        std::move(options));
     bool connected = pMain->mNetworking->isConnected();
     if (connected)
         sNewGamePending = true;
@@ -306,9 +369,7 @@ void Main::updateWorld(float dt) const
         LOG_MESSAGE_SIMPLE(TimedLog::LOG_INFO, "Sending ID_PLAYER_BASEINFO to server");
 
         mNetworking->getPlayerPacket(ID_PLAYER_BASEINFO)->setPlayer(getLocalPlayer());
-        mNetworking->getPlayerPacket(ID_LOADED)->setPlayer(getLocalPlayer());
         mNetworking->getPlayerPacket(ID_PLAYER_BASEINFO)->Send();
-        mNetworking->getPlayerPacket(ID_LOADED)->Send();
         mLocalPlayer->updateStatsDynamic(true);
         get().getGUIController()->setChatVisible(true);
     }
