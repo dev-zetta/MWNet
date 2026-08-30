@@ -13,8 +13,6 @@ void WorldstateProcessor::Do(WorldstatePacket &packet, Player &player, BaseWorld
 
 bool WorldstateProcessor::Process(RakNet::Packet &packet, BaseWorldstate &worldstate) noexcept
 {
-    worldstate.guid = packet.guid;
-
     for (auto &processor : processors)
     {
         if (processor.first == packet.data[0])
@@ -24,17 +22,28 @@ bool WorldstateProcessor::Process(RakNet::Packet &packet, BaseWorldstate &worlds
                 return true;
             WorldstatePacket *myPacket = Networking::get().getWorldstatePacketController()->GetPacket(packet.data[0]);
 
-            myPacket->setWorldstate(&worldstate);
-            worldstate.isValid = true;
-
             if (!processor.second->avoidReading)
+            {
+                BaseWorldstate decoded = worldstate;
+                decoded.guid = packet.guid;
+                decoded.isValid = true;
+                myPacket->setWorldstate(&decoded);
                 myPacket->Read();
-
-            if (worldstate.isValid && (processor.second->avoidReading || myPacket->isPacketValid()))
-                processor.second->Do(*myPacket, *player, worldstate);
+                if (!decoded.isValid || !myPacket->isPacketValid())
+                {
+                    LOG_MESSAGE_SIMPLE(TimedLog::LOG_ERROR, "Received %s that failed integrity check and was ignored!", processor.second->strPacketID.c_str());
+                    return true;
+                }
+                worldstate = std::move(decoded);
+            }
             else
-                LOG_MESSAGE_SIMPLE(TimedLog::LOG_ERROR, "Received %s that failed integrity check and was ignored!", processor.second->strPacketID.c_str());
-            
+            {
+                worldstate.guid = packet.guid;
+                worldstate.isValid = true;
+            }
+
+            myPacket->setWorldstate(&worldstate);
+            processor.second->Do(*myPacket, *player, worldstate);
             return true;
         }
     }

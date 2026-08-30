@@ -10,6 +10,10 @@ void mwmp::PacketPlayerCharGen::Packet(RakNet::BitStream *newBitstream, bool sen
 {
     PlayerPacket::Packet(newBitstream, send);
 
-    RW(player->charGenState, send);
-
+    BasePlayer::CharGenState decoded = player->charGenState;
+    auto& target = send ? player->charGenState : decoded;
+    if (!RW(target.currentStage, send) || !RW(target.endStage, send) || !RW(target.isFinished, send))
+        return;
+    if (!send)
+        player->charGenState = decoded;
 }

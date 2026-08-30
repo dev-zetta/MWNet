@@ -1,15 +1,22 @@
 #ifndef OPENMW_BASEPACKET_HPP
 #define OPENMW_BASEPACKET_HPP
 
-#include <algorithm>
+#include <array>
+#include <cstdint>
+#include <optional>
+#include <span>
 #include <string>
 #include <type_traits>
 #include <utility>
+#include <variant>
 #include <RakNetTypes.h>
 #include <BitStream.h>
 #include <PacketPriority.h>
 #include <components/esm/path.hpp>
+#include <components/esm/position.hpp>
 #include <components/esm/refid.hpp>
+#include <components/esm3/loadcell.hpp>
+#include <components/esm3/statstate.hpp>
 #include <components/openmw-mp/Protocol/PacketCodec.hpp>
 
 
@@ -37,7 +44,7 @@ namespace mwmp
 
         static inline uint32_t headerSize()
         {
-            return static_cast<uint32_t>(1 + RakNet::RakNetGUID::size()); // packetID + RakNetGUID (uint64_t)
+            return 1U + sizeof(std::uint64_t);
         }
 
         uint8_t GetPacketID() const
@@ -56,77 +63,264 @@ namespace mwmp
         }
 
     protected:
-        template<class templateType>
-        bool RW(templateType &data, uint32_t size, bool write)
+        template <class>
+        static constexpr bool unsupportedPacketType = false;
+
+        template<class Value>
+        bool RW(Value& data, bool write, bool compress = false)
         {
-            if (!packetValid || bs == nullptr)
+            (void)compress;
+            if (!packetValid)
                 return false;
 
-            if (write)
+            using Type = std::remove_cv_t<Value>;
+            if constexpr (std::is_same_v<Type, bool>)
             {
-                bs->Write(data, size);
+                bool decoded = false;
+                if (write)
+                    return writeResult(mWriter && mWriter->writeBool(data));
+                if (!readResult(mReader && mReader->readBool(decoded)))
+                    return false;
+                data = decoded;
                 return true;
             }
-
-            if (!bs->Read(data, size))
-                return invalidate(protocol::CodecError::Truncated);
-            return true;
-        }
-
-        template<class templateType>
-        bool RW(templateType &data, bool write, bool compress = 0)
-        {
-            if (!packetValid || bs == nullptr)
-                return false;
-
-            if (write)
+            else if constexpr (std::is_enum_v<Type>)
             {
-                if (compress)
-                    bs->WriteCompressed(data);
+                using Underlying = std::underlying_type_t<Type>;
+                Underlying value = static_cast<Underlying>(data);
+                if (!RW(value, write))
+                    return false;
+                if (!write)
+                    data = static_cast<Type>(value);
+                return true;
+            }
+            else if constexpr (std::is_integral_v<Type>)
+            {
+                bool result = false;
+                if constexpr (std::is_signed_v<Type>)
+                {
+                    if constexpr (sizeof(Type) == sizeof(std::int8_t))
+                    {
+                        std::int8_t decoded = 0;
+                        result = write ? mWriter && mWriter->writeI8(static_cast<std::int8_t>(data))
+                                       : mReader && mReader->readI8(decoded);
+                        if (result && !write)
+                            data = static_cast<Type>(decoded);
+                    }
+                    else if constexpr (sizeof(Type) == sizeof(std::int16_t))
+                    {
+                        std::int16_t decoded = 0;
+                        result = write ? mWriter && mWriter->writeI16(static_cast<std::int16_t>(data))
+                                       : mReader && mReader->readI16(decoded);
+                        if (result && !write)
+                            data = static_cast<Type>(decoded);
+                    }
+                    else if constexpr (sizeof(Type) == sizeof(std::int32_t))
+                    {
+                        std::int32_t decoded = 0;
+                        result = write ? mWriter && mWriter->writeI32(static_cast<std::int32_t>(data))
+                                       : mReader && mReader->readI32(decoded);
+                        if (result && !write)
+                            data = static_cast<Type>(decoded);
+                    }
+                    else if constexpr (sizeof(Type) == sizeof(std::int64_t))
+                    {
+                        std::int64_t decoded = 0;
+                        result = write ? mWriter && mWriter->writeI64(static_cast<std::int64_t>(data))
+                                       : mReader && mReader->readI64(decoded);
+                        if (result && !write)
+                            data = static_cast<Type>(decoded);
+                    }
+                    else
+                        static_assert(unsupportedPacketType<Type>, "unsupported signed packet integer width");
+                }
                 else
-                    bs->Write(data);
+                {
+                    if constexpr (sizeof(Type) == sizeof(std::uint8_t))
+                    {
+                        std::uint8_t decoded = 0;
+                        result = write ? mWriter && mWriter->writeU8(static_cast<std::uint8_t>(data))
+                                       : mReader && mReader->readU8(decoded);
+                        if (result && !write)
+                            data = static_cast<Type>(decoded);
+                    }
+                    else if constexpr (sizeof(Type) == sizeof(std::uint16_t))
+                    {
+                        std::uint16_t decoded = 0;
+                        result = write ? mWriter && mWriter->writeU16(static_cast<std::uint16_t>(data))
+                                       : mReader && mReader->readU16(decoded);
+                        if (result && !write)
+                            data = static_cast<Type>(decoded);
+                    }
+                    else if constexpr (sizeof(Type) == sizeof(std::uint32_t))
+                    {
+                        std::uint32_t decoded = 0;
+                        result = write ? mWriter && mWriter->writeU32(static_cast<std::uint32_t>(data))
+                                       : mReader && mReader->readU32(decoded);
+                        if (result && !write)
+                            data = static_cast<Type>(decoded);
+                    }
+                    else if constexpr (sizeof(Type) == sizeof(std::uint64_t))
+                    {
+                        std::uint64_t decoded = 0;
+                        result = write ? mWriter && mWriter->writeU64(static_cast<std::uint64_t>(data))
+                                       : mReader && mReader->readU64(decoded);
+                        if (result && !write)
+                            data = static_cast<Type>(decoded);
+                    }
+                    else
+                        static_assert(unsupportedPacketType<Type>, "unsupported unsigned packet integer width");
+                }
+                if (!(write ? writeResult(result) : readResult(result)))
+                    return false;
+                return true;
+            }
+            else if constexpr (std::is_same_v<Type, float>)
+            {
+                float decoded = 0.f;
+                const bool result = write ? mWriter && mWriter->writeFloat(data)
+                                          : mReader && mReader->readFloat(decoded);
+                if (!(write ? writeResult(result) : readResult(result)))
+                    return false;
+                if (!write)
+                    data = decoded;
+                return true;
+            }
+            else if constexpr (std::is_same_v<Type, double>)
+            {
+                double decoded = 0.0;
+                const bool result = write ? mWriter && mWriter->writeDouble(data)
+                                          : mReader && mReader->readDouble(decoded);
+                if (!(write ? writeResult(result) : readResult(result)))
+                    return false;
+                if (!write)
+                    data = decoded;
+                return true;
+            }
+            else if constexpr (std::is_array_v<Type>)
+            {
+                using Element = std::remove_extent_t<Type>;
+                constexpr std::size_t count = std::extent_v<Type>;
+                std::array<Element, count> decoded{};
+                for (std::size_t index = 0; index < count; ++index)
+                {
+                    Element& value = write ? data[index] : decoded[index];
+                    if (!RW(value, write))
+                        return false;
+                }
+                if (!write)
+                {
+                    for (std::size_t index = 0; index < count; ++index)
+                        data[index] = std::move(decoded[index]);
+                }
                 return true;
             }
             else
-            {
-                templateType decoded{};
-                bool result = false;
-                if (compress)
-                    result = bs->ReadCompressed(decoded);
-                else
-                    result = bs->Read(decoded);
-                if (!result)
-                    return invalidate(protocol::CodecError::Truncated);
-                if constexpr (std::is_array_v<templateType>)
-                    std::copy_n(decoded, std::extent_v<templateType>, data);
-                else
-                    data = std::move(decoded);
-                return true;
-            }
+                static_assert(unsupportedPacketType<Type>,
+                    "packet structs must serialize each field explicitly");
         }
 
-        bool RW(bool &data, bool write)
+        template <class Value, std::size_t Count>
+        bool RW(std::array<Value, Count>& value, bool write, bool compress = false)
         {
-            if (!packetValid || bs == nullptr)
-                return false;
-
-            if (write)
+            (void)compress;
+            std::array<Value, Count> decoded = value;
+            auto& target = write ? value : decoded;
+            for (auto& element : target)
             {
-                bs->Write(data);
-                return true;
+                if (!RW(element, write))
+                    return false;
             }
+            if (!write)
+                value = std::move(decoded);
+            return true;
+        }
 
-            bool decoded = false;
-            if (!bs->Read(decoded))
-                return invalidate(protocol::CodecError::Truncated);
-            data = decoded;
+        bool RW(RakNet::RakNetGUID& value, bool write, bool compress = false);
+
+        bool RW(ESM::Cell::DATAstruct& value, bool write, bool compress = false)
+        {
+            (void)compress;
+            ESM::Cell::DATAstruct decoded = value;
+            auto& target = write ? value : decoded;
+            if (!RW(target.mFlags, write) || !RW(target.mX, write) || !RW(target.mY, write))
+                return false;
+            if (!write)
+                value = decoded;
+            return true;
+        }
+
+        bool RW(ESM::Position& value, bool write, bool compress = false)
+        {
+            (void)compress;
+            ESM::Position decoded = value;
+            auto& target = write ? value : decoded;
+            if (!RW(target.pos, write) || !RW(target.rot, write))
+                return false;
+            if (!write)
+                value = decoded;
+            return true;
+        }
+
+        template <class Value>
+        bool RW(ESM::StatState<Value>& value, bool write, bool compress = false)
+        {
+            (void)compress;
+            ESM::StatState<Value> decoded = value;
+            auto& target = write ? value : decoded;
+            if (!RW(target.mBase, write) || !RW(target.mMod, write) || !RW(target.mCurrent, write)
+                || !RW(target.mDamage, write) || !RW(target.mProgress, write))
+                return false;
+            if (!write)
+                value = decoded;
+            return true;
+        }
+
+        bool RW(ESM::FormId& value, bool write, bool compress = false)
+        {
+            (void)compress;
+            ESM::FormId decoded = value;
+            auto& target = write ? value : decoded;
+            if (!RW(target.mIndex, write) || !RW(target.mContentFile, write))
+                return false;
+            if (!write)
+                value = decoded;
+            return true;
+        }
+
+        bool RW(std::variant<ESM::RefId, ESM::FormId>& value, bool write, bool compress = false)
+        {
+            (void)compress;
+            std::uint8_t alternative = write && std::holds_alternative<ESM::FormId>(value) ? 1U : 0U;
+            if (!RW(alternative, write))
+                return false;
+            if (alternative > 1U)
+                return invalidate(protocol::CodecError::InvalidValue);
+
+            std::variant<ESM::RefId, ESM::FormId> decoded;
+            if (alternative == 0U)
+            {
+                ESM::RefId refId = write ? std::get<ESM::RefId>(value) : ESM::RefId{};
+                if (!RW(refId, write))
+                    return false;
+                decoded = std::move(refId);
+            }
+            else
+            {
+                ESM::FormId formId = write ? std::get<ESM::FormId>(value) : ESM::FormId{};
+                if (!RW(formId, write))
+                    return false;
+                decoded = formId;
+            }
+            if (!write)
+                value = std::move(decoded);
             return true;
         }
 
         bool RWCount(std::uint32_t& count, bool write,
             std::uint32_t maximum = protocol::limits::defaultCollectionElements)
         {
-            if (!packetValid || bs == nullptr)
+            if (!packetValid)
                 return false;
 
             if (write && count > maximum)
@@ -142,7 +336,7 @@ namespace mwmp
 
         bool RW(std::string &str, bool write, bool compress = false, std::string::size_type maxSize = maxStrSize)
         {
-            if (!packetValid || bs == nullptr)
+            if (!packetValid)
                 return false;
 
             if (write)
@@ -150,29 +344,14 @@ namespace mwmp
                 if (str.size() > maxSize || !protocol::isValidUtf8(std::as_bytes(std::span(str))))
                     return invalidate(str.size() > maxSize ? protocol::CodecError::LimitExceeded
                                                           : protocol::CodecError::InvalidUtf8);
-                if (compress)
-                    RakNet::RakString::SerializeCompressed(str.c_str(), bs);
-                else
-                {
-                    RakNet::RakString rstr;
-                    rstr.AppendBytes(str.c_str(), str.size());
-                    bs->Write(rstr);
-                }
-                return true;
+                (void)compress;
+                return writeResult(mWriter && mWriter->writeString(str, maxSize));
             }
 
-            RakNet::RakString rstr;
-            const bool result = compress ? rstr.DeserializeCompressed(bs) : bs->Read(rstr);
-            if (!result)
-                return invalidate(protocol::CodecError::Truncated);
-            if (rstr.GetLength() > maxSize)
-                return invalidate(protocol::CodecError::LimitExceeded);
-
-            const auto encoded = std::as_bytes(std::span(rstr.C_String(), rstr.GetLength()));
-            if (!protocol::isValidUtf8(encoded))
-                return invalidate(protocol::CodecError::InvalidUtf8);
-
-            str.assign(rstr.C_String(), rstr.GetLength());
+            std::string decoded;
+            if (!readResult(mReader && mReader->readString(decoded, maxSize)))
+                return false;
+            str = std::move(decoded);
             return true;
         }
 
@@ -217,11 +396,18 @@ namespace mwmp
             return false;
         }
 
+        bool writeResult(bool result);
+        bool readResult(bool result);
+        bool finishWrite();
+        bool finishRead();
+
         uint8_t packetID;
         PacketReliability reliability;
         PacketPriority priority;
         int8_t orderChannel;
         RakNet::BitStream *bsRead, *bsSend, *bs;
+        std::optional<protocol::PacketReader> mReader;
+        std::optional<protocol::PacketWriter> mWriter;
         RakNet::RakPeerInterface *peer;
         RakNet::RakNetGUID guid;
         bool packetValid;

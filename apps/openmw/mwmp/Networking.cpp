@@ -480,7 +480,8 @@ void Networking::preInit(std::vector<std::string> &content, Files::Collections &
                 }
                 bsIn.IgnoreBytes((unsigned) RakNet::RakNetGUID::size());
                 packetPreInit.setChecksums(&checksumsResponse);
-                packetPreInit.Packet(&bsIn, false);
+                packetPreInit.SetReadStream(&bsIn);
+                packetPreInit.Read();
                 if (!packetPreInit.isPacketValid())
                     connected = false;
                 done = true;

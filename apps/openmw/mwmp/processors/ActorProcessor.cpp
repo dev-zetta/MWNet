@@ -18,13 +18,12 @@ bool ActorProcessor::Process(RakNet::Packet &packet, ActorList &actorList)
         return false;
 
     RakNet::BitStream bsIn(&packet.data[1], packet.length - 1, false);
-    if (!bsIn.Read(guid))
+    std::uint64_t guidValue = 0;
+    if (!bsIn.Read(guidValue))
         return false;
-    actorList.guid = guid;
+    guid = RakNet::RakNetGUID(guidValue);
 
     ActorPacket *myPacket = Main::get().getNetworking()->getActorPacket(packet.data[0]);
-
-    myPacket->setActorList(&actorList);
     myPacket->SetReadStream(&bsIn);
 
     for (auto &processor : processors)
@@ -34,18 +33,28 @@ bool ActorProcessor::Process(RakNet::Packet &packet, ActorList &actorList)
             myGuid = Main::get().getLocalPlayer()->guid;
             request = packet.length == myPacket->headerSize();
 
-            actorList.isValid = true;
-
             if (!request && !processor.second->avoidReading)
             {
+                BaseActorList decoded;
+                decoded.guid = guid;
+                decoded.isValid = true;
+                myPacket->setActorList(&decoded);
                 myPacket->Read();
+                if (!decoded.isValid || !myPacket->isPacketValid())
+                {
+                    LOG_MESSAGE_SIMPLE(TimedLog::LOG_ERROR, "Received %s that failed integrity check and was ignored!", processor.second->strPacketID.c_str());
+                    return true;
+                }
+                static_cast<BaseActorList&>(actorList) = std::move(decoded);
+            }
+            else
+            {
+                actorList.guid = guid;
+                actorList.isValid = true;
             }
 
-            if (actorList.isValid && (processor.second->avoidReading || request || myPacket->isPacketValid()))
-                processor.second->Do(*myPacket, actorList);
-            else
-                LOG_MESSAGE_SIMPLE(TimedLog::LOG_ERROR, "Received %s that failed integrity check and was ignored!", processor.second->strPacketID.c_str());
-
+            myPacket->setActorList(&actorList);
+            processor.second->Do(*myPacket, actorList);
             return true;
         }
     }

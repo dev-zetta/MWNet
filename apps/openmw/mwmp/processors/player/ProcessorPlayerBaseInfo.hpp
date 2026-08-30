@@ -38,11 +38,8 @@ namespace mwmp
 
                 if (player == nullptr)
                 {
-                    LOG_APPEND(TimedLog::LOG_INFO, "- Exchanging data with new player");
-                    player = PlayerList::newPlayer(guid);
-
-                    packet.setPlayer(player);
-                    packet.Read();
+                    LOG_APPEND(TimedLog::LOG_ERROR, "- Ignoring base info without a decoded player");
+                    return;
                 }
 
                 static_cast<DedicatedPlayer*>(player)->setBaseInfo();

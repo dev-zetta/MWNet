@@ -18,8 +18,10 @@ bool PlayerProcessor::Process(RakNet::Packet &packet)
         return false;
 
     RakNet::BitStream bsIn(&packet.data[1], packet.length - 1, false);
-    if (!bsIn.Read(guid))
+    std::uint64_t guidValue = 0;
+    if (!bsIn.Read(guidValue))
         return false;
+    guid = RakNet::RakNetGUID(guidValue);
 
     PlayerPacket *myPacket = Main::get().getNetworking()->getPlayerPacket(packet.data[0]);
     myPacket->SetReadStream(&bsIn);
@@ -42,9 +44,10 @@ bool PlayerProcessor::Process(RakNet::Packet &packet)
             else
                 player = Main::get().getLocalPlayer();
 
-            if (!request && !processor.second->avoidReading && player != nullptr)
+            if (!request && !processor.second->avoidReading)
             {
-                myPacket->setPlayer(player);
+                BasePlayer validation(guid);
+                myPacket->setPlayer(&validation);
                 myPacket->Read();
                 if (!myPacket->isPacketValid())
                 {
@@ -52,8 +55,16 @@ bool PlayerProcessor::Process(RakNet::Packet &packet)
                         processor.second->strPacketID.c_str());
                     return true;
                 }
+                if (player == nullptr)
+                    player = PlayerList::newPlayer(guid);
+                myPacket->setPlayer(player);
+                myPacket->Read();
+                if (!myPacket->isPacketValid())
+                    return true;
             }
 
+            if (player != nullptr)
+                myPacket->setPlayer(player);
             processor.second->Do(*myPacket, player);
             return true;
         }

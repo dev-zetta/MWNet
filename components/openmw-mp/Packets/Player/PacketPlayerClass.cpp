@@ -17,7 +17,6 @@ namespace
         std::int32_t mServices;
     };
 
-    static_assert(sizeof(LegacyClassData) == 60);
 }
 
 mwmp::PacketPlayerClass::PacketPlayerClass(RakNet::RakPeerInterface *peer) : PlayerPacket(peer)
@@ -49,7 +48,23 @@ void mwmp::PacketPlayerClass::Packet(RakNet::BitStream *newBitstream, bool send)
             data.mServices = player->charClass.mData.mServices;
         }
 
-        RW(data, send, true);
+        for (auto& attribute : data.mAttributes)
+        {
+            if (!RW(attribute, send))
+                return;
+        }
+        if (!RW(data.mSpecialization, send))
+            return;
+        for (auto& skillPair : data.mSkills)
+        {
+            for (auto& skill : skillPair)
+            {
+                if (!RW(skill, send))
+                    return;
+            }
+        }
+        if (!RW(data.mIsPlayable, send) || !RW(data.mServices, send))
+            return;
 
         if (!send)
         {

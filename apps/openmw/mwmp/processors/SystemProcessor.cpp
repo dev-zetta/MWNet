@@ -18,8 +18,10 @@ bool SystemProcessor::Process(RakNet::Packet &packet)
         return false;
 
     RakNet::BitStream bsIn(&packet.data[1], packet.length - 1, false);
-    if (!bsIn.Read(guid))
+    std::uint64_t guidValue = 0;
+    if (!bsIn.Read(guidValue))
         return false;
+    guid = RakNet::RakNetGUID(guidValue);
 
     SystemPacket *myPacket = Main::get().getNetworking()->getSystemPacket(packet.data[0]);
     myPacket->SetReadStream(&bsIn);
@@ -41,7 +43,8 @@ bool SystemProcessor::Process(RakNet::Packet &packet)
 
             if (!request && !processor.second->avoidReading && system != 0)
             {
-                myPacket->setSystem(system);
+                BaseSystem decoded = *system;
+                myPacket->setSystem(&decoded);
                 myPacket->Read();
                 if (!myPacket->isPacketValid())
                 {
@@ -49,8 +52,11 @@ bool SystemProcessor::Process(RakNet::Packet &packet)
                         processor.second->strPacketID.c_str());
                     return true;
                 }
+                *system = std::move(decoded);
             }
 
+            if (system != nullptr)
+                myPacket->setSystem(system);
             processor.second->Do(*myPacket, system);
             return true;
         }

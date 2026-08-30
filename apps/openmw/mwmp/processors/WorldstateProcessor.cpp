@@ -19,13 +19,12 @@ bool WorldstateProcessor::Process(RakNet::Packet &packet, Worldstate &worldstate
         return false;
 
     RakNet::BitStream bsIn(&packet.data[1], packet.length - 1, false);
-    if (!bsIn.Read(guid))
+    std::uint64_t guidValue = 0;
+    if (!bsIn.Read(guidValue))
         return false;
-    worldstate.guid = guid;
+    guid = RakNet::RakNetGUID(guidValue);
 
     WorldstatePacket *myPacket = Main::get().getNetworking()->getWorldstatePacket(packet.data[0]);
-
-    myPacket->setWorldstate(&worldstate);
     myPacket->SetReadStream(&bsIn);
 
     for (auto &processor : processors)
@@ -35,16 +34,28 @@ bool WorldstateProcessor::Process(RakNet::Packet &packet, Worldstate &worldstate
             myGuid = Main::get().getLocalPlayer()->guid;
             request = packet.length == myPacket->headerSize();
 
-            worldstate.isValid = true;
-
             if (!request && !processor.second->avoidReading)
+            {
+                BaseWorldstate decoded = worldstate;
+                decoded.guid = guid;
+                decoded.isValid = true;
+                myPacket->setWorldstate(&decoded);
                 myPacket->Read();
-
-            if (worldstate.isValid && (processor.second->avoidReading || request || myPacket->isPacketValid()))
-                processor.second->Do(*myPacket, worldstate);
+                if (!decoded.isValid || !myPacket->isPacketValid())
+                {
+                    LOG_MESSAGE_SIMPLE(TimedLog::LOG_ERROR, "Received %s that failed integrity check and was ignored!", processor.second->strPacketID.c_str());
+                    return true;
+                }
+                static_cast<BaseWorldstate&>(worldstate) = std::move(decoded);
+            }
             else
-                LOG_MESSAGE_SIMPLE(TimedLog::LOG_ERROR, "Received %s that failed integrity check and was ignored!", processor.second->strPacketID.c_str());
+            {
+                worldstate.guid = guid;
+                worldstate.isValid = true;
+            }
 
+            myPacket->setWorldstate(&worldstate);
+            processor.second->Do(*myPacket, worldstate);
             return true;
         }
     }

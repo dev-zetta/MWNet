@@ -16,18 +16,25 @@ bool PlayerProcessor::Process(RakNet::Packet &packet) noexcept
             if (player == nullptr)
                 return true;
             PlayerPacket *myPacket = Networking::get().getPlayerPacketController()->GetPacket(packet.data[0]);
-            myPacket->setPlayer(player);
 
             if (!processor.second->avoidReading)
-                myPacket->Read();
-
-            if (!processor.second->avoidReading && !myPacket->isPacketValid())
             {
-                LOG_MESSAGE_SIMPLE(TimedLog::LOG_ERROR, "Received %s that failed decoding and was ignored!",
-                    processor.second->strPacketID.c_str());
-                return true;
+                BasePlayer validation(packet.guid);
+                myPacket->setPlayer(&validation);
+                myPacket->Read();
+                if (!myPacket->isPacketValid())
+                {
+                    LOG_MESSAGE_SIMPLE(TimedLog::LOG_ERROR, "Received %s that failed decoding and was ignored!",
+                        processor.second->strPacketID.c_str());
+                    return true;
+                }
+                myPacket->setPlayer(player);
+                myPacket->Read();
+                if (!myPacket->isPacketValid())
+                    return true;
             }
 
+            myPacket->setPlayer(player);
             processor.second->Do(*myPacket, *player);
             return true;
         }

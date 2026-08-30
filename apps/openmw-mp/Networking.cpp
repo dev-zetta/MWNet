@@ -99,12 +99,21 @@ void Networking::processSystemPacket(RakNet::Packet *packet)
 
     if (packet->data[0] == ID_SYSTEM_HANDSHAKE)
     {
-        myPacket->setSystem(&baseSystem);
+        BaseSystem validation;
+        myPacket->setSystem(&validation);
         myPacket->Read();
 
         if (!myPacket->isPacketValid())
         {
             LOG_MESSAGE_SIMPLE(TimedLog::LOG_ERROR, "Invalid handshake packet from client at %s", packet->systemAddress.ToString());
+            kickPlayer(player->guid);
+            return;
+        }
+
+        myPacket->setSystem(&baseSystem);
+        myPacket->Read();
+        if (!myPacket->isPacketValid())
+        {
             kickPlayer(player->guid);
             return;
         }
@@ -177,12 +186,20 @@ void Networking::processPlayerPacket(RakNet::Packet *packet)
     {
         LOG_MESSAGE_SIMPLE(TimedLog::LOG_INFO, "Received ID_PLAYER_BASEINFO about %s", player->npc.mName.c_str());
 
-        myPacket->setPlayer(player);
+        BasePlayer validation(packet->guid);
+        myPacket->setPlayer(&validation);
         myPacket->Read();
         if (!myPacket->isPacketValid())
         {
             LOG_MESSAGE_SIMPLE(TimedLog::LOG_ERROR, "Invalid ID_PLAYER_BASEINFO packet from client at %s",
                 packet->systemAddress.ToString());
+            kickPlayer(player->guid);
+            return;
+        }
+        myPacket->setPlayer(player);
+        myPacket->Read();
+        if (!myPacket->isPacketValid())
+        {
             kickPlayer(player->guid);
             return;
         }

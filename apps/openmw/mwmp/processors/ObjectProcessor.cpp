@@ -19,13 +19,12 @@ bool ObjectProcessor::Process(RakNet::Packet &packet, ObjectList &objectList)
         return false;
 
     RakNet::BitStream bsIn(&packet.data[1], packet.length - 1, false);
-    if (!bsIn.Read(guid))
+    std::uint64_t guidValue = 0;
+    if (!bsIn.Read(guidValue))
         return false;
-    objectList.guid = guid;
+    guid = RakNet::RakNetGUID(guidValue);
 
     ObjectPacket *myPacket = Main::get().getNetworking()->getObjectPacket(packet.data[0]);
-
-    myPacket->setObjectList(&objectList);
     myPacket->SetReadStream(&bsIn);
 
     for (auto &processor: processors)
@@ -35,16 +34,28 @@ bool ObjectProcessor::Process(RakNet::Packet &packet, ObjectList &objectList)
             myGuid = Main::get().getLocalPlayer()->guid;
             request = packet.length == myPacket->headerSize();
 
-            objectList.isValid = true;
-
             if (!request && !processor.second->avoidReading)
+            {
+                BaseObjectList decoded;
+                decoded.guid = guid;
+                decoded.isValid = true;
+                myPacket->setObjectList(&decoded);
                 myPacket->Read();
-
-            if (objectList.isValid && (processor.second->avoidReading || request || myPacket->isPacketValid()))
-                processor.second->Do(*myPacket, objectList);
+                if (!decoded.isValid || !myPacket->isPacketValid())
+                {
+                    LOG_MESSAGE_SIMPLE(TimedLog::LOG_ERROR, "Received %s that failed integrity check and was ignored!", processor.second->strPacketID.c_str());
+                    return true;
+                }
+                static_cast<BaseObjectList&>(objectList) = std::move(decoded);
+            }
             else
-                LOG_MESSAGE_SIMPLE(TimedLog::LOG_ERROR, "Received %s that failed integrity check and was ignored!", processor.second->strPacketID.c_str());
+            {
+                objectList.guid = guid;
+                objectList.isValid = true;
+            }
 
+            myPacket->setObjectList(&objectList);
+            processor.second->Do(*myPacket, objectList);
             return true;
         }
     }

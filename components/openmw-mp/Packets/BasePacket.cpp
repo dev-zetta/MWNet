@@ -32,11 +32,23 @@ void BasePacket::Packet(RakNet::BitStream *newBitstream, bool send)
         return;
     }
 
+    mReader.reset();
+    mWriter.reset();
     if (send)
     {
-        bs->Write(packetID);
-        bs->Write(guid);
+        mWriter.emplace(protocol::limits::normalMessageBytes);
+        return;
     }
+
+    if (bs->GetReadOffset() % 8U != 0 || bs->GetNumberOfUnreadBits() % 8U != 0)
+    {
+        invalidate(protocol::CodecError::InvalidValue);
+        return;
+    }
+    const std::size_t offset = bs->GetReadOffset() / 8U;
+    const std::size_t size = bs->GetNumberOfUnreadBits() / 8U;
+    mReader.emplace(std::span<const std::byte>(
+        reinterpret_cast<const std::byte*>(bs->GetData() + offset), size));
 }
 
 void BasePacket::SetReadStream(RakNet::BitStream *bitStream)
@@ -64,7 +76,7 @@ uint32_t BasePacket::RequestData(RakNet::RakNetGUID targetGuid)
 
     bsSend->ResetWritePointer();
     bsSend->Write(packetID);
-    bsSend->Write(targetGuid);
+    bsSend->Write(targetGuid.g);
     return peer->Send(bsSend, HIGH_PRIORITY, RELIABLE_ORDERED, orderChannel, targetGuid, false);
 }
 
@@ -75,7 +87,7 @@ uint32_t BasePacket::Send(RakNet::AddressOrGUID destination)
 
     bsSend->ResetWritePointer();
     Packet(bsSend, true);
-    if (!packetValid || bsSend->GetNumberOfBytesUsed() > protocol::limits::normalMessageBytes + headerSize())
+    if (!finishWrite())
         return 0;
     return peer->Send(bsSend, priority, reliability, orderChannel, destination, false);
 }
@@ -87,7 +99,7 @@ uint32_t BasePacket::Send(bool toOther)
 
     bsSend->ResetWritePointer();
     Packet(bsSend, true);
-    if (!packetValid || bsSend->GetNumberOfBytesUsed() > protocol::limits::normalMessageBytes + headerSize())
+    if (!finishWrite())
         return 0;
     return peer->Send(bsSend, priority, reliability, orderChannel, guid, toOther);
 }
@@ -100,6 +112,53 @@ void BasePacket::Read()
         return;
     }
     Packet(bsRead, false);
+    finishRead();
+}
+
+bool BasePacket::RW(RakNet::RakNetGUID& value, bool write, bool compress)
+{
+    (void)compress;
+    std::uint64_t decoded = value.g;
+    if (!RW(decoded, write))
+        return false;
+    if (!write)
+        value = RakNet::RakNetGUID(decoded);
+    return true;
+}
+
+bool BasePacket::writeResult(bool result)
+{
+    if (result)
+        return true;
+    return invalidate(mWriter ? mWriter->error() : protocol::CodecError::InvalidValue);
+}
+
+bool BasePacket::readResult(bool result)
+{
+    if (result)
+        return true;
+    return invalidate(mReader ? mReader->error() : protocol::CodecError::InvalidValue);
+}
+
+bool BasePacket::finishWrite()
+{
+    if (!packetValid || !mWriter || !mWriter->valid() || bsSend == nullptr)
+        return false;
+    bsSend->Write(packetID);
+    bsSend->Write(guid.g);
+    const auto payload = mWriter->bytes();
+    if (!payload.empty())
+        bsSend->Write(reinterpret_cast<const char*>(payload.data()), payload.size());
+    if (bsSend->GetNumberOfBytesUsed() > protocol::limits::normalMessageBytes + headerSize())
+        return invalidate(protocol::CodecError::LimitExceeded);
+    return true;
+}
+
+bool BasePacket::finishRead()
+{
+    if (!packetValid || !mReader)
+        return false;
+    return readResult(mReader->finish());
 }
 
 void BasePacket::setGUID(RakNet::RakNetGUID newGuid)
