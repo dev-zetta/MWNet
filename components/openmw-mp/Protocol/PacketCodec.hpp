@@ -140,13 +140,13 @@ namespace mwmp::protocol
     inline constexpr std::uint16_t envelopeFlagBulkChunk = 1U << 0U;
     inline constexpr std::uint16_t envelopeFlagUnreliable = 1U << 1U;
     inline constexpr std::uint16_t envelopeKnownFlags = envelopeFlagBulkChunk | envelopeFlagUnreliable;
-    inline constexpr std::size_t envelopeBytes = 28;
+    inline constexpr std::size_t envelopeBytes = 32;
 
     struct ProtocolEnvelope
     {
         std::uint16_t messageType = 0;
         std::uint64_t subjectId = 0;
-        std::uint32_t sequence = 0;
+        std::uint64_t sequence = 0;
         std::uint16_t flags = 0;
 
         bool operator==(const ProtocolEnvelope&) const = default;

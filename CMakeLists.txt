@@ -74,6 +74,7 @@ ENDIF()
 if (TES3MP_TESTS_ONLY)
     enable_testing()
     add_subdirectory(components/openmw-mp/Protocol)
+    add_subdirectory(components/openmw-mp/Transport)
     add_subdirectory(apps/tes3mp_tests)
 
     if (BUILD_TES3MP_FUZZERS)
@@ -781,6 +782,7 @@ endif()
 
 # Components
 add_subdirectory(components/openmw-mp/Protocol)
+add_subdirectory(components/openmw-mp/Transport)
 add_subdirectory(components)
 target_compile_definitions(components PRIVATE OPENMW_DOC_BASEURL="${OPENMW_DOC_BASEURL}")
 

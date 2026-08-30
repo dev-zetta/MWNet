@@ -333,7 +333,7 @@ namespace mwmp::protocol
         writer.writeU16(envelope.messageType);
         writer.writeU16(envelope.flags);
         writer.writeU16(0);
-        writer.writeU32(envelope.sequence);
+        writer.writeU64(envelope.sequence);
         writer.writeU64(envelope.subjectId);
         writer.writeU32(static_cast<std::uint32_t>(payload.size()));
         writer.writeBytes(payload);
@@ -364,7 +364,7 @@ namespace mwmp::protocol
         std::uint16_t reserved = 0;
         std::uint32_t payloadSize = 0;
         if (!reader.readU16(version) || !reader.readU16(decoded.messageType) || !reader.readU16(decoded.flags)
-            || !reader.readU16(reserved) || !reader.readU32(decoded.sequence) || !reader.readU64(decoded.subjectId)
+            || !reader.readU16(reserved) || !reader.readU64(decoded.sequence) || !reader.readU64(decoded.subjectId)
             || !reader.readU32(payloadSize))
             return reader.result();
 

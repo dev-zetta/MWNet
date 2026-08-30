@@ -4,6 +4,7 @@
 #include <string_view>
 
 int runProtocolTests();
+int runTransportTests();
 
 int main()
 {
@@ -15,5 +16,6 @@ int main()
         return 1;
     }
 
-    return runProtocolTests() == 0 ? 0 : 1;
+    const int failures = runProtocolTests() + runTransportTests();
+    return failures == 0 ? 0 : 1;
 }
