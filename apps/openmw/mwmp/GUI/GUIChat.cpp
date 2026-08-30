@@ -2,6 +2,7 @@
 
 #include <MyGUI_EditBox.h>
 #include <MyGUI_LayerManager.h>
+#include <SDL_keyboard.h>
 #include "apps/openmw/mwbase/environment.hpp"
 #include "apps/openmw/mwgui/windowmanagerimp.hpp"
 #include "apps/openmw/mwinput/inputmanagerimp.hpp"
@@ -39,6 +40,7 @@ namespace mwmp
         mHistory->setTextShadowColour(MyGUI::Colour::Black);
 
         mHistory->setNeedKeyFocus(false);
+        mCommandLine->setNeedKeyFocus(true);
 
         mCurrent = mCommandHistory.end();
         mCommandLine->setVisible(false);
@@ -68,6 +70,17 @@ namespace mwmp
     bool GUIChat::getEditState()
     {
         return editState;
+    }
+
+    bool GUIChat::injectKeyPress(MyGUI::KeyCode key, MyGUI::Char character)
+    {
+        if (!editState)
+            return false;
+
+        // Game-mode visibility updates are allowed to clear MyGUI's focus. Restore it
+        // immediately before dispatch so chat input never depends on a mouse click.
+        MWBase::Environment::get().getWindowManager()->setKeyFocusWidget(mCommandLine);
+        return MyGUI::InputManager::getInstance().injectKeyPress(key, character);
     }
 
     void GUIChat::acceptCommand(MyGUI::EditBox *_sender)
@@ -278,6 +291,22 @@ namespace mwmp
 
     void GUIChat::update(float dt)
     {
+        if (editState)
+        {
+            MWBase::WindowManager* windowManager = MWBase::Environment::get().getWindowManager();
+            MyGUI::InputManager& inputManager = MyGUI::InputManager::getInstance();
+
+            if (windowManager->isInteractiveMessageBoxActive() || inputManager.isModalAny())
+                setEditState(false);
+            else if (inputManager.getKeyFocusWidget() != mCommandLine || SDL_IsTextInputActive() != SDL_TRUE)
+            {
+                // OpenMW can clear an overlay's focus when normal game-mode visibility is refreshed.
+                // Keep chat authoritative for keyboard input until the message is sent or cancelled.
+                windowManager->setKeyFocusWidget(mCommandLine);
+                mCommandLine->setTextCursor(mCommandLine->getTextLength());
+            }
+        }
+
         if (windowState == CHAT_HIDDENMODE && !editState && isVisible())
         {
             curTime += dt;

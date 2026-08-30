@@ -19,6 +19,8 @@ This is a major compatibility and maintenance release. It brings TES3MP forward 
 * Fix the standalone server browser startup order for the current OpenMW settings system
 * Restore TES3MP chat bindings after the OpenMW 0.52 input changes; F2 and Y are now handled before MyGUI or conflicting OpenMW actions can consume them
 * Restore chat text focus and SDL text input, keep the chat state consistent when it becomes visible, and allow Y to focus chat while ordinary in-game windows such as the inventory are open
+* Register the TES3MP chat edit skin in OpenMW's current MyGUI resource list and use its supported monospace font so typed text and the caret render correctly
+* Keep keyboard and SDL text-input focus on chat across OpenMW game-mode visibility refreshes until the message is sent or cancelled, route text directly to the focused edit box without requiring a mouse click, prevent chat keystrokes from triggering gameplay controls, let function keys retain their bindings, and make Escape cancel chat
 * Keep multiplayer simulation, NPC AI, physics, scripts and rendering time running while local menus, dialogue windows, consoles or message boxes are open
 * Fix the launcher OpenSceneGraph plugin path and the client/server connection-password hash used by matching builds
 * Remove duplicate NPC greetings in the dialogue window

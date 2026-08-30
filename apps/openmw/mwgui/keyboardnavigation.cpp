@@ -116,7 +116,18 @@ namespace MWGui
 
         if (!MWBase::Environment::get().getWindowManager()->isGuiMode())
         {
-            MWBase::Environment::get().getWindowManager()->setKeyFocusWidget(nullptr);
+            /*
+                Start of tes3mp addition
+
+                TES3MP chat is a real-time game-mode overlay, but its EditBox still
+                needs MyGUI keyboard focus. Preserve that focus instead of applying
+                OpenMW's normal game-mode focus reset at the end of every frame.
+            */
+            const bool chatEditing = mwmp::Main::isInitialized()
+                && mwmp::Main::get().getGUIController()->getChatEditState();
+            if (!chatEditing)
+                MWBase::Environment::get().getWindowManager()->setKeyFocusWidget(nullptr);
+            /* End of tes3mp addition */
             return;
         }
 

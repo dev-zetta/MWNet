@@ -47,6 +47,8 @@ namespace mwmp
 
         bool getEditState();
 
+        bool injectKeyPress(MyGUI::KeyCode key, MyGUI::Char character);
+
         void setFont(const std::string &fntName);
 
         void onResChange(int width, int height);

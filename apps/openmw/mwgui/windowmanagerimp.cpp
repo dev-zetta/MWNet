@@ -671,8 +671,19 @@ namespace MWGui
 
         updateMouseEmulationCursor();
 
-        if (gameMode)
+        /*
+            Start of tes3mp addition
+
+            Chat is an interactive overlay that deliberately remains in game mode so
+            the multiplayer world keeps running. Do not clear its EditBox focus here:
+            doing so stops SDL text input before the next input-capture pass, leaving
+            the box highlighted but unable to receive printable characters.
+        */
+        const bool chatEditing = mwmp::Main::isInitialized()
+            && mwmp::Main::get().getGUIController()->getChatEditState();
+        if (gameMode && !chatEditing)
             setKeyFocusWidget(nullptr);
+        /* End of tes3mp addition */
 
         // Icons of forced hidden windows are displayed
         setMinimapVisibility((mAllowed & GW_Map) && (!mMap->pinned() || (mForceHidden & GW_Map)));

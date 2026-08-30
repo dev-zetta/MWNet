@@ -1,6 +1,8 @@
 #ifndef OPENMW_GUICONTROLLER_HPP
 #define OPENMW_GUICONTROLLER_HPP
 
+#include <MyGUI_KeyCode.h>
+
 #include <components/settings/settings.hpp>
 
 #include "apps/openmw/mwgui/mode.hpp"
@@ -57,6 +59,7 @@ namespace mwmp
         void changeChatMode();
 
         bool getChatEditState();
+        bool injectChatKeyPress(MyGUI::KeyCode key, MyGUI::Char character);
 
         void update(float dt);
 

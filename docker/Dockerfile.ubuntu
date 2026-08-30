@@ -1,5 +1,5 @@
 FROM ubuntu
-LABEL maintainer="Wassim DHIF <wassimdhif@gmail.com>"
+LABEL maintainer="Gabriel Max <dev@zetta.app>"
 
 ENV NPROC=1
 

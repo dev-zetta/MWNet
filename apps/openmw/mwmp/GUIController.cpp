@@ -266,7 +266,12 @@ void mwmp::GUIController::changeChatMode()
 
 bool mwmp::GUIController::getChatEditState()
 {
-    return mChat->editState;
+    return mChat != nullptr && mChat->editState;
+}
+
+bool mwmp::GUIController::injectChatKeyPress(MyGUI::KeyCode key, MyGUI::Char character)
+{
+    return mChat != nullptr && mChat->injectKeyPress(key, character);
 }
 
 void mwmp::GUIController::update(float dt)
