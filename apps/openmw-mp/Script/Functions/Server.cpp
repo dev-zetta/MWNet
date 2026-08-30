@@ -7,7 +7,6 @@
 
 #include <apps/openmw-mp/Script/ScriptFunctions.hpp>
 #include <apps/openmw-mp/Networking.hpp>
-#include <apps/openmw-mp/MasterClient.hpp>
 #include <Script/Script.hpp>
 
 static std::string tempFilename;
@@ -116,8 +115,9 @@ const char *ServerFunctions::GetIP(unsigned short pid) noexcept
 {
     Player *player;
     GET_PLAYER(pid, player, "");
-    RakNet::SystemAddress addr = mwmp::Networking::getPtr()->getSystemAddress(player->guid);
-    return addr.ToString(false);
+    static thread_local std::string address;
+    address = mwmp::Networking::getPtr()->getPeerAddress(player->guid);
+    return address.c_str();
 }
 
 unsigned short ServerFunctions::GetPort() noexcept
@@ -147,19 +147,20 @@ bool ServerFunctions::GetScriptErrorIgnoringState() noexcept
 
 void ServerFunctions::SetGameMode(const char *gameMode) noexcept
 {
-    if (mwmp::Networking::getPtr()->getMasterClient())
-        mwmp::Networking::getPtr()->getMasterClient()->SetModname(gameMode);
+    (void)gameMode;
 }
 
 void ServerFunctions::SetHostname(const char *name) noexcept
 {
-    if (mwmp::Networking::getPtr()->getMasterClient())
-        mwmp::Networking::getPtr()->getMasterClient()->SetHostname(name);
+    (void)name;
 }
 
 void ServerFunctions::SetServerPassword(const char *password) noexcept
 {
-    mwmp::Networking::getPtr()->setServerPassword(password);
+    std::string error;
+    if (!mwmp::Networking::getPtr()->setServerPassword(password == nullptr ? "" : password, error))
+        LOG_MESSAGE_SIMPLE(TimedLog::LOG_ERROR,
+            "[Script]: Failed to update the server access password: %s", error.c_str());
 }
 
 void ServerFunctions::SetDataFileEnforcementState(bool state) noexcept
@@ -174,16 +175,14 @@ void ServerFunctions::SetScriptErrorIgnoringState(bool state) noexcept
 
 void ServerFunctions::SetRuleString(const char *key, const char *value) noexcept
 {
-    auto mc = mwmp::Networking::getPtr()->getMasterClient();
-    if (mc)
-        mc->SetRuleString(key, value);
+    (void)key;
+    (void)value;
 }
 
 void ServerFunctions::SetRuleValue(const char *key, double value) noexcept
 {
-    auto mc = mwmp::Networking::getPtr()->getMasterClient();
-    if (mc)
-        mc->SetRuleValue(key, value);
+    (void)key;
+    (void)value;
 }
 
 void ServerFunctions::AddDataFileRequirement(const char *dataFilename, const char *checksumString) noexcept
@@ -213,10 +212,7 @@ void ServerFunctions::AddDataFileRequirement(const char *dataFilename, const cha
         }
         samples.emplace_back(dataFilename, checksumList);
 
-        auto masterClient = mwmp::Networking::getPtr()->getMasterClient();
-        
-        if (masterClient)
-            masterClient->PushPlugin({dataFilename, checksum});
+        (void)checksum;
     }
 }
 

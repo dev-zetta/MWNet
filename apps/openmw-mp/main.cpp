@@ -1,4 +1,5 @@
 #include <iostream>
+#include <limits>
 
 #include <boost/filesystem/fstream.hpp>
 #include <boost/iostreams/concepts.hpp>
@@ -14,6 +15,8 @@
 #include <components/openmw-mp/TimedLog.hpp>
 #include <components/openmw-mp/NetworkMessages.hpp>
 #include <components/openmw-mp/Protocol/EndpointSecurity.hpp>
+#include <components/openmw-mp/Security/PasswordHash.hpp>
+#include <components/openmw-mp/Transport/Protocol11Endpoint.hpp>
 #include <components/openmw-mp/Utils.hpp>
 #include <components/openmw-mp/Version.hpp>
 
@@ -21,10 +24,17 @@
 #include <MessageIdentifiers.h>
 #include <RakPeer.h>
 #include <RakPeerInterface.h>
+#include <sodium.h>
+
+#ifndef _WIN32
+#include <termios.h>
+#include <unistd.h>
+#else
+#include <windows.h>
+#endif
 
 #include "Player.hpp"
 #include "Networking.hpp"
-#include "MasterClient.hpp"
 #include "Utils.hpp"
 
 #include <apps/openmw-mp/Script/Script.hpp>
@@ -124,6 +134,74 @@ private:
     std::ostream &out2;
 };
 
+namespace
+{
+    bool readSecretLine(std::string& value)
+    {
+        bool echoDisabled = false;
+#ifndef _WIN32
+        termios original{};
+        if (isatty(STDIN_FILENO) != 0 && tcgetattr(STDIN_FILENO, &original) == 0)
+        {
+            termios hidden = original;
+            hidden.c_lflag &= static_cast<tcflag_t>(~ECHO);
+            echoDisabled = tcsetattr(STDIN_FILENO, TCSAFLUSH, &hidden) == 0;
+        }
+#else
+        HANDLE input = GetStdHandle(STD_INPUT_HANDLE);
+        DWORD original = 0;
+        if (input != INVALID_HANDLE_VALUE && GetConsoleMode(input, &original) != 0)
+        {
+            echoDisabled = SetConsoleMode(input, original & ~ENABLE_ECHO_INPUT) != 0;
+        }
+#endif
+        const bool read = static_cast<bool>(std::getline(std::cin, value));
+#ifndef _WIN32
+        if (echoDisabled)
+            tcsetattr(STDIN_FILENO, TCSAFLUSH, &original);
+#else
+        if (echoDisabled)
+            SetConsoleMode(input, original);
+#endif
+        if (echoDisabled)
+            std::cerr << '\n';
+        return read;
+    }
+
+    int generateAccessPasswordHash()
+    {
+        std::cerr << "Server access password: " << std::flush;
+        std::string plaintext;
+        if (!readSecretLine(plaintext))
+        {
+            std::cerr << "Unable to read the password.\n";
+            return 1;
+        }
+        if (plaintext.empty())
+        {
+            std::cerr << "The access password must not be empty.\n";
+            return 1;
+        }
+        std::string error;
+        auto password = mwmp::security::PasswordBuffer::copyFrom(plaintext, error);
+        sodium_memzero(plaintext.data(), plaintext.size());
+        plaintext.clear();
+        if (!password)
+        {
+            std::cerr << "Unable to accept the password: " << error << '\n';
+            return 1;
+        }
+        std::string encoded;
+        if (!mwmp::security::PasswordHash::createArgon2id(*password, encoded, error))
+        {
+            std::cerr << "Unable to hash the password: " << error << '\n';
+            return 1;
+        }
+        std::cout << encoded << '\n';
+        return 0;
+    }
+}
+
 boost::program_options::variables_map launchOptions(int argc, char *argv[], Files::ConfigurationManager& cfgMgr)
 {
     namespace bpo = boost::program_options;
@@ -133,7 +211,10 @@ boost::program_options::variables_map launchOptions(int argc, char *argv[], File
     Files::ConfigurationManager::addCommonOptions(desc);
     desc.add_options()
             ("no-logs", bpo::value<bool>()->implicit_value(true)->default_value(false),
-             "Do not write logs. Useful for daemonizing.");
+             "Do not write logs. Useful for daemonizing.")
+            ("hash-access-password",
+             bpo::value<bool>()->implicit_value(true)->default_value(false),
+             "Read a server access password from stdin and print its Argon2id hash.");
 
     bpo::parsed_options valid_opts = bpo::command_line_parser(argc, argv).options(desc).allow_unregistered().run();
 
@@ -153,6 +234,8 @@ int main(int argc, char *argv[])
     breakpad(boost::filesystem::path(cfgMgr.getLogPath()).string());
 
     auto variables = launchOptions(argc, argv, cfgMgr);
+    if (variables["hash-access-password"].as<bool>())
+        return generateAccessPasswordHash();
     loadSettings(cfgMgr);
 
     std::string versionStr(Version::getVersion());
@@ -196,7 +279,7 @@ int main(int argc, char *argv[])
     bool publicListen = mgr.getBool("publicListen", "General");
     int port = mgr.getInt("port", "General");
 
-    std::string password = mgr.getString("password", "General");
+    std::string passwordHash = mgr.getString("passwordHash", "General");
 
     std::string pluginHome = mgr.getString("home", "Plugins");
     std::string dataDirectory = Utils::convertPath(pluginHome + "/data");
@@ -223,22 +306,6 @@ int main(int argc, char *argv[])
 
     RakNet::RakPeerInterface *peer = RakNet::RakPeerInterface::GetInstance();
 
-    std::stringstream sstr;
-    sstr << TES3MP_VERSION;
-    sstr << TES3MP_PROTO_VERSION;
-    std::string compatHash = TES3MP_COMPAT_COMMITHASH;
-    // Remove carriage returns added to version file on Windows
-    compatHash.erase(std::remove(compatHash.begin(), compatHash.end(), '\r'), compatHash.end());
-    sstr << compatHash;
-
-    peer->SetIncomingPassword(sstr.str().c_str(), (int) sstr.str().size());
-
-    if (RakNet::NonNumericHostString(address.c_str()))
-    {
-        LOG_MESSAGE_SIMPLE(TimedLog::LOG_ERROR, "You cannot use non-numeric addresses for the server.");
-        return 1;
-    }
-
     if (!protocol::isListenAddressAllowed(address, publicListen))
     {
         LOG_MESSAGE_SIMPLE(TimedLog::LOG_ERROR,
@@ -246,81 +313,51 @@ int main(int argc, char *argv[])
         return 1;
     }
 
-    RakNet::SocketDescriptor sd((unsigned short) port, address.c_str());
-
     try
     {
         for (auto plugin : plugins)
             Script::LoadScript(plugin.c_str(), pluginHome.c_str());
 
-        switch (peer->Startup((unsigned) players, &sd, 1))
-        {
-            case RakNet::CRABNET_STARTED:
-                break;
-            case RakNet::CRABNET_ALREADY_STARTED:
-                throw std::runtime_error("Already started");
-            case RakNet::INVALID_SOCKET_DESCRIPTORS:
-                throw std::runtime_error("Incorrect port or address");
-            case RakNet::INVALID_MAX_CONNECTIONS:
-                throw std::runtime_error("Max players cannot be negative or 0");
-            case RakNet::SOCKET_FAILED_TO_BIND:
-            case RakNet::SOCKET_PORT_ALREADY_IN_USE:
-            case RakNet::PORT_CANNOT_BE_ZERO:
-                throw std::runtime_error("Failed to bind port. Make sure a server isn't already running on that port.");
-            case RakNet::SOCKET_FAILED_TEST_SEND:
-            case RakNet::SOCKET_FAMILY_NOT_SUPPORTED:
-            case RakNet::FAILED_TO_CREATE_NETWORK_THREAD:
-            case RakNet::COULD_NOT_GENERATE_GUID:
-            case RakNet::STARTUP_OTHER_FAILURE:
-                throw std::runtime_error("Cannot start server");
-        }
+        if (players <= 0 || players > std::numeric_limits<unsigned short>::max())
+            throw std::runtime_error("maximumPlayers must be between 1 and 65535");
+        if (port <= 0 || port > std::numeric_limits<unsigned short>::max())
+            throw std::runtime_error("port must be between 1 and 65535");
 
-        peer->SetMaximumIncomingConnections((unsigned short) (players));
+        std::string transportError;
+        auto endpoint = transport::Protocol11Endpoint::createServer(
+            cfgMgr.getUserConfigPath() / "server-identity.key", transportError);
+        if (!endpoint)
+            throw std::runtime_error("Failed to load the server identity: " + transportError);
 
-        Networking networking(peer);
-        networking.setServerPassword(password);
+        transport::ListenOptions listenOptions;
+        listenOptions.address = address;
+        listenOptions.port = static_cast<unsigned short>(port);
+        listenOptions.maximumConnections = static_cast<std::size_t>(players);
+        listenOptions.publicListen = publicListen;
+        transport::TransportError listenError;
+        if (!endpoint->listen(listenOptions, listenError))
+            throw std::runtime_error("Failed to listen: " + listenError.detail);
 
-        if (mgr.getBool("enabled", "MasterServer"))
-        {
-            LOG_MESSAGE_SIMPLE(TimedLog::LOG_INFO, "Sharing server query info to master enabled.");
-            std::string masterAddr = mgr.getString("address", "MasterServer");
-            int masterPort = mgr.getInt("port", "MasterServer");
-            int updateRate = mgr.getInt("rate", "MasterServer");
+        if (const auto fingerprint = endpoint->serverFingerprint())
+            LOG_MESSAGE_SIMPLE(TimedLog::LOG_INFO,
+                "Server identity fingerprint: %s", fingerprint->c_str());
 
-            // Is this an attempt to connect to the official master server at the old port? If so,
-            // redirect it to the correct port for the currently used fork of RakNet
-            if (Misc::StringUtils::ciEqual(masterAddr, "master.tes3mp.com") && masterPort == 25560)
-            {
-                masterPort = 25561;
-                LOG_APPEND(TimedLog::LOG_INFO, "- switching to port %i because the correct official master server for this version is on that port",
-                    masterPort);
-            }
-
-            if (updateRate < 8000)
-            {
-                updateRate = 8000;
-                LOG_APPEND(TimedLog::LOG_INFO, "- switching to updateRate %i because the one in the server config was too low", updateRate);
-            }
-
-            networking.InitQuery(masterAddr, (unsigned short) masterPort);
-            networking.getMasterClient()->SetMaxPlayers((unsigned) players);
-            networking.getMasterClient()->SetUpdateRate((unsigned) updateRate);
-            std::string hostname = mgr.getString("hostname", "General");
-            networking.getMasterClient()->SetHostname(hostname);
-            networking.getMasterClient()->SetRuleString("CommitHash", commitHash.substr(0, 10));
-
-            networking.getMasterClient()->Start();
-        }
+        const std::filesystem::path serverData(dataDirectory);
+        Networking networking(peer, *endpoint, serverData / "account",
+            serverData / "player", static_cast<unsigned int>(players),
+            static_cast<unsigned short>(port));
+        std::string passwordError;
+        if (!networking.setServerPasswordHash(std::move(passwordHash), passwordError))
+            throw std::runtime_error("Invalid General/passwordHash: " + passwordError);
 
         networking.postInit();
 
         code = networking.mainLoop();
-
-        networking.getMasterClient()->Stop();
+        endpoint->shutdown(listenOptions.timeouts.shutdown);
     }
     catch (std::exception &e)
     {
-        LOG_MESSAGE_SIMPLE(TimedLog::LOG_ERROR, e.what());
+        LOG_MESSAGE_SIMPLE(TimedLog::LOG_ERROR, "%s", e.what());
         Script::Call<Script::CallbackIdentity("OnServerScriptCrash")>(e.what());
         throw; //fall through
     }

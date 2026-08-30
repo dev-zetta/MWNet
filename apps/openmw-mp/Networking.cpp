@@ -8,6 +8,10 @@
 #include <components/openmw-mp/TimedLog.hpp>
 #include <components/openmw-mp/Version.hpp>
 #include <components/openmw-mp/Packets/PacketPreInit.hpp>
+#include <components/openmw-mp/Security/AuthenticationMessages.hpp>
+#include <components/openmw-mp/Security/PasswordHash.hpp>
+#include <components/openmw-mp/Session/SessionState.hpp>
+#include <components/openmw-mp/Transport/LegacyPacketFrame.hpp>
 
 #include <iostream>
 #include <Script/Script.hpp>
@@ -17,7 +21,6 @@
 #include <csignal>
 
 #include "Networking.hpp"
-#include "MasterClient.hpp"
 #include "Cell.hpp"
 #include "CellController.hpp"
 #include "processors/PlayerProcessor.hpp"
@@ -34,7 +37,18 @@ static bool dataFileEnforcementState = true;
 static bool scriptErrorIgnoringState = false;
 bool killLoop = false;
 
-Networking::Networking(RakNet::RakPeerInterface *peer) : mclient(nullptr)
+Networking::Networking(RakNet::RakPeerInterface *peer,
+    transport::Protocol11Endpoint& endpoint,
+    const std::filesystem::path& credentialDirectory,
+    const std::filesystem::path& legacyPlayerDirectory,
+    unsigned int maximumConnections, unsigned short port)
+    : mEndpoint(endpoint)
+    , mDispatcher(endpoint.transport(), transport::ApplicationPacketFlow::ServerToClient,
+        maximumConnections)
+    , mReceiver(transport::ApplicationPacketFlow::ClientToServer)
+    , mAuthentication(credentialDirectory, legacyPlayerDirectory)
+    , mMaximumConnections(maximumConnections)
+    , mPort(port)
 {
     sThis = this;
     this->peer = peer;
@@ -54,13 +68,16 @@ Networking::Networking(RakNet::RakPeerInterface *peer) : mclient(nullptr)
     actorPacketController->SetStream(0, &bsOut);
     objectPacketController->SetStream(0, &bsOut);
     worldstatePacketController->SetStream(0, &bsOut);
+    systemPacketController->SetApplicationPacketDispatcher(&mDispatcher);
+    playerPacketController->SetApplicationPacketDispatcher(&mDispatcher);
+    actorPacketController->SetApplicationPacketDispatcher(&mDispatcher);
+    objectPacketController->SetApplicationPacketDispatcher(&mDispatcher);
+    worldstatePacketController->SetApplicationPacketDispatcher(&mDispatcher);
 
     running = true;
     exitCode = 0;
 
     Script::Call<Script::CallbackIdentity("OnServerInit")>();
-
-    serverPassword = TES3MP_DEFAULT_PASSW;
 
     ProcessorInitializer();
 }
@@ -79,14 +96,27 @@ Networking::~Networking()
     delete worldstatePacketController;
 }
 
-void Networking::setServerPassword(std::string password) noexcept
+bool Networking::setServerPasswordHash(std::string passwordHash, std::string& error)
 {
-    serverPassword = password.empty() ? TES3MP_DEFAULT_PASSW : password;
+    return mAuthentication.setAccessPasswordHash(std::move(passwordHash), error);
+}
+
+bool Networking::setServerPassword(std::string_view password, std::string& error)
+{
+    if (password.empty())
+        return setServerPasswordHash({}, error);
+    auto buffer = security::PasswordBuffer::copyFrom(password, error);
+    if (!buffer)
+        return false;
+    std::string encoded;
+    if (!security::PasswordHash::createArgon2id(*buffer, encoded, error))
+        return false;
+    return setServerPasswordHash(std::move(encoded), error);
 }
 
 bool Networking::isPassworded() const
 {
-    return serverPassword != TES3MP_DEFAULT_PASSW;
+    return mAuthentication.requiresAccessPassword();
 }
 
 void Networking::processSystemPacket(RakNet::Packet *packet)
@@ -94,55 +124,10 @@ void Networking::processSystemPacket(RakNet::Packet *packet)
     Player *player = Players::getPlayer(packet->guid);
     if (player == nullptr)
         return;
-
-    SystemPacket *myPacket = systemPacketController->GetPacket(packet->data[0]);
-
-    if (packet->data[0] == ID_SYSTEM_HANDSHAKE)
-    {
-        BaseSystem validation;
-        myPacket->setSystem(&validation);
-        myPacket->Read();
-
-        if (!myPacket->isPacketValid())
-        {
-            LOG_MESSAGE_SIMPLE(TimedLog::LOG_ERROR, "Invalid handshake packet from client at %s", packet->systemAddress.ToString());
-            kickPlayer(player->guid);
-            return;
-        }
-
-        myPacket->setSystem(&baseSystem);
-        myPacket->Read();
-        if (!myPacket->isPacketValid())
-        {
-            kickPlayer(player->guid);
-            return;
-        }
-
-        if (player->isHandshaked())
-        {
-            LOG_MESSAGE_SIMPLE(TimedLog::LOG_WARN, "Wrong handshake with client at %s", packet->systemAddress.ToString());
-            kickPlayer(player->guid);
-            return;
-        }
-
-        if (baseSystem.serverPassword != serverPassword)
-        {
-            if (isPassworded())
-            {
-                LOG_MESSAGE_SIMPLE(TimedLog::LOG_WARN, "Wrong server password used by client at %s",
-                    packet->systemAddress.ToString());
-                kickPlayer(player->guid);
-                return;
-            }
-            else
-            {
-                LOG_MESSAGE_SIMPLE(TimedLog::LOG_INFO, "Client at %s tried to join using password, despite the server not being passworded",
-                    packet->systemAddress.ToString());
-            }
-        }
-        player->setHandshake();
-        return;
-    }
+    LOG_MESSAGE_SIMPLE(TimedLog::LOG_WARN,
+        "Rejected deprecated system packet %u after the protocol-11 cutover",
+        static_cast<unsigned int>(packet->data[0]));
+    kickPlayer(player->guid);
 }
 
 void Networking::processPlayerPacket(RakNet::Packet *packet)
@@ -168,20 +153,7 @@ void Networking::processPlayerPacket(RakNet::Packet *packet)
     }
 
     if (packet->data[0] == ID_LOADED)
-    {
         player->setLoadState(Player::LOADED);
-
-        unsigned short pid = Players::getPlayer(packet->guid)->getId();
-        Script::Call<Script::CallbackIdentity("OnPlayerConnect")>(pid);
-
-        if (player->getLoadState() == Player::KICKED) // kicked inside in OnPlayerConnect
-        {
-            playerPacketController->GetPacket(ID_USER_DISCONNECTED)->setPlayer(Players::getPlayer(packet->guid));
-            playerPacketController->GetPacket(ID_USER_DISCONNECTED)->Send(false);
-            Players::deletePlayer(packet->guid);
-            return;
-        }
-    }
     else if (packet->data[0] == ID_PLAYER_BASEINFO)
     {
         LOG_MESSAGE_SIMPLE(TimedLog::LOG_INFO, "Received ID_PLAYER_BASEINFO about %s", player->npc.mName.c_str());
@@ -267,12 +239,15 @@ bool Networking::preInit(RakNet::Packet *packet, RakNet::BitStream &bsIn)
 {
     if (packet->data[0] != ID_GAME_PREINIT)
     {
-        LOG_MESSAGE_SIMPLE(TimedLog::LOG_WARN, "%s sent wrong first packet (ID_GAME_PREINIT was expected)",
-                           packet->systemAddress.ToString());
-        peer->CloseConnection(packet->systemAddress, true);
+        LOG_MESSAGE_SIMPLE(TimedLog::LOG_WARN,
+            "Connection %llu sent the wrong first application packet",
+            static_cast<unsigned long long>(packet->guid.g));
+        mEndpoint.disconnect({ packet->guid.g });
+        return false;
     }
 
-    LOG_MESSAGE_SIMPLE(TimedLog::LOG_INFO, "Received ID_GAME_PREINIT from %s", packet->systemAddress.ToString());
+    LOG_MESSAGE_SIMPLE(TimedLog::LOG_INFO, "Received content manifest from connection %llu",
+        static_cast<unsigned long long>(packet->guid.g));
     PacketPreInit::PluginContainer dataFiles;
 
     PacketPreInit packetPreInit(peer);
@@ -283,7 +258,7 @@ bool Networking::preInit(RakNet::Packet *packet, RakNet::BitStream &bsIn)
     if (!packetPreInit.isPacketValid() || dataFiles.empty())
     {
         LOG_APPEND(TimedLog::LOG_ERROR, "- Packet was invalid");
-        peer->CloseConnection(packet->systemAddress, false); // close connection without notification
+        mEndpoint.disconnect({ packet->guid.g });
         return false;
     }
 
@@ -312,24 +287,22 @@ bool Networking::preInit(RakNet::Packet *packet, RakNet::BitStream &bsIn)
     }
     RakNet::BitStream bs;
     packetPreInit.SetSendStream(&bs);
+    packetPreInit.setGUID(packet->guid);
 
     // If the loop above was broken, then the client's data files do not match the server's
     if (dataFileEnforcementState && dataFile != dataFiles.end())
     {
         LOG_APPEND(TimedLog::LOG_INFO, "- Client was not allowed to connect due to incompatible data files");
         packetPreInit.setChecksums(&samples);
-        packetPreInit.Send(packet->systemAddress);
-        peer->CloseConnection(packet->systemAddress, true);
+        packetPreInit.Send(packet->guid);
+        mEndpoint.disconnect({ packet->guid.g });
     }
     else
     {
         LOG_APPEND(TimedLog::LOG_INFO, "- Client was allowed to connect");
         PacketPreInit::PluginContainer tmp;
         packetPreInit.setChecksums(&tmp);
-        packetPreInit.Send(packet->systemAddress);
-        Players::newPlayer(packet->guid); // create player if connection allowed
-        systemPacketController->SetStream(&bsIn, nullptr); // and request handshake
-        systemPacketController->GetPacket(ID_SYSTEM_HANDSHAKE)->RequestData(packet->guid);
+        packetPreInit.Send(packet->guid);
         return true;
     }
 
@@ -418,10 +391,12 @@ void Networking::disconnectPlayer(RakNet::RakNetGUID guid)
     Player *player = Players::getPlayer(guid);
     if (!player)
         return;
-    Script::Call<Script::CallbackIdentity("OnPlayerDisconnect")>(player->getId());
-
-    playerPacketController->GetPacket(ID_USER_DISCONNECTED)->setPlayer(player);
-    playerPacketController->GetPacket(ID_USER_DISCONNECTED)->Send(true);
+    if (mAuthenticatedConnections.contains(guid.g))
+    {
+        Script::Call<Script::CallbackIdentity("OnPlayerDisconnect")>(player->getId());
+        playerPacketController->GetPacket(ID_USER_DISCONNECTED)->setPlayer(player);
+        playerPacketController->GetPacket(ID_USER_DISCONNECTED)->Send(true);
+    }
     Players::deletePlayer(guid);
 }
 
@@ -508,9 +483,9 @@ Networking *Networking::getPtr()
     return sThis;
 }
 
-RakNet::SystemAddress Networking::getSystemAddress(RakNet::RakNetGUID guid)
+std::string Networking::getPeerAddress(RakNet::RakNetGUID guid) const
 {
-    return peer->GetSystemAddressFromGuid(guid);
+    return mEndpoint.peerAddress({ guid.g }).value_or(std::string{});
 }
 
 void Networking::stopServer(int code)
@@ -531,8 +506,6 @@ void signalHandler(int signum)
 
 int Networking::mainLoop()
 {
-    RakNet::Packet *packet;
-
 #ifndef _WIN32
     struct sigaction sigIntHandler;
     
@@ -549,125 +522,249 @@ int Networking::mainLoop()
 #endif
         if (kbhit() && getch() == '\n')
             break;
-        for (packet=peer->Receive(); packet; peer->DeallocatePacket(packet), packet=peer->Receive())
-        {
-            if (packet->length == 0
-                || packet->length > protocol::limits::normalMessageBytes + BasePacket::headerSize())
-            {
-                LOG_MESSAGE_SIMPLE(TimedLog::LOG_WARN, "Dropped invalid-size packet from %s",
-                    packet->systemAddress.ToString());
-                continue;
-            }
-
-            if (getMasterClient()->Process(packet))
-                continue;
-
-            switch (packet->data[0])
-            {
-                case ID_REMOTE_DISCONNECTION_NOTIFICATION:
-                    LOG_MESSAGE_SIMPLE(TimedLog::LOG_WARN, "Client at %s has disconnected", packet->systemAddress.ToString());
-                    break;
-                case ID_REMOTE_CONNECTION_LOST:
-                    LOG_MESSAGE_SIMPLE(TimedLog::LOG_WARN, "Client at %s has lost connection", packet->systemAddress.ToString());
-                    break;
-                case ID_REMOTE_NEW_INCOMING_CONNECTION:
-                    LOG_MESSAGE_SIMPLE(TimedLog::LOG_WARN, "Client at %s has connected", packet->systemAddress.ToString());
-                    break;
-                case ID_CONNECTION_REQUEST_ACCEPTED:    // client to server
-                {
-                    LOG_MESSAGE_SIMPLE(TimedLog::LOG_WARN, "Our connection request has been accepted");
-                    break;
-                }
-                case ID_NEW_INCOMING_CONNECTION:
-                    LOG_MESSAGE_SIMPLE(TimedLog::LOG_WARN, "A connection is incoming from %s", packet->systemAddress.ToString());
-                    break;
-                case ID_NO_FREE_INCOMING_CONNECTIONS:
-                    LOG_MESSAGE_SIMPLE(TimedLog::LOG_WARN, "The server is full");
-                    break;
-                case ID_DISCONNECTION_NOTIFICATION:
-                    LOG_MESSAGE_SIMPLE(TimedLog::LOG_WARN,  "Client at %s has disconnected", packet->systemAddress.ToString());
-                    disconnectPlayer(packet->guid);
-                    break;
-                case ID_CONNECTION_LOST:
-                    LOG_MESSAGE_SIMPLE(TimedLog::LOG_WARN, "Client at %s has lost connection", packet->systemAddress.ToString());
-                    disconnectPlayer(packet->guid);
-                    break;
-                case ID_SND_RECEIPT_ACKED:
-                case ID_CONNECTED_PING:
-                case ID_UNCONNECTED_PING:
-                    break;
-                default:
-                {
-                    if (packet->length < BasePacket::headerSize())
-                    {
-                        LOG_MESSAGE_SIMPLE(TimedLog::LOG_WARN, "Dropped undersized packet from %s",
-                            packet->systemAddress.ToString());
-                        break;
-                    }
-
-                    RakNet::BitStream bsIn(&packet->data[1], packet->length - 1, false);
-                    bsIn.IgnoreBytes(static_cast<unsigned int>(RakNet::RakNetGUID::size()));
-
-
-                    if (Players::doesPlayerExist(packet->guid))
-                        update(packet, bsIn);
-                    else
-                        preInit(packet, bsIn);
-                    break;
-                }
-            }
-        }
+        if (auto event = mEndpoint.poll(std::chrono::milliseconds(1)))
+            processTransportEvent(std::move(*event));
         TimerAPI::Tick();
-        std::this_thread::sleep_for(std::chrono::milliseconds(1));
     }
 
     TimerAPI::Terminate();
     return exitCode;
 }
 
+void Networking::processTransportEvent(transport::TransportEvent event)
+{
+    const RakNet::RakNetGUID guid(event.connection.value);
+    switch (event.type)
+    {
+        case transport::TransportEventType::Connected:
+        {
+            const std::string peerAddress = mEndpoint.peerAddress(event.connection).value_or(std::string{});
+            if (mBannedAddresses.contains(peerAddress))
+            {
+                disconnectTransport(event.connection, "peer address is banned");
+                return;
+            }
+            if (!mDispatcher.addConnection(event.connection))
+            {
+                disconnectTransport(event.connection, "server connection capacity reached");
+                return;
+            }
+            Players::newPlayer(guid);
+            if (Player* player = Players::getPlayer(guid))
+                Script::Call<Script::CallbackIdentity("OnTransportConnect")>(player->getId());
+            LOG_MESSAGE_SIMPLE(TimedLog::LOG_INFO,
+                "Authenticated transport connection %llu established",
+                static_cast<unsigned long long>(event.connection.value));
+            break;
+        }
+        case transport::TransportEventType::Disconnected:
+            LOG_MESSAGE_SIMPLE(TimedLog::LOG_INFO,
+                "Transport connection %llu disconnected: %s",
+                static_cast<unsigned long long>(event.connection.value),
+                event.detail.c_str());
+            disconnectPlayer(guid);
+            mAuthenticatedConnections.erase(event.connection.value);
+            mReceiver.removeConnection(event.connection);
+            mDispatcher.removeConnection(event.connection);
+            break;
+        case transport::TransportEventType::Message:
+            if (event.message.messageType
+                    == static_cast<std::uint16_t>(protocol::MessageType::AccountLogin)
+                || event.message.messageType
+                    == static_cast<std::uint16_t>(protocol::MessageType::AccountRegister))
+                processAuthenticationMessage(std::move(event.message));
+            else
+                processApplicationMessage(std::move(event.message));
+            break;
+        case transport::TransportEventType::TrustRequired:
+            disconnectTransport(event.connection,
+                "a server endpoint cannot request trust confirmation");
+            break;
+    }
+}
+
+void Networking::processApplicationMessage(transport::TransportMessage message)
+{
+    transport::ReceivedApplicationPacket application;
+    const auto received = mReceiver.receive(message, application);
+    if (received.status == transport::ApplicationReceiveStatus::StaleSnapshot)
+        return;
+    if (!received)
+    {
+        disconnectTransport(message.connection, "invalid protocol-11 application packet");
+        return;
+    }
+
+    std::vector<unsigned char> frame;
+    protocol::CodecError codecError = protocol::CodecError::None;
+    if (!transport::buildLegacyPacketFrame(application, frame, codecError))
+    {
+        disconnectTransport(message.connection, "failed to adapt application packet");
+        return;
+    }
+
+    RakNet::Packet packet{};
+    packet.data = frame.data();
+    packet.length = static_cast<unsigned int>(frame.size());
+    packet.guid = RakNet::RakNetGUID(message.connection.value);
+    RakNet::BitStream stream(&packet.data[1], packet.length - 1, false);
+    stream.IgnoreBytes(static_cast<unsigned int>(RakNet::RakNetGUID::size()));
+
+    const auto state = mEndpoint.state(message.connection);
+    if (state == session::State::TransportAuthenticated)
+    {
+        if (!preInit(&packet, stream))
+            return;
+        transport::TransportError error;
+        if (mEndpoint.advance(message.connection, session::State::ContentVerified, error)
+            != session::TransitionResult::Advanced)
+            disconnectTransport(message.connection, "content session transition failed");
+        return;
+    }
+
+    if (application.id == protocol::ApplicationPacketId::Loaded
+        && state == session::State::AccountAuthenticated)
+    {
+        Player* player = Players::getPlayer(packet.guid);
+        if (player == nullptr)
+        {
+            disconnectTransport(message.connection, "spawn requested without a player slot");
+            return;
+        }
+        PlayerPacket* response = playerPacketController->GetPacket(ID_LOADED);
+        response->setPlayer(player);
+        if (response->Send(packet.guid) == 0)
+        {
+            disconnectTransport(message.connection, "failed to send spawn result");
+            return;
+        }
+        transport::TransportError error;
+        if (mEndpoint.advance(message.connection, session::State::Spawned, error)
+            != session::TransitionResult::Advanced)
+        {
+            disconnectTransport(message.connection, "spawn session transition failed");
+            return;
+        }
+    }
+    update(&packet, stream);
+}
+
+void Networking::processAuthenticationMessage(transport::TransportMessage message)
+{
+    security::AuthenticationRequest request;
+    if (!security::decodeAuthenticationRequest(message.payload, request))
+    {
+        disconnectTransport(message.connection, "invalid authentication request");
+        return;
+    }
+    const bool registration = request.operation == security::AuthenticationOperation::Register;
+    const auto expectedType = registration ? protocol::MessageType::AccountRegister
+                                           : protocol::MessageType::AccountLogin;
+    if (message.messageType != static_cast<std::uint16_t>(expectedType))
+    {
+        disconnectTransport(message.connection, "authentication operation mismatch");
+        return;
+    }
+
+    const std::string address = mEndpoint.peerAddress(message.connection)
+        .value_or("connection-" + std::to_string(message.connection.value));
+    auto result = mAuthentication.authenticate(std::move(request), address);
+    if (!sendAuthenticationResponse(message.connection, result.response))
+    {
+        disconnectTransport(message.connection, "failed to send authentication result");
+        return;
+    }
+    if (!result.response.authenticated())
+        return;
+
+    Player* player = Players::getPlayer(RakNet::RakNetGUID(message.connection.value));
+    if (player == nullptr)
+    {
+        disconnectTransport(message.connection, "authenticated player slot was missing");
+        return;
+    }
+    player->npc.mName = result.accountName;
+    player->setHandshake();
+
+    transport::TransportError error;
+    if (mEndpoint.advance(message.connection, session::State::AccountAuthenticated, error)
+        != session::TransitionResult::Advanced)
+    {
+        disconnectTransport(message.connection, "authentication session transition failed");
+        return;
+    }
+    mAuthenticatedConnections.insert(message.connection.value);
+    const unsigned short pid = player->getId();
+    Script::Call<Script::CallbackIdentity("OnPlayerAuthenticated")>(
+        pid, result.accountName.c_str(), result.isNewAccount);
+    Script::Call<Script::CallbackIdentity("OnPlayerConnect")>(pid);
+}
+
+bool Networking::sendAuthenticationResponse(transport::TransportConnectionId connection,
+    const security::AuthenticationResponse& response)
+{
+    std::vector<std::byte> payload;
+    protocol::CodecError codecError = protocol::CodecError::None;
+    if (!security::encodeAuthenticationResponse(response, payload, codecError))
+        return false;
+    transport::TransportMessage message;
+    message.connection = connection;
+    message.delivery = transport::DeliveryMode::ReliableOrdered;
+    message.lane = transport::MessageLane::System;
+    message.messageType
+        = static_cast<std::uint16_t>(protocol::MessageType::AuthenticationResult);
+    message.subject = connection.value;
+    message.sequence = 1;
+    message.payload = std::move(payload);
+    transport::TransportError error;
+    return mEndpoint.send(std::move(message), error);
+}
+
+void Networking::disconnectTransport(
+    transport::TransportConnectionId connection, const char* reason)
+{
+    LOG_MESSAGE_SIMPLE(TimedLog::LOG_WARN, "Disconnecting transport connection %llu: %s",
+        static_cast<unsigned long long>(connection.value), reason);
+    mEndpoint.disconnect(connection);
+}
+
 void Networking::kickPlayer(RakNet::RakNetGUID guid, bool sendNotification)
 {
-    peer->CloseConnection(guid, sendNotification);
+    (void)sendNotification;
+    disconnectTransport({ guid.g }, "kicked by server");
 }
 
 void Networking::banAddress(const char *ipAddress)
 {
-    peer->AddToBanList(ipAddress);
+    if (ipAddress != nullptr && *ipAddress != '\0')
+        mBannedAddresses.emplace(ipAddress);
 }
 
 void Networking::unbanAddress(const char *ipAddress)
 {
-    peer->RemoveFromBanList(ipAddress);
+    if (ipAddress != nullptr)
+        mBannedAddresses.erase(ipAddress);
 }
 
 unsigned short Networking::numberOfConnections() const
 {
-    return peer->NumberOfConnections();
+    return static_cast<unsigned short>(mDispatcher.connectionCount());
 }
 
 unsigned int Networking::maxConnections() const
 {
-    return peer->GetMaximumIncomingConnections();
+    return mMaximumConnections;
 }
 
 int Networking::getAvgPing(RakNet::AddressOrGUID addr) const
 {
-    return peer->GetAveragePing(addr);
+    (void)addr;
+    return -1;
 }
 
 unsigned short Networking::getPort() const
 {
-    return peer->GetMyBoundAddress().GetPort();
-}
-
-MasterClient *Networking::getMasterClient()
-{
-    return mclient;
-}
-
-void Networking::InitQuery(std::string queryAddr, unsigned short queryPort)
-{
-    mclient = new MasterClient(peer, queryAddr, queryPort);
+    return mPort;
 }
 
 void Networking::postInit()

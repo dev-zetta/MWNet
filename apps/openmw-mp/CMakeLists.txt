@@ -46,7 +46,6 @@ set(SERVER
     main.cpp
     Player.cpp
     Networking.cpp
-    MasterClient.cpp
     Cell.cpp
     CellController.cpp
     Utils.cpp
@@ -183,6 +182,7 @@ target_link_libraries(tes3mp-server
     smhasher
     ${LuaJit_LIBRARIES}
     ${Breakpad_Library}
+    tes3mp-protocol11-endpoint
 )
 
 if (UNIX)

@@ -7,15 +7,27 @@
 #include <components/openmw-mp/Controllers/ObjectPacketController.hpp>
 #include <components/openmw-mp/Controllers/WorldstatePacketController.hpp>
 #include <components/openmw-mp/Packets/PacketPreInit.hpp>
+#include <components/openmw-mp/Security/ServerAuthenticationService.hpp>
+#include <components/openmw-mp/Transport/ApplicationPacketDispatcher.hpp>
+#include <components/openmw-mp/Transport/ApplicationPacketReceiver.hpp>
+#include <components/openmw-mp/Transport/Protocol11Endpoint.hpp>
 #include "Player.hpp"
 
-class MasterClient;
+#include <filesystem>
+#include <string>
+#include <string_view>
+#include <unordered_set>
+
 namespace  mwmp
 {
     class Networking
     {
     public:
-        Networking(RakNet::RakPeerInterface *peer);
+        Networking(RakNet::RakPeerInterface *peer,
+            transport::Protocol11Endpoint& endpoint,
+            const std::filesystem::path& credentialDirectory,
+            const std::filesystem::path& legacyPlayerDirectory,
+            unsigned int maximumConnections, unsigned short port);
         ~Networking();
 
         void newPlayer(RakNet::RakNetGUID guid);
@@ -24,7 +36,7 @@ namespace  mwmp
         
         void banAddress(const char *ipAddress);
         void unbanAddress(const char *ipAddress);
-        RakNet::SystemAddress getSystemAddress(RakNet::RakNetGUID guid);
+        std::string getPeerAddress(RakNet::RakNetGUID guid) const;
 
         void processSystemPacket(RakNet::Packet *packet);
         void processPlayerPacket(RakNet::Packet *packet);
@@ -62,9 +74,8 @@ namespace  mwmp
         bool getScriptErrorIgnoringState();
         void setScriptErrorIgnoringState(bool state);
 
-        MasterClient *getMasterClient();
-        void InitQuery(std::string queryAddr, unsigned short queryPort);
-        void setServerPassword(std::string passw) noexcept;
+        bool setServerPassword(std::string_view password, std::string& error);
+        bool setServerPasswordHash(std::string passwordHash, std::string& error);
         bool isPassworded() const;
 
         static const Networking &get();
@@ -75,13 +86,26 @@ namespace  mwmp
         PacketPreInit::PluginContainer &getSamples();
     private:
         bool preInit(RakNet::Packet *packet, RakNet::BitStream &bsIn);
-        std::string serverPassword;
+        void processTransportEvent(transport::TransportEvent event);
+        void processApplicationMessage(transport::TransportMessage message);
+        void processAuthenticationMessage(transport::TransportMessage message);
+        bool sendAuthenticationResponse(transport::TransportConnectionId connection,
+            const security::AuthenticationResponse& response);
+        void disconnectTransport(transport::TransportConnectionId connection,
+            const char* reason);
         static Networking *sThis;
 
         RakNet::RakPeerInterface *peer;
         RakNet::BitStream bsOut;
         TPlayers *players;
-        MasterClient *mclient;
+        transport::Protocol11Endpoint& mEndpoint;
+        transport::ApplicationPacketDispatcher mDispatcher;
+        transport::ApplicationPacketReceiver mReceiver;
+        security::ServerAuthenticationService mAuthentication;
+        std::unordered_set<std::uint64_t> mAuthenticatedConnections;
+        std::unordered_set<std::string> mBannedAddresses;
+        unsigned int mMaximumConnections;
+        unsigned short mPort;
 
         BaseSystem baseSystem;
         BaseActorList baseActorList;
