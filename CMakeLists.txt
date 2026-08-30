@@ -73,6 +73,7 @@ ENDIF()
 # first installing the complete OpenMW rendering and editor dependency stack.
 if (TES3MP_TESTS_ONLY)
     enable_testing()
+    add_subdirectory(components/openmw-mp/Protocol)
     add_subdirectory(apps/tes3mp_tests)
 
     if (BUILD_TES3MP_FUZZERS)
@@ -779,6 +780,7 @@ if (OPENMW_CXX_FLAGS)
 endif()
 
 # Components
+add_subdirectory(components/openmw-mp/Protocol)
 add_subdirectory(components)
 target_compile_definitions(components PRIVATE OPENMW_DOC_BASEURL="${OPENMW_DOC_BASEURL}")
 

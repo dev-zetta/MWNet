@@ -3,6 +3,8 @@
 #include <iostream>
 #include <string_view>
 
+int runProtocolTests();
+
 int main()
 {
     static_assert(TES3MP_PROTO_VERSION == 11, "TES3MP hardening requires protocol 11");
@@ -13,5 +15,5 @@ int main()
         return 1;
     }
 
-    return 0;
+    return runProtocolTests() == 0 ? 0 : 1;
 }
