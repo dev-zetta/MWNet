@@ -19,9 +19,14 @@ namespace mwmp::transport
         if (!decode)
             return { ApplicationReceiveStatus::Invalid, decode };
 
+        const std::uint64_t effectiveSubject
+            = mFlow == ApplicationPacketFlow::ClientToServer
+                && (message.lane == MessageLane::System || message.lane == MessageLane::Player)
+            ? message.connection.value : decoded.subject;
+
         if (message.delivery == DeliveryMode::Unreliable
             && !mSequences.accept(message.connection, message.lane,
-                decoded.subject, decoded.sequence))
+                effectiveSubject, decoded.sequence))
         {
             return { ApplicationReceiveStatus::StaleSnapshot, decode };
         }
@@ -29,7 +34,7 @@ namespace mwmp::transport
         ReceivedApplicationPacket accepted;
         accepted.sender = message.connection;
         accepted.id = decoded.id;
-        accepted.subject = decoded.subject;
+        accepted.subject = effectiveSubject;
         accepted.sequence = decoded.sequence;
         accepted.payload = std::move(decoded.payload);
         packet = std::move(accepted);

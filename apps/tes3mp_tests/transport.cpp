@@ -284,7 +284,7 @@ namespace
         EXPECT(result.status == ApplicationReceiveStatus::Accepted);
         EXPECT(packet.sender == connection);
         EXPECT(packet.id == protocol::ApplicationPacketId::PlayerPosition);
-        EXPECT(packet.subject == 73);
+        EXPECT(packet.subject == connection.value);
         EXPECT(packet.sequence == 8);
         EXPECT(packet.payload == body);
 
@@ -319,6 +319,13 @@ namespace
         EXPECT(static_cast<bool>(receiver.receive(reliable, packet)));
         EXPECT(static_cast<bool>(receiver.receive(reliable, packet)));
         receiver.clear();
+
+        TransportMessage actor;
+        EXPECT(encodeApplicationPacket(protocol::ApplicationPacketId::ActorPosition,
+            ApplicationPacketFlow::ClientToServer, connection, 901, 1,
+            body, actor, error));
+        EXPECT(static_cast<bool>(receiver.receive(actor, packet)));
+        EXPECT(packet.subject == 901);
     }
 }
 
