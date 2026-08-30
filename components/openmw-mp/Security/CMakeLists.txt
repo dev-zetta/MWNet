@@ -1,6 +1,7 @@
 add_library(tes3mp-security STATIC
     AccountAuthentication.cpp
     AccountStore.cpp
+    AuthenticationMessages.cpp
     AuthenticationRateLimiter.cpp
     PasswordHash.cpp
     SecureSession.cpp

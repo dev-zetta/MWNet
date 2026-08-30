@@ -1,5 +1,6 @@
 #include <components/openmw-mp/Security/AccountAuthentication.hpp>
 #include <components/openmw-mp/Security/AccountStore.hpp>
+#include <components/openmw-mp/Security/AuthenticationMessages.hpp>
 #include <components/openmw-mp/Security/AuthenticationRateLimiter.hpp>
 
 #include <chrono>
@@ -215,6 +216,69 @@ namespace
         std::error_code cleanupError;
         std::filesystem::remove_all(directory, cleanupError);
     }
+
+    std::string passwordText(const PasswordBuffer& password)
+    {
+        const auto characters = password.characters();
+        return { characters.data(), characters.size() };
+    }
+
+    void testAuthenticationMessages()
+    {
+        std::string errorText;
+        auto password = PasswordBuffer::copyFrom("account password", errorText);
+        auto accessPassword = PasswordBuffer::copyFrom("server password", errorText);
+        EXPECT(password.has_value());
+        EXPECT(accessPassword.has_value());
+        if (!password || !accessPassword)
+            return;
+
+        std::vector<std::byte> encoded;
+        mwmp::protocol::CodecError error = mwmp::protocol::CodecError::InvalidValue;
+        EXPECT(encodeAuthenticationRequest(AuthenticationOperation::Register,
+            "Nerevar", *password, &*accessPassword, encoded, error));
+        EXPECT(error == mwmp::protocol::CodecError::None);
+
+        AuthenticationRequest request;
+        EXPECT(static_cast<bool>(decodeAuthenticationRequest(encoded, request)));
+        EXPECT(request.operation == AuthenticationOperation::Register);
+        EXPECT(request.accountName == "Nerevar");
+        EXPECT(request.password.has_value());
+        EXPECT(request.password && passwordText(*request.password) == "account password");
+        EXPECT(request.serverAccessPassword.has_value());
+        EXPECT(request.serverAccessPassword
+            && passwordText(*request.serverAccessPassword) == "server password");
+
+        for (std::size_t size = 0; size < encoded.size(); ++size)
+        {
+            AuthenticationRequest truncated;
+            truncated.accountName = "unchanged";
+            EXPECT(!decodeAuthenticationRequest(
+                std::span(encoded).first(size), truncated));
+            EXPECT(truncated.accountName == "unchanged");
+        }
+        auto trailing = encoded;
+        trailing.push_back(std::byte{ 0 });
+        EXPECT(!decodeAuthenticationRequest(trailing, request));
+
+        AuthenticationResponse response;
+        response.status = AuthenticationResponseStatus::Registered;
+        response.message = "account created";
+        EXPECT(encodeAuthenticationResponse(response, encoded, error));
+        AuthenticationResponse decoded;
+        EXPECT(static_cast<bool>(decodeAuthenticationResponse(encoded, decoded)));
+        EXPECT(decoded.status == AuthenticationResponseStatus::Registered);
+        EXPECT(decoded.authenticated());
+        EXPECT(decoded.message == "account created");
+        for (std::size_t size = 0; size < encoded.size(); ++size)
+        {
+            AuthenticationResponse truncated;
+            truncated.message = "unchanged";
+            EXPECT(!decodeAuthenticationResponse(
+                std::span(encoded).first(size), truncated));
+            EXPECT(truncated.message == "unchanged");
+        }
+    }
 }
 
 int runAuthenticationTests()
@@ -222,5 +286,6 @@ int runAuthenticationTests()
     testArgon2idAndMigration();
     testRateLimits();
     testAccountStore();
+    testAuthenticationMessages();
     return sFailures;
 }
