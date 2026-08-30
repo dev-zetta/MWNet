@@ -35,6 +35,7 @@ namespace mwmp
 
         void pressedChatMode(); //switch chat mode
         void pressedSay(); // switch chat focus (if chat mode != CHAT_DISABLED)
+        void setWindowVisible(bool visible);
         void setDelay(float newDelay);
 
         void update(float dt);
@@ -78,10 +79,10 @@ namespace mwmp
 
         void setEditState(bool state);
 
-        int windowState;
-        bool editState;
-        float delay;
-        float curTime;
+        int windowState = CHAT_DISABLED;
+        bool editState = false;
+        float delay = 3.f;
+        float curTime = 0.f;
     };
 }
 #endif //OPENMW_GUICHAT_HPP

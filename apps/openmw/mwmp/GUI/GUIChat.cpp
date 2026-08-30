@@ -1,6 +1,7 @@
 #include "GUIChat.hpp"
 
 #include <MyGUI_EditBox.h>
+#include <MyGUI_LayerManager.h>
 #include "apps/openmw/mwbase/environment.hpp"
 #include "apps/openmw/mwgui/windowmanagerimp.hpp"
 #include "apps/openmw/mwinput/inputmanagerimp.hpp"
@@ -39,9 +40,8 @@ namespace mwmp
 
         mHistory->setNeedKeyFocus(false);
 
-        windowState = CHAT_DISABLED;
+        mCurrent = mCommandHistory.end();
         mCommandLine->setVisible(false);
-        delay = 3; // 3 sec.
     }
 
     void GUIChat::onOpen()
@@ -184,17 +184,45 @@ namespace mwmp
         }
     }
 
+    void GUIChat::setWindowVisible(bool visible)
+    {
+        if (visible)
+        {
+            if (windowState == CHAT_DISABLED)
+                windowState = CHAT_ENABLED;
+            setVisible(true);
+        }
+        else
+        {
+            windowState = CHAT_DISABLED;
+            setEditState(false);
+            setVisible(false);
+        }
+    }
+
     void GUIChat::setEditState(bool state)
     {
         editState = state;
-        mCommandLine->setVisible(editState);
-        MWBase::Environment::get().getWindowManager()->setKeyFocusWidget(editState ? mCommandLine : nullptr);
+        mCommandLine->setVisible(state);
+
+        MWBase::WindowManager* windowManager = MWBase::Environment::get().getWindowManager();
+        if (state)
+        {
+            MyGUI::LayerManager::getInstance().upLayerItem(mMainWidget);
+            windowManager->setKeyFocusWidget(mCommandLine);
+            mCommandLine->setTextCursor(mCommandLine->getTextLength());
+        }
+        else if (MyGUI::InputManager::getInstance().getKeyFocusWidget() == mCommandLine)
+            windowManager->setKeyFocusWidget(nullptr);
     }
 
     void GUIChat::pressedSay()
     {
         if (windowState == CHAT_DISABLED)
-            return;
+        {
+            windowState = CHAT_ENABLED;
+            setVisible(true);
+        }
 
         if (!mCommandLine->getVisible())
             LOG_MESSAGE_SIMPLE(TimedLog::LOG_VERBOSE, "Opening chat.");
@@ -210,6 +238,13 @@ namespace mwmp
 
     void GUIChat::keyPress(MyGUI::Widget *_sender, MyGUI::KeyCode key, MyGUI::Char _char)
     {
+        if (key == MyGUI::KeyCode::Escape)
+        {
+            mCommandLine->setCaption("");
+            setEditState(false);
+            return;
+        }
+
         if (mCommandHistory.empty()) return;
 
         // Traverse history with up and down arrows

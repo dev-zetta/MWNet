@@ -8,6 +8,8 @@
 #include "../mwbase/windowmanager.hpp"
 #include "../mwbase/world.hpp"
 
+#include "../mwmp/Main.hpp"
+
 #include "duration.hpp"
 #include "globals.hpp"
 #include "timestamp.hpp"
@@ -255,6 +257,20 @@ namespace MWWorld
     void DateTimeManager::updateIsPaused()
     {
         auto stateManager = MWBase::Environment::get().getStateManager();
+
+        /*
+            Start of tes3mp change (major)
+
+            A local menu, dialogue, console, or message box must not stop a
+            multiplayer world that continues to run on the server.
+        */
+        if (mwmp::Main::isInitialized() && stateManager->getState() == MWBase::StateManager::State_Running)
+        {
+            mPaused = false;
+            return;
+        }
+        /* End of tes3mp change (major) */
+
         auto wm = MWBase::Environment::get().getWindowManager();
         mPaused = !mPausedTags.empty() || wm->isConsoleMode() || wm->isPostProcessorHudVisible()
             || wm->isInteractiveMessageBoxActive() || stateManager->getState() == MWBase::StateManager::State_NoGame;

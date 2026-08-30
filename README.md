@@ -27,8 +27,10 @@ The major changes since TES3MP 0.8.1 include:
 * a vendored CrabNet networking dependency for reproducible builds;
 * a sol2-based server Lua binding layer and bundled 0.8.1 CoreScripts brought forward for 1.0.0;
 * extensive startup, cell, actor, object, dialogue, death, and NPC AI crash fixes;
-* corrected multiplayer melee and hand-to-hand damage propagation; and
-* restored TES3MP chat shortcuts on OpenMW 0.52, including F2 and Y.
+* corrected multiplayer melee and hand-to-hand damage propagation;
+* restored TES3MP chat shortcuts on OpenMW 0.52, including F2 and Y;
+* real-time multiplayer simulation while inventory, dialogue, and other local GUI windows are open; and
+* server-driven resurrection without the default single-player jail/menu interruption.
 
 See the [TES3MP changelog](tes3mp-changelog.md) for the detailed release history and OpenMW's [engine changelog](CHANGELOG.md) for upstream changes.
 

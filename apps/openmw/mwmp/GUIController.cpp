@@ -102,7 +102,7 @@ void mwmp::GUIController::printChatMessage(std::string &msg)
 void mwmp::GUIController::setChatVisible(bool chatVisible)
 {
     if (mChat != nullptr)
-        mChat->setVisible(chatVisible);
+        mChat->setWindowVisible(chatVisible);
 }
 
 void mwmp::GUIController::requestShowBrowser()
@@ -241,14 +241,17 @@ void mwmp::GUIController::onInputBoxDone(MWGui::WindowBase *parWindow)
 bool mwmp::GUIController::pressedKey(int key)
 {
     MWBase::WindowManager *windowManager = MWBase::Environment::get().getWindowManager();
-    if (mChat == nullptr || windowManager->isConsoleMode() || windowManager->getMode() != MWGui::GM_None)
+    if (mChat == nullptr || windowManager->isConsoleMode()
+        || MWBase::Environment::get().getStateManager()->getState() != MWBase::StateManager::State_Running)
         return false;
     if (key == keyChatMode)
     {
         mChat->pressedChatMode();
         return true;
     }
-    else if (key == keySay && !mChat->getEditState())
+    else if (key == keySay && !mChat->getEditState()
+        && !windowManager->isInteractiveMessageBoxActive()
+        && !MyGUI::InputManager::getInstance().isModalAny())
     {
         mChat->pressedSay();
         return true;
