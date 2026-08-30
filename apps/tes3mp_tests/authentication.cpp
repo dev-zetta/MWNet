@@ -2,6 +2,7 @@
 #include <components/openmw-mp/Security/AccountStore.hpp>
 #include <components/openmw-mp/Security/AuthenticationMessages.hpp>
 #include <components/openmw-mp/Security/AuthenticationRateLimiter.hpp>
+#include <components/openmw-mp/Security/ServerAuthenticationService.hpp>
 
 #include <chrono>
 #include <filesystem>
@@ -279,6 +280,72 @@ namespace
             EXPECT(truncated.message == "unchanged");
         }
     }
+
+    AuthenticationRequest makeRequest(std::string_view account,
+        std::string_view password, std::string_view access,
+        AuthenticationOperation operation = AuthenticationOperation::Login)
+    {
+        std::string error;
+        AuthenticationRequest request;
+        request.operation = operation;
+        request.accountName = account;
+        request.password = PasswordBuffer::copyFrom(password, error);
+        if (!access.empty())
+            request.serverAccessPassword = PasswordBuffer::copyFrom(access, error);
+        return request;
+    }
+
+    void testServerAuthenticationService()
+    {
+        const auto unique = std::to_string(
+            std::chrono::steady_clock::now().time_since_epoch().count());
+        const auto directory = std::filesystem::temp_directory_path()
+            / ("tes3mp-auth-service-" + unique);
+        std::string error;
+        auto access = PasswordBuffer::copyFrom("private server", error);
+        EXPECT(access.has_value());
+        if (!access)
+            return;
+        std::string accessHash;
+        EXPECT(PasswordHash::createArgon2id(*access, accessHash, error));
+
+        ServerAuthenticationService service(
+            directory / "accounts", directory / "player");
+        EXPECT(service.setAccessPasswordHash(accessHash, error));
+        EXPECT(service.requiresAccessPassword());
+
+        auto result = service.authenticate(makeRequest("Vivec", "secret", "wrong",
+            AuthenticationOperation::Register), "127.0.0.1");
+        EXPECT(result.response.status == AuthenticationResponseStatus::ServerAccessDenied);
+        EXPECT(!result.response.authenticated());
+
+        result = service.authenticate(makeRequest("Vivec", "secret", "private server",
+            AuthenticationOperation::Register), "127.0.0.1");
+        EXPECT(result.response.status == AuthenticationResponseStatus::Registered);
+        EXPECT(result.response.authenticated());
+        EXPECT(result.accountName == "Vivec");
+        EXPECT(result.isNewAccount);
+
+        result = service.authenticate(makeRequest("vivec", "secret", "private server"),
+            "127.0.0.1");
+        EXPECT(result.response.status == AuthenticationResponseStatus::Authenticated);
+        EXPECT(!result.isNewAccount);
+
+        const auto start = AuthenticationRateLimiter::Clock::time_point{};
+        for (std::size_t attempt = 0; attempt < 5; ++attempt)
+        {
+            result = service.authenticate(makeRequest("Vivec", "bad", "private server"),
+                "10.0.0.2", start + attempt * 1s);
+            EXPECT(result.response.status == AuthenticationResponseStatus::InvalidCredentials);
+        }
+        result = service.authenticate(makeRequest("Vivec", "secret", "private server"),
+            "10.0.0.2", start + 5s);
+        EXPECT(result.response.status == AuthenticationResponseStatus::RateLimited);
+
+        EXPECT(!service.setAccessPasswordHash("plaintext", error));
+        std::error_code cleanupError;
+        std::filesystem::remove_all(directory, cleanupError);
+    }
 }
 
 int runAuthenticationTests()
@@ -287,5 +354,6 @@ int runAuthenticationTests()
     testRateLimits();
     testAccountStore();
     testAuthenticationMessages();
+    testServerAuthenticationService();
     return sFailures;
 }

@@ -5,6 +5,7 @@ add_library(tes3mp-security STATIC
     AuthenticationRateLimiter.cpp
     PasswordHash.cpp
     SecureSession.cpp
+    ServerAuthenticationService.cpp
     ServerIdentity.cpp
     SodiumInit.cpp
     TrustStore.cpp
