@@ -2,6 +2,7 @@ add_library(tes3mp-transport STATIC
     ApplicationPacketBridge.cpp
     ApplicationPacketDispatcher.cpp
     ApplicationPacketReceiver.cpp
+    LegacyPacketFrame.cpp
     SnapshotSequenceTracker.cpp
     TransportCodec.cpp
     TransportQueue.cpp
