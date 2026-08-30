@@ -18,6 +18,7 @@ This is the first hardening milestone for the major OpenMW 0.52 compatibility an
 * Gate application traffic behind an identity-bound secure transport handshake with explicit first-use confirmation, automation fingerprints, hard mismatch failures and encrypted proof of key possession
 * Define protocol-11 intent/result message identities and enforce side-aware packet allowlists across transport, content, account, spawn and disconnect session states
 * Add protected password buffers, moderate-cost Argon2id account credentials, fail-safe legacy SHA-256 migration and account/IP plus pre-KDF authentication throttles
+* Add a transport/session gate that disconnects peers whose inbound or outbound messages violate the authenticated lifecycle allowlist
 * Update the multiplayer client, dedicated server and tools onto OpenMW 0.52, including its current rendering, input, Lua, navigation and content APIs
 * Port TES3MP-specific code to C++20, Qt 6 and the current `ESM::RefId`, settings, resource and world APIs
 * Vendor CrabNet in `extern/crabnet` so client and server builds no longer depend on a separately cloned networking repository

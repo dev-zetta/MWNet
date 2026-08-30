@@ -49,6 +49,8 @@ namespace mwmp::session
         TransitionResult advance(State target) noexcept;
         MessageDecision receive(std::uint16_t messageType) const noexcept;
         MessageDecision receive(protocol::MessageType messageType) const noexcept;
+        MessageDecision send(std::uint16_t messageType) const noexcept;
+        MessageDecision send(protocol::MessageType messageType) const noexcept;
 
     private:
         Endpoint mEndpoint;

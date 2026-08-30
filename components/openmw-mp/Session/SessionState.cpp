@@ -160,6 +160,23 @@ namespace mwmp::session
             : MessageDecision::NotAllowedInState;
     }
 
+    MessageDecision SessionState::send(std::uint16_t messageType) const noexcept
+    {
+        if (!protocol::isKnownMessageType(messageType))
+            return MessageDecision::UnknownMessage;
+        return send(static_cast<protocol::MessageType>(messageType));
+    }
+
+    MessageDecision SessionState::send(protocol::MessageType messageType) const noexcept
+    {
+        const Endpoint peer = mEndpoint == Endpoint::Client ? Endpoint::Server : Endpoint::Client;
+        if (!hasCorrectDirection(peer, messageType))
+            return MessageDecision::WrongDirection;
+        return allowedInState(peer, mState, messageType)
+            ? MessageDecision::Allowed
+            : MessageDecision::NotAllowedInState;
+    }
+
     const char* describe(State state) noexcept
     {
         switch (state)

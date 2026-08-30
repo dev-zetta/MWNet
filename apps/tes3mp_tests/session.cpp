@@ -1,14 +1,21 @@
 #include <components/openmw-mp/Protocol/MessageType.hpp>
 #include <components/openmw-mp/Session/SessionState.hpp>
+#include <components/openmw-mp/Session/SessionTransport.hpp>
 
 #include <array>
+#include <chrono>
 #include <cstdint>
+#include <deque>
 #include <iostream>
+#include <memory>
+#include <optional>
 
 namespace
 {
     using mwmp::protocol::MessageType;
     using namespace mwmp::session;
+    using namespace mwmp::transport;
+    using namespace std::chrono_literals;
 
     int sFailures = 0;
 
@@ -179,6 +186,96 @@ namespace
             EXPECT(allowedCount == (common ? 8U : 1U));
         }
     }
+
+    class FakeTransport final : public ITransport
+    {
+    public:
+        bool listen(const ListenOptions&, TransportError&) override { return true; }
+        bool connect(const ConnectOptions&, TransportConnectionId& connection,
+            TransportError&) override
+        {
+            connection = { 7 };
+            return true;
+        }
+        bool send(TransportMessage message, TransportError&) override
+        {
+            sent.push_back(std::move(message));
+            return true;
+        }
+        std::optional<TransportEvent> poll(std::chrono::milliseconds) override
+        {
+            if (events.empty())
+                return std::nullopt;
+            TransportEvent event = std::move(events.front());
+            events.pop_front();
+            return event;
+        }
+        void disconnect(TransportConnectionId connection) override
+        {
+            disconnected.push_back(connection);
+        }
+        void shutdown(std::chrono::milliseconds) override { wasShutdown = true; }
+
+        std::deque<TransportEvent> events;
+        std::vector<TransportMessage> sent;
+        std::vector<TransportConnectionId> disconnected;
+        bool wasShutdown = false;
+    };
+
+    TransportMessage message(TransportConnectionId connection, MessageType type)
+    {
+        TransportMessage result;
+        result.connection = connection;
+        result.messageType = static_cast<std::uint16_t>(type);
+        return result;
+    }
+
+    void testSessionTransport()
+    {
+        auto backend = std::make_unique<FakeTransport>();
+        FakeTransport* observed = backend.get();
+        SessionTransport transport(std::move(backend), Endpoint::Server);
+        const TransportConnectionId connection{ 7 };
+        TransportError error;
+
+        observed->events.push_back(
+            { TransportEventType::TrustRequired, connection, {}, "fingerprint" });
+        const auto trust = transport.poll(0ms);
+        EXPECT(trust && trust->type == TransportEventType::TrustRequired);
+
+        observed->events.push_back({ TransportEventType::Connected, connection, {}, {} });
+        const auto connected = transport.poll(0ms);
+        EXPECT(connected && connected->type == TransportEventType::Connected);
+        EXPECT(transport.state(connection) == std::optional(State::TransportAuthenticated));
+
+        EXPECT(transport.send(message(connection, MessageType::ContentRequirements), error));
+        EXPECT(observed->sent.size() == 1);
+        EXPECT(!transport.send(message(connection, MessageType::ContentManifest), error));
+        EXPECT(error.code == TransportErrorCode::SecurityFailure);
+
+        observed->events.push_back({ TransportEventType::Message, connection,
+            message(connection, MessageType::AccountLogin), {} });
+        const auto rejected = transport.poll(0ms);
+        EXPECT(rejected && rejected->type == TransportEventType::Disconnected);
+        EXPECT(!observed->disconnected.empty());
+        EXPECT(!transport.state(connection).has_value());
+
+        observed->events.push_back({ TransportEventType::Connected, connection, {}, {} });
+        EXPECT(transport.poll(0ms)->type == TransportEventType::Connected);
+        EXPECT(transport.advance(connection, State::ContentVerified, error)
+            == TransitionResult::Advanced);
+        EXPECT(transport.advance(connection, State::Spawned, error)
+            == TransitionResult::OutOfOrder);
+        EXPECT(error.code == TransportErrorCode::SecurityFailure);
+
+        observed->events.push_back({ TransportEventType::Message, connection,
+            message(connection, MessageType::AccountLogin), {} });
+        const auto account = transport.poll(0ms);
+        EXPECT(account && account->type == TransportEventType::Message);
+
+        transport.shutdown(1ms);
+        EXPECT(observed->wasShutdown);
+    }
 }
 
 int runSessionTests()
@@ -188,6 +285,7 @@ int runSessionTests()
     testServerWhitelist();
     testClientWhitelist();
     testEveryMessageHasOneLifecycleBoundary();
+    testSessionTransport();
     EXPECT(mwmp::protocol::isKnownMessageType(
         static_cast<std::uint16_t>(MessageType::RespawnResult)));
     EXPECT(!mwmp::protocol::isKnownMessageType(0));
