@@ -1,12 +1,16 @@
 #ifndef OPENMW_BASEPACKET_HPP
 #define OPENMW_BASEPACKET_HPP
 
+#include <algorithm>
 #include <string>
+#include <type_traits>
+#include <utility>
 #include <RakNetTypes.h>
 #include <BitStream.h>
 #include <PacketPriority.h>
 #include <components/esm/path.hpp>
 #include <components/esm/refid.hpp>
+#include <components/openmw-mp/Protocol/PacketCodec.hpp>
 
 
 namespace mwmp
@@ -46,20 +50,35 @@ namespace mwmp
             return packetValid;
         }
 
+        protocol::CodecError getCodecError() const
+        {
+            return codecError;
+        }
+
     protected:
         template<class templateType>
         bool RW(templateType &data, uint32_t size, bool write)
         {
+            if (!packetValid || bs == nullptr)
+                return false;
+
             if (write)
+            {
                 bs->Write(data, size);
-            else
-                return bs->Read(data, size);
+                return true;
+            }
+
+            if (!bs->Read(data, size))
+                return invalidate(protocol::CodecError::Truncated);
             return true;
         }
 
         template<class templateType>
         bool RW(templateType &data, bool write, bool compress = 0)
         {
+            if (!packetValid || bs == nullptr)
+                return false;
+
             if (write)
             {
                 if (compress)
@@ -70,55 +89,91 @@ namespace mwmp
             }
             else
             {
+                templateType decoded{};
+                bool result = false;
                 if (compress)
-                    return bs->ReadCompressed(data);
+                    result = bs->ReadCompressed(decoded);
                 else
-                    return bs->Read(data);
+                    result = bs->Read(decoded);
+                if (!result)
+                    return invalidate(protocol::CodecError::Truncated);
+                if constexpr (std::is_array_v<templateType>)
+                    std::copy_n(decoded, std::extent_v<templateType>, data);
+                else
+                    data = std::move(decoded);
+                return true;
             }
         }
 
         bool RW(bool &data, bool write)
         {
+            if (!packetValid || bs == nullptr)
+                return false;
+
             if (write)
+            {
                 bs->Write(data);
-            else
-                return bs->Read(data);
+                return true;
+            }
+
+            bool decoded = false;
+            if (!bs->Read(decoded))
+                return invalidate(protocol::CodecError::Truncated);
+            data = decoded;
             return true;
         }
 
-        const static uint32_t maxStrSize = 64 * 1024; // 64 KiB
+        bool RWCount(std::uint32_t& count, bool write,
+            std::uint32_t maximum = protocol::limits::defaultCollectionElements)
+        {
+            if (!packetValid || bs == nullptr)
+                return false;
+
+            if (write && count > maximum)
+                return invalidate(protocol::CodecError::LimitExceeded);
+            if (!RW(count, write))
+                return false;
+            if (count > maximum)
+                return invalidate(protocol::CodecError::LimitExceeded);
+            return true;
+        }
+
+        const static uint32_t maxStrSize = protocol::limits::defaultStringBytes;
 
         bool RW(std::string &str, bool write, bool compress = false, std::string::size_type maxSize = maxStrSize)
         {
-            bool res = true;
+            if (!packetValid || bs == nullptr)
+                return false;
+
             if (write)
             {
+                if (str.size() > maxSize || !protocol::isValidUtf8(std::as_bytes(std::span(str))))
+                    return invalidate(str.size() > maxSize ? protocol::CodecError::LimitExceeded
+                                                          : protocol::CodecError::InvalidUtf8);
                 if (compress)
-                    RakNet::RakString::SerializeCompressed(str.substr(0, maxSize).c_str(), bs); // todo: remove extra copy of string
+                    RakNet::RakString::SerializeCompressed(str.c_str(), bs);
                 else
                 {
                     RakNet::RakString rstr;
-                    rstr.AppendBytes(str.c_str(), str.size() > maxSize ? maxSize : str.size());
+                    rstr.AppendBytes(str.c_str(), str.size());
                     bs->Write(rstr);
                 }
+                return true;
             }
-            else
-            {
-                RakNet::RakString rstr;
-                if (compress)
-                    res = rstr.DeserializeCompressed(bs);
-                else
-                    res = bs->Read(rstr);
 
-                if (res)
-                {
-                    rstr.Truncate(rstr.GetLength() > maxSize ? maxSize : rstr.GetLength());
-                    str = rstr.C_String();
-                }
-                else
-                    str = std::string();
-            }
-            return res;
+            RakNet::RakString rstr;
+            const bool result = compress ? rstr.DeserializeCompressed(bs) : bs->Read(rstr);
+            if (!result)
+                return invalidate(protocol::CodecError::Truncated);
+            if (rstr.GetLength() > maxSize)
+                return invalidate(protocol::CodecError::LimitExceeded);
+
+            const auto encoded = std::as_bytes(std::span(rstr.C_String(), rstr.GetLength()));
+            if (!protocol::isValidUtf8(encoded))
+                return invalidate(protocol::CodecError::InvalidUtf8);
+
+            str.assign(rstr.C_String(), rstr.GetLength());
+            return true;
         }
 
         bool RW(ESM::RefId &refId, bool write, bool compress = false)
@@ -154,6 +209,14 @@ namespace mwmp
         }
 
     protected:
+        bool invalidate(protocol::CodecError error)
+        {
+            packetValid = false;
+            if (codecError == protocol::CodecError::None)
+                codecError = error;
+            return false;
+        }
+
         uint8_t packetID;
         PacketReliability reliability;
         PacketPriority priority;
@@ -162,6 +225,7 @@ namespace mwmp
         RakNet::RakPeerInterface *peer;
         RakNet::RakNetGUID guid;
         bool packetValid;
+        protocol::CodecError codecError;
     };
 }
 

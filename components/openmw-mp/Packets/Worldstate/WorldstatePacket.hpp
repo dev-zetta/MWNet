@@ -22,7 +22,7 @@ namespace mwmp
         BaseWorldstate *getWorldstate();
 
     protected:
-        BaseWorldstate *worldstate;
+        BaseWorldstate *worldstate = nullptr;
 
     };
 }

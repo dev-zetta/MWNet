@@ -13,12 +13,13 @@ void PacketClientScriptLocal::Object(BaseObject &baseObject, bool send)
 {
     ObjectPacket::Object(baseObject, send);
 
-    uint32_t clientLocalsCount;
+    uint32_t clientLocalsCount = 0;
 
     if (send)
         clientLocalsCount = static_cast<uint32_t>(baseObject.clientLocals.size());
 
-    RW(clientLocalsCount, send);
+    if (!RWCount(clientLocalsCount, send))
+        return;
 
     if (!send)
     {

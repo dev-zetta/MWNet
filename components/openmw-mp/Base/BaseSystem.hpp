@@ -11,17 +11,14 @@ namespace mwmp
     {
     public:
 
-        BaseSystem(RakNet::RakNetGUID guid) : guid(guid)
+        explicit BaseSystem(RakNet::RakNetGUID guid)
+            : guid(guid)
         {
-
         }
 
-        BaseSystem()
-        {
+        BaseSystem() = default;
 
-        }
-
-        RakNet::RakNetGUID guid;
+        RakNet::RakNetGUID guid{};
         std::string playerName;
         std::string serverPassword;
 

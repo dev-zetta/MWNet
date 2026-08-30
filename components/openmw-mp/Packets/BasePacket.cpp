@@ -6,18 +6,31 @@
 using namespace mwmp;
 
 BasePacket::BasePacket(RakNet::RakPeerInterface *peer)
+    : packetID(0)
+    , reliability(RELIABLE_ORDERED)
+    , priority(HIGH_PRIORITY)
+    , orderChannel(CHANNEL_SYSTEM)
+    , bsRead(nullptr)
+    , bsSend(nullptr)
+    , bs(nullptr)
+    , peer(peer)
+    , guid(RakNet::UNASSIGNED_CRABNET_GUID)
+    , packetValid(false)
+    , codecError(protocol::CodecError::None)
 {
-    packetID = 0;
-    priority = HIGH_PRIORITY;
-    reliability = RELIABLE_ORDERED;
-    orderChannel = CHANNEL_SYSTEM;
-    this->peer = peer;
 }
 
 void BasePacket::Packet(RakNet::BitStream *newBitstream, bool send)
 {
     bs = newBitstream;
     packetValid = true;
+    codecError = protocol::CodecError::None;
+
+    if (bs == nullptr)
+    {
+        invalidate(protocol::CodecError::InvalidValue);
+        return;
+    }
 
     if (send)
     {
@@ -46,6 +59,9 @@ void BasePacket::SetStreams(RakNet::BitStream *inStream, RakNet::BitStream *outS
 
 uint32_t BasePacket::RequestData(RakNet::RakNetGUID targetGuid)
 {
+    if (bsSend == nullptr || peer == nullptr)
+        return 0;
+
     bsSend->ResetWritePointer();
     bsSend->Write(packetID);
     bsSend->Write(targetGuid);
@@ -54,20 +70,35 @@ uint32_t BasePacket::RequestData(RakNet::RakNetGUID targetGuid)
 
 uint32_t BasePacket::Send(RakNet::AddressOrGUID destination)
 {
+    if (bsSend == nullptr || peer == nullptr)
+        return 0;
+
     bsSend->ResetWritePointer();
     Packet(bsSend, true);
+    if (!packetValid || bsSend->GetNumberOfBytesUsed() > protocol::limits::normalMessageBytes + headerSize())
+        return 0;
     return peer->Send(bsSend, priority, reliability, orderChannel, destination, false);
 }
 
 uint32_t BasePacket::Send(bool toOther)
 {
+    if (bsSend == nullptr || peer == nullptr)
+        return 0;
+
     bsSend->ResetWritePointer();
     Packet(bsSend, true);
+    if (!packetValid || bsSend->GetNumberOfBytesUsed() > protocol::limits::normalMessageBytes + headerSize())
+        return 0;
     return peer->Send(bsSend, priority, reliability, orderChannel, guid, toOther);
 }
 
 void BasePacket::Read()
 {
+    if (bsRead == nullptr)
+    {
+        invalidate(protocol::CodecError::InvalidValue);
+        return;
+    }
     Packet(bsRead, false);
 }
 

@@ -38,10 +38,10 @@ public:
         processors.insert(typename processors_t::value_type(processor->GetPacketID(), processor));
     }
 protected:
-    unsigned char packetID;
+    unsigned char packetID = 0;
     std::string strPacketID;
     std::string className;
-    bool avoidReading;
+    bool avoidReading = false;
     static processors_t processors;
 };
 

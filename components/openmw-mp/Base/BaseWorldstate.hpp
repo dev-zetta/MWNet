@@ -337,24 +337,24 @@ namespace mwmp
 
     struct MapTile
     {
-        int x;
-        int y;
+        int x = 0;
+        int y = 0;
         std::vector<char> imageData;
     };
 
     struct Weather
     {
         std::string region;
-        int currentWeather;
-        int nextWeather;
-        int queuedWeather;
-        float transitionFactor;
+        int currentWeather = 0;
+        int nextWeather = 0;
+        int queuedWeather = 0;
+        float transitionFactor = 0.f;
     };
 
     struct Kill
     {
         std::string refId;
-        int number;
+        int number = 0;
     };
 
     class BaseWorldstate
@@ -372,7 +372,7 @@ namespace mwmp
             time.timeScale = -1;
         }
 
-        RakNet::RakNetGUID guid;
+        RakNet::RakNetGUID guid{};
 
         mwmp::Time time;
         std::vector<std::string> synchronizedClientScriptIds;
@@ -380,10 +380,10 @@ namespace mwmp
 
         std::vector<ClientVariable> clientGlobals;
 
-        bool hasPlayerCollision;
-        bool hasActorCollision;
-        bool hasPlacedObjectCollision;
-        bool useActorCollisionForPlacedObjects;
+        bool hasPlayerCollision = false;
+        bool hasActorCollision = false;
+        bool hasPlacedObjectCollision = false;
+        bool useActorCollisionForPlacedObjects = false;
 
         std::string authorityRegion;
 
@@ -393,11 +393,11 @@ namespace mwmp
 
         std::vector<MapTile> mapTiles;
 
-        bool forceWeather;
+        bool forceWeather = false;
         Weather weather;
 
-        unsigned short recordsType;
-        unsigned int recordsCount;
+        unsigned short recordsType = 0;
+        unsigned int recordsCount = 0;
 
         std::vector<ActivatorRecord> activatorRecords;
         std::vector<ApparatusRecord> apparatusRecords;
@@ -427,7 +427,7 @@ namespace mwmp
 
         std::vector<ESM::Cell> cellsToReset;
 
-        bool isValid;
+        bool isValid = false;
     };
 }
 

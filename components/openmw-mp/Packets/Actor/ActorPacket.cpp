@@ -50,6 +50,11 @@ void ActorPacket::Packet(RakNet::BitStream *newBitstream, bool send)
 bool ActorPacket::PacketHeader(RakNet::BitStream *newBitstream, bool send)
 {
     BasePacket::Packet(newBitstream, send);
+    if (!packetValid || actorList == nullptr)
+    {
+        invalidate(protocol::CodecError::InvalidValue);
+        return false;
+    }
 
     RW(actorList->cell.mData, send, true);
     RW(actorList->cell.mName, send, true);
@@ -59,9 +64,7 @@ bool ActorPacket::PacketHeader(RakNet::BitStream *newBitstream, bool send)
     else
         actorList->baseActors.clear();
 
-    RW(actorList->count, send);
-
-    if (actorList->count > maxActors)
+    if (!RWCount(actorList->count, send, protocol::limits::actorChanges))
     {
         actorList->isValid = false;
         return false;

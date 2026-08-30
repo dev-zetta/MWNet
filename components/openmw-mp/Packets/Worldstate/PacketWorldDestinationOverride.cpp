@@ -15,12 +15,13 @@ void PacketWorldDestinationOverride::Packet(RakNet::BitStream *newBitstream, boo
 {
     WorldstatePacket::Packet(newBitstream, send);
 
-    uint32_t destinationCount;
+    uint32_t destinationCount = 0;
 
     if (send)
         destinationCount = static_cast<uint32_t>(worldstate->destinationOverrides.size());
 
-    RW(destinationCount, send);
+    if (!RWCount(destinationCount, send))
+        return;
 
     if (!send)
     {

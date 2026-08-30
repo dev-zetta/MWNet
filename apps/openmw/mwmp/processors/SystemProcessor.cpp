@@ -14,8 +14,12 @@ SystemProcessor::~SystemProcessor()
 
 bool SystemProcessor::Process(RakNet::Packet &packet)
 {
-    RakNet::BitStream bsIn(&packet.data[1], packet.length, false);
-    bsIn.Read(guid);
+    if (packet.length < BasePacket::headerSize())
+        return false;
+
+    RakNet::BitStream bsIn(&packet.data[1], packet.length - 1, false);
+    if (!bsIn.Read(guid))
+        return false;
 
     SystemPacket *myPacket = Main::get().getNetworking()->getSystemPacket(packet.data[0]);
     myPacket->SetReadStream(&bsIn);
@@ -39,6 +43,12 @@ bool SystemProcessor::Process(RakNet::Packet &packet)
             {
                 myPacket->setSystem(system);
                 myPacket->Read();
+                if (!myPacket->isPacketValid())
+                {
+                    LOG_MESSAGE_SIMPLE(TimedLog::LOG_ERROR, "Received %s that failed decoding and was ignored!",
+                        processor.second->strPacketID.c_str());
+                    return true;
+                }
             }
 
             processor.second->Do(*myPacket, system);

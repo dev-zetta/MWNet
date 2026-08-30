@@ -14,12 +14,13 @@ void PacketPlayerSpellsActive::Packet(RakNet::BitStream *newBitstream, bool send
 
     RW(player->spellsActiveChanges.action, send);
 
-    uint32_t count;
+    uint32_t count = 0;
 
     if (send)
         count = static_cast<uint32_t>(player->spellsActiveChanges.activeSpells.size());
 
-    RW(count, send);
+    if (!RWCount(count, send))
+        return;
 
     if (!send)
     {
@@ -48,17 +49,13 @@ void PacketPlayerSpellsActive::Packet(RakNet::BitStream *newBitstream, bool send
             RW(activeSpell.caster.mpNum, send);
         }
 
-        uint32_t effectCount;
+        uint32_t effectCount = 0;
 
         if (send)
             effectCount = static_cast<uint32_t>(activeSpell.params.mEffects.size());
 
-        RW(effectCount, send);
-
-        if (effectCount > maxEffects)
-        {
+        if (!RWCount(effectCount, send, protocol::limits::spellEffects))
             return;
-        }
 
         if (!send)
         {

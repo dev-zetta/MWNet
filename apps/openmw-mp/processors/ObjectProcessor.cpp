@@ -23,6 +23,8 @@ bool ObjectProcessor::Process(RakNet::Packet &packet, BaseObjectList &objectList
         if (processor.first == packet.data[0])
         {
             Player *player = Players::getPlayer(packet.guid);
+            if (player == nullptr)
+                return true;
             ObjectPacket *myPacket = Networking::get().getObjectPacketController()->GetPacket(packet.data[0]);
 
             myPacket->setObjectList(&objectList);
@@ -31,7 +33,7 @@ bool ObjectProcessor::Process(RakNet::Packet &packet, BaseObjectList &objectList
             if (!processor.second->avoidReading)
                 myPacket->Read();
 
-            if (objectList.isValid)
+            if (objectList.isValid && (processor.second->avoidReading || myPacket->isPacketValid()))
                 processor.second->Do(*myPacket, *player, objectList);
             else
                 LOG_MESSAGE_SIMPLE(TimedLog::LOG_ERROR, "Received %s that failed integrity check and was ignored!", processor.second->strPacketID.c_str());

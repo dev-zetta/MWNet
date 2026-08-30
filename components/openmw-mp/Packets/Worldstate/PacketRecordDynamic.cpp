@@ -80,9 +80,7 @@ void PacketRecordDynamic::Packet(RakNet::BitStream *newBitstream, bool send)
         }
     }
 
-    RW(worldstate->recordsCount, send);
-
-    if (worldstate->recordsCount > maxRecords)
+    if (!RWCount(worldstate->recordsCount, send, maxRecords))
     {
         LOG_MESSAGE_SIMPLE(TimedLog::LOG_ERROR, "Processed invalid ID_RECORD_DYNAMIC packet with %i records, above the maximum of %i",
             worldstate->recordsCount, maxRecords);
@@ -929,17 +927,13 @@ void PacketRecordDynamic::Packet(RakNet::BitStream *newBitstream, bool send)
 
 void PacketRecordDynamic::ProcessEffects(ESM::EffectList &effectList, bool send)
 {
-    uint32_t effectCount;
+    uint32_t effectCount = 0;
 
     if (send)
         effectCount = static_cast<uint32_t>(effectList.mList.size());
 
-    RW(effectCount, send);
-
-    if (effectCount > maxEffects)
-    {
+    if (!RWCount(effectCount, send, protocol::limits::spellEffects))
         return;
-    }
 
     if (!send)
     {
@@ -962,17 +956,13 @@ void PacketRecordDynamic::ProcessEffects(ESM::EffectList &effectList, bool send)
 
 void PacketRecordDynamic::ProcessBodyParts(ESM::PartReferenceList &partList, bool send)
 {
-    uint32_t partCount;
+    uint32_t partCount = 0;
 
     if (send)
         partCount = static_cast<uint32_t>(partList.mParts.size());
 
-    RW(partCount, send);
-
-    if (partCount > maxParts)
-    {
+    if (!RWCount(partCount, send, maxParts))
         return;
-    }
 
     if (!send)
     {
@@ -992,17 +982,13 @@ void PacketRecordDynamic::ProcessBodyParts(ESM::PartReferenceList &partList, boo
 // here with the help of a separate mwmp::Item vector
 void PacketRecordDynamic::ProcessInventoryList(std::vector<mwmp::Item> &inventory, ESM::InventoryList &inventoryList, bool send)
 {
-    uint32_t itemCount;
+    uint32_t itemCount = 0;
 
     if (send)
         itemCount = static_cast<uint32_t>(inventory.size());
 
-    RW(itemCount, send);
-
-    if (itemCount > maxItems)
-    {
+    if (!RWCount(itemCount, send, maxItems))
         return;
-    }
 
     if (!send)
     {

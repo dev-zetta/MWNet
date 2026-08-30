@@ -24,12 +24,13 @@ void PacketPlayerSkill::Packet(RakNet::BitStream *newBitstream, bool send)
     }
     else
     {
-        uint32_t count;
+        uint32_t count = 0;
 
         if (send)
             count = static_cast<uint32_t>(player->skillIndexChanges.size());
 
-        RW(count, send);
+        if (!RWCount(count, send, ESM::Skill::Length))
+            return;
 
         if (!send)
         {

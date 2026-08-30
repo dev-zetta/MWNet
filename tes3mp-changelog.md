@@ -8,6 +8,8 @@ This is the first hardening milestone for the major OpenMW 0.52 compatibility an
 * Restore the upstream OpenMW build and test options, remove duplicate target registration, add TES3MP test and fuzz targets, and modernize vendored dependency CMake policies
 * Bind new alpha servers to loopback and disable legacy public master announcements by default
 * Add the fail-closed protocol 11 envelope and codec with fixed-width little-endian fields, sticky decode errors, UTF-8 validation, allocation limits, traffic limits, unit tests and a decoder fuzz target
+* Harden the transitional CrabNet packet boundary with initialized state, checked collection and string limits, transactional field reads, exact pre-initialization sizing, malformed-message rejection and decode gates before gameplay or Lua processing
+* Stop logging attempted server passwords and prevent partially encoded or oversized packets from being sent
 * Update the multiplayer client, dedicated server and tools onto OpenMW 0.52, including its current rendering, input, Lua, navigation and content APIs
 * Port TES3MP-specific code to C++20, Qt 6 and the current `ESM::RefId`, settings, resource and world APIs
 * Vendor CrabNet in `extern/crabnet` so client and server builds no longer depend on a separately cloned networking repository

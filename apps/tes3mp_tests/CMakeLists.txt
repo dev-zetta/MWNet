@@ -12,4 +12,4 @@ else()
     target_compile_options(tes3mp-tests PRIVATE -Wall -Wextra -Wpedantic -Werror)
 endif()
 
-add_test(NAME tes3mp-version COMMAND tes3mp-tests)
+add_test(NAME tes3mp-protocol COMMAND tes3mp-tests)

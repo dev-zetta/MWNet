@@ -762,7 +762,7 @@ IF (BUILD_OPENMW OR BUILD_OPENCS)
             ${BULLET_LIBRARIES}
             )
 ENDIF (BUILD_OPENMW OR BUILD_OPENCS)
-target_link_libraries(components Base64 smhasher SQLite3::SQLite3 ${ICU_LIBRARIES} ZLIB::ZLIB)
+target_link_libraries(components Base64 smhasher SQLite3::SQLite3 tes3mp-protocol-codec ${ICU_LIBRARIES} ZLIB::ZLIB)
 # End of tes3mp change (major)
 
 if (WIN32)

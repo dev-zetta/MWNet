@@ -13,12 +13,13 @@ void PacketCellReset::Packet(RakNet::BitStream *newBitstream, bool send)
 {
     WorldstatePacket::Packet(newBitstream, send);
 
-    uint32_t cellCount;
+    uint32_t cellCount = 0;
 
     if (send)
         cellCount = static_cast<uint32_t>(worldstate->cellsToReset.size());
 
-    RW(cellCount, send);
+    if (!RWCount(cellCount, send))
+        return;
 
     if (!send)
     {

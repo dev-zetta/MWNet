@@ -47,6 +47,11 @@ void ObjectPacket::Packet(RakNet::BitStream *newBitstream, bool send)
 bool ObjectPacket::PacketHeader(RakNet::BitStream *newBitstream, bool send)
 {
     BasePacket::Packet(newBitstream, send);
+    if (!packetValid || objectList == nullptr)
+    {
+        invalidate(protocol::CodecError::InvalidValue);
+        return false;
+    }
 
     RW(objectList->packetOrigin, send);
 
@@ -58,9 +63,7 @@ bool ObjectPacket::PacketHeader(RakNet::BitStream *newBitstream, bool send)
     else
         objectList->baseObjects.clear();
 
-    RW(objectList->baseObjectCount, send);
-
-    if (objectList->baseObjectCount > maxObjects)
+    if (!RWCount(objectList->baseObjectCount, send, protocol::limits::objectChanges))
     {
         objectList->isValid = false;
         return false;

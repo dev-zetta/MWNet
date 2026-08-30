@@ -20,6 +20,8 @@ bool WorldstateProcessor::Process(RakNet::Packet &packet, BaseWorldstate &worlds
         if (processor.first == packet.data[0])
         {
             Player *player = Players::getPlayer(packet.guid);
+            if (player == nullptr)
+                return true;
             WorldstatePacket *myPacket = Networking::get().getWorldstatePacketController()->GetPacket(packet.data[0]);
 
             myPacket->setWorldstate(&worldstate);
@@ -28,7 +30,7 @@ bool WorldstateProcessor::Process(RakNet::Packet &packet, BaseWorldstate &worlds
             if (!processor.second->avoidReading)
                 myPacket->Read();
 
-            if (worldstate.isValid)
+            if (worldstate.isValid && (processor.second->avoidReading || myPacket->isPacketValid()))
                 processor.second->Do(*myPacket, *player, worldstate);
             else
                 LOG_MESSAGE_SIMPLE(TimedLog::LOG_ERROR, "Received %s that failed integrity check and was ignored!", processor.second->strPacketID.c_str());

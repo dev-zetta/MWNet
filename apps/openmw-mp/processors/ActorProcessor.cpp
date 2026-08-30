@@ -23,6 +23,8 @@ bool ActorProcessor::Process(RakNet::Packet &packet, BaseActorList &actorList) n
         if (processor.first == packet.data[0])
         {
             Player *player = Players::getPlayer(packet.guid);
+            if (player == nullptr)
+                return true;
             ActorPacket *myPacket = Networking::get().getActorPacketController()->GetPacket(packet.data[0]);
 
             myPacket->setActorList(&actorList);
@@ -31,7 +33,7 @@ bool ActorProcessor::Process(RakNet::Packet &packet, BaseActorList &actorList) n
             if (!processor.second->avoidReading)
                 myPacket->Read();
 
-            if (actorList.isValid)
+            if (actorList.isValid && (processor.second->avoidReading || myPacket->isPacketValid()))
                 processor.second->Do(*myPacket, *player, actorList);
             else
                 LOG_MESSAGE_SIMPLE(TimedLog::LOG_ERROR, "Received %s that failed integrity check and was ignored!", processor.second->strPacketID.c_str());

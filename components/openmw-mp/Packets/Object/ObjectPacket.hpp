@@ -26,9 +26,9 @@ namespace mwmp
     protected:
         virtual void Object(BaseObject &baseObject, bool send);
         bool PacketHeader(RakNet::BitStream *newBitstream, bool send);
-        BaseObjectList *objectList;
+        BaseObjectList *objectList = nullptr;
         static const int maxObjects = 3000;
-        bool hasCellData;
+        bool hasCellData = false;
     };
 }
 

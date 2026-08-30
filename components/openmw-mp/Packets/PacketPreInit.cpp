@@ -2,7 +2,9 @@
 #include <components/openmw-mp/TimedLog.hpp>
 #include "PacketPreInit.hpp"
 
-mwmp::PacketPreInit::PacketPreInit(RakNet::RakPeerInterface *peer) : BasePacket(peer)
+mwmp::PacketPreInit::PacketPreInit(RakNet::RakPeerInterface *peer)
+    : BasePacket(peer)
+    , checksums(nullptr)
 {
     packetID = ID_GAME_PREINIT;
 }
@@ -10,9 +12,14 @@ mwmp::PacketPreInit::PacketPreInit(RakNet::RakPeerInterface *peer) : BasePacket(
 void mwmp::PacketPreInit::Packet(RakNet::BitStream *newBitstream, bool send)
 {
     BasePacket::Packet(newBitstream, send);
+    if (!packetValid || checksums == nullptr)
+    {
+        invalidate(protocol::CodecError::InvalidValue);
+        return;
+    }
 
-    const RakNet::BitSize_t packetSize = bs->GetNumberOfBytesUsed();
-    uint32_t expectedPacketSize = BasePacket::headerSize() + sizeof(uint32_t);
+    const std::uint64_t packetSize = (bs->GetNumberOfUnreadBits() + 7U) / 8U;
+    std::uint64_t expectedPacketSize = sizeof(std::uint32_t);
     if (!send && expectedPacketSize > packetSize)
     {
         LOG_MESSAGE(TimedLog::LOG_ERROR, "Wrong packet size %d when expected %d", packetSize, expectedPacketSize);
@@ -20,8 +27,9 @@ void mwmp::PacketPreInit::Packet(RakNet::BitStream *newBitstream, bool send)
         return;
     }
 
-    uint32_t numberOfChecksums = checksums->size();
-    RW(numberOfChecksums, send);
+    uint32_t numberOfChecksums = static_cast<std::uint32_t>(checksums->size());
+    if (!RW(numberOfChecksums, send))
+        return;
 
     if (numberOfChecksums > maxPlugins)
     {
@@ -32,8 +40,8 @@ void mwmp::PacketPreInit::Packet(RakNet::BitStream *newBitstream, bool send)
 
     struct NAS
     {
-        uint32_t hashN;
-        uint32_t strSize;
+        uint32_t hashN = 0;
+        uint32_t strSize = 0;
     };
 
     std::vector<NAS> NumberOfHashesAndStrSizes(numberOfChecksums);
@@ -47,9 +55,11 @@ void mwmp::PacketPreInit::Packet(RakNet::BitStream *newBitstream, bool send)
             nas.strSize = checksumIt->first.size();
             nas.hashN = checksumIt++->second.size();
         }
-        RW(nas, send);
+        if (!RW(nas.hashN, send) || !RW(nas.strSize, send))
+            return;
 
-        expectedPacketSize += nas.strSize + nas.hashN;
+        expectedPacketSize += sizeof(nas.hashN) + sizeof(nas.strSize) + sizeof(std::uint16_t) + nas.strSize
+            + static_cast<std::uint64_t>(nas.hashN) * sizeof(HashList::value_type);
 
         if (nas.strSize > pluginNameMaxLength)
             LOG_MESSAGE(TimedLog::LOG_ERROR, "Wrong string length %d when maximum length is %d",
@@ -79,13 +89,24 @@ void mwmp::PacketPreInit::Packet(RakNet::BitStream *newBitstream, bool send)
 
     for (auto &&checksum : *checksums)
     {
-        RW(checksum.first, send, false, numberOfHashesIt->strSize);
+        if (!RW(checksum.first, send, false, numberOfHashesIt->strSize)
+            || checksum.first.size() != numberOfHashesIt->strSize)
+        {
+            invalidate(protocol::CodecError::InvalidValue);
+            return;
+        }
 
         checksum.second.resize(numberOfHashesIt->hashN);
         for (auto &&hash : checksum.second)
-            RW(hash, send);
+        {
+            if (!RW(hash, send))
+                return;
+        }
         ++numberOfHashesIt;
     }
+
+    if (!send && bs->GetNumberOfUnreadBits() != 0)
+        invalidate(protocol::CodecError::TrailingData);
 }
 
 void mwmp::PacketPreInit::setChecksums(mwmp::PacketPreInit::PluginContainer *newChecksums)

@@ -25,7 +25,8 @@ void PacketGameSettings::Packet(RakNet::BitStream *newBitstream, bool send)
     std::string mapValue;
 
     uint32_t gameSettingCount = static_cast<uint32_t>(player->gameSettings.size());
-    RW(gameSettingCount, send);
+    if (!RWCount(gameSettingCount, send))
+        return;
 
     if (send)
     {
@@ -49,7 +50,8 @@ void PacketGameSettings::Packet(RakNet::BitStream *newBitstream, bool send)
     }
 
     uint32_t vrSettingCount = static_cast<uint32_t>(player->vrSettings.size());
-    RW(vrSettingCount, send);
+    if (!RWCount(vrSettingCount, send))
+        return;
 
     if (send)
     {

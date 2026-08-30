@@ -14,12 +14,13 @@ void PacketPlayerFaction::Packet(RakNet::BitStream *newBitstream, bool send)
 
     RW(player->factionChanges.action, send);
 
-    uint32_t count;
+    uint32_t count = 0;
 
     if (send)
         count = static_cast<uint32_t>(player->factionChanges.factions.size());
 
-    RW(count, send);
+    if (!RWCount(count, send))
+        return;
 
     if (!send)
     {

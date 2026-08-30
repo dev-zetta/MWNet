@@ -24,11 +24,12 @@ void PacketPlayerEquipment::Packet(RakNet::BitStream *newBitstream, bool send)
     }
     else
     {
-        uint32_t count;
+        uint32_t count = 0;
         if (send)
             count = static_cast<uint32_t>(player->equipmentIndexChanges.size());
 
-        RW(count, send);
+        if (!RWCount(count, send, 19))
+            return;
 
         if (!send)
         {
@@ -39,6 +40,11 @@ void PacketPlayerEquipment::Packet(RakNet::BitStream *newBitstream, bool send)
         for (auto &&equipmentIndex : player->equipmentIndexChanges)
         {
             RW(equipmentIndex, send);
+            if (!packetValid || equipmentIndex < 0 || equipmentIndex >= 19)
+            {
+                invalidate(protocol::CodecError::InvalidValue);
+                return;
+            }
             ExchangeItemInformation(player->equipmentItems[equipmentIndex], send);
         }
     }
@@ -51,4 +57,3 @@ void PacketPlayerEquipment::ExchangeItemInformation(Item &item, bool send)
     RW(item.charge, send);
     RW(item.enchantmentCharge, send);
 }
-

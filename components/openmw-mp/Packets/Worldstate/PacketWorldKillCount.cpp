@@ -13,12 +13,13 @@ void PacketWorldKillCount::Packet(RakNet::BitStream *newBitstream, bool send)
 {
     WorldstatePacket::Packet(newBitstream, send);
 
-    uint32_t killChangesCount;
+    uint32_t killChangesCount = 0;
 
     if (send)
         killChangesCount = static_cast<uint32_t>(worldstate->killChanges.size());
 
-    RW(killChangesCount, send);
+    if (!RWCount(killChangesCount, send))
+        return;
 
     if (!send)
     {

@@ -25,7 +25,7 @@ namespace mwmp
     protected:
         bool PacketHeader(RakNet::BitStream *newBitstream, bool send);
         virtual void Actor(BaseActor &actor, bool send);
-        BaseActorList *actorList;
+        BaseActorList *actorList = nullptr;
         static const int maxActors = 3000;
     };
 }

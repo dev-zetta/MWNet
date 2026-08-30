@@ -11,5 +11,5 @@ void mwmp::PacketChatMessage::Packet(RakNet::BitStream *newBitstream, bool send)
 {
     PlayerPacket::Packet(newBitstream, send);
 
-    RW(player->chatMessage, send);
+    RW(player->chatMessage, send, false, protocol::limits::chatMessageBytes);
 }

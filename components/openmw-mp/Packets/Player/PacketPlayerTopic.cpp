@@ -12,12 +12,13 @@ void PacketPlayerTopic::Packet(RakNet::BitStream *newBitstream, bool send)
 {
     PlayerPacket::Packet(newBitstream, send);
 
-    uint32_t count;
+    uint32_t count = 0;
 
     if (send)
         count = static_cast<uint32_t>(player->topicChanges.size());
 
-    RW(count, send);
+    if (!RWCount(count, send))
+        return;
 
     if (!send)
     {

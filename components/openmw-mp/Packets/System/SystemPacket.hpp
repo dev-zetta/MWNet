@@ -22,7 +22,7 @@ namespace mwmp
         BaseSystem *getSystem();
 
     protected:
-        BaseSystem *system;
+        BaseSystem *system = nullptr;
 
     };
 }

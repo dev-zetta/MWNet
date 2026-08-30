@@ -15,8 +15,12 @@ WorldstateProcessor::~WorldstateProcessor()
 
 bool WorldstateProcessor::Process(RakNet::Packet &packet, Worldstate &worldstate)
 {
-    RakNet::BitStream bsIn(&packet.data[1], packet.length, false);
-    bsIn.Read(guid);
+    if (packet.length < BasePacket::headerSize())
+        return false;
+
+    RakNet::BitStream bsIn(&packet.data[1], packet.length - 1, false);
+    if (!bsIn.Read(guid))
+        return false;
     worldstate.guid = guid;
 
     WorldstatePacket *myPacket = Main::get().getNetworking()->getWorldstatePacket(packet.data[0]);
@@ -36,7 +40,7 @@ bool WorldstateProcessor::Process(RakNet::Packet &packet, Worldstate &worldstate
             if (!request && !processor.second->avoidReading)
                 myPacket->Read();
 
-            if (worldstate.isValid)
+            if (worldstate.isValid && (processor.second->avoidReading || request || myPacket->isPacketValid()))
                 processor.second->Do(*myPacket, worldstate);
             else
                 LOG_MESSAGE_SIMPLE(TimedLog::LOG_ERROR, "Received %s that failed integrity check and was ignored!", processor.second->strPacketID.c_str());

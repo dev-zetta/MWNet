@@ -22,7 +22,7 @@ namespace mwmp
         BasePlayer *getPlayer();
 
     protected:
-        BasePlayer *player;
+        BasePlayer *player = nullptr;
 
     };
 }

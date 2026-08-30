@@ -13,12 +13,13 @@ void PacketClientScriptSettings::Packet(RakNet::BitStream *newBitstream, bool se
 {
     WorldstatePacket::Packet(newBitstream, send);
 
-    uint32_t clientScriptsCount;
+    uint32_t clientScriptsCount = 0;
 
     if (send)
         clientScriptsCount = static_cast<uint32_t>(worldstate->synchronizedClientScriptIds.size());
 
-    RW(clientScriptsCount, send);
+    if (!RWCount(clientScriptsCount, send))
+        return;
 
     if (!send)
     {
@@ -31,12 +32,13 @@ void PacketClientScriptSettings::Packet(RakNet::BitStream *newBitstream, bool se
         RW(clientScriptId, send, true);
     }
 
-    uint32_t clientGlobalsCount;
+    uint32_t clientGlobalsCount = 0;
 
     if (send)
         clientGlobalsCount = static_cast<uint32_t>(worldstate->synchronizedClientGlobalIds.size());
 
-    RW(clientGlobalsCount, send);
+    if (!RWCount(clientGlobalsCount, send))
+        return;
 
     if (!send)
     {

@@ -239,6 +239,13 @@ void Networking::update()
 
     for (packet=peer->Receive(); packet; peer->DeallocatePacket(packet), packet=peer->Receive())
     {
+        if (packet->length == 0
+            || packet->length > protocol::limits::normalMessageBytes + BasePacket::headerSize())
+        {
+            LOG_MESSAGE_SIMPLE(TimedLog::LOG_WARN, "Dropped invalid-size packet from server");
+            continue;
+        }
+
         switch (packet->data[0])
         {
             case ID_REMOTE_DISCONNECTION_NOTIFICATION:
@@ -446,6 +453,13 @@ void Networking::preInit(std::vector<std::string> &content, Files::Collections &
             continue;
         }
 
+        if (packet->length == 0
+            || packet->length > protocol::limits::normalMessageBytes + BasePacket::headerSize())
+        {
+            peer->DeallocatePacket(packet);
+            continue;
+        }
+
         RakNet::BitStream bsIn(&packet->data[0], packet->length, false);
         unsigned char packetId;
         bsIn.Read(packetId);
@@ -458,9 +472,17 @@ void Networking::preInit(std::vector<std::string> &content, Files::Collections &
                 done = true;
                 break;
             case ID_GAME_PREINIT:
+                if (packet->length < BasePacket::headerSize())
+                {
+                    connected = false;
+                    done = true;
+                    break;
+                }
                 bsIn.IgnoreBytes((unsigned) RakNet::RakNetGUID::size());
                 packetPreInit.setChecksums(&checksumsResponse);
                 packetPreInit.Packet(&bsIn, false);
+                if (!packetPreInit.isPacketValid())
+                    connected = false;
                 done = true;
                 break;
         }
@@ -482,7 +504,8 @@ void Networking::preInit(std::vector<std::string> &content, Files::Collections &
 
 void Networking::receiveMessage(RakNet::Packet *packet)
 {
-    if (packet->length < 2)
+    if (packet->length < BasePacket::headerSize()
+        || packet->length > protocol::limits::normalMessageBytes + BasePacket::headerSize())
         return;
 
     if (systemPacketController.ContainsPacket(packet->data[0]))

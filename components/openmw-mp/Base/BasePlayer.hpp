@@ -18,15 +18,15 @@ namespace mwmp
     struct CurrentContainer
     {
         std::string refId;
-        unsigned int refNum;
-        unsigned int mpNum;
-        bool loot;
+        unsigned int refNum = 0;
+        unsigned int mpNum = 0;
+        bool loot = false;
     };
 
     struct JournalItem
     {
         std::string quest;
-        int index;
+        int index = 0;
         enum JOURNAL_ITEM_TYPE
         {
             ENTRY = 0,
@@ -35,18 +35,18 @@ namespace mwmp
 
         std::string actorRefId;
 
-        bool hasTimestamp;
+        bool hasTimestamp = false;
         mwmp::Time timestamp;
 
-        int type; // 0 - An entire entry, 1 - An index
+        int type = JOURNAL_ITEM_TYPE::ENTRY;
     };
 
     struct Faction
     {
         std::string factionId;
-        int rank;
-        int reputation;
-        bool isExpelled;
+        int rank = 0;
+        int reputation = 0;
+        bool isExpelled = false;
     };
 
     struct Topic
@@ -71,8 +71,8 @@ namespace mwmp
             UNASSIGNED = 3
         };
 
-        unsigned short slot;
-        int type;
+        unsigned short slot = 0;
+        int type = QUICKKEY_TYPE::UNASSIGNED;
     };
 
     struct CellState
@@ -85,7 +85,7 @@ namespace mwmp
             UNLOAD = 1
         };
 
-        int type; // 0 - Cell load, 1 - Cell unload
+        int type = CELL_STATE_ACTION::LOAD;
     };
 
     struct FactionChanges
@@ -99,7 +99,7 @@ namespace mwmp
             REPUTATION = 2
         };
 
-        int action; // 0 - Rank, 1 - Expulsion state, 2 - Faction reputation
+        int action = FACTION_ACTION::RANK;
     };
 
     struct InventoryChanges
@@ -111,7 +111,7 @@ namespace mwmp
             ADD,
             REMOVE
         };
-        int action; // 0 - Clear and set in entirety, 1 - Add item, 2 - Remove item
+        int action = ACTION_TYPE::SET;
     };
 
     struct SpellbookChanges
@@ -123,7 +123,7 @@ namespace mwmp
             ADD,
             REMOVE
         };
-        int action; // 0 - Clear and set in entirety, 1 - Add spell, 2 - Remove spell
+        int action = ACTION_TYPE::SET;
     };
 
     enum RESURRECT_TYPE
@@ -145,14 +145,15 @@ namespace mwmp
 
         struct CharGenState
         {
-            int currentStage, endStage;
-            bool isFinished;
+            int currentStage = 0;
+            int endStage = 0;
+            bool isFinished = false;
         };
 
         struct GUIMessageBox
         {
-            int id;
-            int type;
+            int id = 0;
+            int type = GUI_TYPE::MessageBox;
             enum GUI_TYPE
             {
                 MessageBox = 0,
@@ -168,23 +169,14 @@ namespace mwmp
             std::string data;
         };
 
-        BasePlayer(RakNet::RakNetGUID guid) : guid(guid)
+        explicit BasePlayer(RakNet::RakNetGUID guid)
+            : guid(guid)
         {
-            inventoryChanges.action = 0;
-            spellbookChanges.action = 0;
-
-            exchangeFullInfo = false;
-            displayCreatureName = false;
-            resetStats = false;
-            enforcedLogLevel = -1;
         }
 
-        BasePlayer()
-        {
+        BasePlayer() = default;
 
-        }
-
-        RakNet::RakNetGUID guid;
+        RakNet::RakNetGUID guid{};
 
         GUIMessageBox guiMessageBox;
 
@@ -204,7 +196,7 @@ namespace mwmp
         // with the items themselves being stored in equipmentItems
         std::vector<int> equipmentIndexChanges;
 
-        bool exchangeFullInfo;
+        bool exchangeFullInfo = false;
 
         InventoryChanges inventoryChanges;
         SpellbookChanges spellbookChanges;
@@ -221,25 +213,25 @@ namespace mwmp
         CurrentContainer currentContainer;
 
         int difficulty = 0;
-        int enforcedLogLevel;
+        int enforcedLogLevel = -1;
         float physicsFramerate = 60.0;
         bool consoleAllowed = false;
         bool bedRestAllowed = true;
         bool wildernessRestAllowed = true;
         bool waitAllowed = true;
 
-        bool ignorePosPacket;
+        bool ignorePosPacket = false;
 
         unsigned int movementFlags = 0;
-        char drawState;
+        char drawState = 0;
         bool isJumping = false;
         bool isFlying = false;
         bool hasTcl = false;
 
-        ESM::Position position;
-        ESM::Position direction;
-        ESM::Position previousCellPosition;
-        ESM::Position momentum;
+        ESM::Position position{};
+        ESM::Position direction{};
+        ESM::Position previousCellPosition{};
+        ESM::Position momentum{};
         ESM::Cell cell;
         ESM::NPC npc;
         ESM::NpcStats npcStats;
@@ -257,35 +249,35 @@ namespace mwmp
 
         std::string sound;
         Animation animation;
-        char deathState;
+        char deathState = 0;
 
         bool resetStats = false;
         float scale = 1;
         bool isWerewolf = false;
 
-        bool displayCreatureName;
+        bool displayCreatureName = false;
         std::string creatureRefId;
 
-        bool isChangingRegion;
+        bool isChangingRegion = false;
 
         Target killer;
 
-        int jailDays;
-        bool ignoreJailTeleportation;
-        bool ignoreJailSkillIncreases;
+        int jailDays = 0;
+        bool ignoreJailTeleportation = false;
+        bool ignoreJailSkillIncreases = false;
         std::string jailProgressText;
         std::string jailEndText;
 
-        unsigned int resurrectType;
-        unsigned int miscellaneousChangeType;
+        unsigned int resurrectType = RESURRECT_TYPE::REGULAR;
+        unsigned int miscellaneousChangeType = MISCELLANEOUS_CHANGE_TYPE::MARK_LOCATION;
 
         ESM::Cell markCell;
-        ESM::Position markPosition;
+        ESM::Position markPosition{};
         std::string selectedSpellId;
 
         mwmp::Item usedItem;
-        bool usingItemMagic;
-        char itemUseDrawState;
+        bool usingItemMagic = false;
+        char itemUseDrawState = 0;
     };
 }
 

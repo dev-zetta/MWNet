@@ -13,12 +13,13 @@ void PacketActorSpellsActive::Actor(BaseActor &actor, bool send)
 {
     RW(actor.spellsActiveChanges.action, send);
 
-    uint32_t count;
+    uint32_t count = 0;
 
     if (send)
         count = static_cast<uint32_t>(actor.spellsActiveChanges.activeSpells.size());
 
-    RW(count, send);
+    if (!RWCount(count, send))
+        return;
 
     if (!send)
     {
@@ -47,17 +48,13 @@ void PacketActorSpellsActive::Actor(BaseActor &actor, bool send)
             RW(activeSpell.caster.mpNum, send);
         }
 
-        uint32_t effectCount;
+        uint32_t effectCount = 0;
 
         if (send)
             effectCount = static_cast<uint32_t>(activeSpell.params.mEffects.size());
 
-        RW(effectCount, send);
-
-        if (effectCount > maxEffects)
-        {
+        if (!RWCount(effectCount, send, protocol::limits::spellEffects))
             return;
-        }
 
         if (!send)
         {

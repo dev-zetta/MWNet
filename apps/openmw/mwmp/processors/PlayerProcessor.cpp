@@ -14,8 +14,12 @@ PlayerProcessor::~PlayerProcessor()
 
 bool PlayerProcessor::Process(RakNet::Packet &packet)
 {
-    RakNet::BitStream bsIn(&packet.data[1], packet.length, false);
-    bsIn.Read(guid);
+    if (packet.length < BasePacket::headerSize())
+        return false;
+
+    RakNet::BitStream bsIn(&packet.data[1], packet.length - 1, false);
+    if (!bsIn.Read(guid))
+        return false;
 
     PlayerPacket *myPacket = Main::get().getNetworking()->getPlayerPacket(packet.data[0]);
     myPacket->SetReadStream(&bsIn);
@@ -42,6 +46,12 @@ bool PlayerProcessor::Process(RakNet::Packet &packet)
             {
                 myPacket->setPlayer(player);
                 myPacket->Read();
+                if (!myPacket->isPacketValid())
+                {
+                    LOG_MESSAGE_SIMPLE(TimedLog::LOG_ERROR, "Received %s that failed decoding and was ignored!",
+                        processor.second->strPacketID.c_str());
+                    return true;
+                }
             }
 
             processor.second->Do(*myPacket, player);

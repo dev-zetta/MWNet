@@ -10,12 +10,12 @@ namespace mwmp
     struct ContainerItem
     {
         std::string refId;
-        int count;
-        int charge;
-        double enchantmentCharge;
+        int count = 0;
+        int charge = 0;
+        double enchantmentCharge = 0.0;
         std::string soul;
 
-        int actionCount;
+        int actionCount = 0;
 
         inline bool operator==(const ContainerItem& rhs)
         {
@@ -27,82 +27,79 @@ namespace mwmp
     struct BaseObject
     {
         std::string refId = "";
-        unsigned int refNum;
-        unsigned int mpNum;
-        int count;
-        int charge;
-        double enchantmentCharge;
+        unsigned int refNum = 0;
+        unsigned int mpNum = 0;
+        int count = 0;
+        int charge = 0;
+        double enchantmentCharge = 0.0;
         std::string soul;
-        int goldValue;
+        int goldValue = 0;
 
         ESM::Position position;
 
-        bool objectState;
-        int lockLevel;
-        float scale;
+        bool objectState = false;
+        int lockLevel = 0;
+        float scale = 1.f;
 
-        unsigned char dialogueChoiceType;
+        unsigned char dialogueChoiceType = DialogueChoiceType::TOPIC;
         std::string topicId;
-        int guiId;
+        int guiId = 0;
 
         std::string soundId;
-        float volume;
-        float pitch;
+        float volume = 1.f;
+        float pitch = 1.f;
 
-        unsigned int goldPool;
-        float lastGoldRestockHour;
-        int lastGoldRestockDay;
+        unsigned int goldPool = 0;
+        float lastGoldRestockHour = 0.f;
+        int lastGoldRestockDay = 0;
 
 
-        int doorState;
-        bool teleportState;
+        int doorState = 0;
+        bool teleportState = false;
         ESM::Cell destinationCell;
         ESM::Position destinationPosition;
 
         std::string musicFilename;
 
         std::string videoFilename;
-        bool allowSkipping;
+        bool allowSkipping = false;
 
         std::string animGroup;
-        int animMode;
+        int animMode = 0;
 
-        bool isDisarmed;
-        bool droppedByPlayer;
+        bool isDisarmed = false;
+        bool droppedByPlayer = false;
 
         Target activatingActor;
         Target hittingActor;
         Attack hitAttack;
 
-        bool isSummon;
-        int summonEffectId;
+        bool isSummon = false;
+        int summonEffectId = 0;
         std::string summonSpellId;
-        float summonDuration;
+        float summonDuration = 0.f;
         Target master;
 
-        bool hasContainer;
+        bool hasContainer = false;
 
         std::vector<ClientVariable> clientLocals;
         std::vector<ContainerItem> containerItems;
-        unsigned int containerItemCount;
+        unsigned int containerItemCount = 0;
 
-        RakNet::RakNetGUID guid; // only for object lists that can also include players
-        bool isPlayer;
+        RakNet::RakNetGUID guid{}; // only for object lists that can also include players
+        bool isPlayer = false;
     };
 
     class BaseObjectList
     {
     public:
 
-        BaseObjectList(RakNet::RakNetGUID guid) : guid(guid)
+        explicit BaseObjectList(RakNet::RakNetGUID guid)
+            : guid(guid)
         {
-
         }
 
-        BaseObjectList()
-        {
-
-        }
+        BaseObjectList() = default;
 
         enum WORLD_ACTION
         {
@@ -122,21 +119,21 @@ namespace mwmp
             RESTOCK_RESULT = 5
         };
 
-        RakNet::RakNetGUID guid;
+        RakNet::RakNetGUID guid{};
         
         std::vector<BaseObject> baseObjects;
-        unsigned int baseObjectCount;
+        unsigned int baseObjectCount = 0;
 
         ESM::Cell cell;
         std::string consoleCommand;
 
-        unsigned char packetOrigin; // 0 - Gameplay, 1 - Console, 2 - Client script, 3 - Server script
+        unsigned char packetOrigin = PACKET_ORIGIN::CLIENT_GAMEPLAY;
         std::string originClientScript;
 
-        unsigned char action; // 0 - Clear and set in entirety, 1 - Add item, 2 - Remove item, 3 - Request items
-        unsigned char containerSubAction; // 0 - None, 1 - Drag, 2 - Drop, 3 - Take all, 4 - Reply to request
+        unsigned char action = WORLD_ACTION::SET;
+        unsigned char containerSubAction = CONTAINER_SUBACTION::NONE;
 
-        bool isValid;
+        bool isValid = false;
     };
 }
 

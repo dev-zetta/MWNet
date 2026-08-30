@@ -92,6 +92,8 @@ bool Networking::isPassworded() const
 void Networking::processSystemPacket(RakNet::Packet *packet)
 {
     Player *player = Players::getPlayer(packet->guid);
+    if (player == nullptr)
+        return;
 
     SystemPacket *myPacket = systemPacketController->GetPacket(packet->data[0]);
 
@@ -118,8 +120,8 @@ void Networking::processSystemPacket(RakNet::Packet *packet)
         {
             if (isPassworded())
             {
-                LOG_MESSAGE_SIMPLE(TimedLog::LOG_WARN, "Wrong server password %s used by client at %s",
-                    baseSystem.serverPassword.c_str(), packet->systemAddress.ToString());
+                LOG_MESSAGE_SIMPLE(TimedLog::LOG_WARN, "Wrong server password used by client at %s",
+                    packet->systemAddress.ToString());
                 kickPlayer(player->guid);
                 return;
             }
@@ -137,6 +139,8 @@ void Networking::processSystemPacket(RakNet::Packet *packet)
 void Networking::processPlayerPacket(RakNet::Packet *packet)
 {
     Player *player = Players::getPlayer(packet->guid);
+    if (player == nullptr)
+        return;
 
     PlayerPacket *myPacket = playerPacketController->GetPacket(packet->data[0]);
 
@@ -175,6 +179,13 @@ void Networking::processPlayerPacket(RakNet::Packet *packet)
 
         myPacket->setPlayer(player);
         myPacket->Read();
+        if (!myPacket->isPacketValid())
+        {
+            LOG_MESSAGE_SIMPLE(TimedLog::LOG_ERROR, "Invalid ID_PLAYER_BASEINFO packet from client at %s",
+                packet->systemAddress.ToString());
+            kickPlayer(player->guid);
+            return;
+        }
         myPacket->Send(true);
     }
 
@@ -196,6 +207,8 @@ void Networking::processPlayerPacket(RakNet::Packet *packet)
 void Networking::processActorPacket(RakNet::Packet *packet)
 {
     Player *player = Players::getPlayer(packet->guid);
+    if (player == nullptr)
+        return;
 
     if (!player->isHandshaked() || player->getLoadState() != Player::POSTLOADED)
         return;
@@ -208,6 +221,8 @@ void Networking::processActorPacket(RakNet::Packet *packet)
 void Networking::processObjectPacket(RakNet::Packet *packet)
 {
     Player *player = Players::getPlayer(packet->guid);
+    if (player == nullptr)
+        return;
 
     if (!player->isHandshaked() || player->getLoadState() != Player::POSTLOADED)
         return;
@@ -220,6 +235,8 @@ void Networking::processObjectPacket(RakNet::Packet *packet)
 void Networking::processWorldstatePacket(RakNet::Packet *packet)
 {
     Player *player = Players::getPlayer(packet->guid);
+    if (player == nullptr)
+        return;
 
     if (!player->isHandshaked() || player->getLoadState() != Player::POSTLOADED)
         return;
@@ -517,6 +534,14 @@ int Networking::mainLoop()
             break;
         for (packet=peer->Receive(); packet; peer->DeallocatePacket(packet), packet=peer->Receive())
         {
+            if (packet->length == 0
+                || packet->length > protocol::limits::normalMessageBytes + BasePacket::headerSize())
+            {
+                LOG_MESSAGE_SIMPLE(TimedLog::LOG_WARN, "Dropped invalid-size packet from %s",
+                    packet->systemAddress.ToString());
+                continue;
+            }
+
             if (getMasterClient()->Process(packet))
                 continue;
 
@@ -556,8 +581,15 @@ int Networking::mainLoop()
                     break;
                 default:
                 {
-                    RakNet::BitStream bsIn(&packet->data[1], packet->length, false);
-                    bsIn.IgnoreBytes((unsigned int) RakNet::RakNetGUID::size()); // Ignore GUID from received packet
+                    if (packet->length < BasePacket::headerSize())
+                    {
+                        LOG_MESSAGE_SIMPLE(TimedLog::LOG_WARN, "Dropped undersized packet from %s",
+                            packet->systemAddress.ToString());
+                        break;
+                    }
+
+                    RakNet::BitStream bsIn(&packet->data[1], packet->length - 1, false);
+                    bsIn.IgnoreBytes(static_cast<unsigned int>(RakNet::RakNetGUID::size()));
 
 
                     if (Players::doesPlayerExist(packet->guid))

@@ -13,12 +13,13 @@ void PacketWorldMap::Packet(RakNet::BitStream *newBitstream, bool send)
 {
     WorldstatePacket::Packet(newBitstream, send);
 
-    uint32_t changesCount;
+    uint32_t changesCount = 0;
 
     if (send)
         changesCount = static_cast<uint32_t>(worldstate->mapTiles.size());
 
-    RW(changesCount, send);
+    if (!RWCount(changesCount, send))
+        return;
 
     if (!send)
     {
@@ -31,14 +32,12 @@ void PacketWorldMap::Packet(RakNet::BitStream *newBitstream, bool send)
         RW(mapTile.x, send);
         RW(mapTile.y, send);
 
-        uint32_t imageDataSize;
+        uint32_t imageDataSize = 0;
 
         if (send)
             imageDataSize = static_cast<uint32_t>(mapTile.imageData.size());
 
-        RW(imageDataSize, send);
-
-        if (imageDataSize > mwmp::maxImageDataSize)
+        if (!RWCount(imageDataSize, send, protocol::limits::mapTileImageBytes))
         {
             LOG_MESSAGE_SIMPLE(TimedLog::LOG_ERROR, "Processed invalid ID_WORLD_MAP packet where tile %i, %i had an imageDataSize of %i",
                 mapTile.x, mapTile.y, imageDataSize);

@@ -50,32 +50,32 @@ namespace mwmp
     struct ClientVariable
     {
         std::string id;
-        int internalIndex;
+        int internalIndex = 0;
 
-        char variableType;
+        char variableType = VARIABLE_TYPE::INT;
 
-        int intValue;
-        float floatValue;
+        int intValue = 0;
+        float floatValue = 0.f;
         std::string stringValue;
     };
 
     struct Time
     {
-        float hour;
-        int day;
-        int month;
-        int year;
+        float hour = 0.f;
+        int day = 0;
+        int month = 0;
+        int year = 0;
 
-        int daysPassed;
-        float timeScale;
+        int daysPassed = 0;
+        float timeScale = 0.f;
     };
 
     struct Item
     {
         std::string refId;
-        int count;
-        int charge;
-        float enchantmentCharge;
+        int count = 0;
+        int charge = 0;
+        float enchantmentCharge = 0.f;
         std::string soul;
 
         inline bool operator==(const Item& rhs)
@@ -87,21 +87,21 @@ namespace mwmp
 
     struct ProjectileOrigin
     {
-        float origin[3];
-        float orientation[4];
+        float origin[3]{};
+        float orientation[4]{};
     };
     
     struct Target
     {
-        bool isPlayer;
+        bool isPlayer = false;
 
         std::string refId;
-        unsigned int refNum;
-        unsigned int mpNum;
+        unsigned int refNum = 0;
+        unsigned int mpNum = 0;
 
         std::string name; // Remove this once the server can get names corresponding to different refIds
 
-        RakNet::RakNetGUID guid;
+        RakNet::RakNetGUID guid{};
     };
 
     class Attack
@@ -116,14 +116,14 @@ namespace mwmp
             RANGED
         };
 
-        char type;
+        char type = TYPE::MELEE;
         std::string attackAnimation;
 
         std::string rangedWeaponId;
         std::string rangedAmmoId;
 
-        ESM::Position hitPosition;
-        ProjectileOrigin projectileOrigin;
+        ESM::Position hitPosition{};
+        ProjectileOrigin projectileOrigin{};
 
         float damage = 0;
         float attackStrength = 0;
@@ -147,7 +147,7 @@ namespace mwmp
 
         Target target;
 
-        char type; // 0 - regular magic, 1 - item magic
+        char type = TYPE::REGULAR; // 0 - regular magic, 1 - item magic
         enum TYPE
         {
             REGULAR = 0,
@@ -158,29 +158,29 @@ namespace mwmp
         std::string itemId;
 
         bool hasProjectile = false;
-        ProjectileOrigin projectileOrigin;
+        ProjectileOrigin projectileOrigin{};
 
-        bool isHit;
-        bool success;
-        bool pressed;
-        bool instant;
+        bool isHit = false;
+        bool success = false;
+        bool pressed = false;
+        bool instant = false;
 
-        bool shouldSend;
+        bool shouldSend = false;
     };
 
     struct SpellCooldown
     {
         std::string id;
-        int startTimestampDay;
-        double startTimestampHour;
+        int startTimestampDay = 0;
+        double startTimestampHour = 0.0;
     };
 
     struct ActiveSpell
     {
         std::string id;
-        bool isStackingSpell;
-        int timestampDay;
-        double timestampHour;
+        bool isStackingSpell = false;
+        int timestampDay = 0;
+        double timestampHour = 0.0;
         Target caster;
         ESM::ActiveSpells::ActiveSpellParams params;
     };
@@ -194,22 +194,22 @@ namespace mwmp
             ADD,
             REMOVE
         };
-        int action; // 0 - Clear and set in entirety, 1 - Add spell, 2 - Remove spell
+        int action = ACTION_TYPE::SET; // 0 - Clear and set in entirety, 1 - Add spell, 2 - Remove spell
     };
 
     struct Animation
     {
         std::string groupname;
-        int mode;
-        int count;
-        bool persist;
+        int mode = 0;
+        int count = 0;
+        bool persist = false;
     };
 
     struct SimpleCreatureStats
     {
-        ESM::StatState<float> mDynamic[3];
-        bool mDead;
-        bool mDeathAnimationFinished;
+        ESM::StatState<float> mDynamic[3]{};
+        bool mDead = false;
+        bool mDeathAnimationFinished = false;
     };
 }
 

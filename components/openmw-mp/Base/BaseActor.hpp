@@ -13,49 +13,45 @@ namespace mwmp
     {
     public:
 
-        BaseActor()
-        {
-            hasPositionData = false;
-            hasStatsDynamicData = false;
-        }
+        BaseActor() = default;
 
         std::string refId = "";
-        unsigned int refNum;
-        unsigned int mpNum;
+        unsigned int refNum = 0;
+        unsigned int mpNum = 0;
 
-        ESM::Position position;
-        ESM::Position direction;
+        ESM::Position position{};
+        ESM::Position direction{};
 
         ESM::Cell cell;
 
-        unsigned int movementFlags;
-        char drawState;
-        bool isFlying;
+        unsigned int movementFlags = 0;
+        char drawState = 0;
+        bool isFlying = false;
 
         std::string sound;
 
         SimpleCreatureStats creatureStats;
 
         Animation animation;
-        char deathState;
+        char deathState = 0;
         bool isInstantDeath = false;
         Attack attack;
         Cast cast;
 
         Target killer;
 
-        bool isFollowerCellChange;
+        bool isFollowerCellChange = false;
 
-        bool hasAiTarget;
+        bool hasAiTarget = false;
         Target aiTarget;
-        unsigned int aiAction;
-        unsigned int aiDistance;
-        unsigned int aiDuration;
-        bool aiShouldRepeat;
-        ESM::Position aiCoordinates;
+        unsigned int aiAction = 0;
+        unsigned int aiDistance = 0;
+        unsigned int aiDuration = 0;
+        bool aiShouldRepeat = false;
+        ESM::Position aiCoordinates{};
 
-        bool hasPositionData;
-        bool hasStatsDynamicData;
+        bool hasPositionData = false;
+        bool hasStatsDynamicData = false;
 
         Item equipmentItems[19];
         SpellsActiveChanges spellsActiveChanges;
@@ -65,10 +61,7 @@ namespace mwmp
     {
     public:
 
-        BaseActorList()
-        {
-
-        }
+        BaseActorList() = default;
 
         enum ACTOR_ACTION
         {
@@ -89,17 +82,17 @@ namespace mwmp
             WANDER = 6
         };
 
-        RakNet::RakNetGUID guid;
+        RakNet::RakNetGUID guid{};
 
         std::vector<BaseActor> baseActors;
 
-        unsigned int count;
+        unsigned int count = 0;
 
         ESM::Cell cell;
 
-        unsigned char action; // 0 - Clear and set in entirety, 1 - Add item, 2 - Remove item, 3 - Request items
+        unsigned char action = ACTOR_ACTION::SET;
 
-        bool isValid;
+        bool isValid = false;
     };
 }
 
