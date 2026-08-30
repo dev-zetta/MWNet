@@ -264,8 +264,20 @@ set(BUILTIN_DATA_FILES
     mygui/openmw_jail_screen.layout
     mygui/OpenMWResourcePlugin.xml
     mygui/skins.xml
+    mygui/tes3mp_chat.layout
+    mygui/tes3mp_chat.skin.xml
+    mygui/tes3mp_dialog_list.layout
+    mygui/tes3mp_login.layout
+    mygui/tes3mp_login.skin.xml
+    mygui/tes3mp_server_browser.layout
+    mygui/tes3mp_text_input.layout
 )
 
 foreach (f ${BUILTIN_DATA_FILES})
     copy_resource_file("${CMAKE_CURRENT_SOURCE_DIR}/${f}" "${OPENMW_RESOURCES_ROOT}" "resources/vfs/${f}")
 endforeach (f)
+
+# TES3MP keeps this skin alongside the legacy MyGUI resources, while OpenMW's
+# current resource layout stages built-in data from files/data.
+copy_resource_file("${CMAKE_CURRENT_SOURCE_DIR}/../mygui/tes3mp_multilist.skin.xml"
+    "${OPENMW_RESOURCES_ROOT}" "resources/vfs/mygui/tes3mp_multilist.skin.xml")

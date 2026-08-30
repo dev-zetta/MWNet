@@ -55,7 +55,7 @@ namespace mwmp
         void removeMarker();
         void enableMarker();
 
-        void createReference(const std::string& recId);
+        void createReference(const ESM::RefId& recId);
         void deleteReference();
 
         MWWorld::Ptr getPtr();
@@ -80,7 +80,7 @@ namespace mwmp
         std::string previousCreatureRefId;
         bool previousDisplayCreatureName;
 
-        std::string creatureRecordId;
+        ESM::RefId creatureRecordId;
 
         bool hasReceivedInitialEquipment;
         bool hasFinishedInitialTeleportation;

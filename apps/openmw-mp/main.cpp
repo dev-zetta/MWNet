@@ -6,6 +6,7 @@
 
 #include <components/files/configurationmanager.hpp>
 #include <components/files/escape.hpp>
+#include <components/settings/parser.hpp>
 #include <components/settings/settings.hpp>
 #include <components/version/version.hpp>
 
@@ -76,12 +77,28 @@ void breakpad(std::string pathToDump){}
 void breakpad_close(){}
 #endif
 
-std::string loadSettings (Settings::Manager & settings)
+std::filesystem::path loadSettings(const Files::ConfigurationManager& cfgMgr)
 {
-    Files::ConfigurationManager mCfgMgr;
-    // load settings using new unified API
-    auto settingspath = Settings::Manager::load(mCfgMgr);
-    return settingspath.string();
+    const std::filesystem::path localDefault = cfgMgr.getLocalPath() / "tes3mp-server-default.cfg";
+    const std::filesystem::path globalDefault = cfgMgr.getGlobalPath() / "tes3mp-server-default.cfg";
+
+    const std::filesystem::path* defaultSettings = nullptr;
+    if (std::filesystem::exists(localDefault))
+        defaultSettings = &localDefault;
+    else if (std::filesystem::exists(globalDefault))
+        defaultSettings = &globalDefault;
+    else
+        throw std::runtime_error(
+            "No default settings file found! Make sure the file \"tes3mp-server-default.cfg\" was properly installed.");
+
+    Settings::SettingsFileParser parser;
+    parser.loadSettingsFile(*defaultSettings, Settings::Manager::mDefaultSettings);
+
+    const std::filesystem::path userSettings = cfgMgr.getUserConfigPath() / "tes3mp-server.cfg";
+    if (std::filesystem::exists(userSettings))
+        parser.loadSettingsFile(userSettings, Settings::Manager::mUserSettings);
+
+    return userSettings;
 }
 
 class Tee : public boost::iostreams::sink
@@ -106,23 +123,23 @@ private:
     std::ostream &out2;
 };
 
-boost::program_options::variables_map launchOptions(int argc, char *argv[], Files::ConfigurationManager cfgMgr)
+boost::program_options::variables_map launchOptions(int argc, char *argv[], Files::ConfigurationManager& cfgMgr)
 {
     namespace bpo = boost::program_options;
     bpo::variables_map variables;
     bpo::options_description desc;
 
+    Files::ConfigurationManager::addCommonOptions(desc);
     desc.add_options()
-            ("resources", bpo::value<Files::EscapeHashString>()->default_value("resources"), "set resources directory")
             ("no-logs", bpo::value<bool>()->implicit_value(true)->default_value(false),
              "Do not write logs. Useful for daemonizing.");
-
-    cfgMgr.readConfiguration(variables, desc, true);
 
     bpo::parsed_options valid_opts = bpo::command_line_parser(argc, argv).options(desc).allow_unregistered().run();
 
     bpo::store(valid_opts, variables);
     bpo::notify(variables);
+    cfgMgr.processPaths(variables, std::filesystem::current_path());
+    cfgMgr.readConfiguration(variables, desc, true);
 
     return variables;
 }
@@ -134,9 +151,8 @@ int main(int argc, char *argv[])
 
     breakpad(boost::filesystem::path(cfgMgr.getLogPath()).string());
 
-    loadSettings(mgr);
-
     auto variables = launchOptions(argc, argv, cfgMgr);
+    loadSettings(cfgMgr);
 
     std::string versionStr(Version::getVersion());
     std::string commitHash(Version::getCommitHash());

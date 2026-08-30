@@ -170,7 +170,7 @@ void DedicatedPlayer::setBaseInfo()
     if (!reference)
     {
         npc.mId = RecordHelper::createRecord(npc)->mId;
-        createReference(npc.mId.getRefIdString());
+        createReference(npc.mId);
     }
     else
     {
@@ -362,17 +362,17 @@ void DedicatedPlayer::setShapeshift()
             if (creatureRecordId.empty())
             {
                 creature.mId = RecordHelper::createRecord(creature)->mId;
-                creatureRecordId = creature.mId.getRefIdString();
-                LOG_APPEND(TimedLog::LOG_INFO, "- Creating new creature record %s", creatureRecordId.c_str());
+                creatureRecordId = creature.mId;
+                LOG_APPEND(TimedLog::LOG_INFO, "- Creating new creature record %s", creatureRecordId.toDebugString().c_str());
             }
             else
             {
-                creature.mId = ESM::RefId::stringRefId(creatureRecordId);
+                creature.mId = creatureRecordId;
                 RecordHelper::overrideRecord(creature);
             }
 
-            LOG_APPEND(TimedLog::LOG_INFO, "- Creating reference for %s", creature.mId.getRefIdString().c_str());
-            createReference(creature.mId.getRefIdString());
+            LOG_APPEND(TimedLog::LOG_INFO, "- Creating reference for %s", creature.mId.toDebugString().c_str());
+            createReference(creature.mId);
         }
         // This player was already a creature, but the new creature refId was empty or
         // invalid, so we'll turn this player into their NPC self again as a result
@@ -384,7 +384,7 @@ void DedicatedPlayer::setShapeshift()
             }
 
             RecordHelper::overrideRecord(npc);
-            createReference(npc.mId.getRefIdString());
+            createReference(npc.mId);
             reloadPtr();
         }
 
@@ -606,11 +606,11 @@ void DedicatedPlayer::removeMarker()
     }
 }
 
-void DedicatedPlayer::createReference(const std::string& recId)
+void DedicatedPlayer::createReference(const ESM::RefId& recId)
 {
     MWBase::World *world = MWBase::Environment::get().getWorld();
 
-    reference = new MWWorld::ManualRef(world->getStore(), ESM::RefId::stringRefId(recId), 1);
+    reference = new MWWorld::ManualRef(world->getStore(), recId, 1);
 
     LOG_APPEND(TimedLog::LOG_INFO, "- Creating new reference pointer for %s", npc.mName.c_str());
 
