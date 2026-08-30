@@ -515,7 +515,7 @@ eventHandler.InitializeDefaultHandlers = function()
 
 end
 
-eventHandler.OnPlayerConnect = function(pid, playerName)
+eventHandler.OnPlayerConnect = function(pid, playerName, nativeAuthentication)
 
     Players[pid] = Player(pid, playerName)
     Players[pid].name = playerName
@@ -597,22 +597,46 @@ eventHandler.OnPlayerConnect = function(pid, playerName)
             table.insert(pidsByIpAddress[ipAddress], pid)
         end
 
-        message = "Welcome " .. playerName .. "\nYou have " .. tostring(config.loginTime) ..
-            " seconds to"
+        if nativeAuthentication ~= nil then
+            if nativeAuthentication.isNewAccount then
+                Players[pid]:RegisterAuthenticated()
+                message = "You have successfully registered.\n" .. config.chatWindowInstructions
+            else
+                Players[pid]:LoadFromDrive()
+                if tableHelper.containsValue(banList.playerNames,
+                    string.lower(Players[pid].accountName)) then
+                    Players[pid]:SaveIpAddress()
+                    Players[pid]:Message(Players[pid].accountName .. " is banned from this server.\n")
+                    tes3mp.BanAddress(tes3mp.GetIP(pid))
+                    return
+                else
+                    Players[pid]:FinishLogin()
+                    message = "You have successfully logged in.\n" .. config.chatWindowInstructions
+                end
+            end
+            tes3mp.SendMessage(pid, message, false)
 
-        if Players[pid]:HasAccount() then
-            message = message .. " log in.\n"
-            guiHelper.ShowLogin(pid)
+            if WorldInstance:HasRunStartupScripts() == false then
+                Players[pid]:Message(config.startupScriptsInstructions)
+            end
         else
-            message = message .. " register.\n"
-            guiHelper.ShowRegister(pid)
+            message = "Welcome " .. playerName .. "\nYou have " .. tostring(config.loginTime) ..
+                " seconds to"
+
+            if Players[pid]:HasAccount() then
+                message = message .. " log in.\n"
+                guiHelper.ShowLogin(pid)
+            else
+                message = message .. " register.\n"
+                guiHelper.ShowRegister(pid)
+            end
+
+            tes3mp.SendMessage(pid, message, false)
+
+            Players[pid].loginTimerId = tes3mp.CreateTimerEx("OnLoginTimeExpiration",
+                time.seconds(config.loginTime), "is", pid, Players[pid].accountName)
+            tes3mp.StartTimer(Players[pid].loginTimerId)
         end
-
-        tes3mp.SendMessage(pid, message, false)
-
-        Players[pid].loginTimerId = tes3mp.CreateTimerEx("OnLoginTimeExpiration",
-            time.seconds(config.loginTime), "is", pid, Players[pid].accountName)
-        tes3mp.StartTimer(Players[pid].loginTimerId)
     end
     
     customEventHooks.triggerHandlers("OnPlayerConnect", eventStatus, {pid})

@@ -11,8 +11,8 @@ function BasePlayer:__init(pid, playerName)
     {
         login = {
             name = "",
-            passwordSalt = "",
-            passwordHash = ""
+            schemaVersion = 1,
+            passwordScheme = "argon2id-v1"
         },
         timestamps = {
             creation = os.time(),
@@ -170,6 +170,24 @@ function BasePlayer:Register(clientPasswordHash)
     self.loggedIn = true
     self.isNewlyRegistered = true
     self:GenerateSaltedHash(clientPasswordHash)
+    self.data.settings.consoleAllowed = "default"
+
+    if not self.hasAccount then
+        tes3mp.SetCharGenStage(self.pid, 1, 4)
+    end
+end
+
+-- Protocol 11 authenticates the account before the gameplay session is spawned.
+-- The credential itself is owned by the native Argon2id account store and must
+-- never be copied back into the player-state document.
+function BasePlayer:RegisterAuthenticated()
+    self.loggedIn = true
+    self.isNewlyRegistered = true
+    self.data.login.schemaVersion = 1
+    self.data.login.passwordScheme = "argon2id-v1"
+    self.data.login.password = nil
+    self.data.login.passwordSalt = nil
+    self.data.login.passwordHash = nil
     self.data.settings.consoleAllowed = "default"
 
     if not self.hasAccount then

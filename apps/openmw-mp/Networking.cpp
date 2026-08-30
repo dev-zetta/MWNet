@@ -645,6 +645,7 @@ void Networking::processApplicationMessage(transport::TransportMessage message)
             disconnectTransport(message.connection, "spawn session transition failed");
             return;
         }
+        Script::Call<Script::CallbackIdentity("OnPlayerConnect")>(player->getId());
     }
     update(&packet, stream);
 }
@@ -697,7 +698,6 @@ void Networking::processAuthenticationMessage(transport::TransportMessage messag
     const unsigned short pid = player->getId();
     Script::Call<Script::CallbackIdentity("OnPlayerAuthenticated")>(
         pid, result.accountName.c_str(), result.isNewAccount);
-    Script::Call<Script::CallbackIdentity("OnPlayerConnect")>(pid);
 }
 
 bool Networking::sendAuthenticationResponse(transport::TransportConnectionId connection,

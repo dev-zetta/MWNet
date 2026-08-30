@@ -465,7 +465,7 @@ config.disallowedNameStrings = { "bitch", "blowjob", "blow job", "cocksuck", "cu
     "faggot", "fellatio", "fuck", "gas the ", "Hitler", "jizz", "nigga", "nigger", "smegma", "vagina", "whore" }
 
 -- The order in which table keys should be saved to JSON files
-config.playerKeyOrder = { "login", "name", "passwordHash", "passwordSalt", "timestamps", "settings",
+config.playerKeyOrder = { "login", "name", "schemaVersion", "passwordScheme", "timestamps", "settings",
     "character", "customClass", "location", "stats", "fame", "shapeshift", "attributes",
     "attributeSkillIncreases", "skills", "skillProgress", "recordLinks", "equipment", "inventory",
     "spellbook", "books", "factionRanks", "factionReputation", "factionExpulsion", "mapExplored",

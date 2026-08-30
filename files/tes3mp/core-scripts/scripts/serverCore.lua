@@ -37,6 +37,7 @@ pidsByIpAddress = {}
 clientDataFiles = {}
 clientVariableScopes = {}
 speechCollections = {}
+authenticatedPlayers = {}
 
 hourCounter = nil
 updateTimerId = nil
@@ -354,11 +355,25 @@ function OnRequestPluginList()
     OnRequestDataFileList()
 end
 
+function OnTransportConnect(pid)
+    tes3mp.LogMessage(enumerations.log.INFO, "Transport connected for pid " .. pid)
+end
+
+function OnPlayerAuthenticated(pid, accountName, isNewAccount)
+    authenticatedPlayers[pid] = {
+        accountName = accountName,
+        isNewAccount = isNewAccount
+    }
+    tes3mp.LogMessage(enumerations.log.INFO, "Account authenticated for pid " .. pid)
+end
+
 function OnPlayerConnect(pid)
 
     tes3mp.LogMessage(enumerations.log.INFO, "Called \"OnPlayerConnect\" for pid " .. pid)
 
-    local playerName = tes3mp.GetName(pid)
+    local nativeAuthentication = authenticatedPlayers[pid]
+    authenticatedPlayers[pid] = nil
+    local playerName = nativeAuthentication ~= nil and nativeAuthentication.accountName or tes3mp.GetName(pid)
 
     if string.len(playerName) > 35 then
         playerName = string.sub(playerName, 0, 35)
@@ -374,11 +389,13 @@ function OnPlayerConnect(pid)
         tes3mp.Kick(pid)
     else
         tes3mp.LogAppend(enumerations.log.INFO, "- New player is named " .. playerName)
-        eventHandler.OnPlayerConnect(pid, playerName)
+        eventHandler.OnPlayerConnect(pid, playerName, nativeAuthentication)
     end
 end
 
 function OnPlayerDisconnect(pid)
+
+    authenticatedPlayers[pid] = nil
 
     tes3mp.LogMessage(enumerations.log.INFO, "Called \"OnPlayerDisconnect\" for " .. logicHandler.GetChatName(pid))
 
