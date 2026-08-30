@@ -641,30 +641,32 @@ namespace MWClass
             MWBase::Environment::get().getWindowManager()->setEnemy(victim);
 
         float damage = 0.0f;
+
+        /*
+            Start of tes3mp addition
+
+            If the attacker is a LocalPlayer or LocalActor, get their Attack to assign its
+            hit position and target. This has to happen before the failed-hit branch so a
+            successful hit remains marked as successful until onHit records its damage.
+        */
+        mwmp::Attack* localAttack = MechanicsHelper::getLocalAttack(ptr);
+
+        if (localAttack)
+        {
+            localAttack->isHit = true;
+            localAttack->success = success;
+            localAttack->hitPosition = MechanicsHelper::getPositionFromVector(hitPosition);
+            MechanicsHelper::assignAttackTarget(localAttack, victim);
+        }
+        /* End of tes3mp addition */
+
         if (!success)
         {
             MWBase::Environment::get().getLuaManager()->onHit(ptr, victim, weapon, MWWorld::Ptr(), type, attackStrength,
                 attackWindUp, damage, false, hitPosition, false, MWMechanics::DamageSourceType::Melee);
             MWMechanics::reduceWeaponCondition(damage, false, weapon, ptr);
             MWMechanics::resistNormalWeapon(victim, ptr, weapon, damage);
-
             /*
-            Start of tes3mp addition
-
-            If the attacker is a LocalPlayer or LocalActor, get their Attack to assign its
-            hit position and target
-        */
-        mwmp::Attack *localAttack = MechanicsHelper::getLocalAttack(ptr);
-
-        if (localAttack)
-        {
-            localAttack->isHit = true;
-            localAttack->success = true;
-            localAttack->hitPosition = MechanicsHelper::getPositionFromVector(hitPosition);
-            MechanicsHelper::assignAttackTarget(localAttack, victim);
-        }
-        /* End of tes3mp addition */
-                /*
                 Start of tes3mp addition
 
                 If this was a failed attack by the LocalPlayer or LocalActor, send a
@@ -750,7 +752,6 @@ namespace MWClass
             Track whether the strike enchantment is successful for attacks by the
             LocalPlayer or LocalActors
         */
-        mwmp::Attack *localAttack = MechanicsHelper::getLocalAttack(ptr);
         bool appliedEnchantment = MWMechanics::applyOnStrikeEnchantment(ptr, victim, weapon, hitPosition);
         if (localAttack)
             localAttack->applyWeaponEnchantment = appliedEnchantment;
@@ -844,6 +845,7 @@ namespace MWClass
         bool hasDamage = false;
         bool hasHealthDamage = false;
         float healthDamage = 0.f;
+        float attackDamage = 0.f;
         for (auto& [stat, damage] : damages)
         {
             if (damage < 0.001f)
@@ -854,12 +856,15 @@ namespace MWClass
             {
                 hasHealthDamage = true;
                 healthDamage = damage;
+                attackDamage = damage;
                 MWMechanics::DynamicStat<float> health(getCreatureStats(ptr).getHealth());
                 health.setCurrent(health.getCurrent() - damage);
                 stats.setHealth(health);
             }
             else if (stat == "fatigue")
             {
+                if (!hasHealthDamage)
+                    attackDamage = damage;
                 MWMechanics::DynamicStat<float> fatigue(getCreatureStats(ptr).getFatigue());
                 fatigue.setCurrent(fatigue.getCurrent() - damage, true);
                 stats.setFatigue(fatigue);
@@ -919,7 +924,7 @@ namespace MWClass
         if (localAttack)
         {
             localAttack->pressed = false;
-            localAttack->damage = healthDamage;
+            localAttack->damage = attackDamage;
             localAttack->knockdown = getCreatureStats(ptr).getKnockedDown();
 
             MechanicsHelper::assignAttackTarget(localAttack, ptr);

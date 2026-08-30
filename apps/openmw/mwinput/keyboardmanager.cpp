@@ -10,6 +10,8 @@
 #include "../mwbase/inputmanager.hpp"
 #include "../mwbase/luamanager.hpp"
 #include "../mwbase/windowmanager.hpp"
+#include "../mwmp/GUIController.hpp"
+#include "../mwmp/Main.hpp"
 
 #include "actions.hpp"
 #include "bindingsmanager.hpp"
@@ -40,6 +42,22 @@ namespace MWInput
             && (arg.keysym.mod & KMOD_SHIFT) == 0 && MWBase::Environment::get().getWindowManager()->isConsoleMode())
             SDL_StopTextInput();
 
+        /*
+            Start of tes3mp addition
+
+            Handle multiplayer GUI shortcuts before MyGUI gets a chance to consume
+            them. The chat overlay is visible during gameplay and OpenMW 0.52 routes
+            its keys through MyGUI before the regular bindings manager.
+        */
+        MWBase::InputManager* input = MWBase::Environment::get().getInputManager();
+        if (!arg.repeat && mwmp::Main::isInitialized()
+            && mwmp::Main::get().getGUIController()->pressedKey(arg.keysym.scancode))
+        {
+            input->setJoystickLastUsed(false);
+            return;
+        }
+        /* End of tes3mp addition */
+
         bool consumed = SDL_IsTextInputActive() && // Little trick to check if key is printable
             (!(SDLK_SCANCODE_MASK & arg.keysym.sym) &&
                 // Don't trust isprint for symbols outside the extended ASCII range
@@ -55,7 +73,6 @@ namespace MWInput
         if (arg.repeat)
             return;
 
-        MWBase::InputManager* input = MWBase::Environment::get().getInputManager();
         if (!input->controlsDisabled() && !consumed)
             mBindingsManager->keyPressed(arg);
 

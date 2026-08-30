@@ -26,19 +26,24 @@ ESM::Cell Utils::getCellFromDescription(std::string cellDescription)
     ESM::Cell cell;
     cell.blank();
 
-    static std::regex exteriorCellPattern("^(-?\\d+), (-?\\d+)$");
+    static const std::regex shortExteriorCellPattern("^(-?\\d+),\\s*(-?\\d+)$");
+    static const std::regex namedExteriorCellPattern("^(.+) \\((-?\\d+),\\s*(-?\\d+)\\)$");
     std::smatch baseMatch;
 
-    if (std::regex_match(cellDescription, baseMatch, exteriorCellPattern))
+    if (std::regex_match(cellDescription, baseMatch, shortExteriorCellPattern))
     {
         cell.mData.mFlags &= ~ESM::Cell::Interior;
-
-        // The first sub match is the whole string, so check for a length of 3
-        if (baseMatch.size() == 3)
-        {
-            cell.mData.mX = stoi(baseMatch[1].str());
-            cell.mData.mY = stoi(baseMatch[2].str());
-        }
+        cell.mData.mX = stoi(baseMatch[1].str());
+        cell.mData.mY = stoi(baseMatch[2].str());
+    }
+    else if (std::regex_match(cellDescription, baseMatch, namedExteriorCellPattern))
+    {
+        // OpenMW 0.52 includes the cell or region name in exterior descriptions.
+        // Preserve it for stable script keys while still treating the cell as exterior.
+        cell.mData.mFlags &= ~ESM::Cell::Interior;
+        cell.mName = baseMatch[1].str();
+        cell.mData.mX = stoi(baseMatch[2].str());
+        cell.mData.mY = stoi(baseMatch[3].str());
     }
     else
     {

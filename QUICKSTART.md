@@ -1,6 +1,6 @@
-# TES3MP Merged Branch - Quick Start Guide
+# TES3MP 1.0.0 - Quick Start Guide
 
-This guide will help you quickly build and run the TES3MP merged branch (TES3MP 0.8.1 + openmw-50).
+This guide will help you quickly build and run TES3MP 1.0.0, based on OpenMW 0.52.
 
 ## Prerequisites
 
@@ -24,20 +24,21 @@ This will:
 - Build TES3MP client and server
 - Save build log to `build.log`
 
-**Note:** CrabNet is already cloned to `dependencies/crabnet/` and will be built automatically.
+**Note:** CrabNet is vendored in `extern/crabnet/` and is built automatically.
 
 ### 2. Run the Client
 
 ```bash
-cd build
-./tes3mp
+./run-tes3mp.sh
 ```
 
 ### 3. Run the Server
 
 ```bash
+mkdir -p build/server
+cp -a files/tes3mp/core-scripts/. build/server/
 cd build
-./tes3mp-server
+LD_LIBRARY_PATH="$PWD/lib${LD_LIBRARY_PATH:+:$LD_LIBRARY_PATH}" ./tes3mp-server
 ```
 
 ## Common Build Scenarios
@@ -168,12 +169,12 @@ After successful build, you'll have:
 ## Merge Information
 
 This build combines:
-- **TES3MP 0.8.1**: Multiplayer features (154 files in mwmp/)
-- **openmw-50**: Modern codebase with Lua scripting, updated navigation, ESM::RefId API
+- **TES3MP 1.0.0**: Multiplayer client, dedicated server, server browser and scripting API
+- **OpenMW 0.52**: Current engine base with modern Lua, navigation, rendering and content APIs
 
-All 237 merge conflicts were resolved, preserving both codebases' features.
+The original OpenMW 0.50 integration resolved 237 merge conflicts while preserving TES3MP's multiplayer features; the codebase was subsequently advanced to OpenMW 0.52.
 
 ---
 
-**Build Script Version**: 1.0.0-merged  
-**Last Updated**: February 2026
+**Build Script Version**: 1.0.0
+**Last Updated**: August 2026

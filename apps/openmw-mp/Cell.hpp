@@ -39,7 +39,7 @@ public:
     void sendToLoaded(mwmp::ActorPacket *actorPacket, mwmp::BaseActorList *baseActorList) const;
     void sendToLoaded(mwmp::ObjectPacket *objectPacket, mwmp::BaseObjectList *baseObjectList) const;
 
-    std::string getDescription() const;
+    std::string getShortDescription() const;
 
 
 private:

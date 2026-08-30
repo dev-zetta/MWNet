@@ -1,9 +1,15 @@
 TES3MP Credits
 ==============
 
+Maintainer
+----------
+
+    Gabriel Max (dev-zetta) - Project maintenance, OpenMW 0.52 integration, modernization and stability fixes
+
 C++ programmers
 ---------------
 
+    Gabriel Max (dev-zetta) - OpenMW 0.52 port, server browser, Lua bindings, AI, combat and runtime fixes
     David Cernat - World, NPC & quest sync, player sync improvements, state saving & loading, extensive scripting
     Stanislav Zhukov (Koncord) - Foundation for networking & scripting systems, player sync, server browser & master server
 
@@ -94,4 +100,3 @@ Special thanks
     Zach Wild
     Zaphida
     OpenMW for creating an amazing open source project
-

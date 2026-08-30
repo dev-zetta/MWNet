@@ -1,6 +1,6 @@
 FROM ubuntu:24.04
-LABEL maintainer="TES3MP Merged Branch"
-LABEL description="Docker image for building TES3MP 0.8.1 merged with openmw-50"
+LABEL maintainer="Gabriel Max (dev-zetta)"
+LABEL description="Docker image for building TES3MP 1.0.0 based on OpenMW 0.52"
 
 # Prevent interactive prompts during package installation
 ENV DEBIAN_FRONTEND=noninteractive

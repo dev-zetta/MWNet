@@ -74,9 +74,9 @@ void LocalActor::update(bool forceUpdate)
 void LocalActor::updateCell()
 {
     LOG_MESSAGE_SIMPLE(TimedLog::LOG_VERBOSE, "Sending ID_ACTOR_CELL_CHANGE about %s %i-%i in cell %s to server",
-                       refId.c_str(), refNum, mpNum, std::string(cell.getDescription()).c_str());
+                       refId.c_str(), refNum, mpNum, std::string(cell.getShortDescription()).c_str());
 
-    LOG_APPEND(TimedLog::LOG_VERBOSE, "- Moved to cell %s", std::string(ptr.getCell()->getCell()->getDescription()).c_str());
+    LOG_APPEND(TimedLog::LOG_VERBOSE, "- Moved to cell %s", std::string(ptr.getCell()->getCell()->getShortDescription()).c_str());
 
     cell = ptr.getCell()->getCell()->getEsm3();
     position = ptr.getRefData().getPosition();
@@ -346,7 +346,7 @@ void LocalActor::sendDeath(char newDeathState)
         killer = MechanicsHelper::getTarget(ptr);
 
     LOG_MESSAGE_SIMPLE(TimedLog::LOG_INFO, "Sending ID_ACTOR_DEATH about %s %i-%i in cell %s to server\n- deathState: %d",
-        refId.c_str(), refNum, mpNum, cell.getDescription().c_str(), deathState);
+        refId.c_str(), refNum, mpNum, cell.getShortDescription().c_str(), deathState);
 
     ActorList actorList;
     actorList.cell = cell;

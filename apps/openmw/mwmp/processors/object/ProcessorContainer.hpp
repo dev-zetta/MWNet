@@ -55,7 +55,7 @@ namespace mwmp
                 if (objectList.baseObjectCount == 0)
                 {
                     LOG_APPEND(TimedLog::LOG_VERBOSE, "- Request had no objects attached, so we are sending all containers in the cell %s",
-                        objectList.cell.getDescription().c_str());
+                        objectList.cell.getShortDescription().c_str());
                     objectList.reset();
                     objectList.cell = ptrCellStore->getCell()->getEsm3();
                     objectList.action = mwmp::BaseObjectList::SET;

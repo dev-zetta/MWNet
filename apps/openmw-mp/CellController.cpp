@@ -98,14 +98,14 @@ Cell *CellController::addCell(ESM::Cell cellData)
     Cell *cell;
     if (it == cells.end())
     {
-        LOG_APPEND(TimedLog::LOG_INFO, "- Adding %s to CellController", cellData.getDescription().c_str());
+        LOG_APPEND(TimedLog::LOG_INFO, "- Adding %s to CellController", cellData.getShortDescription().c_str());
 
         cell = new Cell(cellData);
         cells.push_back(cell);
     }
     else
     {
-        LOG_APPEND(TimedLog::LOG_INFO, "- Found %s in CellController", cellData.getDescription().c_str());
+        LOG_APPEND(TimedLog::LOG_INFO, "- Found %s in CellController", cellData.getShortDescription().c_str());
         cell = *it;
     }
 
@@ -121,8 +121,8 @@ void CellController::removeCell(Cell *cell)
     {
         if (*it != nullptr && *it == cell)
         {
-            Script::Call<Script::CallbackIdentity("OnCellDeletion")>(cell->getDescription().c_str());
-            LOG_APPEND(TimedLog::LOG_INFO, "- Removing %s from CellController", cell->getDescription().c_str());
+            Script::Call<Script::CallbackIdentity("OnCellDeletion")>(cell->getShortDescription().c_str());
+            LOG_APPEND(TimedLog::LOG_INFO, "- Removing %s from CellController", cell->getShortDescription().c_str());
 
             delete *it;
             it = cells.erase(it);
@@ -151,7 +151,7 @@ void CellController::deletePlayer(Player *player)
 
     for (auto &&cell : toDelete)
     {
-        LOG_APPEND(TimedLog::LOG_INFO, "- Cell %s has no players left", cell->getDescription().c_str());
+        LOG_APPEND(TimedLog::LOG_INFO, "- Cell %s has no players left", cell->getShortDescription().c_str());
         removeCell(cell);
     }
 }
@@ -185,7 +185,7 @@ void CellController::update(Player *player)
     }
     for (auto &&cell : toDelete)
     {
-        LOG_APPEND(TimedLog::LOG_INFO, "- Cell %s has no players left", cell->getDescription().c_str());
+        LOG_APPEND(TimedLog::LOG_INFO, "- Cell %s has no players left", cell->getShortDescription().c_str());
         removeCell(cell);
     }
 }

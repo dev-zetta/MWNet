@@ -48,7 +48,7 @@ namespace mwmp
         void setAuthority(const RakNet::RakNetGUID& guid);
 
         MWWorld::CellStore* getCellStore();
-        std::string getDescription();
+        std::string getShortDescription();
 
         bool shouldInitializeActors;
 

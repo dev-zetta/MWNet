@@ -248,6 +248,21 @@ namespace ESM
         return region + ' ' + cellGrid;
     }
 
+    /*
+        Start of tes3mp addition
+
+        Keep exterior cell identifiers independent of display names and regions, which are not
+        serialized by every TES3MP cell packet.
+    */
+    std::string Cell::getShortDescription() const
+    {
+        if (mData.mFlags & Interior)
+            return mName;
+
+        return std::to_string(mData.mX) + ", " + std::to_string(mData.mY);
+    }
+    /* End of tes3mp addition */
+
     bool Cell::getNextRef(ESMReader& esm, CellRef& ref, bool& isDeleted)
     {
         isDeleted = false;

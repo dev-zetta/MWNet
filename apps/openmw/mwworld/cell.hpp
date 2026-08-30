@@ -45,6 +45,21 @@ namespace MWWorld
         std::string_view getNameId() const { return mNameID; }
         std::string_view getDisplayName() const { return mDisplayname; }
         std::string_view getDescription() const { return mDescription; }
+
+        /*
+            Start of tes3mp addition
+
+            Return the stable cell identifier used by the TES3MP protocol and scripts.
+        */
+        std::string getShortDescription() const
+        {
+            if (!mIsExterior)
+                return mNameID;
+
+            return std::to_string(mGridPos.x()) + ", " + std::to_string(mGridPos.y());
+        }
+        /* End of tes3mp addition */
+
         const MoodData& getMood() const { return mMood; }
         float getWaterHeight() const { return mWaterHeight; }
         const ESM::RefId& getId() const { return mId; }

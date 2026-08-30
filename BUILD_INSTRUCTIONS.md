@@ -1,16 +1,16 @@
-# Building TES3MP (Merged with openmw-50)
+# Building TES3MP 1.0.0 (OpenMW 0.52)
 
-This document provides build instructions for the TES3MP project that has been merged with openmw-50.
+This document provides build instructions for TES3MP 1.0.0, based on OpenMW 0.52.
 
 ## Project Information
 
-- **TES3MP Version:** 0.8.1
-- **OpenMW Base:** 0.50.0
+- **TES3MP Version:** 1.0.0
+- **OpenMW Base:** 0.52.0
 - **Branch:** tes3mp_merged
 - **C++ Standard:** C++20
 - **CMake Requirement:** 3.16.0 or higher
 
-This is a custom merged branch combining TES3MP's multiplayer features with openmw-50's modernized codebase.
+This maintained fork combines TES3MP's multiplayer features with OpenMW 0.52's modernized codebase.
 
 ---
 
@@ -70,7 +70,7 @@ chmod +x tes3mp-merged-build.sh
 - Automatically detects your Linux distribution and installs dependencies
 - Builds CrabNet (TES3MP's networking library)
 - Configures CMake with correct parameters for the merged branch
-- Uses C++20 standard (required for openmw-50)
+- Uses the C++20 standard required by the current OpenMW base
 - Saves build log to `build.log`
 - Supports both full build and server-only configurations
 
@@ -297,9 +297,9 @@ cd build
 
 ### API Changes
 
-This merge updated TES3MP's code to use openmw-50's modern API:
+The original integration updated TES3MP's code to the OpenMW 0.50 APIs. The current branch advances that work to OpenMW 0.52:
 - **String to RefId:** All ID parameters changed from `std::string` to `ESM::RefId`
-- **Navigation:** Uses openmw-50's updated detournavigator with `ObjectTransform`
+- **Navigation:** Uses OpenMW's updated detournavigator with `ObjectTransform`
 - **Lighting:** Settings-based lighting method configuration
 
 ### Potential Build Issues
@@ -340,21 +340,21 @@ make -j$(nproc)
 
 This build includes:
 
-**From openmw-50:**
+**From OpenMW 0.52:**
 - Lua scripting system (apps/openmw/mwlua/)
 - Modern navigation system (detournavigator)
 - Post-processing pipeline
 - ESM::RefId API throughout
 - Updated build system with library structure
 
-**From TES3MP 0.8.1:**
+**From the TES3MP multiplayer lineage:**
 - Multiplayer core (apps/openmw/mwmp/ - 154 files)
 - Server browser (apps/browser/ - 22 files)
 - Master server (apps/master/ - 9 files)
 - CrabNet networking integration
 - 144 files with multiplayer additions marked
 
-All 237 merge conflicts were resolved, preserving both openmw-50's modernization and TES3MP's multiplayer features.
+The original OpenMW 0.50 integration resolved 237 merge conflicts while preserving TES3MP's multiplayer features; the codebase was subsequently advanced to OpenMW 0.52.
 
 ---
 

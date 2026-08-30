@@ -13,7 +13,7 @@ namespace mwmp
     public:
         void Do(ObjectPacket &packet, ObjectList &objectList) override
         {
-            LOG_MESSAGE_SIMPLE(TimedLog::LOG_VERBOSE, "Received %s about %s", strPacketID.c_str(), objectList.cell.getDescription().c_str());
+            LOG_MESSAGE_SIMPLE(TimedLog::LOG_VERBOSE, "Received %s about %s", strPacketID.c_str(), objectList.cell.getShortDescription().c_str());
         }
     protected:
         MWWorld::CellStore *ptrCellStore;

@@ -48,7 +48,7 @@ namespace mwmp
 
             if (isAccepted)
             {
-                Script::Call<Script::CallbackIdentity("OnActorCellChange")>(player.getId(), actorList.cell.getDescription().c_str());
+                Script::Call<Script::CallbackIdentity("OnActorCellChange")>(player.getId(), actorList.cell.getShortDescription().c_str());
 
                 // Send this to everyone
                 packet.Send(true);

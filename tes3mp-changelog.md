@@ -1,3 +1,44 @@
+1.0.0 (unreleased)
+------------------
+
+This is a major compatibility and maintenance release. It brings TES3MP forward from its OpenMW 0.47 base to OpenMW 0.52 and includes all fork changes since 0.8.1. Clients and servers must both use TES3MP 1.0.0.
+
+### Engine and build modernization
+
+* Update the multiplayer client, dedicated server and tools onto OpenMW 0.52, including its current rendering, input, Lua, navigation and content APIs
+* Port TES3MP-specific code to C++20, Qt 6 and the current `ESM::RefId`, settings, resource and world APIs
+* Vendor CrabNet in `extern/crabnet` so client and server builds no longer depend on a separately cloned networking repository
+* Replace the server's LuaBridge binding layer with sol2 and retain the existing TES3MP Lua API surface
+* Bundle the TES3MP CoreScripts with the source tree and update their server-version requirement to 1.0.0
+* Add build, Docker, quick-start and OpenMW porting documentation plus convenience launch scripts
+
+### Multiplayer and user interface
+
+* Move server selection into an in-game browser flow and make returning from a server possible without restarting the executable
+* Use the configured destination address in the browser's direct-connect field instead of a hardcoded public server; the default is now `localhost:25565`
+* Fix the standalone server browser startup order for the current OpenMW settings system
+* Restore TES3MP chat bindings after the OpenMW 0.52 input changes; F2 and Y are now handled before MyGUI or conflicting OpenMW actions can consume them
+* Fix the launcher OpenSceneGraph plugin path and the client/server connection-password hash used by matching builds
+* Remove duplicate NPC greetings in the dialogue window
+* Respawn a multiplayer player after death instead of ending the game as in single-player OpenMW
+
+### Synchronization and gameplay fixes
+
+* Restore stable interior and exterior cell identifiers throughout client, server, script and packet processing
+* Harden cell and actor lookup paths against missing cells, late packets, absent local authority and null actors instead of crashing on `map::at` or null dereferences
+* Fix animation and blend-controller lookup crashes when synchronized actors or animation sources disappear
+* Initialize loaded cells with local actor authority so NPC AI can run and synchronize
+* Correct humanoid NPC attack-type selection and improve AI sequence diagnostics
+* Correct melee, ranged and hand-to-hand hit propagation so successful attacks carry authoritative health or fatigue damage to remote clients
+* Preserve attack targets and outcomes across failed-hit and successful-hit paths, including on-strike enchantment state and knockdown state
+* Improve actor, object, container, door, script, console, video and cell-change processor compatibility with the OpenMW 0.52 cell-store APIs
+* Fix runtime startup and resource loading regressions introduced by the OpenMW 0.50 and 0.52 migrations
+
+### Maintenance
+
+* Update TES3MP addition blocks and fork-specific code to the current OpenMW formatting conventions
+* Add Gabriel Max (dev-zetta) as project maintainer and contributor for the OpenMW 0.52 port, modernization and stability work
+
 0.8.1
 -----
 

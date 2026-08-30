@@ -86,12 +86,12 @@ void CellController::updateDedicated(float dt)
 
 void CellController::initializeCell(const ESM::Cell& cell)
 {
-    std::string mapIndex = cell.getDescription();
+    std::string mapIndex = cell.getShortDescription();
 
     // If this key doesn't exist, create it
     if (cellsInitialized.count(mapIndex) == 0)
     {
-        LOG_MESSAGE_SIMPLE(TimedLog::LOG_INFO, "Initializing mwmp::Cell %s", cell.getDescription().c_str());
+        LOG_MESSAGE_SIMPLE(TimedLog::LOG_INFO, "Initializing mwmp::Cell %s", cell.getShortDescription().c_str());
 
         MWWorld::CellStore *cellStore = getCellStore(cell);
 
@@ -102,13 +102,13 @@ void CellController::initializeCell(const ESM::Cell& cell)
         mpCell->shouldInitializeActors = true;
         cellsInitialized[mapIndex] = mpCell;
 
-        LOG_APPEND(TimedLog::LOG_VERBOSE, "- Successfully initialized mwmp::Cell %s", cell.getDescription().c_str());
+        LOG_APPEND(TimedLog::LOG_VERBOSE, "- Successfully initialized mwmp::Cell %s", cell.getShortDescription().c_str());
     }
 }
 
 void CellController::uninitializeCell(const ESM::Cell& cell)
 {
-    std::string mapIndex = cell.getDescription();
+    std::string mapIndex = cell.getShortDescription();
 
     // If this key exists, erase the key-value pair from the map
     if (cellsInitialized.count(mapIndex) > 0)
@@ -139,7 +139,7 @@ void CellController::uninitializeCells()
 
 void CellController::readPositions(ActorList& actorList)
 {
-    std::string mapIndex = actorList.cell.getDescription();
+    std::string mapIndex = actorList.cell.getShortDescription();
 
     initializeCell(actorList.cell);
 
@@ -150,7 +150,7 @@ void CellController::readPositions(ActorList& actorList)
 
 void CellController::readAnimFlags(ActorList& actorList)
 {
-    std::string mapIndex = actorList.cell.getDescription();
+    std::string mapIndex = actorList.cell.getShortDescription();
 
     initializeCell(actorList.cell);
 
@@ -161,7 +161,7 @@ void CellController::readAnimFlags(ActorList& actorList)
 
 void CellController::readAnimPlay(ActorList& actorList)
 {
-    std::string mapIndex = actorList.cell.getDescription();
+    std::string mapIndex = actorList.cell.getShortDescription();
 
     initializeCell(actorList.cell);
 
@@ -172,7 +172,7 @@ void CellController::readAnimPlay(ActorList& actorList)
 
 void CellController::readStatsDynamic(ActorList& actorList)
 {
-    std::string mapIndex = actorList.cell.getDescription();
+    std::string mapIndex = actorList.cell.getShortDescription();
 
     initializeCell(actorList.cell);
 
@@ -183,7 +183,7 @@ void CellController::readStatsDynamic(ActorList& actorList)
 
 void CellController::readDeath(ActorList& actorList)
 {
-    std::string mapIndex = actorList.cell.getDescription();
+    std::string mapIndex = actorList.cell.getShortDescription();
 
     initializeCell(actorList.cell);
 
@@ -194,7 +194,7 @@ void CellController::readDeath(ActorList& actorList)
 
 void CellController::readEquipment(ActorList& actorList)
 {
-    std::string mapIndex = actorList.cell.getDescription();
+    std::string mapIndex = actorList.cell.getShortDescription();
 
     initializeCell(actorList.cell);
 
@@ -205,7 +205,7 @@ void CellController::readEquipment(ActorList& actorList)
 
 void CellController::readSpeech(ActorList& actorList)
 {
-    std::string mapIndex = actorList.cell.getDescription();
+    std::string mapIndex = actorList.cell.getShortDescription();
 
     initializeCell(actorList.cell);
 
@@ -216,7 +216,7 @@ void CellController::readSpeech(ActorList& actorList)
 
 void CellController::readSpellsActive(ActorList& actorList)
 {
-    std::string mapIndex = actorList.cell.getDescription();
+    std::string mapIndex = actorList.cell.getShortDescription();
 
     initializeCell(actorList.cell);
 
@@ -227,7 +227,7 @@ void CellController::readSpellsActive(ActorList& actorList)
 
 void CellController::readAi(ActorList& actorList)
 {
-    std::string mapIndex = actorList.cell.getDescription();
+    std::string mapIndex = actorList.cell.getShortDescription();
 
     initializeCell(actorList.cell);
 
@@ -238,7 +238,7 @@ void CellController::readAi(ActorList& actorList)
 
 void CellController::readAttack(ActorList& actorList)
 {
-    std::string mapIndex = actorList.cell.getDescription();
+    std::string mapIndex = actorList.cell.getShortDescription();
 
     initializeCell(actorList.cell);
 
@@ -249,7 +249,7 @@ void CellController::readAttack(ActorList& actorList)
 
 void CellController::readCast(ActorList& actorList)
 {
-    std::string mapIndex = actorList.cell.getDescription();
+    std::string mapIndex = actorList.cell.getShortDescription();
 
     initializeCell(actorList.cell);
 
@@ -260,7 +260,7 @@ void CellController::readCast(ActorList& actorList)
 
 void CellController::readCellChange(ActorList& actorList)
 {
-    std::string mapIndex = actorList.cell.getDescription();
+    std::string mapIndex = actorList.cell.getShortDescription();
 
     initializeCell(actorList.cell);
 
@@ -455,7 +455,7 @@ bool CellController::isInitializedCell(const std::string& cellDescription)
 
 bool CellController::isInitializedCell(const ESM::Cell& cell)
 {
-    return isInitializedCell(cell.getDescription());
+    return isInitializedCell(cell.getShortDescription());
 }
 
 bool CellController::isActiveWorldCell(const ESM::Cell& cell)
@@ -465,10 +465,10 @@ bool CellController::isActiveWorldCell(const ESM::Cell& cell)
 
 Cell *CellController::getCell(const ESM::Cell& cell)
 {
-    auto it = cellsInitialized.find(cell.getDescription());
+    auto it = cellsInitialized.find(cell.getShortDescription());
     if (it == cellsInitialized.end())
     {
-        LOG_MESSAGE_SIMPLE(TimedLog::LOG_WARN, "CellController::getCell: cell %s not in cellsInitialized", cell.getDescription().c_str());
+        LOG_MESSAGE_SIMPLE(TimedLog::LOG_WARN, "CellController::getCell: cell %s not in cellsInitialized", cell.getShortDescription().c_str());
         return nullptr;
     }
     return it->second;

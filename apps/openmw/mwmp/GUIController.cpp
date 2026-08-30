@@ -248,7 +248,7 @@ bool mwmp::GUIController::pressedKey(int key)
         mChat->pressedChatMode();
         return true;
     }
-    else if (key == keySay)
+    else if (key == keySay && !mChat->getEditState())
     {
         mChat->pressedSay();
         return true;

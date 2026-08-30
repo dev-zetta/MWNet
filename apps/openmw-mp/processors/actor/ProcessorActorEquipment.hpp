@@ -20,7 +20,7 @@ namespace mwmp
 
             if (serverCell != nullptr)
             {
-                Script::Call<Script::CallbackIdentity("OnActorEquipment")>(player.getId(), actorList.cell.getDescription().c_str());
+                Script::Call<Script::CallbackIdentity("OnActorEquipment")>(player.getId(), actorList.cell.getShortDescription().c_str());
 
                 serverCell->sendToLoaded(&packet, &actorList);
             }

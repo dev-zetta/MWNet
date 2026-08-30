@@ -21,7 +21,7 @@ namespace mwmp
         void Do(PlayerPacket &packet, Player &player) override
         {
             LOG_MESSAGE_SIMPLE(TimedLog::LOG_INFO, "Received %s from %s", strPacketID.c_str(), player.npc.mName.c_str());
-            LOG_APPEND(TimedLog::LOG_INFO, "- Moved to %s", player.cell.getDescription().c_str());
+            LOG_APPEND(TimedLog::LOG_INFO, "- Moved to %s", player.cell.getShortDescription().c_str());
 
             Script::Call<Script::CallbackIdentity("OnPlayerCellChange")>(player.getId());
 
@@ -73,7 +73,7 @@ namespace mwmp
             packet.setPlayer(&player);
             packet.Send(true); //send to other clients
 
-            LOG_APPEND(TimedLog::LOG_INFO, "- Finished processing ID_PLAYER_CELL_CHANGE", player.cell.getDescription().c_str());
+            LOG_APPEND(TimedLog::LOG_INFO, "- Finished processing ID_PLAYER_CELL_CHANGE", player.cell.getShortDescription().c_str());
 
             player.exchangeFullInfo = false;
         }

@@ -12,6 +12,7 @@
 
 #include <components/openmw-mp/TimedLog.hpp>
 #include <components/openmw-mp/Version.hpp>
+#include <components/settings/settings.hpp>
 
 #include "apps/openmw/mwbase/environment.hpp"
 #include "apps/openmw/mwbase/windowmanager.hpp"
@@ -77,7 +78,9 @@ GUIServerBrowser::GUIServerBrowser()
 
     mButtonConnect->setEnabled(true);
 
-    mEditAddress->setCaption("94.130.220.235:25565");
+    const std::string defaultAddress = Settings::Manager::getString("destinationAddress", "General");
+    const int defaultPort = Settings::Manager::getInt("port", "General");
+    mEditAddress->setCaption(defaultAddress + ":" + std::to_string(defaultPort));
 
     startQuery();
 }

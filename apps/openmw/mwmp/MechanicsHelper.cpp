@@ -499,8 +499,15 @@ void MechanicsHelper::processAttack(Attack attack, const MWWorld::Ptr& attacker)
             if (!isRanged)
                 MWMechanics::blockMeleeAttack(attacker, victim, weaponPtr, attack.damage, 1);
 
-            victim.getClass().onHit(victim, {}, weaponPtr.isEmpty() ? ESM::RefId{} : weaponPtr.getCellRef().getRefId(),
-                attacker, attack.success, MWMechanics::DamageSourceType::Melee);
+            std::map<std::string, float> damages;
+            damages[isHealthDamage ? "health" : "fatigue"] = attack.damage;
+
+            const MWMechanics::DamageSourceType sourceType = isRanged
+                ? MWMechanics::DamageSourceType::Ranged
+                : MWMechanics::DamageSourceType::Melee;
+            victim.getClass().onHit(victim, damages,
+                weaponPtr.isEmpty() ? ESM::RefId{} : weaponPtr.getCellRef().getRefId(), attacker, attack.success,
+                sourceType);
         }
 
         // Remove temporary items that may have been added above for ranged attacks

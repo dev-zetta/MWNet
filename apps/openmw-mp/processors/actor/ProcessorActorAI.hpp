@@ -19,7 +19,7 @@ namespace mwmp
 
             if (serverCell != nullptr)
             {
-                Script::Call<Script::CallbackIdentity("OnActorAI")>(player.getId(), actorList.cell.getDescription().c_str());
+                Script::Call<Script::CallbackIdentity("OnActorAI")>(player.getId(), actorList.cell.getShortDescription().c_str());
             }
         }
     };

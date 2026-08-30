@@ -743,7 +743,7 @@ target_link_libraries(components
     )
 # End of tes3mp change (major)
 
-# Link yaml-cpp (from openmw-50)
+# Link yaml-cpp (from the OpenMW engine base)
 if(yaml-cpp_VERSION VERSION_GREATER_EQUAL 0.8.0)
     target_link_libraries(components yaml-cpp::yaml-cpp)
 else()

@@ -35,7 +35,7 @@ const char *CellFunctions::GetCellStateDescription(unsigned short pid, unsigned 
     if (index >= player->cellStateChanges.size())
         return "invalid";
 
-    tempCellDescription = player->cellStateChanges.at(index).cell.getDescription();
+    tempCellDescription = player->cellStateChanges.at(index).cell.getShortDescription();
     return tempCellDescription.c_str();
 }
 
@@ -44,7 +44,7 @@ const char *CellFunctions::GetCell(unsigned short pid) noexcept
     Player *player;
     GET_PLAYER(pid, player, 0);
 
-    tempCellDescription = player->cell.getDescription().c_str();
+    tempCellDescription = player->cell.getShortDescription().c_str();
     return tempCellDescription.c_str();
 }
 
@@ -92,7 +92,7 @@ void CellFunctions::SetCell(unsigned short pid, const char *cellDescription) noe
     GET_PLAYER(pid, player,);
 
     LOG_MESSAGE_SIMPLE(TimedLog::LOG_INFO, "Script is moving %s from %s to %s", player->npc.mName.c_str(),
-                       player->cell.getDescription().c_str(), cellDescription);
+                       player->cell.getShortDescription().c_str(), cellDescription);
 
     player->cell = Utils::getCellFromDescription(cellDescription);
 }
@@ -103,7 +103,7 @@ void CellFunctions::SetExteriorCell(unsigned short pid, int x, int y) noexcept
     GET_PLAYER(pid, player,);
 
     LOG_MESSAGE_SIMPLE(TimedLog::LOG_INFO, "Script is moving %s from %s to %i,%i", player->npc.mName.c_str(),
-                       player->cell.getDescription().c_str(), x, y);
+                       player->cell.getShortDescription().c_str(), x, y);
 
     // If the player is currently in an interior, turn off the interior flag
     // from the cell

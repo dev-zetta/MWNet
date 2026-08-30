@@ -71,7 +71,7 @@ unsigned char ActorFunctions::GetActorListAction() noexcept
 
 const char *ActorFunctions::GetActorCell(unsigned int index) noexcept
 {
-    tempCellDescription = readActorList->baseActors.at(index).cell.getDescription();
+    tempCellDescription = readActorList->baseActors.at(index).cell.getShortDescription();
     return tempCellDescription.c_str();
 }
 

@@ -412,7 +412,7 @@ void DedicatedPlayer::setCell()
     MWBase::World *world = MWBase::Environment::get().getWorld();
 
     LOG_MESSAGE_SIMPLE(TimedLog::LOG_INFO, "Server says DedicatedPlayer %s moved to %s",
-        npc.mName.c_str(), cell.getDescription().c_str());
+        npc.mName.c_str(), cell.getShortDescription().c_str());
 
     MWWorld::CellStore *cellStore = Main::get().getCellController()->getCellStore(cell);
 

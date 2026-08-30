@@ -17,7 +17,7 @@ namespace mwmp
         {
             LOG_MESSAGE_SIMPLE(TimedLog::LOG_INFO, "Received %s from %s", strPacketID.c_str(), player.npc.mName.c_str());
             
-            Script::Call<Script::CallbackIdentity("OnObjectScale")>(player.getId(), objectList.cell.getDescription().c_str());
+            Script::Call<Script::CallbackIdentity("OnObjectScale")>(player.getId(), objectList.cell.getShortDescription().c_str());
         }
     };
 }

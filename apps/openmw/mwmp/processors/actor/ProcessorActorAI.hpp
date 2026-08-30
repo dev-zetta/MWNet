@@ -17,7 +17,7 @@ namespace mwmp
 
         void Do(ActorPacket &packet, ActorList &actorList) override
         {
-            LOG_MESSAGE_SIMPLE(TimedLog::LOG_INFO, "Received %s about %s", strPacketID.c_str(), actorList.cell.getDescription().c_str());
+            LOG_MESSAGE_SIMPLE(TimedLog::LOG_INFO, "Received %s about %s", strPacketID.c_str(), actorList.cell.getShortDescription().c_str());
 
             Main::get().getCellController()->readAi(actorList);
         }

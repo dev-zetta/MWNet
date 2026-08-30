@@ -19,7 +19,7 @@ namespace mwmp
 
         void Do(ActorPacket &packet, ActorList &actorList) override
         {
-            LOG_MESSAGE_SIMPLE(TimedLog::LOG_INFO, "Received %s about %s", strPacketID.c_str(), actorList.cell.getDescription().c_str());
+            LOG_MESSAGE_SIMPLE(TimedLog::LOG_INFO, "Received %s about %s", strPacketID.c_str(), actorList.cell.getShortDescription().c_str());
             mwmp::CellController *cellController = Main::get().getCellController();
 
             // Never initialize LocalActors in a cell that is no longer loaded, if the server's packet arrived too late
@@ -29,7 +29,7 @@ namespace mwmp
                 mwmp::Cell *cell = cellController->getCell(actorList.cell);
                 if (!cell)
                 {
-                    LOG_MESSAGE_SIMPLE(TimedLog::LOG_WARN, "ProcessorActorAuthority: getCell returned nullptr for %s", actorList.cell.getDescription().c_str());
+                    LOG_MESSAGE_SIMPLE(TimedLog::LOG_WARN, "ProcessorActorAuthority: getCell returned nullptr for %s", actorList.cell.getShortDescription().c_str());
                     return;
                 }
                 cell->setAuthority(guid);

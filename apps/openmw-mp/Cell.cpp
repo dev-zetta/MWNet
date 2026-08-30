@@ -28,21 +28,21 @@ void Cell::addPlayer(Player *player)
 
     if (it != end())
     {
-        LOG_APPEND(TimedLog::LOG_INFO, "- Attempt to add %s to Cell %s again was ignored", player->npc.mName.c_str(), getDescription().c_str());
+        LOG_APPEND(TimedLog::LOG_INFO, "- Attempt to add %s to Cell %s again was ignored", player->npc.mName.c_str(), getShortDescription().c_str());
         return;
     }
 
     auto it2 = find(player->cells.begin(), player->cells.end(), this);
     if (it2 == player->cells.end())
     {
-        LOG_APPEND(TimedLog::LOG_INFO, "- Adding %s to Player %s", getDescription().c_str(), player->npc.mName.c_str());
+        LOG_APPEND(TimedLog::LOG_INFO, "- Adding %s to Player %s", getShortDescription().c_str(), player->npc.mName.c_str());
 
         player->cells.push_back(this);
     }
 
-    LOG_APPEND(TimedLog::LOG_INFO, "- Adding %s to Cell %s", player->npc.mName.c_str(), getDescription().c_str());
+    LOG_APPEND(TimedLog::LOG_INFO, "- Adding %s to Cell %s", player->npc.mName.c_str(), getShortDescription().c_str());
 
-    Script::Call<Script::CallbackIdentity("OnCellLoad")>(player->getId(), getDescription().c_str());
+    Script::Call<Script::CallbackIdentity("OnCellLoad")>(player->getId(), getShortDescription().c_str());
 
     players.push_back(player);
 }
@@ -58,15 +58,15 @@ void Cell::removePlayer(Player *player, bool cleanPlayer)
                 auto it2 = find(player->cells.begin(), player->cells.end(), this);
                 if (it2 != player->cells.end())
                 {
-                    LOG_APPEND(TimedLog::LOG_INFO, "- Removing %s from Player %s", getDescription().c_str(), player->npc.mName.c_str());
+                    LOG_APPEND(TimedLog::LOG_INFO, "- Removing %s from Player %s", getShortDescription().c_str(), player->npc.mName.c_str());
 
                     player->cells.erase(it2);
                 }
             }
 
-            LOG_APPEND(TimedLog::LOG_INFO, "- Removing %s from Cell %s", player->npc.mName.c_str(), getDescription().c_str());
+            LOG_APPEND(TimedLog::LOG_INFO, "- Removing %s from Cell %s", player->npc.mName.c_str(), getShortDescription().c_str());
 
-            Script::Call<Script::CallbackIdentity("OnCellUnload")>(player->getId(), getDescription().c_str());
+            Script::Call<Script::CallbackIdentity("OnCellUnload")>(player->getId(), getShortDescription().c_str());
 
             players.erase(it);
             return;
@@ -235,7 +235,7 @@ void Cell::sendToLoaded(mwmp::ObjectPacket *objectPacket, mwmp::BaseObjectList *
     }
 }
 
-std::string Cell::getDescription() const
+std::string Cell::getShortDescription() const
 {
-    return cell.getDescription();
+    return cell.getShortDescription();
 }

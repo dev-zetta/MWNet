@@ -2,11 +2,11 @@
 
 set -e
 
-VERSION="1.0.0-merged"
+VERSION="1.0.0"
 
 HELP_TEXT_HEADER="\
 TES3MP Merged Branch Build Script ($VERSION)
-Custom build script for TES3MP 0.8.1 merged with openmw-50
+Custom build script for TES3MP 1.0.0 based on OpenMW 0.52
 Based on TES3MP-deploy by Grim Kriegor
 "
 
@@ -26,16 +26,15 @@ Options:
   --skip-pkgs                    Skip package installation
   --cmake-local                  Tell CMake to look in /usr/local/ for libraries
 
-This script builds the TES3MP merged branch located at:
-  /home/gmax/dev/TES3MP
+This script builds the TES3MP checkout containing this script.
 
 The merged branch combines:
-  - TES3MP 0.8.1 multiplayer features
-  - openmw-50 modernized codebase with ESM::RefId API
+  - TES3MP multiplayer client, dedicated server and scripting API
+  - OpenMW 0.52 modernized engine codebase
 "
 
-SCRIPT_DIR="$(dirname $(readlink -f $0))"
-PROJECT_DIR="/home/gmax/dev/TES3MP"
+SCRIPT_DIR="$(dirname "$(readlink -f "$0")")"
+PROJECT_DIR="$SCRIPT_DIR"
 
 echo -e "$HELP_TEXT_HEADER"
 
@@ -229,7 +228,7 @@ if [ $INSTALL == true ] || [ $REBUILD == true ]; then
   mkdir -p "$BUILD_DIR"
   cd "$BUILD_DIR"
   
-  # CMake parameters for merged branch (openmw-50 + TES3MP)
+  # CMake parameters for TES3MP 1.0.0 (OpenMW 0.52 base)
   CMAKE_PARAMS="-Wno-dev \
       -DCMAKE_BUILD_TYPE=RelWithDebInfo \
       -DCMAKE_CXX_STANDARD=20 \

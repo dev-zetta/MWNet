@@ -495,14 +495,6 @@ namespace MWWorld
                     }
                 }();
                 mNavigator.addHeightfield(cellPosition, worldsize, shape, navigatorUpdateGuard);
-
-                    /*
-                    Start of tes3mp addition
-
-                    Store a cell load for the LocalPlayer
-                */
-                mwmp::Main::get().getLocalPlayer()->storeCellState(cell.getCell()->getEsm3(), mwmp::CellState::LOAD);
-                /* End of tes3mp addition */
             }
         }
 
@@ -567,6 +559,16 @@ namespace MWWorld
 
         if (!cell.isExterior() && !cellVariant.isQuasiExterior())
             mRendering.configureAmbient(cellVariant);
+
+        /*
+            Start of tes3mp addition
+
+            Store a cell load for the LocalPlayer after the cell is fully inserted. This must
+            apply to interiors as well as exteriors so the server can accept the following
+            cell-change packet and object events.
+        */
+        mwmp::Main::get().getLocalPlayer()->storeCellState(cell.getCell()->getEsm3(), mwmp::CellState::LOAD);
+        /* End of tes3mp addition */
 
         mPreloader->notifyLoaded(&cell);
     }

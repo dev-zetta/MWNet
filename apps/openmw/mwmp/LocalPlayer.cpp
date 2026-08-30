@@ -455,8 +455,8 @@ void LocalPlayer::updateCell(bool forceUpdate)
 
         LOG_MESSAGE_SIMPLE(TimedLog::LOG_INFO, "Sending ID_PLAYER_CELL_CHANGE about LocalPlayer to server");
 
-        LOG_APPEND(TimedLog::LOG_INFO, "- Moved from %s to %s", cell.getDescription().c_str(),
-                   ptrCell->getDescription().c_str());
+        LOG_APPEND(TimedLog::LOG_INFO, "- Moved from %s to %s", cell.getShortDescription().c_str(),
+                   ptrCell->getShortDescription().c_str());
 
         if (ptrCell && !Misc::StringUtils::ciEqual(cell.mRegion.getRefIdString(), ptrCell->mRegion.getRefIdString()))
         {
@@ -1947,7 +1947,7 @@ void LocalPlayer::storeCellState(const ESM::Cell& storedCell, int stateType)
     {
         // If there's already a cell state recorded for this particular cell,
         // remove it
-        if (storedCell.getDescription() == (*iter).cell.getDescription())
+        if (storedCell.getShortDescription() == (*iter).cell.getShortDescription())
             iter = cellStateChanges.erase(iter);
         else
             ++iter;

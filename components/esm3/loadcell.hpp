@@ -179,6 +179,14 @@ namespace ESM
         std::string getDescription() const;
         ///< Return a short string describing the cell (mostly used for debugging/logging purpose)
 
+        /*
+            Start of tes3mp addition
+
+            Return the stable cell identifier used by the TES3MP protocol and scripts.
+        */
+        std::string getShortDescription() const;
+        /* End of tes3mp addition */
+
         /* Get the next reference in this cell, if any. Returns false when
            there are no more references in the cell.
 
