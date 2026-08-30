@@ -186,9 +186,10 @@ add_component_dir(esm attr common defs esmcommon records util luascripts format 
     exteriorcelllocation
     )
 
-add_component_dir(fx pass technique lexer lexertypes parseconstants widgets stateupdater)
-
-add_component_dir(std140 ubo)
+if (BUILD_OPENMW OR BUILD_OPENCS)
+    add_component_dir(fx pass technique lexer lexertypes parseconstants widgets stateupdater)
+    add_component_dir(std140 ubo)
+endif()
 
 add_component_dir (esm3
     esmreader esmwriter loadacti loadalch loadappa loadarmo loadbody loadbook loadbsgn loadcell

@@ -123,6 +123,32 @@ jobs:
     - name: Run tests
       run: ctest --test-dir build --output-on-failure
 
+    - name: Configure dedicated-server-only build
+      run: >
+        cmake -S . -B build-server
+        -D CMAKE_BUILD_TYPE=${{env.BUILD_TYPE}}
+        -D BUILD_OPENMW=OFF
+        -D BUILD_OPENMW_MP=ON
+        -D BUILD_OPENCS=OFF
+        -D BUILD_LAUNCHER=OFF
+        -D BUILD_WIZARD=OFF
+        -D BUILD_MWINIIMPORTER=OFF
+        -D BUILD_ESSIMPORTER=OFF
+        -D BUILD_BSATOOL=OFF
+        -D BUILD_ESMTOOL=OFF
+        -D BUILD_NIFTEST=OFF
+        -D BUILD_NAVMESHTOOL=OFF
+        -D BUILD_BULLETOBJECTTOOL=OFF
+        -D BUILD_BROWSER=OFF
+        -D BUILD_MASTER=OFF
+        -D BUILD_TES3MP_TESTS=ON
+
+    - name: Build dedicated server and protocol tests
+      run: cmake --build build-server --target tes3mp-server tes3mp-tests --parallel $(nproc)
+
+    - name: Run dedicated-server-only tests
+      run: ctest --test-dir build-server --output-on-failure
+
     # - name: Install
     #   shell: bash
     #   run: cmake --install .

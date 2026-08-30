@@ -71,6 +71,7 @@ if [[ ! -f "$SERVER_CONFIG" ]]; then
         printf '%s\n' \
             '[General]' \
             'localAddress = 127.0.0.1' \
+            'publicListen = false' \
             'port = 25565' \
             'maximumPlayers = 8' \
             'hostname = TES3MP local test' \

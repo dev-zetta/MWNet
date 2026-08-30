@@ -1,3 +1,4 @@
+#include <components/openmw-mp/Protocol/EndpointSecurity.hpp>
 #include <components/openmw-mp/Protocol/PacketCodec.hpp>
 #include <components/openmw-mp/Protocol/RateLimits.hpp>
 
@@ -184,6 +185,20 @@ namespace
         EXPECT(!chat.consume(start + std::chrono::seconds(9)));
         EXPECT(chat.consume(start + std::chrono::seconds(10)));
     }
+
+    void testListenAddressPolicy()
+    {
+        EXPECT(isLoopbackAddress("127.0.0.1"));
+        EXPECT(isLoopbackAddress("127.255.255.255"));
+        EXPECT(isLoopbackAddress("::1"));
+        EXPECT(!isLoopbackAddress("127.0.0"));
+        EXPECT(!isLoopbackAddress("127.0.0.1.example"));
+        EXPECT(!isLoopbackAddress("0.0.0.0"));
+        EXPECT(!isLoopbackAddress("192.168.1.2"));
+        EXPECT(isListenAddressAllowed("127.0.0.1", false));
+        EXPECT(!isListenAddressAllowed("0.0.0.0", false));
+        EXPECT(isListenAddressAllowed("0.0.0.0", true));
+    }
 }
 
 int runProtocolTests()
@@ -194,5 +209,6 @@ int runProtocolTests()
     testEnvelopeRoundTripAndTruncation();
     testEnvelopeLimits();
     testRateLimits();
+    testListenAddressPolicy();
     return sFailures;
 }

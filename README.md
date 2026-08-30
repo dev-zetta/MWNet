@@ -86,6 +86,8 @@ The launcher synchronizes CoreScripts, creates persistent client and server test
 
 To run only the isolated server, use `./run-tes3mp-server.sh`. Run either script with `--help` for configuration overrides. Start with identical vanilla content and load order on both sides before adding mods.
 
+Alpha servers refuse non-loopback listen addresses by default. An operator who deliberately exposes a server must set both `localAddress` to the desired numeric address and `publicListen = true` in the `[General]` section of `tes3mp-server.cfg`; firewall and network exposure remain the operator's responsibility.
+
 The data path
 -------------
 

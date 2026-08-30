@@ -6,7 +6,8 @@ This is the first hardening milestone for the major OpenMW 0.52 compatibility an
 ### Engine and build modernization
 
 * Restore the upstream OpenMW build and test options, remove duplicate target registration, add TES3MP test and fuzz targets, and modernize vendored dependency CMake policies
-* Bind new alpha servers to loopback and disable legacy public master announcements by default
+* Bind new alpha servers to loopback, require an explicit `publicListen` opt-in for non-loopback addresses, and disable legacy public master announcements by default
+* Restore a clean dedicated-server-only build and enforce it in CI alongside the full client/server build
 * Add the fail-closed protocol 11 envelope and codec with fixed-width little-endian fields, sticky decode errors, UTF-8 validation, allocation limits, traffic limits, unit tests and a decoder fuzz target
 * Harden the transitional CrabNet packet boundary with initialized state, checked collection and string limits, transactional field reads, exact pre-initialization sizing, malformed-message rejection and decode gates before gameplay or Lua processing
 * Stop logging attempted server passwords and prevent partially encoded or oversized packets from being sent

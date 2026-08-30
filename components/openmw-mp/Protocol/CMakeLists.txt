@@ -1,4 +1,5 @@
 add_library(tes3mp-protocol-codec STATIC
+    EndpointSecurity.cpp
     PacketCodec.cpp
     RateLimits.cpp
 )

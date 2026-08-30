@@ -13,6 +13,7 @@
 #include <components/openmw-mp/ErrorMessages.hpp>
 #include <components/openmw-mp/TimedLog.hpp>
 #include <components/openmw-mp/NetworkMessages.hpp>
+#include <components/openmw-mp/Protocol/EndpointSecurity.hpp>
 #include <components/openmw-mp/Utils.hpp>
 #include <components/openmw-mp/Version.hpp>
 
@@ -192,6 +193,7 @@ int main(int argc, char *argv[])
 
     int players = mgr.getInt("maximumPlayers", "General");
     std::string address = mgr.getString("localAddress", "General");
+    bool publicListen = mgr.getBool("publicListen", "General");
     int port = mgr.getInt("port", "General");
 
     std::string password = mgr.getString("password", "General");
@@ -234,6 +236,13 @@ int main(int argc, char *argv[])
     if (RakNet::NonNumericHostString(address.c_str()))
     {
         LOG_MESSAGE_SIMPLE(TimedLog::LOG_ERROR, "You cannot use non-numeric addresses for the server.");
+        return 1;
+    }
+
+    if (!protocol::isListenAddressAllowed(address, publicListen))
+    {
+        LOG_MESSAGE_SIMPLE(TimedLog::LOG_ERROR,
+            "Refusing non-loopback listen address %s because General/publicListen is false.", address.c_str());
         return 1;
     }
 
