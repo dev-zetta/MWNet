@@ -11,6 +11,7 @@ add_executable(tes3mp-tests
     lifecycle.cpp
     lua_policy.cpp
     movement.cpp
+    metrics.cpp
     object_state.cpp
     ownership.cpp
     persistence.cpp
@@ -25,7 +26,7 @@ add_executable(tes3mp-tests
 )
 
 target_include_directories(tes3mp-tests PRIVATE ${CMAKE_SOURCE_DIR})
-target_link_libraries(tes3mp-tests PRIVATE tes3mp-mechanics tes3mp-persistence
+target_link_libraries(tes3mp-tests PRIVATE tes3mp-mechanics tes3mp-metrics tes3mp-persistence
     tes3mp-protocol-codec tes3mp-session tes3mp-transport)
 
 if (TARGET tes3mp-gns-transport)

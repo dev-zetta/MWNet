@@ -14,6 +14,7 @@ int runEquipmentTests();
 int runInventoryTests();
 int runJusticeTests();
 int runMovementTests();
+int runMetricsTests();
 int runObjectStateTests();
 int runOwnershipTests();
 int runLifecycleTests();
@@ -43,6 +44,7 @@ int main()
     int failures = runProtocolTests() + runActiveEffectTests() + runActorStateTests()
         + runAuthorityTests() + runCastTests() + runCombatTests()
         + runEquipmentTests() + runInventoryTests() + runJusticeTests() + runMovementTests()
+        + runMetricsTests()
         + runObjectStateTests() + runOwnershipTests() + runLuaPolicyTests()
         + runLifecycleTests() + runPersistenceTests() + runProgressionTests()
         + runSessionTests() + runShapeshiftTests() + runTimedLogTests()
