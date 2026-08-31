@@ -19,6 +19,7 @@
 #include <fstream>
 #include <iostream>
 #include <iterator>
+#include <numeric>
 #include <memory>
 #include <optional>
 #include <stdexcept>
@@ -198,7 +199,6 @@ namespace
             createLegacyPlayer();
             startServer(mRoot / "server-identity.key");
             mInitialResidentMemory = mwmp::metrics::residentMemoryBytes();
-            mLastResidentMemory = mInitialResidentMemory;
             mPeakResidentMemory = mInitialResidentMemory;
 
             const auto soakStarted = std::chrono::steady_clock::now();
@@ -227,9 +227,10 @@ namespace
             verifyLegacyMigration();
             verifyAuthenticationLockout();
             verifyFingerprintMismatch();
+            evaluateMemoryGrowth();
+            writeMetrics();
             if (mOptions.failOnMemoryGrowth && mMonotonicMemoryGrowth)
                 fail("resident memory increased monotonically during the soak run");
-            writeMetrics();
         }
 
     private:
@@ -542,6 +543,8 @@ namespace
                 peer.clientConnection, MessageType::CombatResult, {},
                 MessageLane::Player, DeliveryMode::ReliableOrdered,
                 actor.value, sequence);
+            require(mCombat.erase(actor),
+                "server failed to release departed canonical actor state");
 
             (void)transmit(*peer.client, peer.clientConnection, *mServer,
                 peer.serverConnection, MessageType::InventoryActionIntent, {},
@@ -607,6 +610,8 @@ namespace
                 "server did not observe client disconnect");
             peer.client->shutdown(1s);
             mLifecycle.erase(peer.serverConnection.value);
+            mCombat.erase({ mwmp::mechanics::CombatantKind::Player,
+                peer.serverConnection.value, {} });
             mInventory.erase({ mwmp::mechanics::InventoryOwnerKind::Player,
                 peer.serverConnection.value });
             mJustice.erase(peer.serverConnection.value);
@@ -725,18 +730,34 @@ namespace
         void observeMemory()
         {
             const std::uint64_t current = mwmp::metrics::residentMemoryBytes();
+            mResidentMemorySamples.push_back(current);
             mPeakResidentMemory = std::max(mPeakResidentMemory, current);
-            if (current > mLastResidentMemory)
-                ++mConsecutiveMemoryIncreases;
-            else
-                mConsecutiveMemoryIncreases = 0;
-            mLastResidentMemory = current;
+        }
 
-            const std::uint64_t materialGrowth
-                = mInitialResidentMemory / 20;
-            if (mConsecutiveMemoryIncreases >= 10
-                && current > mInitialResidentMemory + materialGrowth)
-                mMonotonicMemoryGrowth = true;
+        void evaluateMemoryGrowth()
+        {
+            if (mResidentMemorySamples.size() < 20)
+                return;
+
+            const std::size_t warmup = mResidentMemorySamples.size() / 4;
+            const std::size_t window = std::max<std::size_t>(
+                5, mResidentMemorySamples.size() / 10);
+            const auto average = [this](std::size_t first, std::size_t count) {
+                const auto begin = mResidentMemorySamples.begin()
+                    + static_cast<std::ptrdiff_t>(first);
+                const auto end = begin + static_cast<std::ptrdiff_t>(count);
+                return std::accumulate(begin, end, 0.0L)
+                    / static_cast<long double>(count);
+            };
+            const long double early = average(warmup, window);
+            const long double late = average(
+                mResidentMemorySamples.size() - window, window);
+            if (early > 0)
+            {
+                mResidentMemoryGrowthPercent = static_cast<double>(
+                    (late - early) / early * 100.0L);
+                mMonotonicMemoryGrowth = mResidentMemoryGrowthPercent > 1.0;
+            }
         }
 
         static std::string jsonEscape(std::string_view value)
@@ -790,6 +811,16 @@ namespace
                 << mPeakResidentMemory << ",\n"
                 << "  \"monotonicMemoryGrowthDetected\": "
                 << (mMonotonicMemoryGrowth ? "true" : "false") << ",\n"
+                << "  \"residentMemoryGrowthPercentAfterWarmup\": "
+                << mResidentMemoryGrowthPercent << ",\n"
+                << "  \"residentMemorySamplesBytes\": [";
+            for (std::size_t index = 0; index < mResidentMemorySamples.size(); ++index)
+            {
+                if (index != 0)
+                    output << ", ";
+                output << mResidentMemorySamples[index];
+            }
+            output << "],\n"
                 << "  \"inboundBytes\": " << snapshot.inbound.bytes << ",\n"
                 << "  \"outboundBytes\": " << snapshot.outbound.bytes << "\n"
                 << "}\n";
@@ -811,10 +842,10 @@ namespace
         std::uint64_t mDroppedSnapshots = 0;
         std::size_t mCompletedCycles = 0;
         std::uint64_t mInitialResidentMemory = 0;
-        std::uint64_t mLastResidentMemory = 0;
         std::uint64_t mPeakResidentMemory = 0;
-        std::size_t mConsecutiveMemoryIncreases = 0;
         bool mMonotonicMemoryGrowth = false;
+        double mResidentMemoryGrowthPercent = 0;
+        std::vector<std::uint64_t> mResidentMemorySamples;
     };
 }
 
