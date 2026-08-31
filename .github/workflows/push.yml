@@ -99,6 +99,45 @@ jobs:
     - name: Run protocol tests
       run: ctest --test-dir build-protocol -C Debug --output-on-failure
 
+  FuzzSmoke:
+    name: protocol-fuzz-smoke
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v6
+    - name: Configure fuzz smoke targets
+      env:
+        CC: clang
+        CXX: clang++
+      run: >
+        cmake -S . -B build-fuzz
+        -D TES3MP_TESTS_ONLY=ON
+        -D BUILD_TES3MP_FUZZERS=ON
+        -D CMAKE_BUILD_TYPE=Debug
+    - name: Build fuzz smoke targets
+      run: >
+        cmake --build build-fuzz
+        --target tes3mp-packet-fuzz tes3mp-transport-fuzz
+        --parallel 2
+    - name: Run protocol codec fuzzer
+      run: |
+        mkdir -p fuzz-corpus/packet fuzz-artifacts/packet
+        build-fuzz/apps/tes3mp_fuzz/tes3mp-packet-fuzz \
+          -runs=10000 -artifact_prefix=fuzz-artifacts/packet/ fuzz-corpus/packet
+    - name: Run transport codec fuzzer
+      run: |
+        mkdir -p fuzz-corpus/transport fuzz-artifacts/transport
+        build-fuzz/apps/tes3mp_fuzz/tes3mp-transport-fuzz \
+          -runs=10000 -artifact_prefix=fuzz-artifacts/transport/ fuzz-corpus/transport
+    - name: Retain fuzz inputs and failures
+      if: always()
+      uses: actions/upload-artifact@v6
+      with:
+        name: tes3mp-fuzz-smoke-${{ github.sha }}
+        path: |
+          fuzz-corpus
+          fuzz-artifacts
+
   Ubuntu:
     runs-on: ubuntu-latest
 

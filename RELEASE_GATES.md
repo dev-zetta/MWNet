@@ -19,7 +19,7 @@ The source version remains `1.0.0-alpha.1` until the alpha.1 release candidate p
 - GCC, Clang and MSVC build and test results for the exact candidate.
 - ASan/UBSan and TSan runs with no relevant defects.
 - Round-trip coverage for every protocol message and malformed coverage for every truncation point, invalid UTF-8, trailing data and allocation limit.
-- At least 24 aggregate CPU-hours of decoder fuzzing under ASan/UBSan, with every finding retained as a regression fixture.
+- At least 24 aggregate CPU-hours of decoder fuzzing under ASan/UBSan, with every finding retained as a regression fixture. Use `CI/run_tes3mp_fuzz_campaign.sh --release-budget` with a complete Clang build; it runs the protocol, transport, authentication and encrypted-handshake targets concurrently while retaining their corpora, logs and crash artifacts.
 - Headless integration results for first trust, fingerprint mismatch, registration, legacy-account migration, lockout, duplicate initialization, reconnect, chat, movement, inventory, combat, jail, death and respawn.
 - Fault injection at every persistence stage showing that either the old or new complete record remains recoverable.
 - One hundred connect/disconnect and death/respawn cycles.
