@@ -1,4 +1,5 @@
 add_executable(tes3mp-tests
+    active_effects.cpp
     authority.cpp
     combat.cpp
     inventory.cpp

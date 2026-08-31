@@ -80,6 +80,7 @@ This is the first hardening milestone for the major OpenMW 0.52 compatibility an
 * Apply multi-container inventory changes transactionally so a failed operation cannot leave only part of a packet committed
 * Validate container mutations natively, run Lua policy before commit, and preserve legacy `OnContainer` handlers as post-commit persistence notifications
 * Restore canonical container inventories from persisted cell data before accepting client deltas after a server restart
+* Add a bounded, transactional canonical active-effect model for players and cell-scoped actors
 
 0.8.1
 -----

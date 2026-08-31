@@ -4,6 +4,7 @@
 #include <string_view>
 
 int runProtocolTests();
+int runActiveEffectTests();
 int runAuthorityTests();
 int runCombatTests();
 int runInventoryTests();
@@ -29,7 +30,8 @@ int main()
         return 1;
     }
 
-    int failures = runProtocolTests() + runAuthorityTests() + runCombatTests()
+    int failures = runProtocolTests() + runActiveEffectTests()
+        + runAuthorityTests() + runCombatTests()
         + runInventoryTests() + runMovementTests() + runOwnershipTests()
         + runLifecycleTests() + runPersistenceTests()
         + runSessionTests() + runTransportTests();
