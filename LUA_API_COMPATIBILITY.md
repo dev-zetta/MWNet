@@ -22,6 +22,14 @@ Protocol 11 changes the network and trust boundaries, not the safe TES3MP 0.8.1 
 | `OnActorAttackIntent(pid, cellDescription, actorIndex, isRanged, targetPid, refNum, mpNum, strength)` | New | Runs for an authority-lease holder's sanitized actor attack; `false` denies the individual intent |
 | `OnActorAttackIntentRejected(pid, cellDescription, actorIndex, reason)` | New | Reports script denial or canonical actor-combat validation failure |
 | `GetActorAttackStrength(actorIndex)` / `SetActorAttackStrength(actorIndex, strength)` | New | Reads or modifies a pending ranged actor attack after `ReadReceivedActorList`; native validation runs again |
+| `OnPlayerCastIntent(pid, isItem, pressed, targetPid, refNum, mpNum)` | New | Runs after native cast-shape and target validation but before presentation relay; `false` denies the intent |
+| `OnPlayerCastIntentRejected(pid, reason)` | New | Reports a player cast denied by script policy |
+| `OnActorCastIntent(pid, cellDescription, actorIndex, isItem, pressed, targetPid, refNum, mpNum)` | New | Runs for each validated cast from an authority-leased actor before presentation relay |
+| `OnActorCastIntentRejected(pid, cellDescription, actorIndex, reason)` | New | Reports an individual actor cast denied by script policy |
+| `OnPlayerSpellsActiveIntent(pid)` | New | Runs the legacy `OnPlayerSpellsActive` validators before a transactional canonical active-effect commit |
+| `OnPlayerSpellsActiveIntentRejected(pid, reason)` | New | Reports a script-approved player active-effect change that failed canonical validation |
+| `OnActorSpellsActiveIntent(pid, cellDescription)` | New | Runs the legacy actor active-effect validators before a transactional multi-actor commit |
+| `OnActorSpellsActiveIntentRejected(pid, cellDescription, reason)` | New | Reports a script-approved actor active-effect batch that failed canonical validation |
 | `WriteFileAtomically(path, contents)` | New | Synchronous atomic write below the configured server data directory |
 | `QueueFileWrite(path, contents)` | New | Bounded, coalesced atomic write below the configured server data directory |
 | `FlushPersistence()` | New | Waits for queued persistence writes to finish |
@@ -51,6 +59,8 @@ Duplicate or out-of-order initialization is rejected. Gameplay mutation and rela
 - CoreScripts use the additive `SeedContainerInventory()` API when loading persisted cell data, so canonical state is restored after a server restart before any client delta can be accepted.
 - Use `OnPlayerAttackIntent` to inspect or deny a sanitized combat request. `SetPlayerAttackStrength` may modify its normalized strength; the server validates the result, rolls hit chance, computes damage and publishes canonical health.
 - Use `OnActorAttackIntent` for the equivalent authority-leased actor request. Call `SetActorAttackStrength` with the supplied actor index to modify ranged strength before the server revalidates and resolves it.
+- Use `OnPlayerCastIntent` and `OnActorCastIntent` to reject malformed or disallowed cast presentation. Alpha.1 validates identities, IDs, projectile geometry and reported caster transforms, but canonical server calculation of spell success and effects is still a later hardening gate; scripts must not treat these callbacks as proof that a gameplay effect occurred.
+- Existing `OnPlayerSpellsActive` and `OnActorSpellsActive` validators now run at the new intent boundary. Their legacy callbacks and handlers run only after the complete active-effect operation has committed canonically.
 - Treat incoming gameplay callbacks as requests. Validators may deny an intent, but only a native canonical result may change protected server state.
 - Do not rely on an old callback being able to mutate another player or an actor outside the caller's authority lease.
 

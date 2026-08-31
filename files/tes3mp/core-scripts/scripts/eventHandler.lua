@@ -1014,6 +1014,26 @@ eventHandler.OnPlayerAttackIntentRejected = function(pid, reason)
         {pid, reason})
 end
 
+eventHandler.OnPlayerCastIntent = function(pid, isItem, pressed, targetPid, refNum, mpNum)
+    if Players[pid] == nil or not Players[pid]:IsLoggedIn() then
+        return false
+    end
+
+    local eventStatus = customEventHooks.triggerValidators("OnPlayerCastIntent",
+        {pid, isItem, pressed, targetPid, refNum, mpNum})
+    if not eventStatus.validDefaultHandler then
+        customEventHooks.triggerHandlers("OnPlayerCastIntent", eventStatus,
+            {pid, isItem, pressed, targetPid, refNum, mpNum})
+    end
+    return eventStatus.validDefaultHandler
+end
+
+eventHandler.OnPlayerCastIntentRejected = function(pid, reason)
+    local eventStatus = customEventHooks.makeEventStatus(false, true)
+    customEventHooks.triggerHandlers("OnPlayerCastIntentRejected", eventStatus,
+        {pid, reason})
+end
+
 eventHandler.OnPlayerSpellbook = function(pid)
     eventHandler.OnGenericPlayerEvent(pid, "PlayerSpellbook")
 end
@@ -1547,6 +1567,28 @@ end
 eventHandler.OnActorAttackIntentRejected = function(pid, cellDescription, actorIndex, reason)
     local eventStatus = customEventHooks.makeEventStatus(false, true)
     customEventHooks.triggerHandlers("OnActorAttackIntentRejected", eventStatus,
+        {pid, cellDescription, actorIndex, reason})
+end
+
+eventHandler.OnActorCastIntent = function(pid, cellDescription, actorIndex, isItem,
+    pressed, targetPid, refNum, mpNum)
+    if Players[pid] == nil or not Players[pid]:IsLoggedIn() or
+        LoadedCells[cellDescription] == nil then
+        return false
+    end
+
+    local eventStatus = customEventHooks.triggerValidators("OnActorCastIntent",
+        {pid, cellDescription, actorIndex, isItem, pressed, targetPid, refNum, mpNum})
+    if not eventStatus.validDefaultHandler then
+        customEventHooks.triggerHandlers("OnActorCastIntent", eventStatus,
+            {pid, cellDescription, actorIndex, isItem, pressed, targetPid, refNum, mpNum})
+    end
+    return eventStatus.validDefaultHandler
+end
+
+eventHandler.OnActorCastIntentRejected = function(pid, cellDescription, actorIndex, reason)
+    local eventStatus = customEventHooks.makeEventStatus(false, true)
+    customEventHooks.triggerHandlers("OnActorCastIntentRejected", eventStatus,
         {pid, cellDescription, actorIndex, reason})
 end
 

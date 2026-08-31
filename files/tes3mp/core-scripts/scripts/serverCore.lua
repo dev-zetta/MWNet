@@ -493,6 +493,14 @@ function OnPlayerAttackIntentRejected(pid, reason)
     eventHandler.OnPlayerAttackIntentRejected(pid, reason)
 end
 
+function OnPlayerCastIntent(pid, isItem, pressed, targetPid, refNum, mpNum)
+    return eventHandler.OnPlayerCastIntent(pid, isItem, pressed, targetPid, refNum, mpNum)
+end
+
+function OnPlayerCastIntentRejected(pid, reason)
+    eventHandler.OnPlayerCastIntentRejected(pid, reason)
+end
+
 function OnPlayerSpellbook(pid)
     tes3mp.LogMessage(enumerations.log.INFO, "Called \"OnPlayerSpellbook\" for " .. logicHandler.GetChatName(pid))
     eventHandler.OnPlayerSpellbook(pid)
@@ -608,6 +616,16 @@ end
 
 function OnActorAttackIntentRejected(pid, cellDescription, actorIndex, reason)
     eventHandler.OnActorAttackIntentRejected(pid, cellDescription, actorIndex, reason)
+end
+
+function OnActorCastIntent(pid, cellDescription, actorIndex, isItem, pressed,
+    targetPid, refNum, mpNum)
+    return eventHandler.OnActorCastIntent(pid, cellDescription, actorIndex, isItem,
+        pressed, targetPid, refNum, mpNum)
+end
+
+function OnActorCastIntentRejected(pid, cellDescription, actorIndex, reason)
+    eventHandler.OnActorCastIntentRejected(pid, cellDescription, actorIndex, reason)
 end
 
 function OnActorDeath(pid, cellDescription)

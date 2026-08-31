@@ -24,6 +24,20 @@ namespace mwmp::mechanics
             return CastIntentDecision::InvalidSource;
         if (intent.projectile && !validProjectile(*intent.projectile))
             return CastIntentDecision::InvalidProjectile;
+        const bool hasAnyCasterTransform = intent.reportedCasterTransform
+            || intent.canonicalCasterTransform || intent.reportedCasterDirection;
+        if (hasAnyCasterTransform
+            && (!intent.reportedCasterTransform || !intent.canonicalCasterTransform
+                || !intent.reportedCasterDirection
+                || !validTransform(*intent.reportedCasterTransform)
+                || !validTransform(*intent.canonicalCasterTransform)
+                || !validTransform(*intent.reportedCasterDirection)
+                || distance(intent.reportedCasterTransform->translation,
+                       intent.canonicalCasterTransform->translation)
+                    > MaximumCasterDrift))
+        {
+            return CastIntentDecision::InvalidCasterTransform;
+        }
         return CastIntentDecision::Accepted;
     }
 
@@ -66,6 +80,25 @@ namespace mwmp::mechanics
         return normSquared >= 0.25 && normSquared <= 4.0;
     }
 
+    bool CastIntentValidator::validTransform(const TransformIntent& transform) noexcept
+    {
+        const auto validCoordinate = [](double value) {
+            return std::isfinite(value) && std::abs(value) <= MaximumCoordinate;
+        };
+        return validCoordinate(transform.translation.x)
+            && validCoordinate(transform.translation.y)
+            && validCoordinate(transform.translation.z)
+            && validCoordinate(transform.rotation.x)
+            && validCoordinate(transform.rotation.y)
+            && validCoordinate(transform.rotation.z);
+    }
+
+    double CastIntentValidator::distance(
+        const Position3& left, const Position3& right) noexcept
+    {
+        return std::hypot(left.x - right.x, left.y - right.y, left.z - right.z);
+    }
+
     const char* describe(CastIntentDecision decision) noexcept
     {
         switch (decision)
@@ -80,6 +113,8 @@ namespace mwmp::mechanics
                 return "the cast intent has an invalid spell or item ID";
             case CastIntentDecision::InvalidProjectile:
                 return "the cast intent has invalid projectile geometry";
+            case CastIntentDecision::InvalidCasterTransform:
+                return "the cast intent has an invalid caster transform";
         }
         return "unknown cast-intent decision";
     }

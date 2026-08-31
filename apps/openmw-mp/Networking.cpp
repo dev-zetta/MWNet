@@ -884,6 +884,214 @@ bool Networking::finishActorActiveEffectIntent(Player& player) noexcept
 
 namespace
 {
+    mwmp::mechanics::TransformIntent castTransform(const ESM::Position& value)
+    {
+        return {
+            { value.pos[0], value.pos[1], value.pos[2] },
+            { value.rot[0], value.rot[1], value.rot[2] }
+        };
+    }
+
+    mwmp::mechanics::CastIntentDecision canonicalCastTarget(
+        const mwmp::Target& target, std::string_view actorScope,
+        std::optional<mwmp::mechanics::CombatantId>& result)
+    {
+        result.reset();
+        if (target.isPlayer)
+        {
+            if (target.guid.g == 0)
+                return mwmp::mechanics::CastIntentDecision::InvalidTarget;
+            result = mwmp::mechanics::CombatantId{
+                mwmp::mechanics::CombatantKind::Player, target.guid.g, {} };
+            return mwmp::mechanics::CastIntentDecision::Accepted;
+        }
+
+        const bool hasRefNum = target.refNum != 0;
+        const bool hasMpNum = target.mpNum != 0;
+        if (!hasRefNum && !hasMpNum && target.refId.empty())
+            return mwmp::mechanics::CastIntentDecision::Accepted;
+        if (hasRefNum == hasMpNum || actorScope.empty() || target.refId.empty()
+            || target.refId.size()
+                > mwmp::mechanics::CastIntentValidator::MaximumSourceIdBytes)
+        {
+            return mwmp::mechanics::CastIntentDecision::InvalidTarget;
+        }
+        result = mwmp::mechanics::CombatantId{
+            mwmp::mechanics::CombatantKind::Actor,
+            activeEffectReference(target.refNum, target.mpNum),
+            std::string(actorScope) };
+        return mwmp::mechanics::CastIntentDecision::Accepted;
+    }
+
+    mwmp::mechanics::CastIntentDecision canonicalCastIntent(
+        mwmp::mechanics::CombatantId caster, const mwmp::Cast& cast,
+        std::string_view actorScope, mwmp::mechanics::CastIntent& result,
+        const ESM::Position* reportedPosition = nullptr,
+        const ESM::Position* canonicalPosition = nullptr,
+        const ESM::Position* reportedDirection = nullptr)
+    {
+        result = {};
+        result.caster = std::move(caster);
+        const auto targetDecision = canonicalCastTarget(
+            cast.target, actorScope, result.target);
+        if (targetDecision != mwmp::mechanics::CastIntentDecision::Accepted)
+            return targetDecision;
+
+        if (cast.type == mwmp::Cast::REGULAR)
+        {
+            result.kind = mwmp::mechanics::CastKind::Regular;
+            result.sourceId = cast.spellId;
+            result.pressed = cast.pressed;
+            result.instant = cast.instant;
+        }
+        else if (cast.type == mwmp::Cast::ITEM)
+        {
+            result.kind = mwmp::mechanics::CastKind::Item;
+            result.sourceId = cast.itemId;
+        }
+        else
+            return mwmp::mechanics::CastIntentDecision::InvalidSource;
+
+        if (cast.hasProjectile)
+        {
+            result.projectile = mwmp::mechanics::ProjectileIntent{
+                { cast.projectileOrigin.origin[0], cast.projectileOrigin.origin[1],
+                    cast.projectileOrigin.origin[2] },
+                { cast.projectileOrigin.orientation[0],
+                    cast.projectileOrigin.orientation[1],
+                    cast.projectileOrigin.orientation[2],
+                    cast.projectileOrigin.orientation[3] }
+            };
+            if (reportedPosition != nullptr && canonicalPosition != nullptr
+                && reportedDirection != nullptr)
+            {
+                result.reportedCasterTransform = castTransform(*reportedPosition);
+                result.canonicalCasterTransform = castTransform(*canonicalPosition);
+                result.reportedCasterDirection = castTransform(*reportedDirection);
+            }
+        }
+        return mwmp::mechanics::CastIntentDecision::Accepted;
+    }
+}
+
+bool Networking::validatePlayerCast(Player& player, const BasePlayer& incoming)
+{
+    mechanics::CastIntent intent;
+    mechanics::CastIntentDecision decision = canonicalCastIntent(
+        { mechanics::CombatantKind::Player, player.guid.g, {} }, incoming.cast,
+        player.cell.getShortDescription(), intent,
+        incoming.cast.hasProjectile ? &incoming.position : nullptr,
+        incoming.cast.hasProjectile ? &player.position : nullptr,
+        incoming.cast.hasProjectile ? &incoming.direction : nullptr);
+    if (decision == mechanics::CastIntentDecision::Accepted)
+        decision = mCastIntentValidator.validate(intent);
+
+    if (decision == mechanics::CastIntentDecision::Accepted && intent.target)
+    {
+        if (intent.target->kind == mechanics::CombatantKind::Player)
+        {
+            const Player* target = Players::getPlayer(
+                RakNet::RakNetGUID(intent.target->value));
+            if (target == nullptr
+                || !mAuthenticatedConnections.contains(target->guid.g)
+                || target->cell.getShortDescription()
+                    != player.cell.getShortDescription())
+            {
+                decision = mechanics::CastIntentDecision::InvalidTarget;
+            }
+        }
+        else
+        {
+            Cell* cell = CellController::get()->getCell(&player.cell);
+            if (cell == nullptr || cell->getActor(incoming.cast.target.refNum,
+                    incoming.cast.target.mpNum) == nullptr)
+            {
+                decision = mechanics::CastIntentDecision::InvalidTarget;
+            }
+        }
+    }
+    if (decision == mechanics::CastIntentDecision::Accepted)
+        return true;
+
+    const unsigned int violations = ++mCastViolations[player.guid.g];
+    LOG_MESSAGE_SIMPLE(TimedLog::LOG_WARN,
+        "Rejected invalid cast intent from connection %llu: %s (violation %u)",
+        static_cast<unsigned long long>(player.guid.g),
+        mechanics::describe(decision), violations);
+    if (violations >= 5)
+        disconnectTransport({ player.guid.g }, "repeated invalid cast intents");
+    return false;
+}
+
+bool Networking::validateActorCasts(Player& player, const BaseActorList& incoming)
+{
+    mechanics::CastIntentDecision decision = mechanics::CastIntentDecision::Accepted;
+    const std::string cellDescription = incoming.cell.getShortDescription();
+    Cell* cell = incoming.cell.isExterior()
+        ? CellController::get()->getCellByXY(
+            incoming.cell.mData.mX, incoming.cell.mData.mY)
+        : CellController::get()->getCellByName(incoming.cell.mName);
+    if (cellDescription.empty() || incoming.count != incoming.baseActors.size()
+        || cell == nullptr)
+    {
+        decision = mechanics::CastIntentDecision::InvalidCaster;
+    }
+
+    for (const BaseActor& actor : incoming.baseActors)
+    {
+        if (decision != mechanics::CastIntentDecision::Accepted)
+            break;
+        const bool hasRefNum = actor.refNum != 0;
+        const bool hasMpNum = actor.mpNum != 0;
+        if (hasRefNum == hasMpNum
+            || cell->getActor(actor.refNum, actor.mpNum) == nullptr)
+        {
+            decision = mechanics::CastIntentDecision::InvalidCaster;
+            break;
+        }
+
+        mechanics::CastIntent intent;
+        decision = canonicalCastIntent(
+            { mechanics::CombatantKind::Actor,
+                activeEffectReference(actor.refNum, actor.mpNum), cellDescription },
+            actor.cast, cellDescription, intent);
+        if (decision == mechanics::CastIntentDecision::Accepted)
+            decision = mCastIntentValidator.validate(intent);
+        if (decision == mechanics::CastIntentDecision::Accepted && intent.target)
+        {
+            if (intent.target->kind == mechanics::CombatantKind::Player)
+            {
+                const Player* target = Players::getPlayer(
+                    RakNet::RakNetGUID(intent.target->value));
+                if (target == nullptr
+                    || !mAuthenticatedConnections.contains(target->guid.g)
+                    || target->cell.getShortDescription() != cellDescription)
+                {
+                    decision = mechanics::CastIntentDecision::InvalidTarget;
+                }
+            }
+            else if (cell->getActor(actor.cast.target.refNum,
+                         actor.cast.target.mpNum) == nullptr)
+            {
+                decision = mechanics::CastIntentDecision::InvalidTarget;
+            }
+        }
+    }
+    if (decision == mechanics::CastIntentDecision::Accepted)
+        return true;
+
+    const unsigned int violations = ++mCastViolations[player.guid.g];
+    LOG_MESSAGE_SIMPLE(TimedLog::LOG_WARN,
+        "Rejected invalid actor cast list from connection %llu: %s (violation %u)",
+        static_cast<unsigned long long>(player.guid.g),
+        mechanics::describe(decision), violations);
+    if (violations >= 5)
+        disconnectTransport({ player.guid.g }, "repeated invalid actor cast intents");
+    return false;
+}
+
+namespace
+{
     constexpr double maximumCanonicalStat =
         mwmp::mechanics::CombatResolver::MaximumStatValue;
 
@@ -1970,6 +2178,7 @@ void Networking::disconnectPlayer(RakNet::RakNetGUID guid)
     mCombatViolations.erase(guid.g);
     mActiveEffectLedger.erase({ mechanics::CombatantKind::Player, guid.g, {} });
     mActiveEffectViolations.erase(guid.g);
+    mCastViolations.erase(guid.g);
     mAcceptedPlayerActiveEffectIntents.erase(guid.g);
     mRelayedPlayerActiveEffectIntents.erase(guid.g);
     mAcceptedActorActiveEffectIntents.erase(guid.g);

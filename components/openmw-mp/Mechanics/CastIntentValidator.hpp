@@ -25,6 +25,14 @@ namespace mwmp::mechanics
         bool operator==(const ProjectileIntent&) const = default;
     };
 
+    struct TransformIntent
+    {
+        Position3 translation;
+        Position3 rotation;
+
+        bool operator==(const TransformIntent&) const = default;
+    };
+
     struct CastIntent
     {
         CombatantId caster;
@@ -34,6 +42,9 @@ namespace mwmp::mechanics
         bool pressed = false;
         bool instant = false;
         std::optional<ProjectileIntent> projectile;
+        std::optional<TransformIntent> reportedCasterTransform;
+        std::optional<TransformIntent> canonicalCasterTransform;
+        std::optional<TransformIntent> reportedCasterDirection;
 
         bool operator==(const CastIntent&) const = default;
     };
@@ -45,6 +56,7 @@ namespace mwmp::mechanics
         InvalidTarget,
         InvalidSource,
         InvalidProjectile,
+        InvalidCasterTransform,
     };
 
     class CastIntentValidator
@@ -52,6 +64,7 @@ namespace mwmp::mechanics
     public:
         static constexpr std::size_t MaximumSourceIdBytes = 4096;
         static constexpr double MaximumCoordinate = 1'000'000'000.0;
+        static constexpr double MaximumCasterDrift = 256.0;
 
         CastIntentDecision validate(const CastIntent& intent) const noexcept;
 
@@ -59,6 +72,8 @@ namespace mwmp::mechanics
         static bool validCombatant(const CombatantId& combatant) noexcept;
         static bool validSourceId(const std::string& sourceId) noexcept;
         static bool validProjectile(const ProjectileIntent& projectile) noexcept;
+        static bool validTransform(const TransformIntent& transform) noexcept;
+        static double distance(const Position3& left, const Position3& right) noexcept;
     };
 
     const char* describe(CastIntentDecision decision) noexcept;

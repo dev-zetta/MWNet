@@ -91,6 +91,29 @@ namespace
         EXPECT(std::string(describe(CastIntentDecision::InvalidProjectile))
             == "the cast intent has invalid projectile geometry");
     }
+
+    void testReportedCasterTransform()
+    {
+        CastIntentValidator validator;
+        CastIntent intent = regularCast();
+        intent.reportedCasterTransform = TransformIntent{ { 10, 20, 30 }, {} };
+        intent.canonicalCasterTransform = TransformIntent{ { 11, 20, 30 }, {} };
+        intent.reportedCasterDirection = TransformIntent{ { 0, 1, 0 }, {} };
+        EXPECT(validator.validate(intent) == CastIntentDecision::Accepted);
+
+        intent.reportedCasterTransform->translation.x = 1000;
+        EXPECT(validator.validate(intent) == CastIntentDecision::InvalidCasterTransform);
+
+        intent = regularCast();
+        intent.reportedCasterTransform = TransformIntent{};
+        EXPECT(validator.validate(intent) == CastIntentDecision::InvalidCasterTransform);
+
+        intent.canonicalCasterTransform = TransformIntent{};
+        intent.reportedCasterDirection = TransformIntent{};
+        intent.reportedCasterDirection->rotation.z
+            = std::numeric_limits<double>::infinity();
+        EXPECT(validator.validate(intent) == CastIntentDecision::InvalidCasterTransform);
+    }
 }
 
 int runCastTests()
@@ -99,5 +122,6 @@ int runCastTests()
     testIdentityValidation();
     testSourceValidation();
     testProjectileValidation();
+    testReportedCasterTransform();
     return sFailures;
 }
