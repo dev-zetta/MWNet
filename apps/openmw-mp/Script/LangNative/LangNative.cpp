@@ -55,11 +55,15 @@ void LangNative::LoadProgram(const char *filename)
 
 int LangNative::FreeProgram()
 {
+    if (!lib)
+        return 0;
+
 #ifdef _WIN32
     FreeLibrary(lib);
 #else
     dlclose(lib);
 #endif
+    lib = nullptr;
     return 0;
 }
 
@@ -92,5 +96,5 @@ LangNative::LangNative()
 
 LangNative::~LangNative()
 {
-
+    FreeProgram();
 }

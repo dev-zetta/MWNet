@@ -71,30 +71,41 @@ lib_t LangLua::GetInterface()
 }
 
 LangLua::LangLua(lua_State *lua)
+    : lua(lua)
 {
-    this->lua = lua;
 }
 
 LangLua::LangLua()
 {
     lua = luaL_newstate();
-    luaL_openlibs(lua); // load all lua std libs
+    if (!lua)
+        throw std::runtime_error("Failed to create Lua state");
+    ownsLua = true;
+    try
+    {
+        luaL_openlibs(lua); // load all lua std libs
 
-    std::string p, cp;
-    for (auto& path : packagePath)
-        p += path + ';';
+        std::string p, cp;
+        for (auto& path : packagePath)
+            p += path + ';';
 
-    for (auto& path : packageCPath)
-        cp += path + ';';
+        for (auto& path : packageCPath)
+            cp += path + ';';
 
-    setLuaPath(lua, p.c_str());
-    setLuaPath(lua, cp.c_str(), true);
+        setLuaPath(lua, p.c_str());
+        setLuaPath(lua, cp.c_str(), true);
+    }
+    catch (...)
+    {
+        FreeProgram();
+        throw;
+    }
 
 }
 
 LangLua::~LangLua()
 {
-
+    FreeProgram();
 }
 
 // LuaFunctionDispatcher template struct for Lua function dispatch
@@ -289,7 +300,10 @@ if ((err = lua_pcall(lua, 0, 0, 0)) != 0) // Run once script for load in memory.
 
 int LangLua::FreeProgram()
 {
-    lua_close(lua);
+    if (ownsLua && lua)
+        lua_close(lua);
+    lua = nullptr;
+    ownsLua = false;
     return 0;
 }
 

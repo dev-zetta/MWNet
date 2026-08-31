@@ -7,11 +7,11 @@
 
 class LangNative : public Language
 {
-    lib_t lib;
+    lib_t lib{};
 public:
     virtual lib_t GetInterface() override;
     LangNative();
-    ~LangNative();
+    ~LangNative() override;
     virtual void LoadProgram(const char *filename) override;
     virtual int FreeProgram() override;
     virtual bool IsCallbackPresent(const char *name) override;

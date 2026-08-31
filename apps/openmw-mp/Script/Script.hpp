@@ -19,7 +19,7 @@ class Script : private ScriptFunctions
     // http://imgur.com/hU0N4EH
 private:
 
-    Language *lang;
+    std::unique_ptr<Language> lang;
 
     enum
     {
@@ -40,7 +40,7 @@ private:
         }
     }
 
-    int script_type;
+    int script_type = -1;
     std::unordered_map<unsigned int, FunctionEllipsis<void>> callbacks_;
 
     class CallbackContext
@@ -69,7 +69,7 @@ private:
 protected:
     static std::string moddir;
 public:
-    ~Script();
+    ~Script() = default;
 
     static void LoadScript(const char *script, const char* base);
     static void LoadScripts(char* scripts, const char* base);

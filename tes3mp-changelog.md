@@ -66,6 +66,7 @@ This is the first hardening milestone for the major OpenMW 0.52 compatibility an
 * Replace raw-owned Lua timer and public-function registries with bounded `unique_ptr` ownership, safe slot reuse and deferred timer deletion during callbacks
 * Make the server cell controller own loaded cells with `unique_ptr` while retaining non-owning player indexes and deferred removal after iteration
 * Make client cells and actor wrappers explicitly owned, transfer ownership during cross-cell moves, and avoid iterator invalidation when actors disappear
+* Make script language runtimes RAII-owned and their native/Lua cleanup idempotent across load failures and shutdown
 
 0.8.1
 -----

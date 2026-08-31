@@ -44,36 +44,19 @@ Script::Script(const char *path)
 #endif
     {
         script_type = SCRIPT_CPP;
-        lang = new LangNative();
+        lang = std::make_unique<LangNative>();
     }
 #if defined (ENABLE_LUA)
     else if (strstr(path, ".lua") || strstr(path, ".t"))
     {
-        lang = new LangLua();
+        lang = std::make_unique<LangLua>();
         script_type = SCRIPT_LUA;
     }
 #endif
     else
         throw std::runtime_error("Script type not recognized: " + std::string(path));
 
-    try
-    {
-        lang->LoadProgram(path);
-    }
-    catch (...)
-    {
-        lang->FreeProgram();
-        throw;
-    }
-
-}
-
-
-Script::~Script()
-{
-    lang->FreeProgram();
-
-    delete lang;
+    lang->LoadProgram(path);
 }
 
 void Script::LoadScripts(char *scripts, const char *base)

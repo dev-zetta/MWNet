@@ -20,11 +20,11 @@ class LangLua: public Language
 {
 public:
     virtual lib_t GetInterface() override;
-    lua_State *lua;
+    lua_State *lua = nullptr;
 public:
     LangLua();
     LangLua(lua_State *lua);
-    ~LangLua();
+    ~LangLua() override;
 
     static void AddPackagePath(const std::string &path);
     static void AddPackageCPath(const std::string &path);
@@ -41,6 +41,7 @@ public:
     virtual boost::any Call(const char *name, const char *argl, int buf, ...) override;
     virtual boost::any Call(const char *name, const char *argl, const std::vector<boost::any> &args) override;
 private:
+    bool ownsLua = false;
     static std::set<std::string> packageCPath;
     static std::set<std::string> packagePath;
 };
