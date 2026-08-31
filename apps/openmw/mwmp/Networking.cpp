@@ -1,4 +1,5 @@
 #include <stdexcept>
+#include <chrono>
 #include <iostream>
 #include <string>
 
@@ -236,6 +237,69 @@ Networking::~Networking()
 {
     disconnect();
     endpoint->shutdown(std::chrono::seconds(5));
+}
+
+ServerProbeResult Networking::probeServer(const std::string& host, unsigned short port)
+{
+    ServerProbeResult result;
+    const auto started = std::chrono::steady_clock::now();
+
+    Files::ConfigurationManager configuration;
+    std::string creationError;
+    auto probe = transport::Protocol11Endpoint::createClient(
+        configuration.getUserConfigPath() / "trusted-servers.json", creationError);
+    if (!probe)
+    {
+        result.detail = creationError.empty() ? "Unable to open the server trust store." : creationError;
+        return result;
+    }
+
+    transport::ConnectOptions options;
+    options.host = host;
+    options.port = port;
+    options.timeouts.connect = std::chrono::seconds(3);
+    options.timeouts.handshake = std::chrono::seconds(3);
+    options.timeouts.read = std::chrono::seconds(3);
+    options.timeouts.shutdown = std::chrono::milliseconds(500);
+
+    transport::TransportConnectionId connection;
+    transport::TransportError error;
+    if (!probe->connect(options, connection, error))
+    {
+        result.detail = error.detail.empty() ? "Unable to start the server probe." : error.detail;
+        return result;
+    }
+
+    const auto deadline = started + std::chrono::seconds(4);
+    while (std::chrono::steady_clock::now() < deadline)
+    {
+        auto event = probe->poll(std::chrono::milliseconds(100));
+        if (!event)
+            continue;
+        if (event->type == transport::TransportEventType::Connected
+            || event->type == transport::TransportEventType::TrustRequired)
+        {
+            result.reachable = true;
+            result.fingerprint = std::move(event->detail);
+            result.detail = event->type == transport::TransportEventType::TrustRequired
+                ? "Server is reachable; first-use fingerprint confirmation is required."
+                : "Server is reachable and its stored fingerprint matches.";
+            break;
+        }
+        if (event->type == transport::TransportEventType::Disconnected)
+        {
+            result.detail = event->detail.empty() ? "Server closed the probe connection." : event->detail;
+            break;
+        }
+    }
+    if (result.detail.empty())
+        result.detail = "Server probe timed out during the encrypted handshake.";
+
+    result.elapsed = std::chrono::duration_cast<std::chrono::milliseconds>(
+        std::chrono::steady_clock::now() - started);
+    probe->disconnect(connection);
+    probe->shutdown(std::chrono::milliseconds(500));
+    return result;
 }
 
 void Networking::update()

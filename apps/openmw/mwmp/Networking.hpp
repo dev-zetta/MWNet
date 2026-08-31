@@ -1,6 +1,7 @@
 #ifndef OPENMW_NETWORKING_HPP
 #define OPENMW_NETWORKING_HPP
 
+#include <chrono>
 #include <cstdint>
 #include <deque>
 #include <filesystem>
@@ -47,6 +48,14 @@ namespace mwmp
         bool registerAccount = false;
     };
 
+    struct ServerProbeResult
+    {
+        bool reachable = false;
+        std::chrono::milliseconds elapsed{ 0 };
+        std::string fingerprint;
+        std::string detail;
+    };
+
     class Networking
     {
     public:
@@ -67,6 +76,7 @@ namespace mwmp
         void disconnect();
         void setLastError(const std::string& msg) { lastError = msg; }
         const std::string& getLastError() const { return lastError; }
+        static ServerProbeResult probeServer(const std::string& host, unsigned short port);
 
         LocalSystem *getLocalSystem();
         LocalPlayer *getLocalPlayer();
