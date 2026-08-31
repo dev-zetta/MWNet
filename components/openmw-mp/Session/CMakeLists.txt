@@ -1,4 +1,5 @@
 add_library(tes3mp-session STATIC
+    AuthorityLease.cpp
     SessionState.cpp
     SessionTransport.cpp
 )

@@ -4,6 +4,7 @@
 #include <string_view>
 
 int runProtocolTests();
+int runAuthorityTests();
 int runPersistenceTests();
 int runSessionTests();
 int runTransportTests();
@@ -23,7 +24,7 @@ int main()
         return 1;
     }
 
-    int failures = runProtocolTests() + runPersistenceTests()
+    int failures = runProtocolTests() + runAuthorityTests() + runPersistenceTests()
         + runSessionTests() + runTransportTests();
 #if defined(TES3MP_HAS_GNS_TRANSPORT)
     failures += runAuthenticationTests();
