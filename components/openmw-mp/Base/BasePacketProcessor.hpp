@@ -27,15 +27,24 @@ public:
         return className;
     }
 
+    static void AddProcessor(std::unique_ptr<Proccessor> processor)
+    {
+        if (!processor)
+            throw std::invalid_argument("cannot register a null packet processor");
+
+        const unsigned char packetId = processor->GetPacketID();
+        const auto existing = processors.find(packetId);
+        if (existing != processors.end())
+            throw std::logic_error("processor " + existing->second->strPacketID
+                + " already registered. Check " + processor->className + " and "
+                + existing->second->className);
+
+        processors.emplace(packetId, std::move(processor));
+    }
+
     static void AddProcessor(Proccessor *processor)
     {
-        for (auto &p : processors)
-        {
-            if (processor->packetID == p.first)
-                throw std::logic_error("processor " + p.second->strPacketID + " already registered. Check " +
-                                       processor->className + " and " + p.second->className);
-        }
-        processors.insert(typename processors_t::value_type(processor->GetPacketID(), processor));
+        AddProcessor(std::unique_ptr<Proccessor>(processor));
     }
 protected:
     unsigned char packetID = 0;

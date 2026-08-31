@@ -67,6 +67,7 @@ This is the first hardening milestone for the major OpenMW 0.52 compatibility an
 * Make the server cell controller own loaded cells with `unique_ptr` while retaining non-owning player indexes and deferred removal after iteration
 * Make client cells and actor wrappers explicitly owned, transfer ownership during cross-cell moves, and avoid iterator invalidation when actors disappear
 * Make script language runtimes RAII-owned and their native/Lua cleanup idempotent across load failures and shutdown
+* Make packet processor registration take ownership immediately and reject null or duplicate registrations without leaking processors
 
 0.8.1
 -----

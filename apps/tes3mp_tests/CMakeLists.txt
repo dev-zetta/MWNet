@@ -5,6 +5,7 @@ add_executable(tes3mp-tests
     main.cpp
     lifecycle.cpp
     movement.cpp
+    ownership.cpp
     persistence.cpp
     protocol.cpp
     session.cpp

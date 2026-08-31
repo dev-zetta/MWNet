@@ -8,6 +8,7 @@ int runAuthorityTests();
 int runCombatTests();
 int runInventoryTests();
 int runMovementTests();
+int runOwnershipTests();
 int runLifecycleTests();
 int runPersistenceTests();
 int runSessionTests();
@@ -29,7 +30,7 @@ int main()
     }
 
     int failures = runProtocolTests() + runAuthorityTests() + runCombatTests()
-        + runInventoryTests() + runMovementTests()
+        + runInventoryTests() + runMovementTests() + runOwnershipTests()
         + runLifecycleTests() + runPersistenceTests()
         + runSessionTests() + runTransportTests();
 #if defined(TES3MP_HAS_GNS_TRANSPORT)
