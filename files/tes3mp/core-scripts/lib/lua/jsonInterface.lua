@@ -78,22 +78,7 @@ end
 
 
 function jsonInterface.writeToFile(fileName, content)
-
-    if jsonInterface.ioLibrary == nil then
-        tes3mp.LogMessage(enumerations.log.ERROR, jsonInterface.libraryMissingMessage)
-        return false
-    end
-
-    local home = config.dataPath .. "/"
-    local file = jsonInterface.ioLibrary.open(home .. fileName, 'w+b')
-
-    if file ~= nil then
-        file:write(content)
-        file:close()
-        return true
-    else
-        return false
-    end
+    return tes3mp.WriteFileAtomically(fileName, content)
 end
 
 -- Save data to JSON in a slower but human-readable way, with identation and a specific order
@@ -111,9 +96,10 @@ function jsonInterface.quicksave(fileName, data)
 
     if cjsonExists then
         local content = cjson.encode(data)
-        return jsonInterface.writeToFile(fileName, content)
+        return tes3mp.QueueFileWrite(fileName, content)
     else
-        return jsonInterface.save(fileName, data)
+        local content = dkjson.encode(data, { indent = true })
+        return tes3mp.QueueFileWrite(fileName, content)
     end
 end
 

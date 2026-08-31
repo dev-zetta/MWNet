@@ -90,7 +90,22 @@ Networking::Networking(RakNet::RakPeerInterface *peer,
 
 Networking::~Networking()
 {
-    Script::Call<Script::CallbackIdentity("OnServerExit")>(false);
+    try
+    {
+        Script::Call<Script::CallbackIdentity("OnServerExit")>(false);
+    }
+    catch (const std::exception& exception)
+    {
+        LOG_MESSAGE_SIMPLE(TimedLog::LOG_ERROR,
+            "OnServerExit failed during shutdown: %s", exception.what());
+    }
+    catch (...)
+    {
+        LOG_MESSAGE_SIMPLE(TimedLog::LOG_ERROR, "%s",
+            "OnServerExit failed during shutdown with an unknown exception");
+    }
+    mPersistenceService.flush();
+    mPersistenceService.stop();
 
     CellController::destroy();
 
@@ -336,6 +351,30 @@ bool Networking::applyServerInventoryChanges(Player& player)
             mechanics::describe(result.decision));
     }
     return result.applied();
+}
+
+persistence::QueueDecision Networking::queuePersistenceWrite(
+    std::filesystem::path path, std::string_view contents)
+{
+    persistence::AtomicWriteOptions options;
+    options.backup = persistence::BackupPolicy::MaintainOne;
+    options.maximumBytes = 64U * 1024U * 1024U;
+    const auto bytes = std::as_bytes(std::span(contents));
+    const std::string displayPath = path.generic_string();
+    return mPersistenceService.save(std::move(path), bytes, std::move(options),
+        [displayPath](const persistence::PersistenceResult& result) {
+            if (!result.success)
+            {
+                LOG_MESSAGE_SIMPLE(TimedLog::LOG_ERROR,
+                    "Asynchronous persistence failed for %s: %s",
+                    displayPath.c_str(), result.error.c_str());
+            }
+        });
+}
+
+void Networking::flushPersistence()
+{
+    mPersistenceService.flush();
 }
 
 bool Networking::isPassworded() const

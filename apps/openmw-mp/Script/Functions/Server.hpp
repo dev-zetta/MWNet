@@ -16,6 +16,9 @@
     {"DoesFilePathExist",               ServerFunctions::DoesFilePathExist},\
     {"GetCaseInsensitiveFilename",      ServerFunctions::GetCaseInsensitiveFilename},\
     {"GetDataPath",                     ServerFunctions::GetDataPath},\
+    {"WriteFileAtomically",             ServerFunctions::WriteFileAtomically},\
+    {"QueueFileWrite",                  ServerFunctions::QueueFileWrite},\
+    {"FlushPersistence",                ServerFunctions::FlushPersistence},\
     {"GetMillisecondsSinceServerStart", ServerFunctions::GetMillisecondsSinceServerStart},\
     {"GetOperatingSystemType",          ServerFunctions::GetOperatingSystemType},\
     {"GetArchitectureType",             ServerFunctions::GetArchitectureType},\
@@ -132,6 +135,15 @@ public:
     * \return The data path.
     */
     static const char *GetDataPath() noexcept;
+
+    /** Write a file under the server data directory using atomic replacement. */
+    static bool WriteFileAtomically(const char* relativePath, const char* contents);
+
+    /** Queue a coalesced atomic write under the server data directory. */
+    static bool QueueFileWrite(const char* relativePath, const char* contents);
+
+    /** Wait until all queued persistence writes have completed. */
+    static void FlushPersistence();
 
     /**
     * \brief Get the milliseconds elapsed since the server was started.

@@ -10,6 +10,7 @@
 #include <components/openmw-mp/Mechanics/MovementValidator.hpp>
 #include <components/openmw-mp/Mechanics/PlayerLifecycle.hpp>
 #include <components/openmw-mp/Mechanics/InventoryLedger.hpp>
+#include <components/openmw-mp/Persistence/PersistenceService.hpp>
 #include <components/openmw-mp/Security/ServerAuthenticationService.hpp>
 #include <components/openmw-mp/Session/AuthorityLease.hpp>
 #include <components/openmw-mp/Transport/ApplicationPacketDispatcher.hpp>
@@ -99,6 +100,9 @@ namespace  mwmp
         bool acknowledgePlayerRespawn(Player& player, const BasePlayer& incoming);
         bool validatePlayerInventory(Player& player, const BasePlayer& incoming);
         bool applyServerInventoryChanges(Player& player);
+        persistence::QueueDecision queuePersistenceWrite(
+            std::filesystem::path path, std::string_view contents);
+        void flushPersistence();
 
         static const Networking &get();
         static Networking *getPtr();
@@ -124,6 +128,7 @@ namespace  mwmp
         transport::ApplicationPacketDispatcher mDispatcher;
         transport::ApplicationPacketReceiver mReceiver;
         security::ServerAuthenticationService mAuthentication;
+        persistence::PersistenceService mPersistenceService;
         session::AuthorityLeaseManager mAuthorityLeases;
         mechanics::MovementValidator mMovementValidator;
         mechanics::PlayerLifecycle mPlayerLifecycle;

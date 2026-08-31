@@ -4,13 +4,38 @@
 #include <components/openmw-mp/NetworkMessages.hpp>
 #include <components/openmw-mp/TimedLog.hpp>
 #include <components/openmw-mp/Version.hpp>
+#include <components/openmw-mp/Persistence/AtomicFile.hpp>
 
 #include <apps/openmw-mp/Script/ScriptFunctions.hpp>
 #include <apps/openmw-mp/Networking.hpp>
 #include <Script/Script.hpp>
 
+#include <filesystem>
+#include <optional>
+#include <span>
+#include <string_view>
+
 static std::string tempFilename;
 static std::chrono::high_resolution_clock::time_point startupTime = std::chrono::high_resolution_clock::now();
+
+namespace
+{
+    std::optional<std::filesystem::path> persistencePath(const char* relativePath)
+    {
+        if (relativePath == nullptr || relativePath[0] == '\0')
+            return std::nullopt;
+        const std::filesystem::path relative(relativePath);
+        if (relative.is_absolute() || relative.has_root_path())
+            return std::nullopt;
+        const std::filesystem::path normalized = relative.lexically_normal();
+        for (const auto& part : normalized)
+        {
+            if (part == "..")
+                return std::nullopt;
+        }
+        return std::filesystem::path(Script::GetModDir()) / normalized;
+    }
+}
 
 void ServerFunctions::LogMessage(unsigned short level, const char *message) noexcept
 {
@@ -72,6 +97,58 @@ const char *ServerFunctions::GetCaseInsensitiveFilename(const char *folderPath, 
 const char* ServerFunctions::GetDataPath() noexcept
 {
     return Script::GetModDir();
+}
+
+bool ServerFunctions::WriteFileAtomically(const char* relativePath, const char* contents)
+{
+    const auto path = persistencePath(relativePath);
+    if (!path || contents == nullptr)
+    {
+        LOG_MESSAGE_SIMPLE(TimedLog::LOG_ERROR, "%s",
+            "Rejected invalid atomic persistence path or content");
+        return false;
+    }
+    const std::string_view value(contents);
+    mwmp::persistence::AtomicWriteOptions options;
+    options.backup = mwmp::persistence::BackupPolicy::MaintainOne;
+    options.maximumBytes = 64U * 1024U * 1024U;
+    std::string error;
+    mwmp::Networking::getPtr()->flushPersistence();
+    const bool written = mwmp::persistence::writeFileAtomically(
+        *path, std::as_bytes(std::span(value)), options, error);
+    if (!written)
+    {
+        LOG_MESSAGE_SIMPLE(TimedLog::LOG_ERROR,
+            "Atomic persistence failed for %s: %s", relativePath, error.c_str());
+    }
+    return written;
+}
+
+bool ServerFunctions::QueueFileWrite(const char* relativePath, const char* contents)
+{
+    const auto path = persistencePath(relativePath);
+    if (!path || contents == nullptr)
+    {
+        LOG_MESSAGE_SIMPLE(TimedLog::LOG_ERROR, "%s",
+            "Rejected invalid queued persistence path or content");
+        return false;
+    }
+    const mwmp::persistence::QueueDecision decision
+        = mwmp::Networking::getPtr()->queuePersistenceWrite(*path, contents);
+    if (decision != mwmp::persistence::QueueDecision::Queued
+        && decision != mwmp::persistence::QueueDecision::Coalesced)
+    {
+        LOG_MESSAGE_SIMPLE(TimedLog::LOG_ERROR,
+            "Queued persistence rejected for %s: %s", relativePath,
+            mwmp::persistence::describe(decision));
+        return false;
+    }
+    return true;
+}
+
+void ServerFunctions::FlushPersistence()
+{
+    mwmp::Networking::getPtr()->flushPersistence();
 }
 
 unsigned int ServerFunctions::GetMillisecondsSinceServerStart() noexcept
