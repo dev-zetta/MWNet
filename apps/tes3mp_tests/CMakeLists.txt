@@ -62,3 +62,17 @@ else()
 endif()
 
 add_test(NAME tes3mp-unit COMMAND tes3mp-tests)
+
+add_executable(tes3mp-persistence-fault persistence_fault.cpp)
+target_include_directories(tes3mp-persistence-fault PRIVATE ${CMAKE_SOURCE_DIR})
+target_link_libraries(tes3mp-persistence-fault PRIVATE tes3mp-persistence)
+
+if (MSVC)
+    target_compile_options(tes3mp-persistence-fault PRIVATE /W4 /WX)
+else()
+    target_compile_options(tes3mp-persistence-fault PRIVATE
+        -Wall -Wextra -Wpedantic -Werror)
+endif()
+
+add_test(NAME tes3mp-persistence-fault COMMAND tes3mp-persistence-fault)
+set_tests_properties(tes3mp-persistence-fault PROPERTIES TIMEOUT 30)

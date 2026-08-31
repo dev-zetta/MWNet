@@ -2,8 +2,9 @@
 
 #include <algorithm>
 #include <atomic>
-#include <cstdint>
+#include <chrono>
 #include <cerrno>
+#include <cstdint>
 #include <cstring>
 #include <fstream>
 #include <limits>
@@ -37,8 +38,17 @@ namespace mwmp::persistence
 
         std::filesystem::path temporaryPath(const std::filesystem::path& target)
         {
+            const auto timestamp = std::chrono::steady_clock::now()
+                .time_since_epoch().count();
+#ifdef _WIN32
+            const auto process = static_cast<std::uint64_t>(GetCurrentProcessId());
+#else
+            const auto process = static_cast<std::uint64_t>(::getpid());
+#endif
             auto path = target;
-            path += ".tmp." + std::to_string(++sTemporarySequence);
+            path += ".tmp." + std::to_string(process) + "."
+                + std::to_string(timestamp) + "."
+                + std::to_string(++sTemporarySequence);
             return path;
         }
 
