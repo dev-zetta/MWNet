@@ -45,12 +45,16 @@ namespace
         moved.position = { 1.0, 2.0, 3.0 };
         ObjectState scaled = placed;
         scaled.scale = 1.5;
+        ObjectState opening = placed;
+        opening.doorState = 1;
         EXPECT(ledger.applyBatch({
             { ObjectMutationKind::Move, moved },
             { ObjectMutationKind::Scale, scaled },
+            { ObjectMutationKind::SetDoorState, opening },
         }).applied());
         EXPECT(ledger.find(placed.identity)->position == moved.position);
         EXPECT(ledger.find(placed.identity)->scale == 1.5);
+        EXPECT(ledger.find(placed.identity)->doorState == 1);
 
         EXPECT(ledger.applyBatch(
             { { ObjectMutationKind::Delete, placed } }).applied());
@@ -105,6 +109,11 @@ namespace
         EXPECT(ledger.previewBatch({
             { ObjectMutationKind::Seed, invalid } }).decision
             == ObjectDecision::InvalidIdentity);
+        invalid = object(0, 1, 7);
+        invalid.doorState = ObjectStateLedger::MaximumDoorState + 1;
+        EXPECT(ledger.previewBatch({
+            { ObjectMutationKind::SetDoorState, invalid } }).decision
+            == ObjectDecision::InvalidObject);
         EXPECT(std::string(describe(ObjectDecision::PlayerLimitReached))
             == "the per-player object quota was reached");
 

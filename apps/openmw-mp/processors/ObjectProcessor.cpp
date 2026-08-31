@@ -30,6 +30,9 @@ bool ObjectProcessor::ApplyCanonicalMutation(Player& player,
     if (!allowed)
     {
         networking->cancelObjectMutation(player);
+        const char* reason = "denied by script";
+        Script::Call<Script::CallbackIdentity("OnObjectMutationIntentRejected")>(
+            player.getId(), cellDescription.c_str(), packetType, reason);
         return false;
     }
     if (networking->commitObjectMutation(player))

@@ -92,7 +92,8 @@ namespace mwmp::mechanics
             && validVector(object.position) && validVector(object.rotation)
             && std::isfinite(object.scale) && object.scale > 0.0
             && object.scale <= MaximumScale
-            && object.lockLevel >= -1 && object.lockLevel <= MaximumLockLevel;
+            && object.lockLevel >= -1 && object.lockLevel <= MaximumLockLevel
+            && object.doorState >= 0 && object.doorState <= MaximumDoorState;
     }
 
     bool ObjectStateLedger::validVector(
@@ -234,6 +235,16 @@ namespace mwmp::mechanics
                         return prepared;
                     }
                     object.lockLevel = mutation.object.lockLevel;
+                    break;
+                case ObjectMutationKind::SetDoorState:
+                    if (mutation.object.doorState < 0
+                        || mutation.object.doorState > MaximumDoorState)
+                    {
+                        prepared.result = { ObjectDecision::InvalidObject,
+                            mObjects.size() };
+                        return prepared;
+                    }
+                    object.doorState = mutation.object.doorState;
                     break;
                 case ObjectMutationKind::Delete:
                     object.deleted = true;

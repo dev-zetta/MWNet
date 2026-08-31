@@ -39,6 +39,7 @@ namespace mwmp::mechanics
         std::array<double, 3> rotation{};
         double scale = 1.0;
         std::int32_t lockLevel = 0;
+        std::int32_t doorState = 0;
         bool enabled = true;
         bool hasContainer = false;
         bool deleted = false;
@@ -55,6 +56,7 @@ namespace mwmp::mechanics
         Rotate,
         Scale,
         SetLock,
+        SetDoorState,
         Delete,
     };
 
@@ -105,6 +107,7 @@ namespace mwmp::mechanics
         static constexpr double MaximumCoordinate = 1'000'000'000.0;
         static constexpr double MaximumScale = 1000.0;
         static constexpr std::int32_t MaximumLockLevel = 1'000'000;
+        static constexpr std::int32_t MaximumDoorState = 2;
 
         explicit ObjectStateLedger(
             std::size_t maximumObjects = DefaultMaximumObjects,

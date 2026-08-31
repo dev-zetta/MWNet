@@ -2331,7 +2331,7 @@ eventHandler.OnObjectState = function(pid, cellDescription)
 end
 
 eventHandler.OnDoorState = function(pid, cellDescription)
-    eventHandler.OnGenericObjectEvent(pid, cellDescription, "DoorState")
+    eventHandler.OnObjectMutationCommitted(pid, cellDescription, "DoorState")
 end
 
 eventHandler.OnClientScriptLocal = function(pid, cellDescription)

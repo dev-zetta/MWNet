@@ -911,6 +911,7 @@ namespace
         }
         result.scale = object.scale;
         result.lockLevel = object.lockLevel;
+        result.doorState = object.doorState;
         result.enabled = true;
         result.hasContainer = object.hasContainer;
         return result;
@@ -961,6 +962,7 @@ namespace
         mutation.object.enabled = object.objectState;
         mutation.object.scale = object.scale;
         mutation.object.lockLevel = object.lockLevel;
+        mutation.object.doorState = object.doorState;
         for (std::size_t index = 0; index < 3; ++index)
         {
             mutation.object.position[index] = object.position.pos[index];
@@ -974,7 +976,8 @@ namespace
         using Kind = mwmp::mechanics::ObjectMutationKind;
         return kind == Kind::SetEnabled || kind == Kind::Move
             || kind == Kind::Rotate || kind == Kind::Scale
-            || kind == Kind::SetLock || kind == Kind::Delete;
+            || kind == Kind::SetLock || kind == Kind::SetDoorState
+            || kind == Kind::Delete;
     }
 }
 
