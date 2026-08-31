@@ -12,6 +12,7 @@ Protocol 11 changes the network and trust boundaries, not the safe TES3MP 0.8.1 
 | `OnTransportConnect(pid)` | New | Limited observation before account authentication; mutating player/world APIs raise a Lua error |
 | `OnPlayerAuthenticated(pid, accountName, isNewAccount)` | New | Marks the secure authentication boundary, before `OnPlayerConnect` |
 | `OnPlayerMovementViolation(pid, reason, actualDistance, allowedDistance, violationCount)` | New | Observes rejected movement and may apply script policy; it cannot make the rejected snapshot canonical |
+| `OnActorMovementViolation(pid, cellDescription, reason, actualDistance, allowedDistance, violationCount)` | New | Observes rejected authority-owned actor movement; it cannot make the rejected snapshot canonical |
 | `OnPlayerInventoryIntent(pid)` | New | Runs before canonical inventory commit; `false` denies, while `true` or `nil` allows native validation |
 | `OnPlayerInventoryIntentRejected(pid)` | New | Optional cleanup notification when a script-modified inventory intent fails canonical validation |
 | `OnPlayerBountyIntent(pid)` | New | Runs legacy bounty validators before an increase-only canonical bounty commit; server scripts may override through `SetBounty` |

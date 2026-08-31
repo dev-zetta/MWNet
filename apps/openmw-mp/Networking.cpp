@@ -426,6 +426,30 @@ namespace
         return result;
     }
 
+    std::vector<mwmp::mechanics::ActorPositionUpdate> actorPositionUpdates(
+        const mwmp::BaseActorList& actorList, std::uint64_t sequence)
+    {
+        std::vector<mwmp::mechanics::ActorPositionUpdate> result;
+        const std::string cell = actorList.cell.getShortDescription();
+        result.reserve(actorList.baseActors.size());
+        for (const mwmp::BaseActor& actor : actorList.baseActors)
+        {
+            mwmp::mechanics::ActorPositionUpdate update;
+            update.identity = { cell, actor.refNum, actor.mpNum };
+            update.transform.position = { actor.position.pos[0], actor.position.pos[1],
+                actor.position.pos[2] };
+            update.transform.rotation = { actor.position.rot[0], actor.position.rot[1],
+                actor.position.rot[2] };
+            update.transform.direction = { actor.direction.pos[0], actor.direction.pos[1],
+                actor.direction.pos[2] };
+            update.transform.directionRotation = { actor.direction.rot[0],
+                actor.direction.rot[1], actor.direction.rot[2] };
+            update.sequence = sequence;
+            result.push_back(std::move(update));
+        }
+        return result;
+    }
+
     struct ContainerOperations
     {
         mwmp::mechanics::InventoryDecision decision
@@ -1573,6 +1597,70 @@ bool Networking::applyServerActorEquipment(BaseActorList& actorList)
     }
     serverCell->readActorList(ID_ACTOR_EQUIPMENT, &actorList);
     return true;
+}
+
+bool Networking::validateActorPositions(Player& player,
+    const BaseActorList& incoming)
+{
+    const mechanics::ActorStateResult result = mActorStateLedger.previewPositions(
+        actorPositionUpdates(incoming, mCurrentApplicationSequence),
+        mMovementMaximumSpeed, mechanics::ActorStateLedger::Clock::now());
+    if (result.applied())
+        return true;
+
+    const unsigned int violations = ++mActorStateViolations[player.guid.g];
+    LOG_MESSAGE_SIMPLE(TimedLog::LOG_WARN,
+        "Rejected actor movement from connection %llu for %s: %s; distance %.3f, allowed %.3f (violation %u)",
+        static_cast<unsigned long long>(player.guid.g),
+        incoming.cell.getShortDescription().c_str(), mechanics::describe(result.decision),
+        result.distance, result.allowedDistance, violations);
+    try
+    {
+        const std::string cellDescription = incoming.cell.getShortDescription();
+        double travelled = result.distance;
+        double allowed = result.allowedDistance;
+        unsigned int violationCount = violations;
+        Script::Call<Script::CallbackIdentity("OnActorMovementViolation")>(
+            player.getId(), cellDescription.c_str(), mechanics::describe(result.decision),
+            travelled, allowed, violationCount);
+    }
+    catch (...)
+    {
+        LOG_MESSAGE_SIMPLE(TimedLog::LOG_ERROR,
+            "%s", "OnActorMovementViolation failed; actor movement remains rejected");
+    }
+    if (violations >= mMovementViolationLimit)
+        disconnectTransport({ player.guid.g }, "repeated invalid actor movement samples");
+    return false;
+}
+
+bool Networking::commitActorPositions(Player& player, BaseActorList& actorList)
+{
+    Cell* serverCell = CellController::get()->getCell(&actorList.cell);
+    mechanics::ActorStateResult result{ mechanics::ActorStateDecision::InvalidIdentity };
+    if (serverCell != nullptr
+        && *serverCell->getAuthority() == player.guid
+        && serverCell->getAuthorityLeaseId() == actorList.authorityLeaseId)
+    {
+        result = mActorStateLedger.applyPositions(
+            actorPositionUpdates(actorList, mCurrentApplicationSequence),
+            mMovementMaximumSpeed, mechanics::ActorStateLedger::Clock::now());
+        if (result.applied())
+        {
+            serverCell->readActorList(ID_ACTOR_POSITION, &actorList);
+            return true;
+        }
+    }
+
+    const unsigned int violations = ++mActorStateViolations[player.guid.g];
+    LOG_MESSAGE_SIMPLE(TimedLog::LOG_WARN,
+        "Rejected modified actor movement from connection %llu for %s: %s (violation %u)",
+        static_cast<unsigned long long>(player.guid.g),
+        actorList.cell.getShortDescription().c_str(),
+        mechanics::describe(result.decision), violations);
+    if (violations >= mMovementViolationLimit)
+        disconnectTransport({ player.guid.g }, "repeated invalid actor movement samples");
+    return false;
 }
 
 namespace

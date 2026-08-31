@@ -1,5 +1,6 @@
 #include <components/openmw-mp/Mechanics/ActorStateLedger.hpp>
 
+#include <chrono>
 #include <iostream>
 #include <limits>
 #include <string>
@@ -87,6 +88,46 @@ namespace
         EXPECT(std::string(describe(ActorStateDecision::DuplicateActor))
             == "an actor occurs more than once in the batch");
     }
+
+    ActorPositionUpdate position(const char* cell, std::uint32_t refNum,
+        double x, std::uint64_t sequence)
+    {
+        ActorPositionUpdate update;
+        update.identity = { cell, refNum, 0 };
+        update.transform.position.x = x;
+        update.sequence = sequence;
+        return update;
+    }
+
+    void testAtomicPositionUpdates()
+    {
+        using namespace std::chrono_literals;
+        ActorStateLedger ledger;
+        const auto start = ActorStateLedger::Clock::time_point{};
+        EXPECT(ledger.previewPositions({ position("Balmora", 1, 0, 1) }, 200, start)
+            .applied());
+        EXPECT(!ledger.position({ "Balmora", 1, 0 }).has_value());
+        EXPECT(ledger.applyPositions({ position("Balmora", 1, 0, 1) }, 200, start)
+            .applied());
+
+        EXPECT(ledger.applyPositions({ position("Balmora", 1, 375, 2) }, 200,
+                   start + 1s).applied());
+        EXPECT(ledger.position({ "Balmora", 1, 0 })->position.x == 375);
+        EXPECT(ledger.previewPositions({ position("Balmora", 1, 751, 3) }, 200,
+                   start + 2s).decision == ActorStateDecision::SpeedExceeded);
+        EXPECT(ledger.previewPositions({ position("Balmora", 1, 375, 2) }, 200,
+                   start + 2s).decision == ActorStateDecision::StaleSequence);
+
+        auto invalid = position("Balmora", 2, 0, 3);
+        invalid.transform.direction.x = std::numeric_limits<double>::quiet_NaN();
+        EXPECT(ledger.applyPositions({ position("Balmora", 1, 376, 3), invalid },
+                   200, start + 2s).decision == ActorStateDecision::InvalidPosition);
+        EXPECT(ledger.position({ "Balmora", 1, 0 })->position.x == 375);
+        EXPECT(ledger.previewPositions({ position("Balmora", 1, 376, 0) }, 200,
+                   start + 2s).decision == ActorStateDecision::InvalidSequence);
+        EXPECT(ledger.previewPositions({ position("Balmora", 1, 376, 3) }, -1,
+                   start + 2s).decision == ActorStateDecision::InvalidSpeed);
+    }
 }
 
 int runActorStateTests()
@@ -94,5 +135,6 @@ int runActorStateTests()
     testAtomicEquipmentUpdates();
     testIdentityAndLimits();
     testCleanup();
+    testAtomicPositionUpdates();
     return sFailures;
 }
