@@ -8,12 +8,19 @@
 #include <components/esm/typetraits.hpp>
 #include <components/esm3/esmreader.hpp>
 #include <components/esm3/loadacti.hpp>
+#include <components/esm3/loadarmo.hpp>
+#include <components/esm3/loadbook.hpp>
 #include <components/esm3/loadcell.hpp>
+#include <components/esm3/loadclot.hpp>
 #include <components/esm3/loadcont.hpp>
 #include <components/esm3/loaddoor.hpp>
 #include <components/esm3/loadgmst.hpp>
+#include <components/esm3/loadench.hpp>
+#include <components/esm3/loadmgef.hpp>
+#include <components/esm3/loadspel.hpp>
 #include <components/esm3/loadland.hpp>
 #include <components/esm3/loadstat.hpp>
+#include <components/esm3/loadweap.hpp>
 #include <components/esm3/readerscache.hpp>
 #include <components/files/collections.hpp>
 #include <components/files/conversion.hpp>
@@ -135,6 +142,13 @@ namespace EsmLoader
             Records<ESM::Container> mContainers;
             Records<ESM::Door> mDoors;
             Records<ESM::GameSetting> mGameSettings;
+            Records<ESM::Enchantment> mEnchantments;
+            Records<ESM::MagicEffect> mMagicEffects;
+            Records<ESM::Spell> mSpells;
+            Records<ESM::Armor> mArmors;
+            Records<ESM::Book> mBooks;
+            Records<ESM::Clothing> mClothing;
+            Records<ESM::Weapon> mWeapons;
             Records<ESM::Land> mLands;
             Records<ESM::Static> mStatics;
         };
@@ -162,6 +176,34 @@ namespace EsmLoader
                 case ESM::REC_GMST:
                     if (query.mLoadGameSettings)
                         return loadRecord(reader, content.mGameSettings);
+                    break;
+                case ESM::REC_ENCH:
+                    if (query.mLoadMagic)
+                        return loadRecord(reader, content.mEnchantments);
+                    break;
+                case ESM::REC_MGEF:
+                    if (query.mLoadMagic)
+                        return loadRecord(reader, content.mMagicEffects);
+                    break;
+                case ESM::REC_SPEL:
+                    if (query.mLoadMagic)
+                        return loadRecord(reader, content.mSpells);
+                    break;
+                case ESM::REC_ARMO:
+                    if (query.mLoadMagic)
+                        return loadRecord(reader, content.mArmors);
+                    break;
+                case ESM::REC_BOOK:
+                    if (query.mLoadMagic)
+                        return loadRecord(reader, content.mBooks);
+                    break;
+                case ESM::REC_CLOT:
+                    if (query.mLoadMagic)
+                        return loadRecord(reader, content.mClothing);
+                    break;
+                case ESM::REC_WEAP:
+                    if (query.mLoadMagic)
+                        return loadRecord(reader, content.mWeapons);
                     break;
                 case ESM::REC_LAND:
                     if (query.mLoadLands)
@@ -281,6 +323,18 @@ namespace EsmLoader
                     result.emplace_back(std::move(v.mValue));
             return result;
         }
+
+        template <class T>
+        void addEnchantedItems(Records<T>& records,
+            bool consumable, std::vector<EnchantedItem>& result)
+        {
+            for (T& item : prepareRecords(records, GetKey{}))
+            {
+                if (!item.mEnchant.empty())
+                    result.push_back({ std::move(item.mId),
+                        std::move(item.mEnchant), consumable });
+            }
+        }
     }
 
     EsmData loadEsmData(const Query& query, const std::vector<std::string>& contentFiles,
@@ -303,6 +357,10 @@ namespace EsmLoader
             loaded << ' ' << content.mDoors.size() << " doors,";
         if (query.mLoadGameSettings)
             loaded << ' ' << content.mGameSettings.size() << " game settings,";
+        if (query.mLoadMagic)
+            loaded << ' ' << content.mSpells.size() << " spells,"
+                   << ' ' << content.mEnchantments.size() << " enchantments,"
+                   << ' ' << content.mMagicEffects.size() << " magic effects,";
         if (query.mLoadLands)
             loaded << ' ' << content.mLands.size() << " lands,";
         if (query.mLoadStatics)
@@ -322,6 +380,20 @@ namespace EsmLoader
             result.mDoors = prepareRecords(content.mDoors, GetKey{});
         if (query.mLoadGameSettings)
             result.mGameSettings = prepareRecords(content.mGameSettings, GetKey{});
+        if (query.mLoadMagic)
+        {
+            result.mEnchantments = prepareRecords(content.mEnchantments, GetKey{});
+            result.mMagicEffects = prepareRecords(content.mMagicEffects, GetKey{});
+            result.mSpells = prepareRecords(content.mSpells, GetKey{});
+            addEnchantedItems(content.mArmors, false, result.mEnchantedItems);
+            addEnchantedItems(content.mBooks, true, result.mEnchantedItems);
+            addEnchantedItems(content.mClothing, false, result.mEnchantedItems);
+            addEnchantedItems(content.mWeapons, false, result.mEnchantedItems);
+            std::sort(result.mEnchantedItems.begin(), result.mEnchantedItems.end(),
+                [](const EnchantedItem& left, const EnchantedItem& right) {
+                    return left.mId < right.mId;
+                });
+        }
         if (query.mLoadLands)
             result.mLands = prepareRecords(content.mLands, GetKey{});
         if (query.mLoadStatics)
@@ -341,6 +413,11 @@ namespace EsmLoader
             prepared << ' ' << result.mDoors.size() << " unique doors,";
         if (query.mLoadGameSettings)
             prepared << ' ' << result.mGameSettings.size() << " unique game settings,";
+        if (query.mLoadMagic)
+            prepared << ' ' << result.mSpells.size() << " unique spells,"
+                     << ' ' << result.mEnchantments.size() << " unique enchantments,"
+                     << ' ' << result.mMagicEffects.size() << " unique magic effects,"
+                     << ' ' << result.mEnchantedItems.size() << " enchanted items,";
         if (query.mLoadLands)
             prepared << ' ' << result.mLands.size() << " unique lands,";
         if (query.mLoadStatics)

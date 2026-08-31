@@ -11,6 +11,9 @@
 namespace ESM
 {
     struct Activator;
+    struct Enchantment;
+    struct MagicEffect;
+    struct Spell;
     struct Cell;
     struct Container;
     struct Door;
@@ -29,6 +32,13 @@ namespace EsmLoader
         ESM::RecNameInts mType;
     };
 
+    struct EnchantedItem
+    {
+        ESM::RefId mId;
+        ESM::RefId mEnchantment;
+        bool mConsumable = false;
+    };
+
     struct EsmData
     {
         std::vector<ESM::Activator> mActivators;
@@ -36,6 +46,10 @@ namespace EsmLoader
         std::vector<ESM::Container> mContainers;
         std::vector<ESM::Door> mDoors;
         std::vector<ESM::GameSetting> mGameSettings;
+        std::vector<ESM::Enchantment> mEnchantments;
+        std::vector<ESM::MagicEffect> mMagicEffects;
+        std::vector<ESM::Spell> mSpells;
+        std::vector<EnchantedItem> mEnchantedItems;
         std::vector<ESM::Land> mLands;
         std::vector<ESM::Static> mStatics;
         std::vector<RefIdWithType> mRefIdTypes;
