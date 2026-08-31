@@ -3,6 +3,7 @@ local pendingPlayerInventoryEvents = {}
 local pendingPlayerEquipmentEvents = {}
 local pendingPlayerSpellsActiveEvents = {}
 local pendingActorSpellsActiveEvents = {}
+local pendingActorEquipmentEvents = {}
 local pendingPlayerBountyEvents = {}
 local pendingObjectPlaceEvents = {}
 local pendingObjectMutationEvents = {}
@@ -1532,7 +1533,80 @@ eventHandler.OnActorList = function(pid, cellDescription)
 end
 
 eventHandler.OnActorEquipment = function(pid, cellDescription)
-    eventHandler.OnGenericActorEvent(pid, cellDescription, "ActorEquipment")
+    local pendingByCell = pendingActorEquipmentEvents[pid]
+    local pendingEvent = nil
+    if pendingByCell ~= nil then
+        pendingEvent = pendingByCell[cellDescription]
+        pendingByCell[cellDescription] = nil
+        if next(pendingByCell) == nil then
+            pendingActorEquipmentEvents[pid] = nil
+        end
+    end
+    if pendingEvent == nil then
+        return
+    end
+
+    if Players[pid] ~= nil and Players[pid]:IsLoggedIn() and
+        LoadedCells[cellDescription] ~= nil then
+        LoadedCells[cellDescription]:SaveActorsByPacketType("ActorEquipment",
+            pendingEvent.actors)
+        customEventHooks.triggerHandlers("OnActorEquipment", pendingEvent.eventStatus,
+            {pid, cellDescription, pendingEvent.actors})
+    end
+end
+
+eventHandler.OnActorEquipmentIntent = function(pid, cellDescription)
+    if pendingActorEquipmentEvents[pid] == nil then
+        pendingActorEquipmentEvents[pid] = {}
+    end
+    pendingActorEquipmentEvents[pid][cellDescription] = nil
+
+    if Players[pid] == nil or not Players[pid]:IsLoggedIn() or
+        LoadedCells[cellDescription] == nil then
+        if next(pendingActorEquipmentEvents[pid]) == nil then
+            pendingActorEquipmentEvents[pid] = nil
+        end
+        return false
+    end
+
+    tes3mp.ReadReceivedActorList()
+    local actors = packetReader.GetActorPacketTables("ActorEquipment").actors
+    local eventStatus = customEventHooks.triggerValidators("OnActorEquipment",
+        {pid, cellDescription, actors})
+    if not eventStatus.validDefaultHandler then
+        customEventHooks.triggerHandlers("OnActorEquipment", eventStatus,
+            {pid, cellDescription, actors})
+        if next(pendingActorEquipmentEvents[pid]) == nil then
+            pendingActorEquipmentEvents[pid] = nil
+        end
+        return false
+    end
+
+    pendingActorEquipmentEvents[pid][cellDescription] = {
+        eventStatus = eventStatus,
+        actors = actors
+    }
+    return true
+end
+
+eventHandler.OnActorEquipmentIntentRejected = function(pid, cellDescription)
+    local pendingByCell = pendingActorEquipmentEvents[pid]
+    if pendingByCell == nil then
+        return
+    end
+    local pendingEvent = pendingByCell[cellDescription]
+    pendingByCell[cellDescription] = nil
+    if next(pendingByCell) == nil then
+        pendingActorEquipmentEvents[pid] = nil
+    end
+    if pendingEvent == nil then
+        return
+    end
+
+    local eventStatus = customEventHooks.makeEventStatus(false,
+        pendingEvent.eventStatus.validCustomHandlers)
+    customEventHooks.triggerHandlers("OnActorEquipment", eventStatus,
+        {pid, cellDescription, pendingEvent.actors})
 end
 
 eventHandler.OnActorSpellsActive = function(pid, cellDescription)

@@ -404,6 +404,28 @@ namespace
         return result;
     }
 
+    std::vector<mwmp::mechanics::ActorEquipmentUpdate> actorEquipmentUpdates(
+        const mwmp::BaseActorList& actorList)
+    {
+        std::vector<mwmp::mechanics::ActorEquipmentUpdate> result;
+        const std::string cell = actorList.cell.getShortDescription();
+        result.reserve(actorList.baseActors.size());
+        for (const mwmp::BaseActor& actor : actorList.baseActors)
+        {
+            mwmp::mechanics::ActorEquipmentUpdate update;
+            update.identity = { cell, actor.refNum, actor.mpNum };
+            for (std::size_t slot = 0;
+                 slot < mwmp::mechanics::EquipmentLedger::SlotCount; ++slot)
+            {
+                const mwmp::Item& item = actor.equipmentItems[slot];
+                update.equipment[slot] = { item.refId, item.count,
+                    item.charge, item.enchantmentCharge };
+            }
+            result.push_back(std::move(update));
+        }
+        return result;
+    }
+
     struct ContainerOperations
     {
         mwmp::mechanics::InventoryDecision decision
@@ -1466,6 +1488,91 @@ bool Networking::finishActorActiveEffectIntent(Player& player) noexcept
 {
     mAcceptedActorActiveEffectIntents.erase(player.guid.g);
     return mRelayedActorActiveEffectIntents.erase(player.guid.g) != 0;
+}
+
+bool Networking::validateActorEquipment(Player& player,
+    const BaseActorList& incoming)
+{
+    mechanics::ActorStateResult result{ mechanics::ActorStateDecision::InvalidBatch };
+    ESM::Cell cell = incoming.cell;
+    Cell* serverCell = CellController::get()->getCell(&cell);
+    bool actorsExist = serverCell != nullptr
+        && *serverCell->getAuthority() == player.guid
+        && serverCell->getAuthorityLeaseId() == incoming.authorityLeaseId
+        && incoming.count == incoming.baseActors.size();
+    for (const BaseActor& actor : incoming.baseActors)
+    {
+        actorsExist = actorsExist
+            && serverCell != nullptr
+            && serverCell->getActor(actor.refNum, actor.mpNum) != nullptr;
+    }
+    if (actorsExist)
+        result = mActorStateLedger.previewEquipment(actorEquipmentUpdates(incoming));
+    if (result.applied())
+        return true;
+
+    const unsigned int violations = ++mActorStateViolations[player.guid.g];
+    LOG_MESSAGE_SIMPLE(TimedLog::LOG_WARN,
+        "Rejected actor equipment from connection %llu: %s (violation %u)",
+        static_cast<unsigned long long>(player.guid.g),
+        actorsExist ? mechanics::describe(result.decision)
+                    : "the actor is absent or its authority lease is stale",
+        violations);
+    if (violations >= 5)
+        disconnectTransport({ player.guid.g }, "repeated invalid actor equipment");
+    return false;
+}
+
+bool Networking::commitActorEquipment(Player& player, BaseActorList& actorList)
+{
+    Cell* serverCell = CellController::get()->getCell(&actorList.cell);
+    mechanics::ActorStateResult result{ mechanics::ActorStateDecision::InvalidIdentity };
+    if (serverCell != nullptr
+        && *serverCell->getAuthority() == player.guid
+        && serverCell->getAuthorityLeaseId() == actorList.authorityLeaseId)
+    {
+        result = mActorStateLedger.applyEquipment(actorEquipmentUpdates(actorList));
+        if (result.applied())
+        {
+            serverCell->readActorList(ID_ACTOR_EQUIPMENT, &actorList);
+            return true;
+        }
+    }
+
+    const unsigned int violations = ++mActorStateViolations[player.guid.g];
+    LOG_MESSAGE_SIMPLE(TimedLog::LOG_WARN,
+        "Rejected modified actor equipment from connection %llu: %s (violation %u)",
+        static_cast<unsigned long long>(player.guid.g),
+        mechanics::describe(result.decision), violations);
+    if (violations >= 5)
+        disconnectTransport({ player.guid.g }, "repeated invalid actor equipment");
+    return false;
+}
+
+bool Networking::applyServerActorEquipment(BaseActorList& actorList)
+{
+    actorList.count = static_cast<unsigned int>(actorList.baseActors.size());
+    Cell* serverCell = CellController::get()->getCell(&actorList.cell);
+    bool actorsExist = serverCell != nullptr;
+    for (const BaseActor& actor : actorList.baseActors)
+    {
+        actorsExist = actorsExist
+            && serverCell != nullptr
+            && serverCell->getActor(actor.refNum, actor.mpNum) != nullptr;
+    }
+    const mechanics::ActorStateResult result = actorsExist
+        ? mActorStateLedger.applyEquipment(actorEquipmentUpdates(actorList))
+        : mechanics::ActorStateResult{ mechanics::ActorStateDecision::InvalidIdentity };
+    if (!result.applied())
+    {
+        LOG_MESSAGE_SIMPLE(TimedLog::LOG_ERROR,
+            "Rejected server-authored actor equipment for %s: %s",
+            actorList.cell.getShortDescription().c_str(),
+            mechanics::describe(result.decision));
+        return false;
+    }
+    serverCell->readActorList(ID_ACTOR_EQUIPMENT, &actorList);
+    return true;
 }
 
 namespace
@@ -2936,6 +3043,7 @@ void Networking::disconnectPlayer(RakNet::RakNetGUID guid)
     mCombatViolations.erase(guid.g);
     mActiveEffectLedger.erase({ mechanics::CombatantKind::Player, guid.g, {} });
     mActiveEffectViolations.erase(guid.g);
+    mActorStateViolations.erase(guid.g);
     mCastViolations.erase(guid.g);
     mJusticeLedger.erase(guid.g);
     mJusticeViolations.erase(guid.g);

@@ -500,15 +500,18 @@ void ActorFunctions::SetActorAIRepetition(bool shouldRepeat) noexcept
     tempActor.aiShouldRepeat = shouldRepeat;
 }
 
-void ActorFunctions::EquipActorItem(unsigned short slot, const char *refId, unsigned int count, int charge, double enchantmentCharge) noexcept
+void ActorFunctions::EquipActorItem(unsigned short slot, const char *refId, unsigned int count, int charge, double enchantmentCharge)
 {
+    if (slot >= mwmp::mechanics::EquipmentLedger::SlotCount)
+        throw std::out_of_range("actor equipment slot is outside the valid range");
+
     tempActor.equipmentItems[slot].refId = refId;
     tempActor.equipmentItems[slot].count = count;
     tempActor.equipmentItems[slot].charge = charge;
     tempActor.equipmentItems[slot].enchantmentCharge = enchantmentCharge;
 }
 
-void ActorFunctions::UnequipActorItem(unsigned short slot) noexcept
+void ActorFunctions::UnequipActorItem(unsigned short slot)
 {
     ActorFunctions::EquipActorItem(slot, "", 0, -1, -1);
 }
@@ -625,8 +628,11 @@ void ActorFunctions::SendActorStatsDynamic(bool sendToOtherVisitors, bool skipAt
     }
 }
 
-void ActorFunctions::SendActorEquipment(bool sendToOtherVisitors, bool skipAttachedPlayer) noexcept
+void ActorFunctions::SendActorEquipment(bool sendToOtherVisitors, bool skipAttachedPlayer)
 {
+    if (!mwmp::Networking::getPtr()->applyServerActorEquipment(writeActorList))
+        throw std::runtime_error("the server-authored actor equipment was rejected");
+
     mwmp::ActorPacket *actorPacket = mwmp::Networking::get().getActorPacketController()->GetPacket(ID_ACTOR_EQUIPMENT);
     actorPacket->setActorList(&writeActorList);
 

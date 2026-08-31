@@ -1,5 +1,6 @@
 add_executable(tes3mp-tests
     active_effects.cpp
+    actor_state.cpp
     authority.cpp
     cast.cpp
     combat.cpp

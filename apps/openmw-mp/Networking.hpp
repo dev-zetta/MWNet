@@ -13,6 +13,7 @@
 #include <components/openmw-mp/Mechanics/EquipmentLedger.hpp>
 #include <components/openmw-mp/Mechanics/CombatResolver.hpp>
 #include <components/openmw-mp/Mechanics/ActiveEffectLedger.hpp>
+#include <components/openmw-mp/Mechanics/ActorStateLedger.hpp>
 #include <components/openmw-mp/Mechanics/CastIntentValidator.hpp>
 #include <components/openmw-mp/Mechanics/JusticeLedger.hpp>
 #include <components/openmw-mp/Mechanics/ObjectStateLedger.hpp>
@@ -135,6 +136,9 @@ namespace  mwmp
         bool commitActorActiveEffects(Player& player, const BaseActorList& incoming);
         bool applyServerActorActiveEffects(const BaseActorList& actorList);
         bool finishActorActiveEffectIntent(Player& player) noexcept;
+        bool validateActorEquipment(Player& player, const BaseActorList& incoming);
+        bool commitActorEquipment(Player& player, BaseActorList& actorList);
+        bool applyServerActorEquipment(BaseActorList& actorList);
         bool validatePlayerCast(Player& player, const BasePlayer& incoming);
         bool validateActorCasts(Player& player, const BaseActorList& incoming);
         bool validatePlayerBounty(Player& player, const BasePlayer& incoming);
@@ -199,6 +203,7 @@ namespace  mwmp
         mechanics::EquipmentLedger mEquipmentLedger;
         mechanics::CombatResolver mCombatResolver;
         mechanics::ActiveEffectLedger mActiveEffectLedger;
+        mechanics::ActorStateLedger mActorStateLedger;
         mechanics::CastIntentValidator mCastIntentValidator;
         mechanics::JusticeLedger mJusticeLedger;
         mechanics::ObjectStateLedger mObjectStateLedger;
@@ -209,6 +214,7 @@ namespace  mwmp
         std::unordered_map<std::uint64_t, unsigned int> mInventoryViolations;
         std::unordered_map<std::uint64_t, unsigned int> mCombatViolations;
         std::unordered_map<std::uint64_t, unsigned int> mActiveEffectViolations;
+        std::unordered_map<std::uint64_t, unsigned int> mActorStateViolations;
         std::unordered_map<std::uint64_t, unsigned int> mCastViolations;
         std::unordered_map<std::uint64_t, unsigned int> mJusticeViolations;
         std::unordered_map<std::uint64_t, unsigned int> mObjectViolations;

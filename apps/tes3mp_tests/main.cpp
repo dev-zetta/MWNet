@@ -5,6 +5,7 @@
 
 int runProtocolTests();
 int runActiveEffectTests();
+int runActorStateTests();
 int runAuthorityTests();
 int runCastTests();
 int runCombatTests();
@@ -34,7 +35,7 @@ int main()
         return 1;
     }
 
-    int failures = runProtocolTests() + runActiveEffectTests()
+    int failures = runProtocolTests() + runActiveEffectTests() + runActorStateTests()
         + runAuthorityTests() + runCastTests() + runCombatTests()
         + runEquipmentTests() + runInventoryTests() + runJusticeTests() + runMovementTests()
         + runObjectStateTests() + runOwnershipTests()

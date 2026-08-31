@@ -870,7 +870,7 @@ public:
     * \param enchantmentCharge The enchantment charge of the item.
     * \return void
     */
-    static void EquipActorItem(unsigned short slot, const char* refId, unsigned int count, int charge, double enchantmentCharge = -1) noexcept;
+    static void EquipActorItem(unsigned short slot, const char* refId, unsigned int count, int charge, double enchantmentCharge = -1);
 
     /**
     * \brief Unequip the item in a certain slot of the equipment of the temporary actor stored
@@ -879,7 +879,7 @@ public:
     * \param slot The equipment slot.
     * \return void
     */
-    static void UnequipActorItem(unsigned short slot) noexcept;
+    static void UnequipActorItem(unsigned short slot);
 
     /**
     * \brief Add a new active spell to the spells active changes for the temporary actor stored,
@@ -971,7 +971,7 @@ public:
     *
     * \return void
     */
-    static void SendActorEquipment(bool sendToOtherVisitors, bool skipAttachedPlayer) noexcept;
+    static void SendActorEquipment(bool sendToOtherVisitors, bool skipAttachedPlayer);
 
     /**
     * \brief Send an ActorSpellsActive packet.

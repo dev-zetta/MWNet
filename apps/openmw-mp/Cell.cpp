@@ -108,6 +108,11 @@ void Cell::readActorList(unsigned char packetID, const mwmp::BaseActorList *newA
                 cellActor->creatureStats.mDynamic[1] = newActor.creatureStats.mDynamic[1];
                 cellActor->creatureStats.mDynamic[2] = newActor.creatureStats.mDynamic[2];
                 break;
+
+            case ID_ACTOR_EQUIPMENT:
+                for (std::size_t slot = 0; slot < 19; ++slot)
+                    cellActor->equipmentItems[slot] = newActor.equipmentItems[slot];
+                break;
             }
         }
         else

@@ -623,6 +623,14 @@ function OnActorEquipment(pid, cellDescription)
     eventHandler.OnActorEquipment(pid, cellDescription)
 end
 
+function OnActorEquipmentIntent(pid, cellDescription)
+    return eventHandler.OnActorEquipmentIntent(pid, cellDescription)
+end
+
+function OnActorEquipmentIntentRejected(pid, cellDescription)
+    eventHandler.OnActorEquipmentIntentRejected(pid, cellDescription)
+end
+
 function OnActorAI(pid, cellDescription)
     tes3mp.LogMessage(enumerations.log.INFO, "Called \"OnActorAI\" for " .. logicHandler.GetChatName(pid) ..
         " and cell " .. cellDescription)

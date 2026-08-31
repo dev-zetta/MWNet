@@ -228,6 +228,8 @@ public:
             {"OnObjectTrap",             Callback<unsigned short, const char*>()},
             {"OnVideoPlay",              Callback<unsigned short, const char*>()},
             {"OnActorList",              Callback<unsigned short, const char*>()},
+            {"OnActorEquipmentIntent",   Callback<unsigned short, const char*>()},
+            {"OnActorEquipmentIntentRejected", Callback<unsigned short, const char*>()},
             {"OnActorEquipment",         Callback<unsigned short, const char*>()},
             {"OnActorAI",                Callback<unsigned short, const char*>()},
             {"OnActorAttackIntent",      Callback<unsigned short, const char*, unsigned int, bool, unsigned short, unsigned int, unsigned int, double>()},
