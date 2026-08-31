@@ -5,6 +5,7 @@ add_library(tes3mp-mechanics STATIC
     InventoryLedger.cpp
     JusticeLedger.cpp
     MovementValidator.cpp
+    ObjectStateLedger.cpp
     PlayerLifecycle.cpp
 )
 

@@ -88,6 +88,7 @@ This is the first hardening milestone for the major OpenMW 0.52 compatibility an
 * Add a canonical justice ledger with server-owned bounty reductions and bounded, ID-tracked jail sentences
 * Treat player bounty packets as increase-only intents, preserve legacy validators before canonical commit, and reserve bounty reductions for server scripts
 * Require clients to acknowledge server-issued jail sentence IDs only after the asynchronous jail flow completes, rejecting stale or forged completions
+* Add a bounded transactional canonical object-state ledger with world and per-player dynamic-object quotas
 
 0.8.1
 -----
