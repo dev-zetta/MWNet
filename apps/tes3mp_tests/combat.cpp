@@ -116,6 +116,30 @@ namespace
         EXPECT(resolver.find(balmoraActor)->health == 20);
         EXPECT(resolver.find(vivecActor)->health == 30);
     }
+
+    void testActorRelocationIsAtomic()
+    {
+        CombatResolver resolver;
+        const CombatantId source{ CombatantKind::Actor, 42, "Balmora" };
+        const CombatantId destination{ CombatantKind::Actor, 42, "Vivec" };
+        EXPECT(resolver.upsert(source, state(30, { 1, 2, 3 })));
+        EXPECT(resolver.previewRelocations(
+            { { source, destination, { 40, 50, 60 } } }));
+        EXPECT(resolver.applyRelocations(
+            { { source, destination, { 40, 50, 60 } } }));
+        EXPECT(!resolver.find(source));
+        EXPECT(resolver.find(destination)->health == 30);
+        EXPECT(resolver.find(destination)->position.x == 40);
+
+        const CombatantId occupied{ CombatantKind::Actor, 42, "Seyda Neen" };
+        EXPECT(resolver.upsert(occupied, state(10, {})));
+        EXPECT(!resolver.applyRelocations(
+            { { destination, occupied, { 1, 1, 1 } } }));
+        EXPECT(resolver.find(destination)->health == 30);
+        EXPECT(resolver.find(occupied)->health == 10);
+        EXPECT(!resolver.applyRelocations(
+            { { destination, destination, {} } }));
+    }
 }
 
 int runCombatTests()
@@ -124,5 +148,6 @@ int runCombatTests()
     testMissRangeAndSequence();
     testInvalidDataAndCapacity();
     testActorIdentityIsCellScoped();
+    testActorRelocationIsAtomic();
     return sFailures;
 }

@@ -93,6 +93,10 @@ namespace mwmp::mechanics
             const std::vector<ActiveEffectOperation>& operations) const;
         ActiveEffectResult applyBatch(
             const std::vector<ActiveEffectOperation>& operations);
+        bool previewRelocations(
+            const std::vector<CombatantRelocation>& relocations) const;
+        bool applyRelocations(
+            const std::vector<CombatantRelocation>& relocations);
 
         std::optional<std::vector<CanonicalActiveSpell>> snapshot(CombatantId owner) const;
         bool erase(CombatantId owner) noexcept;

@@ -2,6 +2,7 @@
 
 #include <algorithm>
 #include <cmath>
+#include <unordered_set>
 #include <utility>
 
 namespace mwmp::mechanics
@@ -64,6 +65,59 @@ namespace mwmp::mechanics
         for (auto& [owner, spells] : candidates)
             mActiveEffects.insert_or_assign(std::move(owner), std::move(spells));
         return result;
+    }
+
+    bool ActiveEffectLedger::previewRelocations(
+        const std::vector<CombatantRelocation>& relocations) const
+    {
+        std::unordered_set<CombatantId, CombatantIdHash> sources;
+        std::unordered_set<CombatantId, CombatantIdHash> destinations;
+        sources.reserve(relocations.size());
+        destinations.reserve(relocations.size());
+        for (const CombatantRelocation& relocation : relocations)
+        {
+            if (!validOwner(relocation.source) || !validOwner(relocation.destination)
+                || relocation.source.kind != CombatantKind::Actor
+                || relocation.destination.kind != CombatantKind::Actor
+                || relocation.source.value != relocation.destination.value
+                || relocation.source == relocation.destination
+                || !sources.insert(relocation.source).second
+                || !destinations.insert(relocation.destination).second
+                || mActiveEffects.contains(relocation.destination))
+            {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    bool ActiveEffectLedger::applyRelocations(
+        const std::vector<CombatantRelocation>& relocations)
+    {
+        if (!previewRelocations(relocations))
+            return false;
+
+        auto activeEffects = mActiveEffects;
+        for (const CombatantRelocation& relocation : relocations)
+        {
+            const auto source = activeEffects.find(relocation.source);
+            if (source != activeEffects.end())
+            {
+                activeEffects.emplace(relocation.destination, source->second);
+                activeEffects.erase(source);
+            }
+
+            for (auto& [owner, spells] : activeEffects)
+            {
+                for (CanonicalActiveSpell& spell : spells)
+                {
+                    if (spell.caster && *spell.caster == relocation.source)
+                        spell.caster = relocation.destination;
+                }
+            }
+        }
+        mActiveEffects.swap(activeEffects);
+        return true;
     }
 
     std::optional<std::vector<CanonicalActiveSpell>> ActiveEffectLedger::snapshot(

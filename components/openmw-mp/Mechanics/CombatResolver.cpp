@@ -3,6 +3,7 @@
 #include <algorithm>
 #include <cmath>
 #include <functional>
+#include <unordered_set>
 
 namespace mwmp::mechanics
 {
@@ -120,6 +121,62 @@ namespace mwmp::mechanics
         result.targetDied = !canonicalTarget.alive;
         result.decision = CombatDecision::AppliedHit;
         return result;
+    }
+
+    bool CombatResolver::previewRelocations(
+        const std::vector<CombatantRelocation>& relocations) const
+    {
+        std::unordered_set<CombatantId, CombatantIdHash> sources;
+        std::unordered_set<CombatantId, CombatantIdHash> destinations;
+        sources.reserve(relocations.size());
+        destinations.reserve(relocations.size());
+        for (const CombatantRelocation& relocation : relocations)
+        {
+            if (!validId(relocation.source) || !validId(relocation.destination)
+                || relocation.source.kind != CombatantKind::Actor
+                || relocation.destination.kind != CombatantKind::Actor
+                || relocation.source.value != relocation.destination.value
+                || relocation.source == relocation.destination
+                || !validPosition(relocation.position)
+                || !sources.insert(relocation.source).second
+                || !destinations.insert(relocation.destination).second
+                || mCombatants.contains(relocation.destination))
+            {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    bool CombatResolver::applyRelocations(
+        const std::vector<CombatantRelocation>& relocations)
+    {
+        if (!previewRelocations(relocations))
+            return false;
+
+        auto combatants = mCombatants;
+        auto sequences = mSequences;
+        for (const CombatantRelocation& relocation : relocations)
+        {
+            const auto source = combatants.find(relocation.source);
+            if (source == combatants.end())
+                continue;
+
+            CombatantState state = source->second;
+            state.position = relocation.position;
+            combatants.emplace(relocation.destination, std::move(state));
+            combatants.erase(source);
+
+            const auto sequence = sequences.find(relocation.source);
+            if (sequence != sequences.end())
+            {
+                sequences.emplace(relocation.destination, sequence->second);
+                sequences.erase(sequence);
+            }
+        }
+        mCombatants.swap(combatants);
+        mSequences.swap(sequences);
+        return true;
     }
 
     std::optional<CombatantState> CombatResolver::find(CombatantId id) const

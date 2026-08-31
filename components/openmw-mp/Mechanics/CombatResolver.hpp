@@ -8,6 +8,7 @@
 #include <optional>
 #include <string>
 #include <unordered_map>
+#include <vector>
 
 namespace mwmp::mechanics
 {
@@ -47,6 +48,15 @@ namespace mwmp::mechanics
         double projectileReach = 0;
         Position3 position;
         bool alive = true;
+    };
+
+    struct CombatantRelocation
+    {
+        CombatantId source;
+        CombatantId destination;
+        Position3 position;
+
+        bool operator==(const CombatantRelocation&) const = default;
     };
 
     enum class AttackKind : std::uint8_t
@@ -108,6 +118,10 @@ namespace mwmp::mechanics
 
         bool upsert(CombatantId id, const CombatantState& state);
         CombatResult resolve(const AttackIntent& intent, double serverRoll);
+        bool previewRelocations(
+            const std::vector<CombatantRelocation>& relocations) const;
+        bool applyRelocations(
+            const std::vector<CombatantRelocation>& relocations);
 
         std::optional<CombatantState> find(CombatantId id) const;
         bool erase(CombatantId id) noexcept;

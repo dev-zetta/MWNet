@@ -128,6 +128,37 @@ namespace
         EXPECT(ledger.snapshot(first)->empty());
         EXPECT(ledger.snapshot(second)->size() == 2);
     }
+
+    void testActorRelocationPreservesEffectsAndCasters()
+    {
+        ActiveEffectLedger ledger;
+        const CombatantId source{ CombatantKind::Actor, 42, "Balmora" };
+        const CombatantId destination{ CombatantKind::Actor, 42, "Vivec" };
+        const CombatantId other{ CombatantKind::Actor, 99, "Vivec" };
+        CanonicalActiveSpell sourceSpell = spell("fire");
+        sourceSpell.caster = source;
+        CanonicalActiveSpell otherSpell = spell("frost");
+        otherSpell.caster = source;
+        EXPECT(ledger.apply(source, ActiveEffectAction::Set,
+                   { sourceSpell }).applied());
+        EXPECT(ledger.apply(other, ActiveEffectAction::Set,
+                   { otherSpell }).applied());
+
+        const std::vector<CombatantRelocation> relocation{
+            { source, destination, {} },
+        };
+        EXPECT(ledger.previewRelocations(relocation));
+        EXPECT(ledger.applyRelocations(relocation));
+        EXPECT(!ledger.snapshot(source));
+        EXPECT(ledger.snapshot(destination)->front().id == "fire");
+        EXPECT(ledger.snapshot(destination)->front().caster == destination);
+        EXPECT(ledger.snapshot(other)->front().caster == destination);
+
+        EXPECT(!ledger.applyRelocations(
+            { { destination, other, {} } }));
+        EXPECT(ledger.snapshot(destination)->front().id == "fire");
+        EXPECT(ledger.snapshot(other)->front().id == "frost");
+    }
 }
 
 int runActiveEffectTests()
@@ -136,5 +167,6 @@ int runActiveEffectTests()
     testFailureIsTransactional();
     testLimitsAndScopedOwners();
     testBatchIsAtomic();
+    testActorRelocationPreservesEffectsAndCasters();
     return sFailures;
 }
