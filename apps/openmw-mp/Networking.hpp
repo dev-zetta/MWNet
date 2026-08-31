@@ -147,13 +147,9 @@ namespace  mwmp
         bool commitObjectMutation(Player& player);
         void cancelObjectMutation(Player& player) noexcept;
         bool validatePlayerActiveEffects(Player& player, const BasePlayer& incoming);
-        bool commitPlayerActiveEffects(Player& player);
         bool applyServerPlayerActiveEffects(Player& player);
-        bool finishPlayerActiveEffectIntent(Player& player) noexcept;
         bool validateActorActiveEffects(Player& player, const BaseActorList& incoming);
-        bool commitActorActiveEffects(Player& player, const BaseActorList& incoming);
         bool applyServerActorActiveEffects(const BaseActorList& actorList);
-        bool finishActorActiveEffectIntent(Player& player) noexcept;
         bool validateActorEquipment(Player& player, const BaseActorList& incoming);
         bool commitActorEquipment(Player& player, BaseActorList& actorList);
         bool applyServerActorEquipment(BaseActorList& actorList);
@@ -307,12 +303,6 @@ namespace  mwmp
             mPendingObjectPlacements;
         std::unordered_map<std::uint64_t, std::vector<mechanics::ObjectMutation>>
             mPendingObjectMutations;
-        std::unordered_map<std::uint64_t, mechanics::ActiveEffectOperation>
-            mAcceptedPlayerActiveEffectIntents;
-        std::unordered_set<std::uint64_t> mRelayedPlayerActiveEffectIntents;
-        std::unordered_map<std::uint64_t,
-            std::vector<mechanics::ActiveEffectOperation>> mAcceptedActorActiveEffectIntents;
-        std::unordered_set<std::uint64_t> mRelayedActorActiveEffectIntents;
         std::unordered_map<std::uint64_t,
             std::vector<mechanics::ActorAiUpdate>> mAcceptedActorAiIntents;
         std::unordered_set<std::uint64_t> mRelayedActorAiIntents;

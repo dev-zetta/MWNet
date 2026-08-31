@@ -234,6 +234,31 @@ namespace
         EXPECT(std::string(describe(ActiveEffectAdvanceDecision::InvalidElapsed))
             == "the active-effect elapsed time is invalid");
     }
+
+    void testExpiryAcknowledgementsNeverMutateCanonicalState()
+    {
+        ActiveEffectLedger ledger;
+        const CombatantId player{ CombatantKind::Player, 7, {} };
+        EXPECT(ledger.apply(player, ActiveEffectAction::Set,
+                   { spell("fire") }).applied());
+
+        EXPECT(ledger.acknowledgeExpiry(player,
+                   { selector("fire") }).applied());
+        EXPECT(ledger.acknowledgeExpiry(player,
+                   { selector("already-expired") }).applied());
+        EXPECT(ledger.snapshot(player)->front().id == "fire");
+
+        CanonicalActiveSpell forged = selector("fire");
+        forged.effects.push_back({ "restorehealth", {}, 100, 10, 10 });
+        EXPECT(ledger.acknowledgeExpiry(player, { forged }).decision
+            == ActiveEffectDecision::InvalidSpell);
+        EXPECT(ledger.acknowledgeExpiry(player, {}).decision
+            == ActiveEffectDecision::InvalidSpell);
+        EXPECT(ledger.acknowledgeExpiry(
+                   { CombatantKind::Actor, 2, {} }, { selector("fire") }).decision
+            == ActiveEffectDecision::InvalidOwner);
+        EXPECT(ledger.snapshot(player)->front().id == "fire");
+    }
 }
 
 int runActiveEffectTests()
@@ -246,5 +271,6 @@ int runActiveEffectTests()
     testServerClockAppliesAndExpiresHealthEffects();
     testAbsorbHealthCreditsCanonicalCaster();
     testInvalidClockAdvanceIsTransactional();
+    testExpiryAcknowledgementsNeverMutateCanonicalState();
     return sFailures;
 }

@@ -19,35 +19,12 @@ namespace mwmp
             return Networking::getPtr()->validatePlayerActiveEffects(player, incoming);
         }
 
-        void Do(PlayerPacket &packet, Player &player) override
+        void Do(PlayerPacket&, Player& player) override
         {
             DEBUG_PRINTF(strPacketID.c_str());
-
-            const bool allowed = Script::CallBoolean<Script::CallbackIdentity(
-                "OnPlayerSpellsActiveIntent")>(player.getId());
-            if (!allowed)
-                return;
-
-            if (!Networking::getPtr()->commitPlayerActiveEffects(player))
-            {
-                const char* reason = "canonical active-effect validation failed";
-                Script::Call<Script::CallbackIdentity(
-                    "OnPlayerSpellsActiveIntentRejected")>(player.getId(), reason);
-                return;
-            }
-
-            Networking* networking = Networking::getPtr();
-            try
-            {
-                Script::Call<Script::CallbackIdentity("OnPlayerSpellsActive")>(player.getId());
-            }
-            catch (...)
-            {
-                networking->finishPlayerActiveEffectIntent(player);
-                throw;
-            }
-            if (!networking->finishPlayerActiveEffectIntent(player))
-                player.sendToLoaded(&packet);
+            // Protocol 11 clients only acknowledge local expiry. The server
+            // owns the effect clock and never relays or applies this packet.
+            player.spellsActiveChanges = {};
         }
     };
 }

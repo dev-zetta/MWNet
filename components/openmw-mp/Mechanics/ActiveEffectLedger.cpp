@@ -116,6 +116,30 @@ namespace mwmp::mechanics
         return result;
     }
 
+    ActiveEffectResult ActiveEffectLedger::acknowledgeExpiry(CombatantId owner,
+        const std::vector<CanonicalActiveSpell>& selectors) const
+    {
+        if (!validOwner(owner))
+            return { ActiveEffectDecision::InvalidOwner };
+        if (selectors.empty() || selectors.size() > MaximumActiveSpells)
+            return { ActiveEffectDecision::InvalidSpell };
+        for (const CanonicalActiveSpell& selector : selectors)
+        {
+            if (selector.id.empty() || selector.id.size() > MaximumStringBytes
+                || !selector.displayName.empty() || selector.caster
+                || !selector.effects.empty() || selector.timestampDay < 0
+                || !std::isfinite(selector.timestampHour)
+                || std::abs(selector.timestampHour) > MaximumDurationSeconds)
+            {
+                return { ActiveEffectDecision::InvalidSpell };
+            }
+        }
+        // Expiry acknowledgements are deliberately non-mutating and
+        // idempotent. The canonical server clock removes the effect.
+        return { ActiveEffectDecision::Applied,
+            mActiveEffects.contains(owner) ? mActiveEffects.at(owner).size() : 0 };
+    }
+
     bool ActiveEffectLedger::previewRelocations(
         const std::vector<CombatantRelocation>& relocations) const
     {

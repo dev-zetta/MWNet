@@ -119,6 +119,8 @@ namespace mwmp::mechanics
             const std::vector<ActiveEffectOperation>& operations) const;
         ActiveEffectResult applyBatch(
             const std::vector<ActiveEffectOperation>& operations);
+        ActiveEffectResult acknowledgeExpiry(CombatantId owner,
+            const std::vector<CanonicalActiveSpell>& selectors) const;
         bool previewRelocations(
             const std::vector<CombatantRelocation>& relocations) const;
         bool applyRelocations(
