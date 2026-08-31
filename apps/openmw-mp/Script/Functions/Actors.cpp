@@ -24,6 +24,26 @@ std::vector<ESM::ActiveEffect> storedActorActiveEffects;
 
 static std::string tempCellDescription;
 
+namespace
+{
+    BaseActorList& requireReadActorList()
+    {
+        if (readActorList == nullptr)
+        {
+            throw std::runtime_error(
+                "no actor list is selected; call ReadReceivedActorList or ReadCellActorList first");
+        }
+        return *readActorList;
+    }
+
+    const Item& requireActorEquipment(unsigned int actorIndex, unsigned short slot)
+    {
+        if (slot >= mwmp::mechanics::EquipmentLedger::SlotCount)
+            throw std::out_of_range("actor equipment slot is outside the valid range");
+        return requireReadActorList().baseActors.at(actorIndex).equipmentItems[slot];
+    }
+}
+
 void ActorFunctions::ReadReceivedActorList()
 {
     readActorList = mwmp::Networking::getPtr()->getReceivedActorList();
@@ -58,7 +78,7 @@ void ActorFunctions::SetActorListPid(unsigned short pid)
 
 void ActorFunctions::CopyReceivedActorListToStore()
 {
-    writeActorList = *readActorList;
+    writeActorList = requireReadActorList();
 }
 
 unsigned int ActorFunctions::GetActorListSize()
@@ -66,145 +86,143 @@ unsigned int ActorFunctions::GetActorListSize()
     if (readActorList == nullptr)
         return 0;
 
-    return readActorList->count;
+    return requireReadActorList().count;
 }
 
 unsigned char ActorFunctions::GetActorListAction()
 {
-    return readActorList->action;
+    return requireReadActorList().action;
 }
 
 const char *ActorFunctions::GetActorCell(unsigned int index)
 {
-    tempCellDescription = readActorList->baseActors.at(index).cell.getShortDescription();
+    tempCellDescription = requireReadActorList().baseActors.at(index).cell.getShortDescription();
     return tempCellDescription.c_str();
 }
 
 const char *ActorFunctions::GetActorRefId(unsigned int index)
 {
-    return readActorList->baseActors.at(index).refId.c_str();
+    return requireReadActorList().baseActors.at(index).refId.c_str();
 }
 
 unsigned int ActorFunctions::GetActorRefNum(unsigned int index)
 {
-    return readActorList->baseActors.at(index).refNum;
+    return requireReadActorList().baseActors.at(index).refNum;
 }
 
 unsigned int ActorFunctions::GetActorMpNum(unsigned int index)
 {
-    return readActorList->baseActors.at(index).mpNum;
+    return requireReadActorList().baseActors.at(index).mpNum;
 }
 
 double ActorFunctions::GetActorPosX(unsigned int index)
 {
-    return readActorList->baseActors.at(index).position.pos[0];
+    return requireReadActorList().baseActors.at(index).position.pos[0];
 }
 
 double ActorFunctions::GetActorPosY(unsigned int index)
 {
-    return readActorList->baseActors.at(index).position.pos[1];
+    return requireReadActorList().baseActors.at(index).position.pos[1];
 }
 
 double ActorFunctions::GetActorPosZ(unsigned int index)
 {
-    return readActorList->baseActors.at(index).position.pos[2];
+    return requireReadActorList().baseActors.at(index).position.pos[2];
 }
 
 double ActorFunctions::GetActorRotX(unsigned int index)
 {
-    return readActorList->baseActors.at(index).position.rot[0];
+    return requireReadActorList().baseActors.at(index).position.rot[0];
 }
 
 double ActorFunctions::GetActorRotY(unsigned int index)
 {
-    return readActorList->baseActors.at(index).position.rot[1];
+    return requireReadActorList().baseActors.at(index).position.rot[1];
 }
 
 double ActorFunctions::GetActorRotZ(unsigned int index)
 {
-    return readActorList->baseActors.at(index).position.rot[2];
+    return requireReadActorList().baseActors.at(index).position.rot[2];
 }
 
 double ActorFunctions::GetActorHealthBase(unsigned int index)
 {
-    return readActorList->baseActors.at(index).creatureStats.mDynamic[0].mBase;
+    return requireReadActorList().baseActors.at(index).creatureStats.mDynamic[0].mBase;
 }
 
 double ActorFunctions::GetActorHealthCurrent(unsigned int index)
 {
-    return readActorList->baseActors.at(index).creatureStats.mDynamic[0].mCurrent;
+    return requireReadActorList().baseActors.at(index).creatureStats.mDynamic[0].mCurrent;
 }
 
 double ActorFunctions::GetActorHealthModified(unsigned int index)
 {
-    return readActorList->baseActors.at(index).creatureStats.mDynamic[0].mMod;
+    return requireReadActorList().baseActors.at(index).creatureStats.mDynamic[0].mMod;
 }
 
 double ActorFunctions::GetActorMagickaBase(unsigned int index)
 {
-    return readActorList->baseActors.at(index).creatureStats.mDynamic[1].mBase;
+    return requireReadActorList().baseActors.at(index).creatureStats.mDynamic[1].mBase;
 }
 
 double ActorFunctions::GetActorMagickaCurrent(unsigned int index)
 {
-    return readActorList->baseActors.at(index).creatureStats.mDynamic[1].mCurrent;
+    return requireReadActorList().baseActors.at(index).creatureStats.mDynamic[1].mCurrent;
 }
 
 double ActorFunctions::GetActorMagickaModified(unsigned int index)
 {
-    return readActorList->baseActors.at(index).creatureStats.mDynamic[1].mMod;
+    return requireReadActorList().baseActors.at(index).creatureStats.mDynamic[1].mMod;
 }
 
 double ActorFunctions::GetActorFatigueBase(unsigned int index)
 {
-    return readActorList->baseActors.at(index).creatureStats.mDynamic[2].mBase;
+    return requireReadActorList().baseActors.at(index).creatureStats.mDynamic[2].mBase;
 }
 
 double ActorFunctions::GetActorFatigueCurrent(unsigned int index)
 {
-    return readActorList->baseActors.at(index).creatureStats.mDynamic[2].mCurrent;
+    return requireReadActorList().baseActors.at(index).creatureStats.mDynamic[2].mCurrent;
 }
 
 double ActorFunctions::GetActorFatigueModified(unsigned int index)
 {
-    return readActorList->baseActors.at(index).creatureStats.mDynamic[2].mMod;
+    return requireReadActorList().baseActors.at(index).creatureStats.mDynamic[2].mMod;
 }
 
 double ActorFunctions::GetActorAttackStrength(unsigned int index)
 {
-    if (readActorList == nullptr || index >= readActorList->baseActors.size())
-        return 0;
-    return readActorList->baseActors[index].attack.attackStrength;
+    return requireReadActorList().baseActors.at(index).attack.attackStrength;
 }
 
 const char *ActorFunctions::GetActorEquipmentItemRefId(unsigned int index, unsigned short slot)
 {
-    return readActorList->baseActors.at(index).equipmentItems[slot].refId.c_str();
+    return requireActorEquipment(index, slot).refId.c_str();
 }
 
 int ActorFunctions::GetActorEquipmentItemCount(unsigned int index, unsigned short slot)
 {
-    return readActorList->baseActors.at(index).equipmentItems[slot].count;
+    return requireActorEquipment(index, slot).count;
 }
 
 int ActorFunctions::GetActorEquipmentItemCharge(unsigned int index, unsigned short slot)
 {
-    return readActorList->baseActors.at(index).equipmentItems[slot].charge;
+    return requireActorEquipment(index, slot).charge;
 }
 
 double ActorFunctions::GetActorEquipmentItemEnchantmentCharge(unsigned int index, unsigned short slot)
 {
-    return readActorList->baseActors.at(index).equipmentItems[slot].enchantmentCharge;
+    return requireActorEquipment(index, slot).enchantmentCharge;
 }
 
 bool ActorFunctions::DoesActorHavePlayerKiller(unsigned int index)
 {
-    return readActorList->baseActors.at(index).killer.isPlayer;
+    return requireReadActorList().baseActors.at(index).killer.isPlayer;
 }
 
 int ActorFunctions::GetActorKillerPid(unsigned int index)
 {
-    Player *player = Players::getPlayer(readActorList->baseActors.at(index).killer.guid);
+    Player *player = Players::getPlayer(requireReadActorList().baseActors.at(index).killer.guid);
 
     if (player != nullptr)
         return player->getId();
@@ -214,68 +232,68 @@ int ActorFunctions::GetActorKillerPid(unsigned int index)
 
 const char *ActorFunctions::GetActorKillerRefId(unsigned int index)
 {
-    return readActorList->baseActors.at(index).killer.refId.c_str();
+    return requireReadActorList().baseActors.at(index).killer.refId.c_str();
 }
 
 unsigned int ActorFunctions::GetActorKillerRefNum(unsigned int index)
 {
-    return readActorList->baseActors.at(index).killer.refNum;
+    return requireReadActorList().baseActors.at(index).killer.refNum;
 }
 
 unsigned int ActorFunctions::GetActorKillerMpNum(unsigned int index)
 {
-    return readActorList->baseActors.at(index).killer.mpNum;
+    return requireReadActorList().baseActors.at(index).killer.mpNum;
 }
 
 const char *ActorFunctions::GetActorKillerName(unsigned int index)
 {
-    return readActorList->baseActors.at(index).killer.name.c_str();
+    return requireReadActorList().baseActors.at(index).killer.name.c_str();
 }
 
 unsigned int ActorFunctions::GetActorDeathState(unsigned int index)
 {
-    return readActorList->baseActors.at(index).deathState;
+    return requireReadActorList().baseActors.at(index).deathState;
 }
 
 unsigned int ActorFunctions::GetActorSpellsActiveChangesSize(unsigned int actorIndex)
 {
-    return readActorList->baseActors.at(actorIndex).spellsActiveChanges.activeSpells.size();
+    return requireReadActorList().baseActors.at(actorIndex).spellsActiveChanges.activeSpells.size();
 }
 
 unsigned int ActorFunctions::GetActorSpellsActiveChangesAction(unsigned int actorIndex)
 {
-    return readActorList->baseActors.at(actorIndex).spellsActiveChanges.action;
+    return requireReadActorList().baseActors.at(actorIndex).spellsActiveChanges.action;
 }
 
 const char* ActorFunctions::GetActorSpellsActiveId(unsigned int actorIndex, unsigned int spellIndex)
 {
-    return readActorList->baseActors.at(actorIndex).spellsActiveChanges.activeSpells.at(spellIndex).id.c_str();
+    return requireReadActorList().baseActors.at(actorIndex).spellsActiveChanges.activeSpells.at(spellIndex).id.c_str();
 }
 
 const char* ActorFunctions::GetActorSpellsActiveDisplayName(unsigned int actorIndex, unsigned int spellIndex)
 {
-    return readActorList->baseActors.at(actorIndex).spellsActiveChanges.activeSpells.at(spellIndex).params.mDisplayName.c_str();
+    return requireReadActorList().baseActors.at(actorIndex).spellsActiveChanges.activeSpells.at(spellIndex).params.mDisplayName.c_str();
 }
 
 bool ActorFunctions::GetActorSpellsActiveStackingState(unsigned int actorIndex, unsigned int spellIndex)
 {
-    return readActorList->baseActors.at(actorIndex).spellsActiveChanges.activeSpells.at(spellIndex).isStackingSpell;
+    return requireReadActorList().baseActors.at(actorIndex).spellsActiveChanges.activeSpells.at(spellIndex).isStackingSpell;
 }
 
 unsigned int ActorFunctions::GetActorSpellsActiveEffectCount(unsigned int actorIndex, unsigned int spellIndex)
 {
-    return readActorList->baseActors.at(actorIndex).spellsActiveChanges.activeSpells.at(spellIndex).params.mEffects.size();
+    return requireReadActorList().baseActors.at(actorIndex).spellsActiveChanges.activeSpells.at(spellIndex).params.mEffects.size();
 }
 
 unsigned int ActorFunctions::GetActorSpellsActiveEffectId(unsigned int actorIndex, unsigned int spellIndex, unsigned int effectIndex)
 {
-    const auto& id = readActorList->baseActors.at(actorIndex).spellsActiveChanges.activeSpells.at(spellIndex).params.mEffects.at(effectIndex).mEffectId;
+    const auto& id = requireReadActorList().baseActors.at(actorIndex).spellsActiveChanges.activeSpells.at(spellIndex).params.mEffects.at(effectIndex).mEffectId;
     return static_cast<unsigned int>(ESM::MagicEffect::refIdToIndex(id));
 }
 
 int ActorFunctions::GetActorSpellsActiveEffectArg(unsigned int actorIndex, unsigned int spellIndex, unsigned int effectIndex)
 {
-    const auto& arg = readActorList->baseActors.at(actorIndex).spellsActiveChanges.activeSpells.at(spellIndex).params.mEffects.at(effectIndex).mArg;
+    const auto& arg = requireReadActorList().baseActors.at(actorIndex).spellsActiveChanges.activeSpells.at(spellIndex).params.mEffects.at(effectIndex).mArg;
     if (std::holds_alternative<ESM::RefId>(arg))
         return ESM::Attribute::refIdToIndex(std::get<ESM::RefId>(arg));
     return 0;
@@ -283,27 +301,27 @@ int ActorFunctions::GetActorSpellsActiveEffectArg(unsigned int actorIndex, unsig
 
 double ActorFunctions::GetActorSpellsActiveEffectMagnitude(unsigned int actorIndex, unsigned int spellIndex, unsigned int effectIndex)
 {
-    return readActorList->baseActors.at(actorIndex).spellsActiveChanges.activeSpells.at(spellIndex).params.mEffects.at(effectIndex).mMagnitude;
+    return requireReadActorList().baseActors.at(actorIndex).spellsActiveChanges.activeSpells.at(spellIndex).params.mEffects.at(effectIndex).mMagnitude;
 }
 
 double ActorFunctions::GetActorSpellsActiveEffectDuration(unsigned int actorIndex, unsigned int spellIndex, unsigned int effectIndex)
 {
-    return readActorList->baseActors.at(actorIndex).spellsActiveChanges.activeSpells.at(spellIndex).params.mEffects.at(effectIndex).mDuration;
+    return requireReadActorList().baseActors.at(actorIndex).spellsActiveChanges.activeSpells.at(spellIndex).params.mEffects.at(effectIndex).mDuration;
 }
 
 double ActorFunctions::GetActorSpellsActiveEffectTimeLeft(unsigned int actorIndex, unsigned int spellIndex, unsigned int effectIndex)
 {
-    return readActorList->baseActors.at(actorIndex).spellsActiveChanges.activeSpells.at(spellIndex).params.mEffects.at(effectIndex).mTimeLeft;
+    return requireReadActorList().baseActors.at(actorIndex).spellsActiveChanges.activeSpells.at(spellIndex).params.mEffects.at(effectIndex).mTimeLeft;
 }
 
 bool ActorFunctions::DoesActorSpellsActiveHavePlayerCaster(unsigned int actorIndex, unsigned int spellIndex)
 {
-    return readActorList->baseActors.at(actorIndex).spellsActiveChanges.activeSpells.at(spellIndex).caster.isPlayer;
+    return requireReadActorList().baseActors.at(actorIndex).spellsActiveChanges.activeSpells.at(spellIndex).caster.isPlayer;
 }
 
 int ActorFunctions::GetActorSpellsActiveCasterPid(unsigned int actorIndex, unsigned int spellIndex)
 {
-    Player* caster = Players::getPlayer(readActorList->baseActors.at(actorIndex).spellsActiveChanges.activeSpells.at(spellIndex).caster.guid);
+    Player* caster = Players::getPlayer(requireReadActorList().baseActors.at(actorIndex).spellsActiveChanges.activeSpells.at(spellIndex).caster.guid);
 
     if (caster != nullptr)
         return caster->getId();
@@ -313,27 +331,27 @@ int ActorFunctions::GetActorSpellsActiveCasterPid(unsigned int actorIndex, unsig
 
 const char* ActorFunctions::GetActorSpellsActiveCasterRefId(unsigned int actorIndex, unsigned int spellIndex)
 {
-    return readActorList->baseActors.at(actorIndex).spellsActiveChanges.activeSpells.at(spellIndex).caster.refId.c_str();
+    return requireReadActorList().baseActors.at(actorIndex).spellsActiveChanges.activeSpells.at(spellIndex).caster.refId.c_str();
 }
 
 unsigned int ActorFunctions::GetActorSpellsActiveCasterRefNum(unsigned int actorIndex, unsigned int spellIndex)
 {
-    return readActorList->baseActors.at(actorIndex).spellsActiveChanges.activeSpells.at(spellIndex).caster.refNum;
+    return requireReadActorList().baseActors.at(actorIndex).spellsActiveChanges.activeSpells.at(spellIndex).caster.refNum;
 }
 
 unsigned int ActorFunctions::GetActorSpellsActiveCasterMpNum(unsigned int actorIndex, unsigned int spellIndex)
 {
-    return readActorList->baseActors.at(actorIndex).spellsActiveChanges.activeSpells.at(spellIndex).caster.mpNum;
+    return requireReadActorList().baseActors.at(actorIndex).spellsActiveChanges.activeSpells.at(spellIndex).caster.mpNum;
 }
 
 bool ActorFunctions::DoesActorHavePosition(unsigned int index)
 {
-    return readActorList->baseActors.at(index).hasPositionData;
+    return requireReadActorList().baseActors.at(index).hasPositionData;
 }
 
 bool ActorFunctions::DoesActorHaveStatsDynamic(unsigned int index)
 {
-    return readActorList->baseActors.at(index).hasStatsDynamicData;
+    return requireReadActorList().baseActors.at(index).hasStatsDynamicData;
 }
 
 void ActorFunctions::SetActorListCell(const char* cellDescription)
@@ -427,10 +445,7 @@ void ActorFunctions::SetActorFatigueModified(double value)
 
 void ActorFunctions::SetActorAttackStrength(unsigned int index, double value)
 {
-    if (readActorList == nullptr || index >= readActorList->baseActors.size())
-        return;
-    readActorList->baseActors[index].attack.attackStrength
-        = static_cast<float>(value);
+    requireReadActorList().baseActors.at(index).attack.attackStrength = static_cast<float>(value);
 }
 
 void ActorFunctions::SetActorSound(const char* sound)
