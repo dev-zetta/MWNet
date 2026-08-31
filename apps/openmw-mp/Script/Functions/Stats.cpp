@@ -664,6 +664,12 @@ void StatsFunctions::SendSkills(unsigned short pid)
     Player *player;
     GET_PLAYER(pid, player,);
 
+    if (mwmp::Networking::getPtr()->isPlayerSkillIntentPending(*player))
+        throw std::runtime_error(
+            "a pending skill intent cannot be sent before canonical commit");
+    if (!mwmp::Networking::getPtr()->applyServerPlayerSkills(*player))
+        throw std::runtime_error("the server-authored skills were rejected");
+
     mwmp::PlayerPacket *packet = mwmp::Networking::get().getPlayerPacketController()->GetPacket(ID_PLAYER_SKILL);
     packet->setPlayer(player);
     

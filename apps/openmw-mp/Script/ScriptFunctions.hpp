@@ -173,6 +173,8 @@ public:
             {"OnPlayerAttributeIntent",  Callback<unsigned short>()},
             {"OnPlayerAttributeIntentRejected", Callback<unsigned short>()},
             {"OnPlayerSkill",            Callback<unsigned short>()},
+            {"OnPlayerSkillIntent",      Callback<unsigned short>()},
+            {"OnPlayerSkillIntentRejected", Callback<unsigned short>()},
             {"OnPlayerLevel",            Callback<unsigned short>()},
             {"OnPlayerBounty",           Callback<unsigned short>()},
             {"OnPlayerBountyIntent",     Callback<unsigned short>()},

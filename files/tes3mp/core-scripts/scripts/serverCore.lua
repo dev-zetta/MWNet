@@ -460,6 +460,14 @@ function OnPlayerSkill(pid)
     eventHandler.OnPlayerSkill(pid)
 end
 
+function OnPlayerSkillIntent(pid)
+    return eventHandler.OnPlayerSkillIntent(pid)
+end
+
+function OnPlayerSkillIntentRejected(pid)
+    eventHandler.OnPlayerSkillIntentRejected(pid)
+end
+
 function OnPlayerLevel(pid)
     tes3mp.LogMessage(enumerations.log.INFO, "Called \"OnPlayerLevel\" for " .. logicHandler.GetChatName(pid))
     eventHandler.OnPlayerLevel(pid)

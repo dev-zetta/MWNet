@@ -2799,6 +2799,28 @@ namespace
         return result;
     }
 
+    std::vector<mwmp::mechanics::SkillProgressionChange> skillChanges(
+        const mwmp::BasePlayer& player)
+    {
+        std::vector<mwmp::mechanics::SkillProgressionChange> result;
+        result.reserve(player.skillIndexChanges.size());
+        for (const std::uint8_t index : player.skillIndexChanges)
+        {
+            if (index >= ESM::Skill::Length)
+            {
+                result.push_back({ index, {} });
+                continue;
+            }
+            const ESM::RefId id = ESM::Skill::indexToRefId(index);
+            const auto stat = player.npcStats.mSkills.find(id);
+            result.push_back({ index,
+                stat == player.npcStats.mSkills.end()
+                    ? mwmp::mechanics::ProgressionStat{}
+                    : progressionStat(stat->second) });
+        }
+        return result;
+    }
+
     void applyCanonicalAttributes(Player& player,
         const mwmp::mechanics::PlayerProgressionState& state) noexcept
     {
@@ -2811,6 +2833,18 @@ namespace
             const auto increase = player.npcStats.mSkillIncrease.find(id);
             if (increase != player.npcStats.mSkillIncrease.end())
                 increase->second = state.skillIncreases[index];
+        }
+    }
+
+    void applyCanonicalSkills(Player& player,
+        const mwmp::mechanics::PlayerProgressionState& state) noexcept
+    {
+        for (std::size_t index = 0; index < state.skills.size(); ++index)
+        {
+            const ESM::RefId id = ESM::Skill::indexToRefId(index);
+            const auto stat = player.npcStats.mSkills.find(id);
+            if (stat != player.npcStats.mSkills.end())
+                stat->second = esmProgressionStat(state.skills[index]);
         }
     }
 }
@@ -2909,6 +2943,98 @@ void Networking::cancelPlayerAttributeIntent(Player& player) noexcept
     mPendingPlayerAttributes.erase(player.guid.g);
     if (const auto canonical = mProgressionLedger.find(player.guid.g))
         applyCanonicalAttributes(player, *canonical);
+}
+
+bool Networking::validatePlayerSkills(Player& player, const BasePlayer& incoming)
+{
+    if (!mProgressionLedger.find(player.guid.g))
+    {
+        const mechanics::ProgressionResult seeded
+            = mProgressionLedger.set(player.guid.g, progressionState(player));
+        if (!seeded.applied())
+        {
+            LOG_MESSAGE_SIMPLE(TimedLog::LOG_ERROR,
+                "Failed to seed progression state for connection %llu: %s",
+                static_cast<unsigned long long>(player.guid.g),
+                mechanics::describe(seeded.decision));
+            return false;
+        }
+    }
+
+    const std::vector<mechanics::SkillProgressionChange> changes
+        = skillChanges(incoming);
+    const mechanics::ProgressionResult result = mProgressionLedger.previewSkills(
+        player.guid.g, incoming.exchangeFullInfo, changes);
+    if (result.applied())
+    {
+        mPendingPlayerSkills.insert(player.guid.g);
+        return true;
+    }
+
+    const unsigned int violations = ++mProgressionViolations[player.guid.g];
+    LOG_MESSAGE_SIMPLE(TimedLog::LOG_WARN,
+        "Rejected skill intent from connection %llu: %s (violation %u)",
+        static_cast<unsigned long long>(player.guid.g),
+        mechanics::describe(result.decision), violations);
+    if (violations >= 5)
+        disconnectTransport({ player.guid.g }, "repeated invalid progression intents");
+    return false;
+}
+
+bool Networking::commitPlayerSkills(Player& player)
+{
+    if (mPendingPlayerSkills.erase(player.guid.g) == 0)
+        return false;
+    const std::vector<mechanics::SkillProgressionChange> changes
+        = skillChanges(player);
+    const mechanics::ProgressionResult result = mProgressionLedger.applySkills(
+        player.guid.g, player.exchangeFullInfo, changes);
+    if (result.applied())
+    {
+        applyCanonicalSkills(player, result.state);
+        return true;
+    }
+
+    cancelPlayerSkillIntent(player);
+    const unsigned int violations = ++mProgressionViolations[player.guid.g];
+    LOG_MESSAGE_SIMPLE(TimedLog::LOG_WARN,
+        "Rejected modified skill intent from connection %llu: %s (violation %u)",
+        static_cast<unsigned long long>(player.guid.g),
+        mechanics::describe(result.decision), violations);
+    if (violations >= 5)
+        disconnectTransport({ player.guid.g }, "repeated invalid progression intents");
+    return false;
+}
+
+bool Networking::applyServerPlayerSkills(Player& player)
+{
+    if (mPendingPlayerSkills.contains(player.guid.g))
+        return false;
+    mechanics::PlayerProgressionState state = mProgressionLedger.find(player.guid.g)
+        .value_or(progressionState(player));
+    state.skills = progressionState(player).skills;
+    const mechanics::ProgressionResult result
+        = mProgressionLedger.set(player.guid.g, std::move(state));
+    if (!result.applied())
+    {
+        LOG_MESSAGE_SIMPLE(TimedLog::LOG_ERROR,
+            "Rejected server-authored skills for connection %llu: %s",
+            static_cast<unsigned long long>(player.guid.g),
+            mechanics::describe(result.decision));
+    }
+    return result.applied();
+}
+
+bool Networking::isPlayerSkillIntentPending(const Player& player) const noexcept
+{
+    return mPendingPlayerSkills.contains(player.guid.g);
+}
+
+void Networking::cancelPlayerSkillIntent(Player& player) noexcept
+{
+    mPendingPlayerSkills.erase(player.guid.g);
+    if (const auto canonical = mProgressionLedger.find(player.guid.g))
+        applyCanonicalSkills(player, *canonical);
 }
 
 bool Networking::validatePlayerStats(Player& player, const BasePlayer& incoming)
@@ -3890,6 +4016,7 @@ void Networking::disconnectPlayer(RakNet::RakNetGUID guid)
     mProgressionLedger.erase(guid.g);
     mProgressionViolations.erase(guid.g);
     mPendingPlayerAttributes.erase(guid.g);
+    mPendingPlayerSkills.erase(guid.g);
     mObjectViolations.erase(guid.g);
     mPendingObjectPlacements.erase(guid.g);
     mPendingObjectMutations.erase(guid.g);

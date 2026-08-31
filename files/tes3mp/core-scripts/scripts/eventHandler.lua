@@ -10,6 +10,7 @@ local pendingActorCellChangeEvents = {}
 local pendingPlayerBountyEvents = {}
 local pendingPlayerShapeshiftEvents = {}
 local pendingPlayerAttributeEvents = {}
+local pendingPlayerSkillEvents = {}
 local pendingObjectPlaceEvents = {}
 local pendingObjectMutationEvents = {}
 local pendingContainerEvents = {}
@@ -983,7 +984,50 @@ eventHandler.OnPlayerAttributeIntentRejected = function(pid)
 end
 
 eventHandler.OnPlayerSkill = function(pid)
-    eventHandler.OnGenericPlayerEvent(pid, "PlayerSkill")
+    local pendingEvent = pendingPlayerSkillEvents[pid]
+    pendingPlayerSkillEvents[pid] = nil
+    if pendingEvent == nil then
+        return
+    end
+
+    if Players[pid] ~= nil and Players[pid]:IsLoggedIn() then
+        Players[pid]:SaveDataByPacketType("PlayerSkill", pendingEvent.playerPacket)
+        customEventHooks.triggerHandlers("OnPlayerSkill", pendingEvent.eventStatus,
+            {pid, pendingEvent.playerPacket})
+    end
+end
+
+eventHandler.OnPlayerSkillIntent = function(pid)
+    pendingPlayerSkillEvents[pid] = nil
+    if Players[pid] == nil or not Players[pid]:IsLoggedIn() then
+        return false
+    end
+
+    local playerPacket = packetReader.GetPlayerPacketTables(pid, "PlayerSkill")
+    local eventStatus = customEventHooks.triggerValidators("OnPlayerSkill",
+        {pid, playerPacket})
+    if not eventStatus.validDefaultHandler then
+        customEventHooks.triggerHandlers("OnPlayerSkill", eventStatus,
+            {pid, playerPacket})
+        return false
+    end
+    pendingPlayerSkillEvents[pid] = {
+        eventStatus = eventStatus,
+        playerPacket = playerPacket
+    }
+    return true
+end
+
+eventHandler.OnPlayerSkillIntentRejected = function(pid)
+    local pendingEvent = pendingPlayerSkillEvents[pid]
+    pendingPlayerSkillEvents[pid] = nil
+    if pendingEvent == nil then
+        return
+    end
+    local eventStatus = customEventHooks.makeEventStatus(false,
+        pendingEvent.eventStatus.validCustomHandlers)
+    customEventHooks.triggerHandlers("OnPlayerSkill", eventStatus,
+        {pid, pendingEvent.playerPacket})
 end
 
 eventHandler.OnPlayerLevel = function(pid)

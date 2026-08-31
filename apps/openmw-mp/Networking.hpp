@@ -175,6 +175,11 @@ namespace  mwmp
         bool applyServerPlayerAttributes(Player& player);
         bool isPlayerAttributeIntentPending(const Player& player) const noexcept;
         void cancelPlayerAttributeIntent(Player& player) noexcept;
+        bool validatePlayerSkills(Player& player, const BasePlayer& incoming);
+        bool commitPlayerSkills(Player& player);
+        bool applyServerPlayerSkills(Player& player);
+        bool isPlayerSkillIntentPending(const Player& player) const noexcept;
+        void cancelPlayerSkillIntent(Player& player) noexcept;
         bool validatePlayerStats(Player& player, const BasePlayer& incoming);
         bool reconcilePlayerStats(Player& player);
         bool applyServerPlayerStats(Player& player);
@@ -252,6 +257,7 @@ namespace  mwmp
         std::unordered_set<std::uint64_t> mPendingPlayerShapeshifts;
         std::unordered_map<std::uint64_t, unsigned int> mShapeshiftViolations;
         std::unordered_set<std::uint64_t> mPendingPlayerAttributes;
+        std::unordered_set<std::uint64_t> mPendingPlayerSkills;
         std::unordered_map<std::uint64_t, unsigned int> mProgressionViolations;
         struct PendingPlayerCellChange
         {
