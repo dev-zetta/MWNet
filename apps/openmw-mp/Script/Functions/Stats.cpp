@@ -598,10 +598,13 @@ void StatsFunctions::SendBaseInfo(unsigned short pid) noexcept
     packet->Send(true);
 }
 
-void StatsFunctions::SendStatsDynamic(unsigned short pid) noexcept
+void StatsFunctions::SendStatsDynamic(unsigned short pid)
 {
     Player *player;
     GET_PLAYER(pid, player, );
+
+    if (!mwmp::Networking::getPtr()->applyServerPlayerStats(*player))
+        return;
 
     mwmp::PlayerPacket *packet = mwmp::Networking::get().getPlayerPacketController()->GetPacket(ID_PLAYER_STATS_DYNAMIC);
     packet->setPlayer(player);

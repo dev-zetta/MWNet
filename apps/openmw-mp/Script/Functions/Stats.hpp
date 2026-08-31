@@ -630,7 +630,7 @@ public:
     * \param pid The player ID.
     * \return void
     */
-    static void SendStatsDynamic(unsigned short pid) noexcept;
+    static void SendStatsDynamic(unsigned short pid);
 
     /**
     * \brief Send a PlayerAttribute packet with a player's attributes and bonuses

@@ -10,6 +10,7 @@
 #include <components/openmw-mp/Mechanics/MovementValidator.hpp>
 #include <components/openmw-mp/Mechanics/PlayerLifecycle.hpp>
 #include <components/openmw-mp/Mechanics/InventoryLedger.hpp>
+#include <components/openmw-mp/Mechanics/CombatResolver.hpp>
 #include <components/openmw-mp/Persistence/PersistenceService.hpp>
 #include <components/openmw-mp/Security/ServerAuthenticationService.hpp>
 #include <components/openmw-mp/Session/AuthorityLease.hpp>
@@ -101,6 +102,9 @@ namespace  mwmp
         bool validatePlayerInventory(Player& player, const BasePlayer& incoming);
         bool commitPlayerInventory(Player& player);
         bool applyServerInventoryChanges(Player& player);
+        bool validatePlayerStats(Player& player, const BasePlayer& incoming);
+        bool reconcilePlayerStats(Player& player);
+        bool applyServerPlayerStats(Player& player);
         persistence::QueueDecision queuePersistenceWrite(
             std::filesystem::path path, std::string_view contents);
         void flushPersistence();
@@ -134,11 +138,13 @@ namespace  mwmp
         mechanics::MovementValidator mMovementValidator;
         mechanics::PlayerLifecycle mPlayerLifecycle;
         mechanics::InventoryLedger mInventoryLedger;
+        mechanics::CombatResolver mCombatResolver;
         std::unordered_set<std::uint64_t> mAuthenticatedConnections;
         std::unordered_map<std::uint64_t, unsigned int> mAuthorityViolations;
         std::unordered_map<std::uint64_t, unsigned int> mMovementViolations;
         std::unordered_map<std::uint64_t, unsigned int> mLifecycleViolations;
         std::unordered_map<std::uint64_t, unsigned int> mInventoryViolations;
+        std::unordered_map<std::uint64_t, unsigned int> mCombatViolations;
         std::unordered_set<std::string> mBannedAddresses;
         unsigned int mMaximumConnections;
         unsigned short mPort;

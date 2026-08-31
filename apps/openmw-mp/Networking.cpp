@@ -14,6 +14,8 @@
 #include <components/openmw-mp/Transport/LegacyPacketFrame.hpp>
 
 #include <iostream>
+#include <algorithm>
+#include <cmath>
 #include <Script/Script.hpp>
 #include <Script/API/TimerAPI.hpp>
 #include <chrono>
@@ -376,6 +378,150 @@ bool Networking::applyServerInventoryChanges(Player& player)
     return result.applied();
 }
 
+namespace
+{
+    constexpr double maximumCanonicalStat =
+        mwmp::mechanics::CombatResolver::MaximumStatValue;
+
+    bool validDynamicStat(const ESM::StatState<float>& stat, bool health) noexcept
+    {
+        const auto finiteBounded = [](float value) {
+            return std::isfinite(value)
+                && std::abs(static_cast<double>(value)) <= maximumCanonicalStat;
+        };
+        if (!finiteBounded(stat.mBase) || !finiteBounded(stat.mMod)
+            || !finiteBounded(stat.mCurrent) || !finiteBounded(stat.mDamage)
+            || !finiteBounded(stat.mProgress))
+            return false;
+        return !health || (stat.mBase >= 0 && stat.mMod >= 0 && stat.mCurrent >= 0);
+    }
+
+    double dynamicMaximum(const ESM::StatState<float>& stat) noexcept
+    {
+        return std::max({ 1.0, static_cast<double>(stat.mBase),
+            static_cast<double>(stat.mMod), static_cast<double>(stat.mCurrent) });
+    }
+
+    double fatigueRatio(const ESM::StatState<float>& stat) noexcept
+    {
+        const double maximum = dynamicMaximum(stat);
+        return std::clamp(static_cast<double>(stat.mCurrent) / maximum, 0.0, 1.0);
+    }
+
+    mwmp::mechanics::CombatantState playerCombatState(const Player& player,
+        const std::optional<mwmp::mechanics::CombatantState>& existing,
+        bool replaceHealth)
+    {
+        mwmp::mechanics::CombatantState state = existing.value_or(
+            mwmp::mechanics::CombatantState{});
+        const auto& health = player.creatureStats.mDynamic[0];
+        if (!existing || replaceHealth)
+        {
+            state.health = std::clamp(static_cast<double>(health.mCurrent),
+                0.0, maximumCanonicalStat);
+            state.maximumHealth = dynamicMaximum(health);
+            state.alive = state.health > 0;
+        }
+        else
+            state.maximumHealth = std::max(state.maximumHealth, state.health);
+        state.fatigueRatio = fatigueRatio(player.creatureStats.mDynamic[2]);
+        state.accuracy = 0.75;
+        state.evasion = 0.10;
+        state.armorRating = 0;
+        state.minimumDamage = 1;
+        state.maximumDamage = 12;
+        state.meleeReach = 192;
+        state.projectileReach = 8192;
+        state.position = { player.position.pos[0], player.position.pos[1],
+            player.position.pos[2] };
+        return state;
+    }
+
+    void applyCanonicalHealth(Player& player,
+        const mwmp::mechanics::CombatantState& state) noexcept
+    {
+        auto& health = player.creatureStats.mDynamic[0];
+        health.mBase = static_cast<float>(state.maximumHealth);
+        health.mMod = static_cast<float>(state.maximumHealth);
+        health.mCurrent = static_cast<float>(state.health);
+        health.mDamage = 0;
+        health.mProgress = 0;
+        player.creatureStats.mDead = !state.alive;
+    }
+}
+
+bool Networking::validatePlayerStats(Player& player, const BasePlayer& incoming)
+{
+    bool valid = true;
+    const mechanics::CombatantId id{ mechanics::CombatantKind::Player, player.guid.g };
+    const bool hasCanonicalState = mCombatResolver.find(id).has_value();
+    bool includesHealth = incoming.exchangeFullInfo;
+    if (incoming.exchangeFullInfo)
+    {
+        for (std::size_t index = 0; index < incoming.creatureStats.mDynamic.size(); ++index)
+            valid = valid && validDynamicStat(incoming.creatureStats.mDynamic[index], index == 0);
+    }
+    else
+    {
+        for (const std::uint8_t index : incoming.statsDynamicIndexChanges)
+        {
+            includesHealth = includesHealth || index == 0;
+            if (index >= incoming.creatureStats.mDynamic.size()
+                || !validDynamicStat(incoming.creatureStats.mDynamic[index], index == 0))
+            {
+                valid = false;
+                break;
+            }
+        }
+    }
+    valid = valid && (hasCanonicalState || includesHealth);
+    if (valid)
+        return true;
+
+    const unsigned int violations = ++mCombatViolations[player.guid.g];
+    LOG_MESSAGE_SIMPLE(TimedLog::LOG_WARN,
+        "Rejected invalid dynamic stats from connection %llu (violation %u)",
+        static_cast<unsigned long long>(player.guid.g), violations);
+    if (violations >= 5)
+        disconnectTransport({ player.guid.g }, "repeated invalid dynamic stats");
+    return false;
+}
+
+bool Networking::reconcilePlayerStats(Player& player)
+{
+    const mechanics::CombatantId id{ mechanics::CombatantKind::Player, player.guid.g };
+    const auto existing = mCombatResolver.find(id);
+    mechanics::CombatantState state = playerCombatState(player, existing, false);
+    if (existing)
+        applyCanonicalHealth(player, state);
+    if (mCombatResolver.upsert(id, state))
+        return true;
+
+    const unsigned int violations = ++mCombatViolations[player.guid.g];
+    LOG_MESSAGE_SIMPLE(TimedLog::LOG_WARN,
+        "Failed to reconcile canonical stats for connection %llu (violation %u)",
+        static_cast<unsigned long long>(player.guid.g), violations);
+    if (violations >= 5)
+        disconnectTransport({ player.guid.g }, "repeated invalid canonical stats");
+    return false;
+}
+
+bool Networking::applyServerPlayerStats(Player& player)
+{
+    const mechanics::CombatantId id{ mechanics::CombatantKind::Player, player.guid.g };
+    mechanics::CombatantState state = playerCombatState(
+        player, mCombatResolver.find(id), true);
+    if (!mCombatResolver.upsert(id, state))
+    {
+        LOG_MESSAGE_SIMPLE(TimedLog::LOG_ERROR,
+            "Rejected server-authored dynamic stats for connection %llu",
+            static_cast<unsigned long long>(player.guid.g));
+        return false;
+    }
+    applyCanonicalHealth(player, state);
+    return true;
+}
+
 persistence::QueueDecision Networking::queuePersistenceWrite(
     std::filesystem::path path, std::string_view contents)
 {
@@ -691,6 +837,8 @@ void Networking::disconnectPlayer(RakNet::RakNetGUID guid)
     mLifecycleViolations.erase(guid.g);
     mInventoryLedger.erase({ mechanics::InventoryOwnerKind::Player, guid.g });
     mInventoryViolations.erase(guid.g);
+    mCombatResolver.erase({ mechanics::CombatantKind::Player, guid.g });
+    mCombatViolations.erase(guid.g);
     Players::deletePlayer(guid);
 }
 
