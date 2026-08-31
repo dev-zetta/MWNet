@@ -1,0 +1,843 @@
+#include <components/openmw-mp/Mechanics/CombatResolver.hpp>
+#include <components/openmw-mp/Mechanics/InventoryLedger.hpp>
+#include <components/openmw-mp/Mechanics/JusticeLedger.hpp>
+#include <components/openmw-mp/Mechanics/PlayerLifecycle.hpp>
+#include <components/openmw-mp/Metrics/ProcessMemory.hpp>
+#include <components/openmw-mp/Metrics/ServerMetrics.hpp>
+#include <components/openmw-mp/Protocol/MessageType.hpp>
+#include <components/openmw-mp/Security/AuthenticationMessages.hpp>
+#include <components/openmw-mp/Security/AuthenticationRateLimiter.hpp>
+#include <components/openmw-mp/Security/ServerAuthenticationService.hpp>
+#include <components/openmw-mp/Transport/Protocol11Endpoint.hpp>
+
+#include <algorithm>
+#include <chrono>
+#include <cstddef>
+#include <cstdint>
+#include <cstdlib>
+#include <filesystem>
+#include <fstream>
+#include <iostream>
+#include <iterator>
+#include <memory>
+#include <optional>
+#include <stdexcept>
+#include <string>
+#include <string_view>
+#include <thread>
+#include <utility>
+#include <vector>
+
+namespace
+{
+    using mwmp::protocol::MessageType;
+    using mwmp::session::State;
+    using mwmp::session::TransitionResult;
+    using mwmp::transport::DeliveryMode;
+    using mwmp::transport::MessageLane;
+    using mwmp::transport::Protocol11Endpoint;
+    using mwmp::transport::TransportConnectionId;
+    using mwmp::transport::TransportError;
+    using mwmp::transport::TransportEvent;
+    using mwmp::transport::TransportEventType;
+    using mwmp::transport::TransportMessage;
+    using namespace std::chrono_literals;
+
+    constexpr std::size_t sWireEnvelopeBytes = 28;
+
+    struct Options
+    {
+        std::size_t cycles = 1;
+        std::size_t clients = 2;
+        std::uint64_t durationSeconds = 0;
+        std::uint32_t latencyMilliseconds = 0;
+        std::uint32_t packetLossPercent = 0;
+        bool failOnMemoryGrowth = false;
+        std::filesystem::path stateDirectory;
+        std::filesystem::path metricsOutput;
+        std::string commit = "unknown";
+    };
+
+    struct Peer
+    {
+        std::unique_ptr<Protocol11Endpoint> client;
+        TransportConnectionId clientConnection;
+        TransportConnectionId serverConnection;
+        std::filesystem::path trustPath;
+        std::string account;
+        std::string password;
+    };
+
+    [[noreturn]] void fail(std::string message)
+    {
+        throw std::runtime_error(std::move(message));
+    }
+
+    void require(bool condition, std::string_view message)
+    {
+        if (!condition)
+            fail(std::string(message));
+    }
+
+    std::size_t parseSize(std::string_view value, std::string_view option)
+    {
+        std::size_t position = 0;
+        unsigned long long parsed = 0;
+        try
+        {
+            parsed = std::stoull(std::string(value), &position);
+        }
+        catch (const std::exception&)
+        {
+            fail(std::string(option) + " requires an unsigned integer");
+        }
+        if (position != value.size())
+            fail(std::string(option) + " requires an unsigned integer");
+        return static_cast<std::size_t>(parsed);
+    }
+
+    Options parseOptions(int argc, char** argv)
+    {
+        Options options;
+        for (int index = 1; index < argc; ++index)
+        {
+            const std::string_view argument = argv[index];
+            const auto value = [&]() -> std::string_view {
+                if (++index >= argc)
+                    fail(std::string(argument) + " requires a value");
+                return argv[index];
+            };
+            if (argument == "--cycles")
+                options.cycles = parseSize(value(), argument);
+            else if (argument == "--clients")
+                options.clients = parseSize(value(), argument);
+            else if (argument == "--duration-seconds")
+                options.durationSeconds = parseSize(value(), argument);
+            else if (argument == "--latency-ms")
+                options.latencyMilliseconds = static_cast<std::uint32_t>(
+                    parseSize(value(), argument));
+            else if (argument == "--packet-loss-percent")
+                options.packetLossPercent = static_cast<std::uint32_t>(
+                    parseSize(value(), argument));
+            else if (argument == "--state-dir")
+                options.stateDirectory = value();
+            else if (argument == "--metrics-output")
+                options.metricsOutput = value();
+            else if (argument == "--commit")
+                options.commit = value();
+            else if (argument == "--fail-on-memory-growth")
+                options.failOnMemoryGrowth = true;
+            else if (argument == "--help" || argument == "-h")
+            {
+                std::cout
+                    << "Usage: tes3mp-headless-integration [options]\n"
+                    << "  --cycles N                  Full connect/death/disconnect cycles\n"
+                    << "  --clients N                 Concurrent clients (2-8)\n"
+                    << "  --duration-seconds N        Minimum elapsed run time\n"
+                    << "  --latency-ms N              Deterministic delay before messages\n"
+                    << "  --packet-loss-percent N     Deterministic unreliable loss (0-100)\n"
+                    << "  --state-dir DIR             Retain identities, trust and accounts\n"
+                    << "  --metrics-output FILE       Write machine-readable JSON metrics\n"
+                    << "  --commit REV                Revision recorded in metrics\n"
+                    << "  --fail-on-memory-growth     Fail on a sustained RSS increase\n";
+                std::exit(0);
+            }
+            else
+                fail("unknown option: " + std::string(argument));
+        }
+        require(options.cycles > 0, "--cycles must be positive");
+        require(options.clients >= 2 && options.clients <= 8,
+            "--clients must be between 2 and 8");
+        require(options.packetLossPercent <= 100,
+            "--packet-loss-percent must not exceed 100");
+        return options;
+    }
+
+    std::filesystem::path uniqueTemporaryDirectory()
+    {
+        return std::filesystem::temp_directory_path()
+            / ("tes3mp-headless-" + std::to_string(
+                std::chrono::steady_clock::now().time_since_epoch().count()));
+    }
+
+    std::optional<TransportEvent> waitForEvent(Protocol11Endpoint& endpoint,
+        TransportEventType type, std::optional<TransportConnectionId> connection = std::nullopt,
+        std::optional<MessageType> messageType = std::nullopt,
+        std::chrono::seconds timeout = 5s)
+    {
+        const auto deadline = std::chrono::steady_clock::now() + timeout;
+        while (std::chrono::steady_clock::now() < deadline)
+        {
+            auto event = endpoint.poll(10ms);
+            if (!event || event->type != type)
+                continue;
+            if (connection && event->connection != *connection)
+                continue;
+            if (messageType && event->message.messageType
+                    != static_cast<std::uint16_t>(*messageType))
+                continue;
+            return event;
+        }
+        return std::nullopt;
+    }
+
+    class Scenario
+    {
+    public:
+        Scenario(Options options, std::filesystem::path root)
+            : mOptions(std::move(options))
+            , mRoot(std::move(root))
+            , mAuthentication(mRoot / "accounts", mRoot / "players",
+                authenticationLimits())
+        {
+        }
+
+        void run()
+        {
+            std::filesystem::create_directories(mRoot / "players");
+            createLegacyPlayer();
+            startServer(mRoot / "server-identity.key");
+            mInitialResidentMemory = mwmp::metrics::residentMemoryBytes();
+            mLastResidentMemory = mInitialResidentMemory;
+            mPeakResidentMemory = mInitialResidentMemory;
+
+            const auto soakStarted = std::chrono::steady_clock::now();
+            for (std::size_t cycle = 0;
+                 cycle < mOptions.cycles
+                    || std::chrono::steady_clock::now() - soakStarted
+                        < std::chrono::seconds(mOptions.durationSeconds);
+                 ++cycle)
+            {
+                std::vector<Peer> peers;
+                peers.reserve(mOptions.clients);
+                for (std::size_t index = 0; index < mOptions.clients; ++index)
+                {
+                    peers.emplace_back(connect(index, cycle == 0));
+                    mMetrics.observeQueueDepth(peers.size());
+                    bootstrap(peers.back(), index, cycle);
+                    gameplay(peers.back(), index, cycle);
+                }
+                for (Peer& peer : peers)
+                    disconnect(peer);
+                mMetrics.observeQueueDepth(0);
+                observeMemory();
+                mCompletedCycles = cycle + 1;
+            }
+
+            verifyLegacyMigration();
+            verifyAuthenticationLockout();
+            verifyFingerprintMismatch();
+            if (mOptions.failOnMemoryGrowth && mMonotonicMemoryGrowth)
+                fail("resident memory increased monotonically during the soak run");
+            writeMetrics();
+        }
+
+    private:
+        static mwmp::security::AuthenticationLimits authenticationLimits()
+        {
+            mwmp::security::AuthenticationLimits limits;
+            // Soak runs intentionally reconnect rapidly. The test-only pre-KDF
+            // allowance avoids rate-limiting successful automation while the
+            // failure lockout remains at its production value and is tested below.
+            limits.preKdfAttemptsPerMinute = 1'000'000.0;
+            limits.preKdfBurst = 1'000'000.0;
+            return limits;
+        }
+
+        void startServer(const std::filesystem::path& identityPath)
+        {
+            std::string errorText;
+            mServer = Protocol11Endpoint::createServer(identityPath, errorText);
+            require(mServer != nullptr, "server identity failed: " + errorText);
+
+            mwmp::transport::ListenOptions listen;
+            listen.address = "127.0.0.1";
+            listen.maximumConnections = mOptions.clients + 2;
+            listen.timeouts.handshake = 5s;
+            listen.timeouts.read = 30s;
+            TransportError error;
+            bool listening = false;
+            for (std::uint16_t port = 39200; port < 39300 && !listening; ++port)
+            {
+                listen.port = port;
+                listening = mServer->listen(listen, error);
+                if (listening)
+                    mPort = port;
+            }
+            require(listening, "headless server failed to listen: " + error.detail);
+            mFingerprint = mServer->serverFingerprint().value_or("");
+            require(!mFingerprint.empty(), "headless server has no identity fingerprint");
+        }
+
+        void createLegacyPlayer()
+        {
+            std::ofstream output(mRoot / "players" / "Legacy.json", std::ios::binary);
+            require(static_cast<bool>(output), "failed to create legacy account fixture");
+            output
+                << "{\n"
+                << "  \"login\":{\"name\":\"Legacy\","
+                << "\"passwordHash\":\"0774be374bdab4fb47ad1b85baddc3b9cbaee98d9a7abb34de6a8467afbfd231\","
+                << "\"passwordSalt\":\"0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz+-\"},\n"
+                << "  \"stats\":{\"level\":1,\"alive\":true}\n"
+                << "}\n";
+            require(static_cast<bool>(output), "failed to write legacy account fixture");
+        }
+
+        Peer connect(std::size_t index, bool expectFirstTrust)
+        {
+            Peer peer;
+            peer.trustPath = mRoot / ("trusted-" + std::to_string(index) + ".json");
+            peer.account = index == 0 ? "Legacy" : "Headless-" + std::to_string(index);
+            peer.password = index == 0 ? "correct horse battery staple"
+                                       : "headless password " + std::to_string(index);
+
+            std::string errorText;
+            peer.client = Protocol11Endpoint::createClient(peer.trustPath, errorText);
+            require(peer.client != nullptr, "client trust store failed: " + errorText);
+
+            mwmp::transport::ConnectOptions options;
+            options.host = "127.0.0.1";
+            options.port = mPort;
+            options.timeouts.handshake = 5s;
+            options.timeouts.read = 30s;
+            TransportError error;
+            require(peer.client->connect(options, peer.clientConnection, error),
+                "headless client failed to connect: " + error.detail);
+
+            bool trustRequested = false;
+            bool clientConnected = false;
+            std::optional<TransportConnectionId> serverConnection;
+            const auto deadline = std::chrono::steady_clock::now() + 5s;
+            while (std::chrono::steady_clock::now() < deadline
+                && (!clientConnected || !serverConnection))
+            {
+                if (auto event = peer.client->poll(5ms))
+                {
+                    if (event->type == TransportEventType::TrustRequired)
+                    {
+                        trustRequested = true;
+                        require(event->detail == mFingerprint,
+                            "first-use fingerprint does not match server identity");
+                        require(peer.client->confirmFingerprint(
+                                event->connection, event->detail, error),
+                            "failed to persist trusted fingerprint: " + error.detail);
+                    }
+                    else if (event->type == TransportEventType::Connected)
+                        clientConnected = true;
+                    else if (event->type == TransportEventType::Disconnected)
+                        fail("client disconnected during handshake: " + event->detail);
+                }
+                if (auto event = mServer->poll(5ms))
+                {
+                    if (event->type == TransportEventType::Connected)
+                        serverConnection = event->connection;
+                    else if (event->type == TransportEventType::Disconnected)
+                        fail("server disconnected during handshake: " + event->detail);
+                }
+            }
+            require(clientConnected && serverConnection.has_value(),
+                "encrypted handshake timed out");
+            require(trustRequested == expectFirstTrust,
+                expectFirstTrust ? "first connection did not require trust confirmation"
+                                 : "trusted reconnect unexpectedly required confirmation");
+            peer.serverConnection = *serverConnection;
+            require(peer.client->state(peer.clientConnection)
+                    == State::TransportAuthenticated,
+                "client did not reach TransportAuthenticated");
+            require(mServer->state(peer.serverConnection)
+                    == State::TransportAuthenticated,
+                "server did not reach TransportAuthenticated");
+            return peer;
+        }
+
+        TransportEvent transmit(Protocol11Endpoint& source,
+            TransportConnectionId sourceConnection, Protocol11Endpoint& destination,
+            TransportConnectionId destinationConnection, MessageType type,
+            std::vector<std::byte> payload = {},
+            MessageLane lane = MessageLane::System,
+            DeliveryMode delivery = DeliveryMode::ReliableOrdered,
+            std::uint64_t subject = 0, std::uint64_t sequence = 0)
+        {
+            if (mOptions.latencyMilliseconds != 0)
+                std::this_thread::sleep_for(
+                    std::chrono::milliseconds(mOptions.latencyMilliseconds));
+
+            TransportMessage message;
+            message.connection = sourceConnection;
+            message.messageType = static_cast<std::uint16_t>(type);
+            message.payload = std::move(payload);
+            message.lane = lane;
+            message.delivery = delivery;
+            message.subject = subject;
+            message.sequence = sequence;
+            const std::size_t bytes = sWireEnvelopeBytes + message.payload.size();
+            TransportError error;
+            const auto started = std::chrono::steady_clock::now();
+            require(source.send(std::move(message), error),
+                "message rejected: " + std::string(mwmp::session::describe(
+                    source.state(sourceConnection).value_or(State::Disconnecting)))
+                    + ": " + error.detail);
+            mMetrics.observeSerialization(std::chrono::steady_clock::now() - started);
+            mMetrics.recordOutbound(destinationConnection.value, bytes);
+
+            const auto tickStarted = std::chrono::steady_clock::now();
+            auto event = waitForEvent(destination, TransportEventType::Message,
+                destinationConnection, type);
+            mMetrics.observeTick(std::chrono::steady_clock::now() - tickStarted);
+            require(event.has_value(), "timed out waiting for protocol message");
+            mMetrics.recordInbound(destinationConnection.value, bytes);
+            return std::move(*event);
+        }
+
+        void advance(Peer& peer, State state)
+        {
+            TransportError error;
+            require(peer.client->advance(peer.clientConnection, state, error)
+                    == TransitionResult::Advanced,
+                "client lifecycle transition failed: " + error.detail);
+            require(mServer->advance(peer.serverConnection, state, error)
+                    == TransitionResult::Advanced,
+                "server lifecycle transition failed: " + error.detail);
+        }
+
+        void bootstrap(Peer& peer, std::size_t index, std::size_t cycle)
+        {
+            (void)transmit(*mServer, peer.serverConnection, *peer.client,
+                peer.clientConnection, MessageType::ContentRequirements);
+            (void)transmit(*peer.client, peer.clientConnection, *mServer,
+                peer.serverConnection, MessageType::ContentManifest);
+            advance(peer, State::ContentVerified);
+
+            std::string passwordError;
+            auto password = mwmp::security::PasswordBuffer::copyFrom(
+                peer.password, passwordError);
+            require(password.has_value(), "failed to prepare authentication password");
+            const auto operation = cycle == 0 && index != 0
+                ? mwmp::security::AuthenticationOperation::Register
+                : mwmp::security::AuthenticationOperation::Login;
+            std::vector<std::byte> encoded;
+            mwmp::protocol::CodecError codecError;
+            require(mwmp::security::encodeAuthenticationRequest(operation,
+                    peer.account, *password, nullptr, encoded, codecError),
+                "failed to encode authentication request");
+            const MessageType requestType
+                = operation == mwmp::security::AuthenticationOperation::Register
+                ? MessageType::AccountRegister : MessageType::AccountLogin;
+            const auto requestEvent = transmit(*peer.client, peer.clientConnection,
+                *mServer, peer.serverConnection, requestType, std::move(encoded));
+
+            mwmp::security::AuthenticationRequest request;
+            require(static_cast<bool>(mwmp::security::decodeAuthenticationRequest(
+                    requestEvent.message.payload, request)),
+                "server rejected a valid authentication request");
+            auto result = mAuthentication.authenticate(
+                std::move(request), "127.0.0.1");
+            require(result.response.authenticated(),
+                "authentication failed: " + result.response.message);
+            if (cycle == 0 && index == 0)
+                require(result.legacyMaterialRemoved,
+                    "legacy credentials were not durably migrated");
+            if (cycle == 0 && index != 0)
+                require(result.isNewAccount, "registration did not create an account");
+
+            require(mwmp::security::encodeAuthenticationResponse(
+                    result.response, encoded, codecError),
+                "failed to encode authentication response");
+            const auto responseEvent = transmit(*mServer, peer.serverConnection,
+                *peer.client, peer.clientConnection,
+                MessageType::AuthenticationResult, std::move(encoded));
+            mwmp::security::AuthenticationResponse response;
+            require(static_cast<bool>(mwmp::security::decodeAuthenticationResponse(
+                    responseEvent.message.payload, response)) && response.authenticated(),
+                "client rejected a valid authentication response");
+
+            advance(peer, State::AccountAuthenticated);
+            TransportError error;
+            require(peer.client->advance(peer.clientConnection,
+                    State::AccountAuthenticated, error) == TransitionResult::Duplicate,
+                "duplicate client initialization was not rejected idempotently");
+            require(mServer->advance(peer.serverConnection,
+                    State::AccountAuthenticated, error) == TransitionResult::Duplicate,
+                "duplicate server initialization was not rejected idempotently");
+
+            (void)transmit(*mServer, peer.serverConnection, *peer.client,
+                peer.clientConnection, MessageType::InitialStateComplete);
+            (void)transmit(*peer.client, peer.clientConnection, *mServer,
+                peer.serverConnection, MessageType::SpawnReady);
+            (void)transmit(*mServer, peer.serverConnection, *peer.client,
+                peer.clientConnection, MessageType::SpawnResult);
+            advance(peer, State::Spawned);
+        }
+
+        static mwmp::mechanics::CombatantState combatant(
+            double health, mwmp::mechanics::Position3 position)
+        {
+            mwmp::mechanics::CombatantState state;
+            state.health = health;
+            state.maximumHealth = health;
+            state.fatigue = 100;
+            state.maximumFatigue = 100;
+            state.fatigueRatio = 1;
+            state.accuracy = 0.9;
+            state.evasion = 0;
+            state.armorRating = 0;
+            state.minimumDamage = 20;
+            state.maximumDamage = 20;
+            state.meleeReach = 128;
+            state.projectileReach = 4096;
+            state.position = position;
+            state.alive = true;
+            return state;
+        }
+
+        bool dropUnreliable(std::size_t index, std::size_t cycle)
+        {
+            if (mOptions.packetLossPercent == 0)
+                return false;
+            const std::uint64_t sample = (mLossSequence++ * 37 + index * 17 + cycle * 13) % 100;
+            return sample < mOptions.packetLossPercent;
+        }
+
+        void gameplay(Peer& peer, std::size_t index, std::size_t cycle)
+        {
+            const std::uint64_t sequence = cycle + 1;
+            (void)transmit(*peer.client, peer.clientConnection, *mServer,
+                peer.serverConnection, MessageType::ChatIntent,
+                { std::byte{ 'h' }, std::byte{ 'i' } }, MessageLane::Player,
+                DeliveryMode::ReliableOrdered, peer.serverConnection.value, sequence);
+            (void)transmit(*mServer, peer.serverConnection, *peer.client,
+                peer.clientConnection, MessageType::ChatResult,
+                { std::byte{ 'h' }, std::byte{ 'i' } }, MessageLane::Player,
+                DeliveryMode::ReliableOrdered, peer.serverConnection.value, sequence);
+
+            if (!dropUnreliable(index, cycle))
+            {
+                (void)transmit(*peer.client, peer.clientConnection, *mServer,
+                    peer.serverConnection, MessageType::MovementSnapshot, {},
+                    MessageLane::Player, DeliveryMode::Unreliable,
+                    peer.serverConnection.value, sequence);
+            }
+            else
+                ++mDroppedSnapshots;
+
+            const mwmp::mechanics::CombatantId player{
+                mwmp::mechanics::CombatantKind::Player,
+                peer.serverConnection.value, {} };
+            const mwmp::mechanics::CombatantId actor{
+                mwmp::mechanics::CombatantKind::Actor,
+                1 + cycle * mOptions.clients + index, "Headless cell" };
+            require(mCombat.upsert(player, combatant(100, { 0, 0, 0 })),
+                "server rejected canonical player combat state");
+            require(mCombat.upsert(actor, combatant(10, { 64, 0, 0 })),
+                "server rejected canonical actor combat state");
+            (void)transmit(*peer.client, peer.clientConnection, *mServer,
+                peer.serverConnection, MessageType::AttackIntent, {},
+                MessageLane::Player, DeliveryMode::ReliableOrdered,
+                actor.value, sequence);
+            const auto combat = mCombat.resolve(
+                { player, actor, sequence, mwmp::mechanics::AttackKind::Melee, 1 }, 0);
+            require(combat.applied() && combat.targetDied,
+                "server did not resolve canonical combat outcome");
+            (void)transmit(*mServer, peer.serverConnection, *peer.client,
+                peer.clientConnection, MessageType::CombatResult, {},
+                MessageLane::Player, DeliveryMode::ReliableOrdered,
+                actor.value, sequence);
+
+            (void)transmit(*peer.client, peer.clientConnection, *mServer,
+                peer.serverConnection, MessageType::InventoryActionIntent, {},
+                MessageLane::Player, DeliveryMode::ReliableOrdered,
+                peer.serverConnection.value, sequence);
+            mwmp::mechanics::InventoryItem item;
+            item.refId = "gold_001";
+            item.count = 1;
+            require(mInventory.apply(
+                    { mwmp::mechanics::InventoryOwnerKind::Player,
+                        peer.serverConnection.value },
+                    mwmp::mechanics::InventoryAction::Add, { item }).applied(),
+                "server rejected canonical inventory action");
+            (void)transmit(*mServer, peer.serverConnection, *peer.client,
+                peer.clientConnection, MessageType::InventoryDelta, {},
+                MessageLane::Player, DeliveryMode::ReliableOrdered,
+                peer.serverConnection.value, sequence);
+
+            (void)transmit(*peer.client, peer.clientConnection, *mServer,
+                peer.serverConnection, MessageType::JailDecisionIntent, {},
+                MessageLane::Player, DeliveryMode::ReliableOrdered,
+                peer.serverConnection.value, sequence);
+            require(mJustice.setBounty(peer.serverConnection.value, 108).applied(),
+                "server rejected canonical bounty");
+            const auto sentence = mJustice.beginSentence(peer.serverConnection.value,
+                5, false, false, "Serving sentence", "Released");
+            require(sentence.applied() && sentence.state.sentence,
+                "server rejected canonical jail sentence");
+            require(mJustice.completeSentence(peer.serverConnection.value,
+                    sentence.state.sentence->id, true).applied(),
+                "server failed to complete canonical jail sentence");
+            (void)transmit(*mServer, peer.serverConnection, *peer.client,
+                peer.clientConnection, MessageType::JailResult, {},
+                MessageLane::Player, DeliveryMode::ReliableOrdered,
+                peer.serverConnection.value, sequence);
+
+            require(mLifecycle.reportDeath(peer.serverConnection.value).applied(),
+                "server failed to own death transition");
+            (void)transmit(*mServer, peer.serverConnection, *peer.client,
+                peer.clientConnection, MessageType::DeathResult, {},
+                MessageLane::Player, DeliveryMode::ReliableOrdered,
+                peer.serverConnection.value, sequence);
+            (void)transmit(*peer.client, peer.clientConnection, *mServer,
+                peer.serverConnection, MessageType::RespawnRequest, {},
+                MessageLane::Player, DeliveryMode::ReliableOrdered,
+                peer.serverConnection.value, sequence);
+            require(mLifecycle.beginRespawn(peer.serverConnection.value, 1).applied(),
+                "server failed to begin respawn");
+            require(mLifecycle.acknowledgeRespawn(
+                    peer.serverConnection.value, 1).applied(),
+                "server failed to finish respawn");
+            (void)transmit(*mServer, peer.serverConnection, *peer.client,
+                peer.clientConnection, MessageType::RespawnResult, {},
+                MessageLane::Player, DeliveryMode::ReliableOrdered,
+                peer.serverConnection.value, sequence);
+        }
+
+        void disconnect(Peer& peer)
+        {
+            peer.client->disconnect(peer.clientConnection);
+            require(waitForEvent(*mServer, TransportEventType::Disconnected,
+                    peer.serverConnection).has_value(),
+                "server did not observe client disconnect");
+            peer.client->shutdown(1s);
+            mLifecycle.erase(peer.serverConnection.value);
+            mInventory.erase({ mwmp::mechanics::InventoryOwnerKind::Player,
+                peer.serverConnection.value });
+            mJustice.erase(peer.serverConnection.value);
+            mMetrics.removeConnection(peer.serverConnection.value);
+        }
+
+        void verifyLegacyMigration()
+        {
+            std::ifstream input(mRoot / "players" / "Legacy.json", std::ios::binary);
+            const std::string contents{
+                std::istreambuf_iterator<char>(input), std::istreambuf_iterator<char>() };
+            require(contents.find("passwordHash") == std::string::npos
+                    && contents.find("passwordSalt") == std::string::npos,
+                "legacy player record retained obsolete credential material");
+            require(contents.find("\"schemaVersion\":1") != std::string::npos,
+                "legacy player record was not schema-versioned");
+        }
+
+        void verifyAuthenticationLockout()
+        {
+            Peer peer = connect(1, false);
+            (void)transmit(*mServer, peer.serverConnection, *peer.client,
+                peer.clientConnection, MessageType::ContentRequirements);
+            (void)transmit(*peer.client, peer.clientConnection, *mServer,
+                peer.serverConnection, MessageType::ContentManifest);
+            advance(peer, State::ContentVerified);
+
+            for (std::size_t attempt = 0; attempt < 6; ++attempt)
+            {
+                std::string passwordError;
+                const std::string candidate
+                    = attempt < 5 ? "incorrect password" : peer.password;
+                auto password = mwmp::security::PasswordBuffer::copyFrom(
+                    candidate, passwordError);
+                require(password.has_value(), "failed to prepare lockout password");
+                std::vector<std::byte> encoded;
+                mwmp::protocol::CodecError codecError;
+                require(mwmp::security::encodeAuthenticationRequest(
+                        mwmp::security::AuthenticationOperation::Login,
+                        peer.account, *password, nullptr, encoded, codecError),
+                    "failed to encode lockout request: "
+                        + std::string(mwmp::protocol::describe(codecError)));
+                const auto event = transmit(*peer.client, peer.clientConnection,
+                    *mServer, peer.serverConnection, MessageType::AccountLogin,
+                    std::move(encoded));
+                mwmp::security::AuthenticationRequest request;
+                require(static_cast<bool>(mwmp::security::decodeAuthenticationRequest(
+                        event.message.payload, request)),
+                    "failed to decode lockout request");
+                const auto result = mAuthentication.authenticate(
+                    std::move(request), "127.0.0.1");
+                const auto expected = attempt < 5
+                    ? mwmp::security::AuthenticationResponseStatus::InvalidCredentials
+                    : mwmp::security::AuthenticationResponseStatus::RateLimited;
+                require(result.response.status == expected,
+                    "authentication lockout returned an unexpected status");
+                require(mwmp::security::encodeAuthenticationResponse(
+                        result.response, encoded, codecError),
+                    "failed to encode lockout response");
+                (void)transmit(*mServer, peer.serverConnection, *peer.client,
+                    peer.clientConnection, MessageType::AuthenticationResult,
+                    std::move(encoded));
+            }
+            disconnect(peer);
+        }
+
+        void verifyFingerprintMismatch()
+        {
+            mServer->shutdown(1s);
+            std::string errorText;
+            auto replacement = Protocol11Endpoint::createServer(
+                mRoot / "replacement-identity.key", errorText);
+            require(replacement != nullptr,
+                "replacement server identity failed: " + errorText);
+            mwmp::transport::ListenOptions listen;
+            listen.address = "127.0.0.1";
+            listen.port = mPort;
+            listen.maximumConnections = 1;
+            listen.timeouts.handshake = 5s;
+            TransportError error;
+            require(replacement->listen(listen, error),
+                "replacement server failed to listen: " + error.detail);
+
+            auto client = Protocol11Endpoint::createClient(
+                mRoot / "trusted-0.json", errorText);
+            require(client != nullptr, "failed to reload trusted server record");
+            mwmp::transport::ConnectOptions connect;
+            connect.host = "127.0.0.1";
+            connect.port = mPort;
+            connect.timeouts.handshake = 5s;
+            TransportConnectionId connection;
+            require(client->connect(connect, connection, error),
+                "mismatch client failed to initiate connection: " + error.detail);
+
+            bool blocked = false;
+            bool insecureFallback = false;
+            const auto deadline = std::chrono::steady_clock::now() + 5s;
+            while (std::chrono::steady_clock::now() < deadline && !blocked)
+            {
+                if (auto event = client->poll(5ms))
+                {
+                    blocked = event->type == TransportEventType::Disconnected
+                        && event->detail.find("fingerprint mismatch") != std::string::npos;
+                    insecureFallback = insecureFallback
+                        || event->type == TransportEventType::TrustRequired
+                        || event->type == TransportEventType::Connected;
+                }
+                (void)replacement->poll(5ms);
+            }
+            require(blocked && !insecureFallback,
+                "fingerprint mismatch did not fail closed");
+            client->shutdown(1s);
+            replacement->shutdown(1s);
+        }
+
+        void observeMemory()
+        {
+            const std::uint64_t current = mwmp::metrics::residentMemoryBytes();
+            mPeakResidentMemory = std::max(mPeakResidentMemory, current);
+            if (current > mLastResidentMemory)
+                ++mConsecutiveMemoryIncreases;
+            else
+                mConsecutiveMemoryIncreases = 0;
+            mLastResidentMemory = current;
+
+            const std::uint64_t materialGrowth
+                = mInitialResidentMemory / 20;
+            if (mConsecutiveMemoryIncreases >= 10
+                && current > mInitialResidentMemory + materialGrowth)
+                mMonotonicMemoryGrowth = true;
+        }
+
+        static std::string jsonEscape(std::string_view value)
+        {
+            std::string result;
+            for (const char character : value)
+            {
+                if (character == '\\' || character == '"')
+                    result.push_back('\\');
+                result.push_back(character);
+            }
+            return result;
+        }
+
+        void writeMetrics()
+        {
+            mMetrics.setResidentMemoryBytes(mwmp::metrics::residentMemoryBytes());
+            const auto snapshot = mMetrics.snapshot();
+            std::cout << "Headless protocol-11 scenarios passed: "
+                      << mCompletedCycles << " cycles, " << mOptions.clients
+                      << " clients, " << mDroppedSnapshots << " dropped snapshots.\n";
+            if (mOptions.metricsOutput.empty())
+                return;
+            const auto parent = mOptions.metricsOutput.parent_path();
+            if (!parent.empty())
+                std::filesystem::create_directories(parent);
+            std::ofstream output(mOptions.metricsOutput, std::ios::binary | std::ios::trunc);
+            require(static_cast<bool>(output), "failed to create metrics report");
+            output
+                << "{\n"
+                << "  \"schemaVersion\": 1,\n"
+                << "  \"commit\": \"" << jsonEscape(mOptions.commit) << "\",\n"
+                << "  \"cycles\": " << mCompletedCycles << ",\n"
+                << "  \"clients\": " << mOptions.clients << ",\n"
+                << "  \"simulatedLatencyMilliseconds\": "
+                << mOptions.latencyMilliseconds << ",\n"
+                << "  \"simulatedPacketLossPercent\": "
+                << mOptions.packetLossPercent << ",\n"
+                << "  \"droppedSnapshots\": " << mDroppedSnapshots << ",\n"
+                << "  \"tickP99Microseconds\": "
+                << snapshot.tickP99Microseconds << ",\n"
+                << "  \"serializationP99Microseconds\": "
+                << snapshot.serializationP99Microseconds << ",\n"
+                << "  \"maximumQueueDepth\": "
+                << snapshot.maximumQueueDepth << ",\n"
+                << "  \"residentMemoryBytes\": "
+                << snapshot.residentMemoryBytes << ",\n"
+                << "  \"initialResidentMemoryBytes\": "
+                << mInitialResidentMemory << ",\n"
+                << "  \"peakResidentMemoryBytes\": "
+                << mPeakResidentMemory << ",\n"
+                << "  \"monotonicMemoryGrowthDetected\": "
+                << (mMonotonicMemoryGrowth ? "true" : "false") << ",\n"
+                << "  \"inboundBytes\": " << snapshot.inbound.bytes << ",\n"
+                << "  \"outboundBytes\": " << snapshot.outbound.bytes << "\n"
+                << "}\n";
+            require(static_cast<bool>(output), "failed to write metrics report");
+        }
+
+        Options mOptions;
+        std::filesystem::path mRoot;
+        std::unique_ptr<Protocol11Endpoint> mServer;
+        std::uint16_t mPort = 0;
+        std::string mFingerprint;
+        mwmp::security::ServerAuthenticationService mAuthentication;
+        mwmp::mechanics::CombatResolver mCombat;
+        mwmp::mechanics::InventoryLedger mInventory;
+        mwmp::mechanics::JusticeLedger mJustice;
+        mwmp::mechanics::PlayerLifecycle mLifecycle;
+        mwmp::metrics::ServerMetrics mMetrics;
+        std::uint64_t mLossSequence = 0;
+        std::uint64_t mDroppedSnapshots = 0;
+        std::size_t mCompletedCycles = 0;
+        std::uint64_t mInitialResidentMemory = 0;
+        std::uint64_t mLastResidentMemory = 0;
+        std::uint64_t mPeakResidentMemory = 0;
+        std::size_t mConsecutiveMemoryIncreases = 0;
+        bool mMonotonicMemoryGrowth = false;
+    };
+}
+
+int main(int argc, char** argv)
+{
+    try
+    {
+        Options options = parseOptions(argc, argv);
+        const bool temporary = options.stateDirectory.empty();
+        const std::filesystem::path root
+            = temporary ? uniqueTemporaryDirectory() : options.stateDirectory;
+        Scenario scenario(std::move(options), root);
+        scenario.run();
+        if (temporary)
+        {
+            std::error_code error;
+            std::filesystem::remove_all(root, error);
+        }
+        return 0;
+    }
+    catch (const std::exception& error)
+    {
+        std::cerr << "tes3mp-headless-integration: " << error.what() << '\n';
+        return 1;
+    }
+}

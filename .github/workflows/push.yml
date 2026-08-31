@@ -200,6 +200,21 @@ jobs:
     - name: Run dedicated-server-only tests
       run: ctest --test-dir build-server --output-on-failure
 
+    - name: Capture protocol 11 performance sample
+      run: >
+        build-server/tes3mp-headless-integration
+        --cycles 10
+        --clients 2
+        --packet-loss-percent 2
+        --metrics-output build-metadata/tes3mp-performance.json
+        --commit ${{ github.sha }}
+
+    - name: Retain protocol 11 performance sample
+      uses: actions/upload-artifact@v6
+      with:
+        name: tes3mp-performance-${{ github.sha }}
+        path: build-metadata/tes3mp-performance.json
+
     # - name: Install
     #   shell: bash
     #   run: cmake --install .

@@ -37,6 +37,22 @@ if (TARGET tes3mp-gns-transport)
     target_link_libraries(tes3mp-tests PRIVATE tes3mp-gns-transport
         tes3mp-protocol11-endpoint tes3mp-security)
     target_compile_definitions(tes3mp-tests PRIVATE TES3MP_HAS_GNS_TRANSPORT=1)
+
+    add_executable(tes3mp-headless-integration headless_integration.cpp)
+    target_include_directories(tes3mp-headless-integration PRIVATE ${CMAKE_SOURCE_DIR})
+    target_link_libraries(tes3mp-headless-integration PRIVATE tes3mp-mechanics
+        tes3mp-metrics tes3mp-protocol11-endpoint tes3mp-security)
+
+    if (MSVC)
+        target_compile_options(tes3mp-headless-integration PRIVATE /W4 /WX)
+    else()
+        target_compile_options(tes3mp-headless-integration PRIVATE
+            -Wall -Wextra -Wpedantic -Werror)
+    endif()
+
+    add_test(NAME tes3mp-headless COMMAND tes3mp-headless-integration
+        --cycles 2 --clients 2 --packet-loss-percent 25)
+    set_tests_properties(tes3mp-headless PROPERTIES TIMEOUT 90)
 endif()
 
 if (MSVC)
