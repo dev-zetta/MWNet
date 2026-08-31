@@ -1,4 +1,5 @@
 #include "Script.hpp"
+#include "API/PublicFnAPI.hpp"
 #include "LangNative/LangNative.hpp"
 
 #if defined (ENABLE_LUA)
@@ -98,7 +99,7 @@ void Script::LoadScripts(char *scripts, const char *base)
 
 void Script::UnloadScripts()
 {
-    //Public::DeleteAll();
+    Public::DeleteAll();
     scripts.clear();
 }
 

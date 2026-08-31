@@ -2,6 +2,7 @@
 
 #include <chrono>
 
+#include <algorithm>
 #include <iostream>
 using namespace mwmp;
 
@@ -61,141 +62,148 @@ void Timer::Start()
     startTime = msec;
 }
 
-int TimerAPI::pointer = 0;
-std::unordered_map<int, Timer* > TimerAPI::timers;
+std::unordered_map<int, std::unique_ptr<Timer>> TimerAPI::timers;
+std::vector<int> TimerAPI::deferredFrees;
+bool TimerAPI::ticking = false;
+
+int TimerAPI::allocate(std::unique_ptr<Timer> timer)
+{
+    if (!timer || timers.size() >= static_cast<std::size_t>(MaximumTimers))
+        return -1;
+
+    for (int id = 0; id < MaximumTimers; ++id)
+    {
+        if (!timers.contains(id))
+        {
+            timers.emplace(id, std::move(timer));
+            return id;
+        }
+    }
+    return -1;
+}
 
 #if defined(ENABLE_LUA)
 int TimerAPI::CreateTimerLua(lua_State *lua, ScriptFuncLua callback, long msec, const std::string& def, std::vector<boost::any> args)
 {
-    int id = -1;
-
-    for (auto timer : timers)
-    {
-        if (timer.second != nullptr)
-            continue;
-        timer.second = new Timer(lua, callback, msec, def, args);
-        id = timer.first;
-    }
-
-    if (id == -1)
-    {
-        timers[pointer] = new Timer(lua, callback, msec, def, args);
-        id = pointer;
-        pointer++;
-    }
-
-    return id;
+    return allocate(std::make_unique<Timer>(lua, callback, msec, def, std::move(args)));
 }
 #endif
 
 
 int TimerAPI::CreateTimer(ScriptFunc callback, long msec, const std::string &def, std::vector<boost::any> args)
 {
-    int id = -1;
-
-    for (auto timer : timers)
-    {
-        if (timer.second != nullptr)
-            continue;
-        timer.second = new Timer(callback, msec, def, args);
-        id = timer.first;
-    }
-
-    if (id == -1)
-    {
-        timers[pointer] = new Timer(callback, msec, def, args);
-        id = pointer;
-        pointer++;
-    }
-
-    return id;
+    return allocate(std::make_unique<Timer>(callback, msec, def, std::move(args)));
 }
 
 void TimerAPI::FreeTimer(int timerid)
 {
-
-    try
-    {
-        if (timers.at(timerid) != nullptr)
-        {
-            delete timers[timerid];
-            timers[timerid] = nullptr;
-        }
-    }
-    catch(...)
+    const auto found = timers.find(timerid);
+    if (found == timers.end())
     {
         std::cerr << "Timer " << timerid << " not found!" << std::endl;
+        return;
     }
+
+    if (ticking)
+    {
+        found->second->Stop();
+        if (std::find(deferredFrees.begin(), deferredFrees.end(), timerid) == deferredFrees.end())
+            deferredFrees.push_back(timerid);
+        return;
+    }
+    timers.erase(found);
 }
 
 void TimerAPI::ResetTimer(int timerid, long msec)
 {
-    try
-    {
-        timers.at(timerid)->Restart(msec);
-    }
-    catch(...)
+    const auto found = timers.find(timerid);
+    if (found == timers.end())
     {
         std::cerr << "Timer " << timerid << " not found!" << std::endl;
+        return;
     }
+    found->second->Restart(msec);
 }
 
 void TimerAPI::StartTimer(int timerid)
 {
-    try
-    {
-        Timer *timer = timers.at(timerid);
-        if (timer == nullptr)
-            throw 1;
-        timer->Start();
-    }
-    catch(...)
+    const auto found = timers.find(timerid);
+    if (found == timers.end())
     {
         std::cerr << "Timer " << timerid << " not found!" << std::endl;
+        return;
     }
+    found->second->Start();
 }
 
 void TimerAPI::StopTimer(int timerid)
 {
-    try
-    {
-        timers.at(timerid)->Stop();
-    }
-    catch(...)
+    const auto found = timers.find(timerid);
+    if (found == timers.end())
     {
         std::cerr << "Timer " << timerid << " not found!" << std::endl;
+        return;
     }
+    found->second->Stop();
 }
 
 bool TimerAPI::IsTimerElapsed(int timerid)
 {
-    bool ret = false;
-    try
-    {
-        ret = timers.at(timerid)->IsEnded();
-    }
-    catch(...)
+    const auto found = timers.find(timerid);
+    if (found == timers.end())
     {
         std::cerr << "Timer " << timerid << " not found!" << std::endl;
+        return false;
     }
-    return ret;
+    return found->second->IsEnded();
 }
 
 void TimerAPI::Terminate()
 {
-    for (auto timer : timers)
+    if (ticking)
     {
-        if (timer.second != nullptr)
-            delete timer.second;
-        timer.second = nullptr;
+        deferredFrees.reserve(timers.size());
+        for (auto& [id, timer] : timers)
+        {
+            timer->Stop();
+            deferredFrees.push_back(id);
+        }
+        return;
     }
+    timers.clear();
+    deferredFrees.clear();
 }
 
 void TimerAPI::Tick()
 {
-    for (auto timer : timers)
+    std::vector<int> activeTimers;
+    activeTimers.reserve(timers.size());
+    for (const auto& [id, timer] : timers)
+        activeTimers.push_back(id);
+
+    ticking = true;
+    try
     {
-        if (timer.second != nullptr)
-            timer.second->Tick();
+        for (const int id : activeTimers)
+        {
+            const auto found = timers.find(id);
+            if (found != timers.end())
+                found->second->Tick();
+        }
     }
+    catch (...)
+    {
+        ticking = false;
+        applyDeferredFrees();
+        throw;
+    }
+    ticking = false;
+    applyDeferredFrees();
+}
+
+void TimerAPI::applyDeferredFrees()
+{
+    for (const int id : deferredFrees)
+        timers.erase(id);
+    deferredFrees.clear();
 }

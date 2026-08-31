@@ -1,23 +1,34 @@
 #include <Script/ScriptFunction.hpp>
 #include "PublicFnAPI.hpp"
 
-std::unordered_map<std::string, Public *> Public::publics;
+#include <utility>
 
-Public::~Public()
-{
-
-}
+std::unordered_map<std::string, std::unique_ptr<Public>> Public::publics;
 
 Public::Public(ScriptFunc _public, const std::string &name, char ret_type, const std::string &def) : ScriptFunction(_public, ret_type, def)
 {
-    publics.emplace(name, this);
 }
 
 Public::Public(ScriptFuncLua _public, lua_State *lua, const std::string &name, char ret_type, const std::string &def) : ScriptFunction(
         _public, lua, ret_type, def)
 {
-    publics.emplace(name, this);
 }
+
+void Public::MakePublic(ScriptFunc callback, const std::string& name,
+    char returnType, const std::string& definition)
+{
+    publics.insert_or_assign(name,
+        std::unique_ptr<Public>(new Public(callback, name, returnType, definition)));
+}
+
+#if defined(ENABLE_LUA)
+void Public::MakePublic(ScriptFuncLua callback, lua_State* lua,
+    const std::string& name, char returnType, const std::string& definition)
+{
+    publics.insert_or_assign(name,
+        std::unique_ptr<Public>(new Public(std::move(callback), lua, name, returnType, definition)));
+}
+#endif
 
 boost::any Public::Call(const std::string &name, const std::vector<boost::any> &args)
 {
@@ -55,10 +66,5 @@ bool Public::IsLua(const std::string &name)
 
 void Public::DeleteAll()
 {
-    for (auto it = publics.begin(); it != publics.end(); ++it)
-    {
-        Public *_public = it->second;
-        delete _public;
-        publics.erase(it);
-    }
+    publics.clear();
 }

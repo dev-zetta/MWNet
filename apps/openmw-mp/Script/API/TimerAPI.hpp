@@ -1,7 +1,10 @@
 #ifndef OPENMW_TIMERAPI_HPP
 #define OPENMW_TIMERAPI_HPP
 
+#include <memory>
 #include <string>
+#include <unordered_map>
+#include <vector>
 
 #include <Script/Script.hpp>
 #include <Script/ScriptFunction.hpp>
@@ -38,6 +41,8 @@ namespace mwmp
     class TimerAPI
     {
     public:
+        static constexpr int MaximumTimers = 16384;
+
 #if defined(ENABLE_LUA)
         static int CreateTimerLua(lua_State *lua, ScriptFuncLua callback, long msec, const std::string& def, std::vector<boost::any> args);
 #endif
@@ -52,8 +57,12 @@ namespace mwmp
 
         static void Tick();
     private:
-        static std::unordered_map<int, Timer* > timers;
-        static int pointer;
+        static int allocate(std::unique_ptr<Timer> timer);
+        static void applyDeferredFrees();
+
+        static std::unordered_map<int, std::unique_ptr<Timer>> timers;
+        static std::vector<int> deferredFrees;
+        static bool ticking;
     };
 }
 

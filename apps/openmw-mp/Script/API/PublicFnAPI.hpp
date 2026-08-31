@@ -1,6 +1,7 @@
 #ifndef PLUGINSYSTEM3_PUBLICFNAPI_HPP
 #define PLUGINSYSTEM3_PUBLICFNAPI_HPP
 
+#include <memory>
 #include <unordered_map>
 #include <Script/ScriptFunction.hpp>
 
@@ -8,9 +9,7 @@
 class Public : public ScriptFunction
 {
 private:
-    ~Public();
-
-    static std::unordered_map<std::string, Public *> publics;
+    static std::unordered_map<std::string, std::unique_ptr<Public>> publics;
 
     Public(ScriptFunc _public, const std::string &name, char ret_type, const std::string &def);
 #if defined(ENABLE_LUA)
@@ -18,9 +17,14 @@ private:
 #endif
 
 public:
-    template<typename... Args>
-    static void MakePublic(Args &&... args)
-    { new Public(std::forward<Args>(args)...); }
+    ~Public() override = default;
+
+    static void MakePublic(ScriptFunc callback, const std::string& name,
+        char returnType, const std::string& definition);
+#if defined(ENABLE_LUA)
+    static void MakePublic(ScriptFuncLua callback, lua_State* lua,
+        const std::string& name, char returnType, const std::string& definition);
+#endif
 
     static boost::any Call(const std::string &name, const std::vector<boost::any> &args);
 
