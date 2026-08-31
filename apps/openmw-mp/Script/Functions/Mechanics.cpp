@@ -256,10 +256,13 @@ void MechanicsFunctions::Jail(unsigned short pid, int jailDays, bool ignoreJailT
     packet->Send(false);
 }
 
-void MechanicsFunctions::Resurrect(unsigned short pid, unsigned int type) noexcept
+void MechanicsFunctions::Resurrect(unsigned short pid, unsigned int type)
 {
     Player *player;
     GET_PLAYER(pid, player, );
+
+    if (!mwmp::Networking::getPtr()->beginPlayerRespawn(*player, type))
+        return;
 
     player->resurrectType = type;
 

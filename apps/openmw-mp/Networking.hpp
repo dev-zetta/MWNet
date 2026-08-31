@@ -8,6 +8,7 @@
 #include <components/openmw-mp/Controllers/WorldstatePacketController.hpp>
 #include <components/openmw-mp/Packets/PacketPreInit.hpp>
 #include <components/openmw-mp/Mechanics/MovementValidator.hpp>
+#include <components/openmw-mp/Mechanics/PlayerLifecycle.hpp>
 #include <components/openmw-mp/Security/ServerAuthenticationService.hpp>
 #include <components/openmw-mp/Session/AuthorityLease.hpp>
 #include <components/openmw-mp/Transport/ApplicationPacketDispatcher.hpp>
@@ -92,6 +93,9 @@ namespace  mwmp
         bool validatePlayerMovement(Player& player, const BasePlayer& incoming);
         bool authorizePlayerMovement(const Player& player, double tolerance = 128.0);
         void resetPlayerMovement(std::uint64_t connection) noexcept;
+        bool acceptPlayerDeath(Player& player);
+        bool beginPlayerRespawn(Player& player, std::uint32_t respawnType);
+        bool acknowledgePlayerRespawn(Player& player, const BasePlayer& incoming);
 
         static const Networking &get();
         static Networking *getPtr();
@@ -119,9 +123,11 @@ namespace  mwmp
         security::ServerAuthenticationService mAuthentication;
         session::AuthorityLeaseManager mAuthorityLeases;
         mechanics::MovementValidator mMovementValidator;
+        mechanics::PlayerLifecycle mPlayerLifecycle;
         std::unordered_set<std::uint64_t> mAuthenticatedConnections;
         std::unordered_map<std::uint64_t, unsigned int> mAuthorityViolations;
         std::unordered_map<std::uint64_t, unsigned int> mMovementViolations;
+        std::unordered_map<std::uint64_t, unsigned int> mLifecycleViolations;
         std::unordered_set<std::string> mBannedAddresses;
         unsigned int mMaximumConnections;
         unsigned short mPort;

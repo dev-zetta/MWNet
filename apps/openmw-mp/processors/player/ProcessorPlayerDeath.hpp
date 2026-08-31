@@ -2,6 +2,7 @@
 #define OPENMW_PROCESSORPLAYERDEATH_HPP
 
 #include "../PlayerProcessor.hpp"
+#include "apps/openmw-mp/Networking.hpp"
 #include <chrono>
 
 namespace mwmp
@@ -12,6 +13,11 @@ namespace mwmp
         ProcessorPlayerDeath()
         {
             BPP_INIT(ID_PLAYER_DEATH)
+        }
+
+        bool Validate(Player& player, const BasePlayer&) override
+        {
+            return Networking::getPtr()->acceptPlayerDeath(player);
         }
 
         void Do(PlayerPacket &packet, Player &player) override

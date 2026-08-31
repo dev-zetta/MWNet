@@ -2,6 +2,7 @@
 #define OPENMW_PROCESSORPLAYERRESURRECT_HPP
 
 #include "../PlayerProcessor.hpp"
+#include "apps/openmw-mp/Networking.hpp"
 
 namespace mwmp
 {
@@ -13,13 +14,16 @@ namespace mwmp
             BPP_INIT(ID_PLAYER_RESURRECT)
         }
 
-        void Do(PlayerPacket &packet, Player &player) override
+        bool Validate(Player& player, const BasePlayer& incoming) override
+        {
+            return Networking::getPtr()->acknowledgePlayerRespawn(player, incoming);
+        }
+
+        void Do(PlayerPacket&, Player &player) override
         {
             LOG_MESSAGE_SIMPLE(TimedLog::LOG_VERBOSE, "Received %s from %s", strPacketID.c_str(), player.npc.mName.c_str());
 
             player.creatureStats.mDead = false;
-
-            packet.Send(true);
 
             Script::Call<Script::CallbackIdentity("OnPlayerResurrect")>(player.getId());
         }

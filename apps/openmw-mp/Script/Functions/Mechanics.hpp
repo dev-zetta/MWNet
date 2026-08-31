@@ -306,7 +306,7 @@ public:
     *             2 for TRIBUNAL_TEMPLE).
     * \return void
     */
-    static void Resurrect(unsigned short pid, unsigned int type) noexcept;
+    static void Resurrect(unsigned short pid, unsigned int type);
 
     // All methods below are deprecated versions of methods from above
 

@@ -49,6 +49,7 @@ Networking::Networking(RakNet::RakPeerInterface *peer,
     , mReceiver(transport::ApplicationPacketFlow::ClientToServer)
     , mAuthentication(credentialDirectory, legacyPlayerDirectory)
     , mMovementValidator(maximumConnections)
+    , mPlayerLifecycle(maximumConnections)
     , mMaximumConnections(maximumConnections)
     , mPort(port)
     , mMovementMaximumSpeed(movementMaximumSpeed)
@@ -215,6 +216,53 @@ void Networking::resetPlayerMovement(std::uint64_t connection) noexcept
 {
     mMovementValidator.erase(connection);
     mMovementViolations.erase(connection);
+}
+
+bool Networking::acceptPlayerDeath(Player& player)
+{
+    const mechanics::PlayerLifeTransition transition
+        = mPlayerLifecycle.reportDeath(player.guid.g);
+    if (transition.applied())
+        return true;
+
+    const unsigned int violations = ++mLifecycleViolations[player.guid.g];
+    LOG_MESSAGE_SIMPLE(TimedLog::LOG_WARN,
+        "Rejected death intent from connection %llu: %s (violation %u)",
+        static_cast<unsigned long long>(player.guid.g),
+        mechanics::describe(transition.decision), violations);
+    if (violations >= 5)
+        disconnectTransport({ player.guid.g }, "repeated invalid death intents");
+    return false;
+}
+
+bool Networking::beginPlayerRespawn(Player& player, std::uint32_t respawnType)
+{
+    const mechanics::PlayerLifeTransition transition
+        = mPlayerLifecycle.beginRespawn(player.guid.g, respawnType);
+    if (transition.applied())
+        return true;
+    LOG_MESSAGE_SIMPLE(TimedLog::LOG_WARN,
+        "Rejected server respawn transition for connection %llu: %s",
+        static_cast<unsigned long long>(player.guid.g),
+        mechanics::describe(transition.decision));
+    return false;
+}
+
+bool Networking::acknowledgePlayerRespawn(Player& player, const BasePlayer& incoming)
+{
+    const mechanics::PlayerLifeTransition transition
+        = mPlayerLifecycle.acknowledgeRespawn(player.guid.g, incoming.resurrectType);
+    if (transition.applied())
+        return true;
+
+    const unsigned int violations = ++mLifecycleViolations[player.guid.g];
+    LOG_MESSAGE_SIMPLE(TimedLog::LOG_WARN,
+        "Rejected respawn acknowledgement from connection %llu: %s (violation %u)",
+        static_cast<unsigned long long>(player.guid.g),
+        mechanics::describe(transition.decision), violations);
+    if (violations >= 5)
+        disconnectTransport({ player.guid.g }, "repeated invalid respawn acknowledgements");
+    return false;
 }
 
 bool Networking::isPassworded() const
@@ -504,6 +552,8 @@ void Networking::disconnectPlayer(RakNet::RakNetGUID guid)
     mAuthorityLeases.releaseOwner(guid.g);
     mAuthorityViolations.erase(guid.g);
     resetPlayerMovement(guid.g);
+    mPlayerLifecycle.erase(guid.g);
+    mLifecycleViolations.erase(guid.g);
     Players::deletePlayer(guid);
 }
 
