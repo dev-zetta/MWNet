@@ -31,8 +31,9 @@ This is the first hardening milestone for the major OpenMW 0.52 compatibility an
 
 ### Multiplayer and user interface
 
-* Move server selection into an in-game browser flow and make returning from a server possible without restarting the executable
-* Use the configured destination address in the browser's direct-connect field instead of a hardcoded public server; the default is now `localhost:25565`
+* Retire the standalone browser and legacy master service, move server selection into an in-game direct-connect flow, and make returning from a server possible without restarting the executable
+* Add bounded saved and recent endpoint history, canonical IPv4/IPv6 address handling, stored fingerprint display and a non-authenticating encrypted reachability probe
+* Use the configured destination address in the direct-connect field instead of a hardcoded public server; the default is now `localhost:25565`
 * Fix the standalone server browser startup order for the current OpenMW settings system
 * Restore TES3MP chat bindings after the OpenMW 0.52 input changes; F2 and Y are now handled before MyGUI or conflicting OpenMW actions can consume them
 * Restore chat text focus and SDL text input, keep the chat state consistent when it becomes visible, and allow Y to focus chat while ordinary in-game windows such as the inventory are open
@@ -93,6 +94,9 @@ This is the first hardening milestone for the major OpenMW 0.52 compatibility an
 * Build the canonical spell and enchanted-item registry from the server's configured ESM load order at startup, and configure local test servers from the client's detected Morrowind data path
 * Validate player spellbook changes through a bounded transactional canonical ledger so clients cannot cast arbitrary registry entries
 * Resolve player spell intents transactionally on the server, including canonical success, magicka, enchanted-item charge or consumption, health, active effects, equipment reconciliation and death publication
+* Extend the canonical ESM registry with potion and ingredient definitions from the configured load order
+* Treat potion and ingredient use as server-validated intents, atomically commit inventory consumption and canonical magic outcomes, and keep the client path presentation-only
+* Expose item-use intent/rejection hooks and `IsUsedItemServerResolved` while preserving the legacy post-commit `OnPlayerItemUse` callback
 * Record bounded server tick and serialization p99 samples, persistence queue depth, per-connection traffic and resident memory, with periodic typed metric reports
 * Add a canonical justice ledger with server-owned bounty reductions and bounded, ID-tracked jail sentences
 * Treat player bounty packets as increase-only intents, preserve legacy validators before canonical commit, and reserve bounty reductions for server scripts

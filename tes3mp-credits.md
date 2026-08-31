@@ -9,7 +9,7 @@ Maintainer
 C++ programmers
 ---------------
 
-    Gabriel Max (dev-zetta) - OpenMW 0.52 port, server browser, Lua bindings, AI, combat and runtime fixes
+    Gabriel Max (dev-zetta) - OpenMW 0.52 port, direct connect, Lua bindings, AI, combat and runtime fixes
     David Cernat - World, NPC & quest sync, player sync improvements, state saving & loading, extensive scripting
     Stanislav Zhukov (Koncord) - Foundation for networking & scripting systems, player sync, server browser & master server
 

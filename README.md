@@ -23,7 +23,7 @@ The major changes since TES3MP 0.8.1 include:
 
 * the OpenMW 0.52 engine, rendering, input, Lua, navigation, and content-format improvements;
 * a C++20 and Qt 6 migration of the TES3MP client and dedicated server;
-* in-game direct connect and a convenience client launcher;
+* an in-game saved/recent direct-connect screen with encrypted reachability probes and fingerprint display;
 * an encrypted GameNetworkingSockets transport with trust-on-first-use server identities;
 * a sol2-based server Lua binding layer and bundled 0.8.1 CoreScripts brought forward for 1.0.0;
 * extensive startup, cell, actor, object, dialogue, death, and NPC AI crash fixes;
@@ -33,6 +33,8 @@ The major changes since TES3MP 0.8.1 include:
 * server-driven resurrection without the default single-player jail/menu interruption.
 
 See the [TES3MP changelog](tes3mp-changelog.md) for the detailed release history and OpenMW's [engine changelog](CHANGELOG.md) for upstream changes.
+
+The standalone browser, legacy master service and automatic connection to `master.tes3mp.com` have been removed. Direct connect is the only discovery path supported for 1.0.0. Public discovery, if reintroduced later, will be a separately reviewed service rather than part of this release.
 
 Multiplayer features
 --------------------
@@ -63,6 +65,7 @@ Getting started
 * [OpenMW installation documentation](https://openmw.readthedocs.io/en/latest/manuals/installation/index.html)
 * [TES3MP credits](tes3mp-credits.md)
 * [Security policy](SECURITY.md) and [threat model](THREAT_MODEL.md)
+* [1.0 release gates](RELEASE_GATES.md)
 * [Lua 0.8.1 compatibility](LUA_API_COMPATIBILITY.md)
 * [Code of Conduct](CODE_OF_CONDUCT.md)
 * [Legacy TES3MP wiki](https://github.com/TES3MP/TES3MP/wiki)

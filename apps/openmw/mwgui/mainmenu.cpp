@@ -167,7 +167,7 @@ namespace MWGui
             Start of tes3mp change (minor)
 
             If TES3MP is connected, "New Game" from the ESC menu means
-            "disconnect and return to server browser" rather than starting
+            "disconnect and return to direct connect" rather than starting
             a singleplayer game, to avoid crashing mid-connection.
         */
         if (mwmp::Main::isConnected())
@@ -214,7 +214,7 @@ namespace MWGui
             /*
                 Start of tes3mp change (major)
 
-                In multiplayer, New Game opens the server browser.
+                In multiplayer, New Game opens direct connect.
             */
             if (mwmp::Main::isInitialized())
             {
@@ -351,7 +351,7 @@ namespace MWGui
         /*
             Start of tes3mp change (major)
 
-            In multiplayer, New Game opens the server browser instead of starting a SP game.
+            In multiplayer, New Game opens direct connect instead of starting a SP game.
             Load Game is kept so players can resume a previous session.
             Save Game is removed (saves are SP-only and confusing in MP context).
         */

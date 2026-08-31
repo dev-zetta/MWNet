@@ -31,7 +31,7 @@ namespace mwmp
         static const Main &get();
         static void frame(float dt);
 
-        // Deferred connect: called by in-game server browser after init()
+        // Deferred connect: called by the in-game direct-connect screen after init().
         static bool connectTo(const std::string& host, unsigned short port,
             ClientConnectionOptions options);
         static bool isNewGamePending();

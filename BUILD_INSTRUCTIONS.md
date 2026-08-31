@@ -119,7 +119,7 @@ Core libraries:
 - Boost (filesystem, program_options, system, iostreams)
 - SDL2
 - OpenSceneGraph (OSG)
-- Qt5 (for launcher and browser)
+- Qt 6 (for the launcher and editor tools)
 - MyGUI
 - FFmpeg (libavcodec, libavformat, libavutil, libswscale)
 - OpenAL
@@ -326,7 +326,7 @@ This build includes:
 
 **From the TES3MP multiplayer lineage:**
 - Multiplayer core (apps/openmw/mwmp/ - 154 files)
-- In-game direct connect with saved trust fingerprints
+- In-game saved/recent direct connect with encrypted probes and TOFU fingerprints
 - Encrypted GameNetworkingSockets transport
 - 144 files with multiplayer additions marked
 

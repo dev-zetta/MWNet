@@ -1068,7 +1068,7 @@ void OMW::Engine::go()
         Start of tes3mp change (minor)
 
         When --connect was provided, skip the main menu entirely.
-        When no --connect was given, show the main menu so the server browser
+        When no --connect was given, show the main menu so the direct-connect screen
         can appear. Either way, suppress the company logo video: its inner
         render loop calls Main::frame() before the world is ready, causing a crash.
     */
@@ -1183,7 +1183,7 @@ void OMW::Engine::go()
         /*
             Start of tes3mp addition
 
-            If the in-game server browser connected to a server, start the
+            If the in-game direct-connect screen connected to a server, start the
             game world from here (the main loop) rather than from the GUI
             callback, so that newGame()'s cleanup() runs at a safe point.
         */

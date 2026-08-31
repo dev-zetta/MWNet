@@ -210,7 +210,7 @@ bool Main::init(std::vector<std::string> &content, Files::Collections &collectio
             Start of tes3mp change (major)
 
             No --connect CLI arg provided: skip connecting here and let
-            the in-game server browser handle it via connectTo().
+            the in-game direct-connect screen handle it via connectTo().
         */
         get().mLocalSystem->serverPassword.clear();
         return true;

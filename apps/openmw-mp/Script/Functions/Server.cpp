@@ -11,15 +11,30 @@
 #include <Script/Script.hpp>
 
 #include <filesystem>
+#include <mutex>
 #include <optional>
 #include <span>
+#include <string>
 #include <string_view>
+#include <unordered_set>
 
 static std::string tempFilename;
 static std::chrono::high_resolution_clock::time_point startupTime = std::chrono::high_resolution_clock::now();
 
 namespace
 {
+    void warnRemovedDiscoveryCall(std::string_view function)
+    {
+        static std::mutex mutex;
+        static std::unordered_set<std::string> warned;
+        std::scoped_lock lock(mutex);
+        if (!warned.emplace(function).second)
+            return;
+        LOG_MESSAGE_SIMPLE(TimedLog::LOG_WARN,
+            "[Script]: %.*s is deprecated and has no effect because public server discovery was removed",
+            static_cast<int>(function.size()), function.data());
+    }
+
     std::optional<std::filesystem::path> persistencePath(const char* relativePath)
     {
         if (relativePath == nullptr || relativePath[0] == '\0')
@@ -225,11 +240,13 @@ bool ServerFunctions::GetScriptErrorIgnoringState()
 void ServerFunctions::SetGameMode(const char *gameMode)
 {
     (void)gameMode;
+    warnRemovedDiscoveryCall("SetGameMode");
 }
 
 void ServerFunctions::SetHostname(const char *name)
 {
     (void)name;
+    warnRemovedDiscoveryCall("SetHostname");
 }
 
 void ServerFunctions::SetServerPassword(const char *password)
@@ -254,12 +271,14 @@ void ServerFunctions::SetRuleString(const char *key, const char *value)
 {
     (void)key;
     (void)value;
+    warnRemovedDiscoveryCall("SetRuleString");
 }
 
 void ServerFunctions::SetRuleValue(const char *key, double value)
 {
     (void)key;
     (void)value;
+    warnRemovedDiscoveryCall("SetRuleValue");
 }
 
 void ServerFunctions::AddDataFileRequirement(const char *dataFilename, const char *checksumString)

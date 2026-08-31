@@ -19,6 +19,9 @@ Protocol 11 changes the network and trust boundaries, not the safe TES3MP 0.8.1 
 | `OnActorAIIntentRejected(pid, cellDescription, reason)` | New | Reports an actor-AI package that changed or failed after script validation |
 | `OnPlayerInventoryIntent(pid)` | New | Runs before canonical inventory commit; `false` denies, while `true` or `nil` allows native validation |
 | `OnPlayerInventoryIntentRejected(pid)` | New | Optional cleanup notification when a script-modified inventory intent fails canonical validation |
+| `OnPlayerItemUseIntent(pid)` | New | Runs before a direct consumable can change canonical inventory, magicka, health or active effects; `false` denies the intent |
+| `OnPlayerItemUseIntentRejected(pid, reason)` | New | Reports script denial or canonical item-use validation failure |
+| `IsUsedItemServerResolved(pid)` | New | Tells the legacy post-commit `OnPlayerItemUse` callback that the server has already committed a potion or ingredient outcome |
 | `OnPlayerBountyIntent(pid)` | New | Runs legacy bounty validators before an increase-only canonical bounty commit; server scripts may override through `SetBounty` |
 | `OnPlayerBountyIntentRejected(pid, reason)` | New | Reports script denial or canonical bounty validation failure |
 | `OnPlayerJailComplete(pid, sentenceId)` | New | Runs after the server accepts the matching completion acknowledgement for a server-issued jail sentence |
@@ -46,6 +49,7 @@ Protocol 11 changes the network and trust boundaries, not the safe TES3MP 0.8.1 
 | `WriteFileAtomically(path, contents)` | New | Synchronous atomic write below the configured server data directory |
 | `QueueFileWrite(path, contents)` | New | Bounded, coalesced atomic write below the configured server data directory |
 | `FlushPersistence()` | New | Waits for queued persistence writes to finish |
+| `SetGameMode`, `SetHostname`, `SetRuleString`, `SetRuleValue` | Names and signatures retained | No-op compatibility calls because public discovery was removed; each emits a one-time deprecation warning |
 
 ## Lifecycle order
 
@@ -78,6 +82,7 @@ validation callback returns. Post-commit legacy callbacks keep their normal
 - Keep account-dependent setup in `OnPlayerConnect`, which now has an authenticated identity.
 - Use `OnPlayerAuthenticated` when a script needs the canonical account name or whether registration just occurred.
 - Use `OnPlayerInventoryIntent` to allow or deny an inventory request before commit. Existing inventory-change setters may propose a modified intent, which is validated again. `OnPlayerInventory` keeps its 0.8.1 signature and now runs after canonical commit.
+- Use `OnPlayerItemUseIntent` to allow or deny a direct potion or ingredient request. The server resolves its canonical consumption, magic outcome, active effects and death before `OnPlayerItemUse`; scripts can use `IsUsedItemServerResolved` to distinguish that post-commit path. Other item-use behavior retains the 0.8.1 approval flow.
 - Existing `OnPlayerBounty` validators now run at `OnPlayerBountyIntent`; the legacy callback and handlers run after commit. Clients may report bounty increases, but only server code may reduce or clear canonical bounty.
 - `Jail` keeps its 0.8.1 signature, issues a bounded server-owned sentence ID, and treats zero days as a no-op. Completion is accepted only from the sentenced transport connection with the current sentence ID; `OnPlayerJailComplete` observes the committed transition.
 - Use `OnContainerIntent` to allow or deny container changes before commit. Existing `OnContainer` validators are invoked from this secure boundary, while the legacy `OnContainer(pid, cellDescription)` callback and handlers run after the entire packet has committed canonically.
@@ -87,9 +92,10 @@ validation callback returns. Post-commit legacy callbacks keep their normal
 - Object spawn, activation, state, move, rotate, scale, lock and delete validators run at `OnObjectMutationIntent`. Existing callbacks remain post-commit; CoreScripts also expose `OnObjectMove` and `OnObjectRotate` custom-event hooks. Player activators and summoners are bound to the sending transport connection.
 - Use `OnPlayerAttackIntent` to inspect or deny a sanitized combat request. `SetPlayerAttackStrength` may modify its normalized strength; the server validates the result, rolls hit chance, computes damage and publishes canonical health.
 - Use `OnActorAttackIntent` for the equivalent authority-leased actor request. Call `SetActorAttackStrength` with the supplied actor index to modify ranged strength before the server revalidates and resolves it.
-- Use `OnPlayerCastIntent` and `OnActorCastIntent` to reject malformed or disallowed cast presentation. Alpha.1 validates identities, IDs, projectile geometry and reported caster transforms, but canonical server calculation of spell success and effects is still a later hardening gate; scripts must not treat these callbacks as proof that a gameplay effect occurred.
+- Use `OnPlayerCastIntent` and `OnActorCastIntent` to reject malformed or disallowed cast presentation. Native resolution validates identities, source records, projectile geometry and caster transforms, then calculates canonical spell success, magicka or enchantment charge, health/death and bounded active effects. An intent callback alone is not proof that a later canonical result succeeded.
 - Existing `OnPlayerSpellsActive` and `OnActorSpellsActive` validators now run at the new intent boundary. Their legacy callbacks and handlers run only after the complete active-effect operation has committed canonically.
 - Treat incoming gameplay callbacks as requests. Validators may deny an intent, but only a native canonical result may change protected server state.
 - Do not rely on an old callback being able to mutate another player or an actor outside the caller's authority lease.
+- Replace discovery-only calls to `SetGameMode`, `SetHostname`, `SetRuleString` and `SetRuleValue`; they remain callable in 1.x but public server discovery is outside 1.0.0 and the values are no longer published.
 
 The compatibility promise applies to safe calls. Behavior that depended on malformed packets, unauthenticated mutation, client-selected identity, unchecked cross-player access or a native crash is intentionally not preserved.

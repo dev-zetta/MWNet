@@ -3,7 +3,7 @@ config = {}
 -- The path used by the server for its data folder
 config.dataPath = tes3mp.GetDataPath()
 
--- The game mode displayed for this server in the server browser
+-- Retained for 0.8.1 script compatibility; public server discovery was removed in protocol 11
 config.gameMode = "Default"
 
 -- Time to login, in seconds

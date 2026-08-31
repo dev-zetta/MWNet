@@ -1,0 +1,31 @@
+# TES3MP 1.0 release gates
+
+TES3MP 1.0 is released sequentially. Passing a later implementation milestone does not skip the evidence required by an earlier release, and the stable version remains blocked until every gate below has recorded artifacts from the exact release candidate.
+
+## Milestones
+
+| Milestone | Required scope | Current status |
+| --- | --- | --- |
+| `1.0.0-alpha.1` | Clean out-of-tree builds, protocol 11 only, fail-closed codec, unit/fuzz targets, loopback default | Implementation present; release-candidate cross-platform evidence pending |
+| `1.0.0-alpha.2` | GameNetworkingSockets, encrypted identity handshake, TOFU and Argon2id migration | Implementation present on the alpha branch; milestone is not released out of sequence |
+| `1.0.0-alpha.3` | Canonical authority, lifecycle gates, owned workers and atomic persistence | Foundation present; adversarial integration and fault-injection evidence pending |
+| `1.0.0-beta.1` | Sanitizer and fuzz gates, limited opt-in public test, independent security review | Blocked |
+| `1.0.0` | Cross-platform, soak, migration, security, legal and documentation gates | Blocked |
+
+The source version remains `1.0.0-alpha.1` until the alpha.1 release candidate passes its gates. It must then advance through alpha.2, alpha.3 and beta.1; implemented future-scope work does not change that ordering.
+
+## Required evidence
+
+- GCC, Clang and MSVC build and test results for the exact candidate.
+- ASan/UBSan and TSan runs with no relevant defects.
+- Round-trip coverage for every protocol message and malformed coverage for every truncation point, invalid UTF-8, trailing data and allocation limit.
+- At least 24 aggregate CPU-hours of decoder fuzzing under ASan/UBSan, with every finding retained as a regression fixture.
+- Headless integration results for first trust, fingerprint mismatch, registration, legacy-account migration, lockout, duplicate initialization, reconnect, chat, movement, inventory, combat, jail, death and respawn.
+- Fault injection at every persistence stage showing that either the old or new complete record remains recoverable.
+- One hundred connect/disconnect and death/respawn cycles.
+- A 24-hour, eight-client soak with latency and loss simulation and no sanitizer defect, deadlock, monotonic memory growth or queue-limit violation.
+- Server tick p99, bandwidth and resident-memory comparison against the alpha.1 baseline. A regression over 5% requires written review and justification.
+- Independent security review and remediation of release-blocking findings.
+- Specialist review of TES3MP's additional GPL terms and third-party notices. The project does not declare those terms compliant before that review.
+
+CI artifacts, fuzz corpora, soak logs, performance reports and review records must identify the tested commit. Human or time-based gates may not be replaced with an unverified checklist entry.

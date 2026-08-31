@@ -240,7 +240,7 @@ public:
     static bool GetScriptErrorIgnoringState();
 
     /**
-    * \brief Set the game mode of the server, as displayed in the server browser.
+    * \brief Deprecated compatibility no-op. Public server discovery was removed in protocol 11.
     *
     * \param gameMode The new game mode.
     * \return void
@@ -248,7 +248,7 @@ public:
     static void SetGameMode(const char* gameMode);
 
     /**
-    * \brief Set the name of the server, as displayed in the server browser.
+    * \brief Deprecated compatibility no-op. Public server discovery was removed in protocol 11.
     *
     * \param name The new name.
     * \return void
@@ -286,7 +286,7 @@ public:
     static void SetScriptErrorIgnoringState(bool state);
 
     /**
-    * \brief Set a rule string for the server details displayed in the server browser.
+    * \brief Deprecated compatibility no-op. Public server discovery was removed in protocol 11.
     *
     * \param key The name of the rule.
     * \param value The string value of the rule.
@@ -295,7 +295,7 @@ public:
     static void SetRuleString(const char *key, const char *value);
 
     /**
-    * \brief Set a rule value for the server details displayed in the server browser.
+    * \brief Deprecated compatibility no-op. Public server discovery was removed in protocol 11.
     *
     * \param key The name of the rule.
     * \param value The numerical value of the rule.
