@@ -1,6 +1,7 @@
 add_executable(tes3mp-tests
     authority.cpp
     main.cpp
+    lifecycle.cpp
     movement.cpp
     persistence.cpp
     protocol.cpp

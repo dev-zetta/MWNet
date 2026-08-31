@@ -1,5 +1,6 @@
 add_library(tes3mp-mechanics STATIC
     MovementValidator.cpp
+    PlayerLifecycle.cpp
 )
 
 target_include_directories(tes3mp-mechanics PUBLIC ${CMAKE_SOURCE_DIR})
