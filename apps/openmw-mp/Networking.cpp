@@ -57,6 +57,7 @@ Networking::Networking(RakNet::RakPeerInterface *peer,
     , mMovementValidator(maximumConnections)
     , mPlayerLifecycle(maximumConnections)
     , mInventoryLedger(maximumConnections * 2U)
+    , mProgressionLedger(maximumConnections)
     , mShapeshiftLedger(maximumConnections)
     , mMaximumConnections(maximumConnections)
     , mPort(port)
@@ -2726,6 +2727,190 @@ void Networking::cancelPlayerShapeshiftIntent(Player& player) noexcept
     }
 }
 
+namespace
+{
+    mwmp::mechanics::ProgressionStat progressionStat(
+        const ESM::StatState<float>& state) noexcept
+    {
+        return { state.mBase, state.mMod, state.mCurrent,
+            state.mDamage, state.mProgress };
+    }
+
+    ESM::StatState<float> esmProgressionStat(
+        const mwmp::mechanics::ProgressionStat& state) noexcept
+    {
+        ESM::StatState<float> result;
+        result.mBase = state.base;
+        result.mMod = state.modifier;
+        result.mCurrent = state.current;
+        result.mDamage = state.damage;
+        result.mProgress = state.progress;
+        return result;
+    }
+
+    mwmp::mechanics::PlayerProgressionState progressionState(
+        const mwmp::BasePlayer& player)
+    {
+        mwmp::mechanics::PlayerProgressionState result;
+        for (std::size_t index = 0; index < result.attributes.size(); ++index)
+        {
+            const ESM::RefId id = ESM::Attribute::indexToRefId(index);
+            const auto stat = player.creatureStats.mAttributes.find(id);
+            if (stat != player.creatureStats.mAttributes.end())
+                result.attributes[index] = progressionStat(stat->second);
+            const auto increase = player.npcStats.mSkillIncrease.find(id);
+            if (increase != player.npcStats.mSkillIncrease.end())
+                result.skillIncreases[index] = increase->second;
+        }
+        for (std::size_t index = 0; index < result.skills.size(); ++index)
+        {
+            const ESM::RefId id = ESM::Skill::indexToRefId(index);
+            const auto stat = player.npcStats.mSkills.find(id);
+            if (stat != player.npcStats.mSkills.end())
+                result.skills[index] = progressionStat(stat->second);
+        }
+        result.level = player.creatureStats.mLevel;
+        result.levelProgress = player.npcStats.mLevelProgress;
+        return result;
+    }
+
+    std::vector<mwmp::mechanics::AttributeProgressionChange> attributeChanges(
+        const mwmp::BasePlayer& player)
+    {
+        std::vector<mwmp::mechanics::AttributeProgressionChange> result;
+        result.reserve(player.attributeIndexChanges.size());
+        for (const std::uint8_t index : player.attributeIndexChanges)
+        {
+            if (index >= ESM::Attribute::Length)
+            {
+                result.push_back({ index, {}, 0 });
+                continue;
+            }
+            const ESM::RefId id = ESM::Attribute::indexToRefId(index);
+            const auto stat = player.creatureStats.mAttributes.find(id);
+            const auto increase = player.npcStats.mSkillIncrease.find(id);
+            result.push_back({ index,
+                stat == player.creatureStats.mAttributes.end()
+                    ? mwmp::mechanics::ProgressionStat{}
+                    : progressionStat(stat->second),
+                increase == player.npcStats.mSkillIncrease.end()
+                    ? 0 : increase->second });
+        }
+        return result;
+    }
+
+    void applyCanonicalAttributes(Player& player,
+        const mwmp::mechanics::PlayerProgressionState& state) noexcept
+    {
+        for (std::size_t index = 0; index < state.attributes.size(); ++index)
+        {
+            const ESM::RefId id = ESM::Attribute::indexToRefId(index);
+            const auto stat = player.creatureStats.mAttributes.find(id);
+            if (stat != player.creatureStats.mAttributes.end())
+                stat->second = esmProgressionStat(state.attributes[index]);
+            const auto increase = player.npcStats.mSkillIncrease.find(id);
+            if (increase != player.npcStats.mSkillIncrease.end())
+                increase->second = state.skillIncreases[index];
+        }
+    }
+}
+
+bool Networking::validatePlayerAttributes(
+    Player& player, const BasePlayer& incoming)
+{
+    if (!mProgressionLedger.find(player.guid.g))
+    {
+        const mechanics::ProgressionResult seeded
+            = mProgressionLedger.set(player.guid.g, progressionState(player));
+        if (!seeded.applied())
+        {
+            LOG_MESSAGE_SIMPLE(TimedLog::LOG_ERROR,
+                "Failed to seed progression state for connection %llu: %s",
+                static_cast<unsigned long long>(player.guid.g),
+                mechanics::describe(seeded.decision));
+            return false;
+        }
+    }
+
+    const std::vector<mechanics::AttributeProgressionChange> changes
+        = attributeChanges(incoming);
+    const mechanics::ProgressionResult result = mProgressionLedger.previewAttributes(
+        player.guid.g, incoming.exchangeFullInfo, changes);
+    if (result.applied())
+    {
+        mPendingPlayerAttributes.insert(player.guid.g);
+        return true;
+    }
+
+    const unsigned int violations = ++mProgressionViolations[player.guid.g];
+    LOG_MESSAGE_SIMPLE(TimedLog::LOG_WARN,
+        "Rejected attribute intent from connection %llu: %s (violation %u)",
+        static_cast<unsigned long long>(player.guid.g),
+        mechanics::describe(result.decision), violations);
+    if (violations >= 5)
+        disconnectTransport({ player.guid.g }, "repeated invalid progression intents");
+    return false;
+}
+
+bool Networking::commitPlayerAttributes(Player& player)
+{
+    if (mPendingPlayerAttributes.erase(player.guid.g) == 0)
+        return false;
+    const std::vector<mechanics::AttributeProgressionChange> changes
+        = attributeChanges(player);
+    const mechanics::ProgressionResult result = mProgressionLedger.applyAttributes(
+        player.guid.g, player.exchangeFullInfo, changes);
+    if (result.applied())
+    {
+        applyCanonicalAttributes(player, result.state);
+        return true;
+    }
+
+    cancelPlayerAttributeIntent(player);
+    const unsigned int violations = ++mProgressionViolations[player.guid.g];
+    LOG_MESSAGE_SIMPLE(TimedLog::LOG_WARN,
+        "Rejected modified attribute intent from connection %llu: %s (violation %u)",
+        static_cast<unsigned long long>(player.guid.g),
+        mechanics::describe(result.decision), violations);
+    if (violations >= 5)
+        disconnectTransport({ player.guid.g }, "repeated invalid progression intents");
+    return false;
+}
+
+bool Networking::applyServerPlayerAttributes(Player& player)
+{
+    if (mPendingPlayerAttributes.contains(player.guid.g))
+        return false;
+    mechanics::PlayerProgressionState state = mProgressionLedger.find(player.guid.g)
+        .value_or(progressionState(player));
+    const mechanics::PlayerProgressionState proposed = progressionState(player);
+    state.attributes = proposed.attributes;
+    state.skillIncreases = proposed.skillIncreases;
+    const mechanics::ProgressionResult result
+        = mProgressionLedger.set(player.guid.g, std::move(state));
+    if (!result.applied())
+    {
+        LOG_MESSAGE_SIMPLE(TimedLog::LOG_ERROR,
+            "Rejected server-authored attributes for connection %llu: %s",
+            static_cast<unsigned long long>(player.guid.g),
+            mechanics::describe(result.decision));
+    }
+    return result.applied();
+}
+
+bool Networking::isPlayerAttributeIntentPending(
+    const Player& player) const noexcept
+{
+    return mPendingPlayerAttributes.contains(player.guid.g);
+}
+
+void Networking::cancelPlayerAttributeIntent(Player& player) noexcept
+{
+    mPendingPlayerAttributes.erase(player.guid.g);
+    if (const auto canonical = mProgressionLedger.find(player.guid.g))
+        applyCanonicalAttributes(player, *canonical);
+}
+
 bool Networking::validatePlayerStats(Player& player, const BasePlayer& incoming)
 {
     bool valid = true;
@@ -3702,6 +3887,9 @@ void Networking::disconnectPlayer(RakNet::RakNetGUID guid)
     mShapeshiftLedger.erase(guid.g);
     mShapeshiftViolations.erase(guid.g);
     mPendingPlayerShapeshifts.erase(guid.g);
+    mProgressionLedger.erase(guid.g);
+    mProgressionViolations.erase(guid.g);
+    mPendingPlayerAttributes.erase(guid.g);
     mObjectViolations.erase(guid.g);
     mPendingObjectPlacements.erase(guid.g);
     mPendingObjectMutations.erase(guid.g);

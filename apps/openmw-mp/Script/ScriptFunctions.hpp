@@ -170,6 +170,8 @@ public:
             {"OnPlayerMovementViolation", Callback<unsigned short, const char*, double, double, unsigned int>()},
             {"OnActorMovementViolation", Callback<unsigned short, const char*, const char*, double, double, unsigned int>()},
             {"OnPlayerAttribute",        Callback<unsigned short>()},
+            {"OnPlayerAttributeIntent",  Callback<unsigned short>()},
+            {"OnPlayerAttributeIntentRejected", Callback<unsigned short>()},
             {"OnPlayerSkill",            Callback<unsigned short>()},
             {"OnPlayerLevel",            Callback<unsigned short>()},
             {"OnPlayerBounty",           Callback<unsigned short>()},

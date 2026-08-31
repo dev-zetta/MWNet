@@ -644,6 +644,12 @@ void StatsFunctions::SendAttributes(unsigned short pid)
     Player *player;
     GET_PLAYER(pid, player,);
 
+    if (mwmp::Networking::getPtr()->isPlayerAttributeIntentPending(*player))
+        throw std::runtime_error(
+            "a pending attribute intent cannot be sent before canonical commit");
+    if (!mwmp::Networking::getPtr()->applyServerPlayerAttributes(*player))
+        throw std::runtime_error("the server-authored attributes were rejected");
+
     mwmp::PlayerPacket *packet = mwmp::Networking::get().getPlayerPacketController()->GetPacket(ID_PLAYER_ATTRIBUTE);
     packet->setPlayer(player);
     

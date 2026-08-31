@@ -448,6 +448,14 @@ function OnPlayerAttribute(pid)
     eventHandler.OnPlayerAttribute(pid)
 end
 
+function OnPlayerAttributeIntent(pid)
+    return eventHandler.OnPlayerAttributeIntent(pid)
+end
+
+function OnPlayerAttributeIntentRejected(pid)
+    eventHandler.OnPlayerAttributeIntentRejected(pid)
+end
+
 function OnPlayerSkill(pid)
     eventHandler.OnPlayerSkill(pid)
 end

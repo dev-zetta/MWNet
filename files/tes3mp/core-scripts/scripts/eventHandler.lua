@@ -9,6 +9,7 @@ local pendingActorListEvents = {}
 local pendingActorCellChangeEvents = {}
 local pendingPlayerBountyEvents = {}
 local pendingPlayerShapeshiftEvents = {}
+local pendingPlayerAttributeEvents = {}
 local pendingObjectPlaceEvents = {}
 local pendingObjectMutationEvents = {}
 local pendingContainerEvents = {}
@@ -935,7 +936,50 @@ eventHandler.OnGenericPlayerEvent = function(pid, packetType)
 end
 
 eventHandler.OnPlayerAttribute = function(pid)
-    eventHandler.OnGenericPlayerEvent(pid, "PlayerAttribute")
+    local pendingEvent = pendingPlayerAttributeEvents[pid]
+    pendingPlayerAttributeEvents[pid] = nil
+    if pendingEvent == nil then
+        return
+    end
+
+    if Players[pid] ~= nil and Players[pid]:IsLoggedIn() then
+        Players[pid]:SaveDataByPacketType("PlayerAttribute", pendingEvent.playerPacket)
+        customEventHooks.triggerHandlers("OnPlayerAttribute", pendingEvent.eventStatus,
+            {pid, pendingEvent.playerPacket})
+    end
+end
+
+eventHandler.OnPlayerAttributeIntent = function(pid)
+    pendingPlayerAttributeEvents[pid] = nil
+    if Players[pid] == nil or not Players[pid]:IsLoggedIn() then
+        return false
+    end
+
+    local playerPacket = packetReader.GetPlayerPacketTables(pid, "PlayerAttribute")
+    local eventStatus = customEventHooks.triggerValidators("OnPlayerAttribute",
+        {pid, playerPacket})
+    if not eventStatus.validDefaultHandler then
+        customEventHooks.triggerHandlers("OnPlayerAttribute", eventStatus,
+            {pid, playerPacket})
+        return false
+    end
+    pendingPlayerAttributeEvents[pid] = {
+        eventStatus = eventStatus,
+        playerPacket = playerPacket
+    }
+    return true
+end
+
+eventHandler.OnPlayerAttributeIntentRejected = function(pid)
+    local pendingEvent = pendingPlayerAttributeEvents[pid]
+    pendingPlayerAttributeEvents[pid] = nil
+    if pendingEvent == nil then
+        return
+    end
+    local eventStatus = customEventHooks.makeEventStatus(false,
+        pendingEvent.eventStatus.validCustomHandlers)
+    customEventHooks.triggerHandlers("OnPlayerAttribute", eventStatus,
+        {pid, pendingEvent.playerPacket})
 end
 
 eventHandler.OnPlayerSkill = function(pid)
