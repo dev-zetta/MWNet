@@ -206,6 +206,8 @@ public:
             {"OnPlayerTopic",            Callback<unsigned short>()},
             {"OnPlayerDisposition",      Callback<unsigned short>()},
             {"OnPlayerBook",             Callback<unsigned short>()},
+            {"OnPlayerItemUseIntent",    Callback<unsigned short>()},
+            {"OnPlayerItemUseIntentRejected", Callback<unsigned short, const char*>()},
             {"OnPlayerItemUse",          Callback<unsigned short>()},
             {"OnPlayerMiscellaneous",    Callback<unsigned short>()},
             {"OnPlayerInput",            Callback<unsigned short>()},

@@ -810,6 +810,31 @@ bool Networking::validatePlayerInventory(Player& player, const BasePlayer& incom
     return false;
 }
 
+bool Networking::validatePlayerItemUse(Player& player, const BasePlayer& incoming)
+{
+    mechanics::ItemUseIntent intent;
+    intent.item = { incoming.usedItem.refId, incoming.usedItem.soul,
+        incoming.usedItem.charge, incoming.usedItem.enchantmentCharge,
+        incoming.usedItem.count };
+    intent.usingItemMagic = incoming.usingItemMagic;
+    intent.drawState = incoming.itemUseDrawState;
+
+    const mechanics::ItemUseDecision decision = mechanics::ItemUseValidator{}.validate(
+        intent, mInventoryLedger.snapshot(
+            { mechanics::InventoryOwnerKind::Player, player.guid.value }));
+    if (decision == mechanics::ItemUseDecision::Accepted)
+        return true;
+
+    const unsigned int violations = ++mInventoryViolations[player.guid.value];
+    LOG_MESSAGE_SIMPLE(TimedLog::LOG_WARN,
+        "Rejected item-use intent from connection %llu: %s (violation %u)",
+        static_cast<unsigned long long>(player.guid.value),
+        mechanics::describe(decision), violations);
+    if (violations >= 5)
+        disconnectTransport({ player.guid.value }, "repeated invalid item-use intents");
+    return false;
+}
+
 bool Networking::commitPlayerInventory(Player& player)
 {
     const auto action = inventoryAction(player.inventoryChanges.action);

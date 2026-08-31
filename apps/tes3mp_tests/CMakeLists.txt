@@ -7,6 +7,7 @@ add_executable(tes3mp-tests
     combat.cpp
     equipment.cpp
     inventory.cpp
+    item_use.cpp
     justice.cpp
     main.cpp
     lifecycle.cpp

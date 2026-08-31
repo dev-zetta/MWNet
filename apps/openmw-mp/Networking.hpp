@@ -10,6 +10,7 @@
 #include <components/openmw-mp/Mechanics/MovementValidator.hpp>
 #include <components/openmw-mp/Mechanics/PlayerLifecycle.hpp>
 #include <components/openmw-mp/Mechanics/InventoryLedger.hpp>
+#include <components/openmw-mp/Mechanics/ItemUseValidator.hpp>
 #include <components/openmw-mp/Mechanics/EquipmentLedger.hpp>
 #include <components/openmw-mp/Mechanics/CombatResolver.hpp>
 #include <components/openmw-mp/Mechanics/ActiveEffectLedger.hpp>
@@ -123,6 +124,7 @@ namespace  mwmp
         bool beginPlayerRespawn(Player& player, std::uint32_t respawnType);
         bool acknowledgePlayerRespawn(Player& player, const BasePlayer& incoming);
         bool validatePlayerInventory(Player& player, const BasePlayer& incoming);
+        bool validatePlayerItemUse(Player& player, const BasePlayer& incoming);
         bool commitPlayerInventory(Player& player);
         bool applyServerInventoryChanges(Player& player);
         bool validatePlayerSpellbook(Player& player, const BasePlayer& incoming);

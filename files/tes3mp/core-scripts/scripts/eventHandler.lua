@@ -1645,6 +1645,25 @@ eventHandler.OnPlayerBook = function(pid)
     end
 end
 
+eventHandler.OnPlayerItemUseIntent = function(pid)
+    if Players[pid] == nil or not Players[pid]:IsLoggedIn() then
+        return false
+    end
+
+    local itemRefId = tes3mp.GetUsedItemRefId(pid)
+    local eventStatus = customEventHooks.triggerValidators(
+        "OnPlayerItemUseIntent", {pid, itemRefId})
+    customEventHooks.triggerHandlers(
+        "OnPlayerItemUseIntent", eventStatus, {pid, itemRefId})
+    return eventStatus.validDefaultHandler
+end
+
+eventHandler.OnPlayerItemUseIntentRejected = function(pid, reason)
+    local eventStatus = customEventHooks.makeEventStatus(false, true)
+    customEventHooks.triggerHandlers(
+        "OnPlayerItemUseIntentRejected", eventStatus, {pid, reason})
+end
+
 eventHandler.OnPlayerItemUse = function(pid)
     if Players[pid] ~= nil and Players[pid]:IsLoggedIn() then
         local itemRefId = tes3mp.GetUsedItemRefId(pid)

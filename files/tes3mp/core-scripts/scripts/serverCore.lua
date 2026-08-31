@@ -619,6 +619,14 @@ function OnPlayerBook(pid)
     eventHandler.OnPlayerBook(pid)
 end
 
+function OnPlayerItemUseIntent(pid)
+    return eventHandler.OnPlayerItemUseIntent(pid)
+end
+
+function OnPlayerItemUseIntentRejected(pid, reason)
+    eventHandler.OnPlayerItemUseIntentRejected(pid, reason)
+end
+
 function OnPlayerItemUse(pid)
     tes3mp.LogMessage(enumerations.log.INFO, "Called \"OnPlayerItemUse\" for " .. logicHandler.GetChatName(pid))
     eventHandler.OnPlayerItemUse(pid)

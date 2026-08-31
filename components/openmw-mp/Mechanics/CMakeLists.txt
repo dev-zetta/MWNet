@@ -6,6 +6,7 @@ add_library(tes3mp-mechanics STATIC
     CombatResolver.cpp
     EquipmentLedger.cpp
     InventoryLedger.cpp
+    ItemUseValidator.cpp
     JusticeLedger.cpp
     MovementValidator.cpp
     ObjectStateLedger.cpp
