@@ -61,6 +61,8 @@ This is the first hardening milestone for the major OpenMW 0.52 compatibility an
 
 * Update TES3MP addition blocks and fork-specific code to the current OpenMW formatting conventions
 * Add Gabriel Max (dev-zetta) as project maintainer and contributor for the OpenMW 0.52 port, modernization and stability work
+* Add a security policy, threat model, responsible-disclosure process, Code of Conduct and audited Lua 0.8.1 compatibility table
+* Move the bundled prohibited-name policy into an operator-editable moderation file without logging its contents
 
 0.8.1
 -----

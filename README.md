@@ -62,6 +62,9 @@ Getting started
 * [Build instructions](BUILD_INSTRUCTIONS.md)
 * [OpenMW installation documentation](https://openmw.readthedocs.io/en/latest/manuals/installation/index.html)
 * [TES3MP credits](tes3mp-credits.md)
+* [Security policy](SECURITY.md) and [threat model](THREAT_MODEL.md)
+* [Lua 0.8.1 compatibility](LUA_API_COMPATIBILITY.md)
+* [Code of Conduct](CODE_OF_CONDUCT.md)
 * [Legacy TES3MP wiki](https://github.com/TES3MP/TES3MP/wiki)
 * [TES3MP community Discord](https://discord.gg/ECJk293)
 * [TES3MP section on the OpenMW forums](https://forum.openmw.org/viewforum.php?f=45)
@@ -107,6 +110,8 @@ Contributing
 Bug reports should identify the TES3MP version, operating system, server scripts, content list and order, whether the problem reproduces on a local server, and whether it reproduces in stock OpenMW 0.52 single-player.
 
 Keep changes focused and discuss large multiplayer or protocol changes before implementation. Include the relevant build checks and, for synchronization changes, results from a matching local client/server test.
+
+By participating in the project, contributors agree to follow the [Code of Conduct](CODE_OF_CONDUCT.md). Report security issues through the private process in [SECURITY.md](SECURITY.md), not a public issue.
 
 Credits and licenses
 --------------------
