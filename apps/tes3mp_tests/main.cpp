@@ -6,6 +6,7 @@
 int runProtocolTests();
 int runActiveEffectTests();
 int runAuthorityTests();
+int runCastTests();
 int runCombatTests();
 int runInventoryTests();
 int runMovementTests();
@@ -31,7 +32,7 @@ int main()
     }
 
     int failures = runProtocolTests() + runActiveEffectTests()
-        + runAuthorityTests() + runCombatTests()
+        + runAuthorityTests() + runCastTests() + runCombatTests()
         + runInventoryTests() + runMovementTests() + runOwnershipTests()
         + runLifecycleTests() + runPersistenceTests()
         + runSessionTests() + runTransportTests();

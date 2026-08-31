@@ -83,6 +83,7 @@ This is the first hardening milestone for the major OpenMW 0.52 compatibility an
 * Add a bounded, transactional canonical active-effect model for players and cell-scoped actors
 * Apply multi-actor active-effect changes atomically so invalid entries cannot partially update a packet
 * Validate player and actor active-effect changes before Lua, persistence, or relay and keep legacy callbacks as post-commit notifications
+* Add a rendering-independent cast-intent validator for canonical caster/target identities, bounded source IDs and finite projectile geometry
 
 0.8.1
 -----
