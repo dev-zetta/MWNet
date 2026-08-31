@@ -4,7 +4,10 @@
 #include <apps/openmw-mp/Player.hpp>
 #include <apps/openmw-mp/Script/ScriptFunctions.hpp>
 #include <apps/openmw-mp/CellController.hpp>
+#include <cstddef>
 #include <fstream>
+#include <span>
+#include <stdexcept>
 
 #include <apps/openmw-mp/Utils.hpp>
 
@@ -285,37 +288,53 @@ void WorldstateFunctions::ClearDestinationOverrides() noexcept
     writeWorldstate.destinationOverrides.clear();
 }
 
-void WorldstateFunctions::SaveMapTileImageFile(unsigned int index, const char *filePath) noexcept
+void WorldstateFunctions::SaveMapTileImageFile(unsigned int index, const char *filePath)
 {
-    if (index >= readWorldstate->mapTiles.size())
-        return;
+    if (readWorldstate == nullptr || index >= readWorldstate->mapTiles.size())
+        throw std::out_of_range("map tile index is outside the received worldstate");
+    if (filePath == nullptr || *filePath == '\0')
+        throw std::invalid_argument("map tile output path is empty");
 
     const std::vector<char>& imageData = readWorldstate->mapTiles.at(index).imageData;
+    if (imageData.size() > static_cast<std::size_t>(mwmp::maxImageDataSize))
+        throw std::length_error("map tile image exceeds the 1,800-byte limit");
 
-    std::ofstream outputFile(filePath, std::ios::binary);
-    std::ostream_iterator<char> outputIterator(outputFile);
-    std::copy(imageData.begin(), imageData.end(), outputIterator);
+    mwmp::persistence::AtomicWriteOptions options;
+    options.backup = mwmp::persistence::BackupPolicy::MaintainOne;
+    options.maximumBytes = mwmp::maxImageDataSize;
+    const auto bytes = std::as_bytes(std::span(imageData));
+    const auto decision = mwmp::Networking::getPtr()->queuePersistenceWrite(
+        filePath, bytes, std::move(options));
+    if (decision != mwmp::persistence::QueueDecision::Queued
+        && decision != mwmp::persistence::QueueDecision::Coalesced)
+    {
+        throw std::runtime_error(std::string("map tile persistence was rejected: ")
+            + mwmp::persistence::describe(decision));
+    }
 }
 
-void WorldstateFunctions::LoadMapTileImageFile(int cellX, int cellY, const char* filePath) noexcept
+void WorldstateFunctions::LoadMapTileImageFile(int cellX, int cellY, const char* filePath)
 {
+    if (filePath == nullptr || *filePath == '\0')
+        throw std::invalid_argument("map tile input path is empty");
+
     mwmp::MapTile mapTile;
     mapTile.x = cellX;
     mapTile.y = cellY;
 
-    std::ifstream inputFile(filePath, std::ios::binary);
-    mapTile.imageData = std::vector<char>(std::istreambuf_iterator<char>(inputFile), std::istreambuf_iterator<char>());
-
-    if (mapTile.imageData.size() > mwmp::maxImageDataSize)
-    {
-        LOG_MESSAGE_SIMPLE(TimedLog::LOG_ERROR, "Error loading image file for map tile: "
-            "%s has a size of %i, which is over the maximum allowed of %i!",
-            filePath, mapTile.imageData.size(), mwmp::maxImageDataSize);
-    }
-    else
-    {
-        writeWorldstate.mapTiles.push_back(mapTile);
-    }
+    std::ifstream inputFile(filePath, std::ios::binary | std::ios::ate);
+    if (!inputFile)
+        throw std::runtime_error("failed to open map tile image");
+    const std::streampos size = inputFile.tellg();
+    if (size < 0 || static_cast<std::uintmax_t>(size) > mwmp::maxImageDataSize)
+        throw std::length_error("map tile image exceeds the 1,800-byte limit");
+    mapTile.imageData.resize(static_cast<std::size_t>(size));
+    inputFile.seekg(0);
+    if (!mapTile.imageData.empty())
+        inputFile.read(mapTile.imageData.data(), size);
+    if (!inputFile)
+        throw std::runtime_error("failed to read map tile image");
+    writeWorldstate.mapTiles.push_back(std::move(mapTile));
 }
 
 void WorldstateFunctions::SendClientScriptGlobal(unsigned short pid, bool sendToOtherPlayers, bool skipAttachedPlayer) noexcept

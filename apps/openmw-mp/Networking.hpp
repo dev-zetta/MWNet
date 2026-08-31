@@ -28,6 +28,7 @@
 #include <filesystem>
 #include <memory>
 #include <optional>
+#include <span>
 #include <string>
 #include <string_view>
 #include <unordered_map>
@@ -169,6 +170,9 @@ namespace  mwmp
         void rejectActorDeathClaims(Player& player, const BaseActorList& incoming);
         persistence::QueueDecision queuePersistenceWrite(
             std::filesystem::path path, std::string_view contents);
+        persistence::QueueDecision queuePersistenceWrite(
+            std::filesystem::path path, std::span<const std::byte> contents,
+            persistence::AtomicWriteOptions options);
         void flushPersistence();
 
         static const Networking &get();

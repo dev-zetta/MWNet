@@ -523,7 +523,7 @@ public:
     * \param filePath The file path of the resulting file.
     * \return void
     */
-    static void SaveMapTileImageFile(unsigned int index, const char *filePath) noexcept;
+    static void SaveMapTileImageFile(unsigned int index, const char *filePath);
 
     /**
     * \brief Load a .png file as the image data for a map tile and add it to the write-only worldstate
@@ -534,7 +534,7 @@ public:
     * \param filePath The file path of the loaded file.
     * \return void
     */
-    static void LoadMapTileImageFile(int cellX, int cellY, const char* filePath) noexcept;
+    static void LoadMapTileImageFile(int cellX, int cellY, const char* filePath);
 
     /**
     * \brief Send a ClientScriptGlobal packet with the current client script globals in

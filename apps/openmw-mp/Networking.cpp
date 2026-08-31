@@ -2729,9 +2729,16 @@ persistence::QueueDecision Networking::queuePersistenceWrite(
     persistence::AtomicWriteOptions options;
     options.backup = persistence::BackupPolicy::MaintainOne;
     options.maximumBytes = 64U * 1024U * 1024U;
-    const auto bytes = std::as_bytes(std::span(contents));
+    return queuePersistenceWrite(
+        std::move(path), std::as_bytes(std::span(contents)), std::move(options));
+}
+
+persistence::QueueDecision Networking::queuePersistenceWrite(
+    std::filesystem::path path, std::span<const std::byte> contents,
+    persistence::AtomicWriteOptions options)
+{
     const std::string displayPath = path.generic_string();
-    return mPersistenceService.save(std::move(path), bytes, std::move(options),
+    return mPersistenceService.save(std::move(path), contents, std::move(options),
         [displayPath](const persistence::PersistenceResult& result) {
             if (!result.success)
             {
