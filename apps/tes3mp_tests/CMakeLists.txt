@@ -1,5 +1,6 @@
 add_executable(tes3mp-tests
     authority.cpp
+    combat.cpp
     main.cpp
     lifecycle.cpp
     movement.cpp

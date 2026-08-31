@@ -5,6 +5,7 @@
 
 int runProtocolTests();
 int runAuthorityTests();
+int runCombatTests();
 int runMovementTests();
 int runLifecycleTests();
 int runPersistenceTests();
@@ -26,7 +27,7 @@ int main()
         return 1;
     }
 
-    int failures = runProtocolTests() + runAuthorityTests() + runMovementTests()
+    int failures = runProtocolTests() + runAuthorityTests() + runCombatTests() + runMovementTests()
         + runLifecycleTests() + runPersistenceTests()
         + runSessionTests() + runTransportTests();
 #if defined(TES3MP_HAS_GNS_TRANSPORT)

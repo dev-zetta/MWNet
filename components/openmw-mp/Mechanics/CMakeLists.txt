@@ -1,4 +1,5 @@
 add_library(tes3mp-mechanics STATIC
+    CombatResolver.cpp
     MovementValidator.cpp
     PlayerLifecycle.cpp
 )
