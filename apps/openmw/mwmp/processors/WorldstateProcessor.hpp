@@ -4,6 +4,7 @@
 #include <components/openmw-mp/TimedLog.hpp>
 #include <components/openmw-mp/NetworkMessages.hpp>
 #include <components/openmw-mp/Packets/Worldstate/WorldstatePacket.hpp>
+#include <components/openmw-mp/Transport/ApplicationPacketReceiver.hpp>
 #include "BaseClientPacketProcessor.hpp"
 
 namespace mwmp
@@ -13,7 +14,7 @@ namespace mwmp
     public:
         virtual void Do(WorldstatePacket &packet, Worldstate &worldstate) = 0;
 
-        static bool Process(mwmp::transport::ApplicationPacketFrame &packet, Worldstate &worldstate);
+        static bool Process(const mwmp::transport::ReceivedApplicationPacket& packet, Worldstate &worldstate);
 
         virtual ~WorldstateProcessor();
     };

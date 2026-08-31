@@ -10,9 +10,9 @@ PacketContainer::PacketContainer() : ObjectPacket()
     hasCellData = true;
 }
 
-void PacketContainer::Packet(RakNet::BitStream *newBitstream, bool send)
+void PacketContainer::Packet(bool send)
 {
-    if (!PacketHeader(newBitstream, send))
+    if (!PacketHeader(send))
         return;
 
     RW(objectList->action, send);

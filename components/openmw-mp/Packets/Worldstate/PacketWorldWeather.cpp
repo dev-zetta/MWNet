@@ -8,9 +8,9 @@ PacketWorldWeather::PacketWorldWeather() : WorldstatePacket()
     packetID = ID_WORLD_WEATHER;
 }
 
-void PacketWorldWeather::Packet(RakNet::BitStream *newBitstream, bool send)
+void PacketWorldWeather::Packet(bool send)
 {
-    WorldstatePacket::Packet(newBitstream, send);
+    WorldstatePacket::Packet(send);
 
     RW(worldstate->forceWeather, send);
     RW(worldstate->weather.region, send, true);

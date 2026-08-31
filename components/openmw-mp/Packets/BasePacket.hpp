@@ -9,14 +9,13 @@
 #include <type_traits>
 #include <utility>
 #include <variant>
-#include <BitStream.h>
 #include <components/esm/path.hpp>
 #include <components/esm/position.hpp>
 #include <components/esm/refid.hpp>
 #include <components/esm3/loadcell.hpp>
 #include <components/esm3/statstate.hpp>
 #include <components/openmw-mp/Protocol/PacketCodec.hpp>
-#include <components/openmw-mp/Transport/ApplicationPacketFrame.hpp>
+#include <components/openmw-mp/Transport/ITransport.hpp>
 
 namespace mwmp::transport
 {
@@ -33,24 +32,16 @@ namespace mwmp
 
         virtual ~BasePacket() = default;
 
-        virtual void Packet(RakNet::BitStream *newBitstream, bool send);
+        virtual void Packet(bool send);
         virtual uint32_t Send(bool toOtherPlayers = true);
         virtual uint32_t Send(transport::TransportConnectionId destination);
-        virtual void Read();
+        void Read(std::span<const std::byte> payload);
 
         void setGUID(mwmp::transport::TransportConnectionId newGuid);
         mwmp::transport::TransportConnectionId getGUID();
 
-        void SetReadStream(RakNet::BitStream *bitStream);
-        void SetSendStream(RakNet::BitStream *bitStream);
-        void SetStreams(RakNet::BitStream *inStream, RakNet::BitStream *outStream);
         void SetApplicationPacketDispatcher(transport::ApplicationPacketDispatcher* dispatcher);
         virtual uint32_t RequestData(mwmp::transport::TransportConnectionId targetGuid);
-
-        static inline uint32_t headerSize()
-        {
-            return 1U + sizeof(std::uint64_t);
-        }
 
         uint8_t GetPacketID() const
         {
@@ -403,16 +394,15 @@ namespace mwmp
 
         bool writeResult(bool result);
         bool readResult(bool result);
-        bool finishWrite();
         bool finishRead();
         bool prepareWrite();
+        std::size_t unreadPayloadBytes() const noexcept;
         std::span<const std::byte> writePayload() const noexcept;
         uint32_t dispatchRequest(mwmp::transport::TransportConnectionId targetGuid);
         uint32_t dispatchPacket(transport::TransportConnectionId destination);
         uint32_t dispatchPacket(bool toOther);
 
         uint8_t packetID;
-        RakNet::BitStream *bsRead, *bsSend, *bs;
         std::optional<protocol::PacketReader> mReader;
         std::optional<protocol::PacketWriter> mWriter;
         transport::ApplicationPacketDispatcher* mDispatcher = nullptr;

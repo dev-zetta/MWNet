@@ -11,9 +11,9 @@ PacketRecordDynamic::PacketRecordDynamic() : WorldstatePacket()
     packetID = ID_RECORD_DYNAMIC;
 }
 
-void PacketRecordDynamic::Packet(RakNet::BitStream *newBitstream, bool send)
+void PacketRecordDynamic::Packet(bool send)
 {
-    WorldstatePacket::Packet(newBitstream, send);
+    WorldstatePacket::Packet(send);
 
     RW(worldstate->recordsType, send);
 

@@ -8,9 +8,9 @@ PacketPlayerQuickKeys::PacketPlayerQuickKeys() : PlayerPacket()
     packetID = ID_PLAYER_QUICKKEYS;
 }
 
-void PacketPlayerQuickKeys::Packet(RakNet::BitStream *newBitstream, bool send)
+void PacketPlayerQuickKeys::Packet(bool send)
 {
-    PlayerPacket::Packet(newBitstream, send);
+    PlayerPacket::Packet(send);
 
     uint32_t count = 0;
 

@@ -8,9 +8,9 @@ PacketPlayerPosition::PacketPlayerPosition() : PlayerPacket()
     packetID = ID_PLAYER_POSITION;
 }
 
-void PacketPlayerPosition::Packet(RakNet::BitStream *newBitstream, bool send)
+void PacketPlayerPosition::Packet(bool send)
 {
-    PlayerPacket::Packet(newBitstream, send);
+    PlayerPacket::Packet(send);
 
     RW(player->position, send, 1);
     RW(player->direction, send, 1);

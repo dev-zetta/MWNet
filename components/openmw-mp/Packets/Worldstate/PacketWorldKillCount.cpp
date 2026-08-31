@@ -8,9 +8,9 @@ PacketWorldKillCount::PacketWorldKillCount() : WorldstatePacket()
     packetID = ID_WORLD_KILL_COUNT;
 }
 
-void PacketWorldKillCount::Packet(RakNet::BitStream *newBitstream, bool send)
+void PacketWorldKillCount::Packet(bool send)
 {
-    WorldstatePacket::Packet(newBitstream, send);
+    WorldstatePacket::Packet(send);
 
     uint32_t killChangesCount = 0;
 

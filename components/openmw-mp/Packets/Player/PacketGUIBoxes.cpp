@@ -8,9 +8,9 @@ PacketGUIBoxes::PacketGUIBoxes() : PlayerPacket()
     packetID = ID_GUI_MESSAGEBOX;
 }
 
-void PacketGUIBoxes::Packet(RakNet::BitStream *newBitstream, bool send)
+void PacketGUIBoxes::Packet(bool send)
 {
-    PlayerPacket::Packet(newBitstream, send);
+    PlayerPacket::Packet(send);
 
     RW(player->guiMessageBox.id, send);
     RW(player->guiMessageBox.type, send);

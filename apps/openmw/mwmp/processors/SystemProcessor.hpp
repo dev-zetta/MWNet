@@ -4,6 +4,7 @@
 #include <components/openmw-mp/TimedLog.hpp>
 #include <components/openmw-mp/NetworkMessages.hpp>
 #include <components/openmw-mp/Packets/System/SystemPacket.hpp>
+#include <components/openmw-mp/Transport/ApplicationPacketReceiver.hpp>
 #include "../LocalSystem.hpp"
 #include "BaseClientPacketProcessor.hpp"
 
@@ -14,7 +15,7 @@ namespace mwmp
     public:
         virtual void Do(SystemPacket &packet, BaseSystem *system) = 0;
 
-        static bool Process(mwmp::transport::ApplicationPacketFrame &packet);
+        static bool Process(const mwmp::transport::ReceivedApplicationPacket& packet);
 
         virtual ~SystemProcessor();
     };

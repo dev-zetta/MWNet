@@ -8,9 +8,9 @@ PacketPlayerBaseInfo::PacketPlayerBaseInfo() : PlayerPacket()
     packetID = ID_PLAYER_BASEINFO;
 }
 
-void PacketPlayerBaseInfo::Packet(RakNet::BitStream *newBitstream, bool send)
+void PacketPlayerBaseInfo::Packet(bool send)
 {
-    PlayerPacket::Packet(newBitstream, send);
+    PlayerPacket::Packet(send);
 
     RW(player->npc.mName, send, true);
     RW(player->npc.mModel, send, true);

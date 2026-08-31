@@ -6,9 +6,9 @@ mwmp::PacketWorldRegionAuthority::PacketWorldRegionAuthority() : PlayerPacket()
     packetID = ID_WORLD_REGION_AUTHORITY;
 }
 
-void mwmp::PacketWorldRegionAuthority::Packet(RakNet::BitStream *newBitstream, bool send)
+void mwmp::PacketWorldRegionAuthority::Packet(bool send)
 {
-    PlayerPacket::Packet(newBitstream, send);
+    PlayerPacket::Packet(send);
 
     RW(player->authorityRegion, send, true);
 }

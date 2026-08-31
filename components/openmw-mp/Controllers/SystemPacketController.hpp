@@ -15,7 +15,6 @@ namespace mwmp
     public:
         SystemPacketController();
         SystemPacket *GetPacket(std::uint16_t id);
-        void SetStream(RakNet::BitStream *inStream, RakNet::BitStream *outStream);
         void SetApplicationPacketDispatcher(transport::ApplicationPacketDispatcher* dispatcher);
 
         bool ContainsPacket(std::uint16_t id);

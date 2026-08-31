@@ -9,9 +9,9 @@ PacketObjectHit::PacketObjectHit() : ObjectPacket()
     hasCellData = true;
 }
 
-void PacketObjectHit::Packet(RakNet::BitStream *newBitstream, bool send)
+void PacketObjectHit::Packet(bool send)
 {
-    if (!PacketHeader(newBitstream, send))
+    if (!PacketHeader(send))
         return;
 
     BaseObject baseObject;

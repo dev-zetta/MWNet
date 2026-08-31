@@ -2,7 +2,6 @@
 #define OPENMW_SYSTEMPACKET_HPP
 
 #include <string>
-#include <BitStream.h>
 #include <components/openmw-mp/Base/BaseSystem.hpp>
 
 #include <components/openmw-mp/Packets/BasePacket.hpp>

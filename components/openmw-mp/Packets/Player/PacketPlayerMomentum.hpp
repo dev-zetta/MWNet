@@ -10,7 +10,7 @@ namespace mwmp
     public:
         PacketPlayerMomentum();
 
-        virtual void Packet(RakNet::BitStream *newBitstream, bool send);
+        virtual void Packet(bool send);
     };
 }
 

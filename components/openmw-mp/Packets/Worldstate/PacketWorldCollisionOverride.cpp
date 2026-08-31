@@ -8,9 +8,9 @@ PacketWorldCollisionOverride::PacketWorldCollisionOverride() : WorldstatePacket(
     packetID = ID_WORLD_COLLISION_OVERRIDE;
 }
 
-void PacketWorldCollisionOverride::Packet(RakNet::BitStream *newBitstream, bool send)
+void PacketWorldCollisionOverride::Packet(bool send)
 {
-    WorldstatePacket::Packet(newBitstream, send);
+    WorldstatePacket::Packet(send);
 
     RW(worldstate->hasPlayerCollision, send);
     RW(worldstate->hasActorCollision, send);

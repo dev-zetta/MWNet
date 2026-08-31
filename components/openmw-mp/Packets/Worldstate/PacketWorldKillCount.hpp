@@ -11,7 +11,7 @@ namespace mwmp
     public:
         PacketWorldKillCount();
 
-        virtual void Packet(RakNet::BitStream *newBitstream, bool send);
+        virtual void Packet(bool send);
     };
 }
 

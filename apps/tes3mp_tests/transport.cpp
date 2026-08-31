@@ -3,7 +3,6 @@
 #include <components/openmw-mp/Transport/ApplicationPacketBridge.hpp>
 #include <components/openmw-mp/Transport/ApplicationPacketDispatcher.hpp>
 #include <components/openmw-mp/Transport/ApplicationPacketReceiver.hpp>
-#include <components/openmw-mp/Transport/LegacyPacketFrame.hpp>
 #include <components/openmw-mp/Transport/SnapshotSequenceTracker.hpp>
 #include <components/openmw-mp/Transport/TransportCodec.hpp>
 #include <components/openmw-mp/Transport/TransportQueue.hpp>
@@ -329,29 +328,6 @@ namespace
         EXPECT(packet.subject == 901);
     }
 
-    void testLegacyPacketFrame()
-    {
-        ReceivedApplicationPacket packet;
-        packet.sender = { 7 };
-        packet.id = protocol::ApplicationPacketId::ChatMessage;
-        packet.subject = 0x0102030405060708ULL;
-        packet.payload = { std::byte{ 0xaa }, std::byte{ 0xbb } };
-        std::vector<unsigned char> frame;
-        protocol::CodecError error = protocol::CodecError::InvalidValue;
-        EXPECT(buildLegacyPacketFrame(packet, frame, error));
-        EXPECT(error == protocol::CodecError::None);
-        EXPECT(frame.size() == 11);
-        EXPECT(frame[0] == static_cast<unsigned char>(packet.id));
-        EXPECT(frame[1] == 0x08);
-        EXPECT(frame[8] == 0x01);
-        EXPECT(frame[9] == 0xaa);
-        EXPECT(frame[10] == 0xbb);
-
-        packet.id = protocol::ApplicationPacketId::UserMyId;
-        const auto unchanged = frame;
-        EXPECT(!buildLegacyPacketFrame(packet, frame, error));
-        EXPECT(frame == unchanged);
-    }
 }
 
 int runTransportTests()
@@ -362,6 +338,5 @@ int runTransportTests()
     testApplicationPacketBridge();
     testApplicationPacketDispatcher();
     testApplicationPacketReceiver();
-    testLegacyPacketFrame();
     return sFailures;
 }

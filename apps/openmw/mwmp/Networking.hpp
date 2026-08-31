@@ -1,7 +1,6 @@
 #ifndef OPENMW_NETWORKING_HPP
 #define OPENMW_NETWORKING_HPP
 
-#include <BitStream.h>
 #include <cstdint>
 #include <deque>
 #include <filesystem>
@@ -78,9 +77,8 @@ namespace mwmp
     private:
         bool connected;
         std::string lastError;
-        std::deque<std::vector<unsigned char>> pendingPackets;
+        std::deque<transport::ReceivedApplicationPacket> pendingPackets;
         std::size_t pendingPacketBytes = 0;
-        RakNet::BitStream bsOut;
         std::unique_ptr<transport::Protocol11Endpoint> endpoint;
         std::unique_ptr<transport::ApplicationPacketDispatcher> dispatcher;
         transport::ApplicationPacketReceiver receiver;
@@ -96,7 +94,7 @@ namespace mwmp
         ObjectList objectList;
         Worldstate worldstate;
 
-        void receiveMessage(mwmp::transport::ApplicationPacketFrame *packet);
+        void receiveMessage(const transport::ReceivedApplicationPacket& packet);
         void processTransportEvent(transport::TransportEvent event);
         bool preInit(std::vector<std::string>& content, Files::Collections& collections);
         bool authenticate(ClientConnectionOptions& options);

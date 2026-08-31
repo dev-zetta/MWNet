@@ -8,9 +8,9 @@ PacketPlayerInput::PacketPlayerInput() : PlayerPacket()
     packetID = ID_PLAYER_INPUT;
 }
 
-void PacketPlayerInput::Packet(RakNet::BitStream *newBitstream, bool send)
+void PacketPlayerInput::Packet(bool send)
 {
-    PlayerPacket::Packet(newBitstream, send);
+    PlayerPacket::Packet(send);
 
     // Placeholder
 }

@@ -8,9 +8,9 @@ PacketPlayerJournal::PacketPlayerJournal() : PlayerPacket()
     packetID = ID_PLAYER_JOURNAL;
 }
 
-void PacketPlayerJournal::Packet(RakNet::BitStream *newBitstream, bool send)
+void PacketPlayerJournal::Packet(bool send)
 {
-    PlayerPacket::Packet(newBitstream, send);
+    PlayerPacket::Packet(send);
 
     uint32_t count = 0;
 

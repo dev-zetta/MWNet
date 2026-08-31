@@ -42,12 +42,6 @@ mwmp::WorldstatePacket *mwmp::WorldstatePacketController::GetPacket(std::uint16_
     return packet == packets.end() ? nullptr : packet->second.get();
 }
 
-void mwmp::WorldstatePacketController::SetStream(RakNet::BitStream *inStream, RakNet::BitStream *outStream)
-{
-    for(const auto &packet : packets)
-        packet.second->SetStreams(inStream, outStream);
-}
-
 void mwmp::WorldstatePacketController::SetApplicationPacketDispatcher(
     transport::ApplicationPacketDispatcher* dispatcher)
 {

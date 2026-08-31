@@ -8,9 +8,9 @@ PacketClientScriptSettings::PacketClientScriptSettings() : WorldstatePacket()
     packetID = ID_CLIENT_SCRIPT_SETTINGS;
 }
 
-void PacketClientScriptSettings::Packet(RakNet::BitStream *newBitstream, bool send)
+void PacketClientScriptSettings::Packet(bool send)
 {
-    WorldstatePacket::Packet(newBitstream, send);
+    WorldstatePacket::Packet(send);
 
     uint32_t clientScriptsCount = 0;
 

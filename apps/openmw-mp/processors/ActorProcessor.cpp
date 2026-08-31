@@ -11,16 +11,16 @@ void ActorProcessor::Do(ActorPacket &packet, Player &player, BaseActorList &acto
     packet.Send(true);
 }
 
-bool ActorProcessor::Process(mwmp::transport::ApplicationPacketFrame &packet, BaseActorList &actorList)
+bool ActorProcessor::Process(const mwmp::transport::ReceivedApplicationPacket& packet, BaseActorList &actorList)
 {
     for (auto &processor : processors)
     {
-        if (processor.first == packet.data[0])
+        if (processor.first == static_cast<std::uint16_t>(packet.id))
         {
             Player *player = Players::getPlayer(mwmp::transport::TransportConnectionId(packet.sender.value));
             if (player == nullptr)
                 return true;
-            ActorPacket *myPacket = Networking::get().getActorPacketController()->GetPacket(packet.data[0]);
+            ActorPacket *myPacket = Networking::get().getActorPacketController()->GetPacket(static_cast<std::uint16_t>(packet.id));
 
             if (!processor.second->avoidReading)
             {
@@ -28,7 +28,7 @@ bool ActorProcessor::Process(mwmp::transport::ApplicationPacketFrame &packet, Ba
                 decoded.guid = mwmp::transport::TransportConnectionId(packet.sender.value);
                 decoded.isValid = true;
                 myPacket->setActorList(&decoded);
-                myPacket->Read();
+                myPacket->Read(packet.payload);
                 if (!decoded.isValid || !myPacket->isPacketValid())
                 {
                     LOG_MESSAGE_SIMPLE(TimedLog::LOG_ERROR, "Received %s that failed integrity check and was ignored!", processor.second->strPacketID.c_str());

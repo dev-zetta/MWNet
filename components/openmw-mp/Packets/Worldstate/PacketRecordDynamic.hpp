@@ -11,7 +11,7 @@ namespace mwmp
     public:
         PacketRecordDynamic();
 
-        virtual void Packet(RakNet::BitStream *newBitstream, bool send);
+        virtual void Packet(bool send);
 
         void ProcessEffects(ESM::EffectList &effectList, bool send);
         void ProcessBodyParts(ESM::PartReferenceList &bodyPartList, bool send);

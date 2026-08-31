@@ -57,12 +57,12 @@ namespace  mwmp
         void unbanAddress(const char *ipAddress);
         std::string getPeerAddress(mwmp::transport::TransportConnectionId guid) const;
 
-        void processSystemPacket(mwmp::transport::ApplicationPacketFrame *packet);
-        void processPlayerPacket(mwmp::transport::ApplicationPacketFrame *packet);
-        void processActorPacket(mwmp::transport::ApplicationPacketFrame *packet);
-        void processObjectPacket(mwmp::transport::ApplicationPacketFrame *packet);
-        void processWorldstatePacket(mwmp::transport::ApplicationPacketFrame *packet);
-        void update(mwmp::transport::ApplicationPacketFrame *packet, RakNet::BitStream &bsIn);
+        void processSystemPacket(const transport::ReceivedApplicationPacket& packet);
+        void processPlayerPacket(const transport::ReceivedApplicationPacket& packet);
+        void processActorPacket(const transport::ReceivedApplicationPacket& packet);
+        void processObjectPacket(const transport::ReceivedApplicationPacket& packet);
+        void processWorldstatePacket(const transport::ReceivedApplicationPacket& packet);
+        void update(const transport::ReceivedApplicationPacket& packet);
 
         unsigned short numberOfConnections() const;
         unsigned int maxConnections() const;
@@ -217,7 +217,7 @@ namespace  mwmp
 
         PacketPreInit::PluginContainer &getSamples();
     private:
-        bool preInit(mwmp::transport::ApplicationPacketFrame *packet, RakNet::BitStream &bsIn);
+        bool preInit(const transport::ReceivedApplicationPacket& packet);
         void processTransportEvent(transport::TransportEvent event);
         void processApplicationMessage(transport::TransportMessage message);
         void processAuthenticationMessage(transport::TransportMessage message);
@@ -230,7 +230,6 @@ namespace  mwmp
             const char* reason);
         static Networking *sThis;
 
-        RakNet::BitStream bsOut;
         TPlayers *players;
         transport::Protocol11Endpoint& mEndpoint;
         transport::ApplicationPacketDispatcher mDispatcher;

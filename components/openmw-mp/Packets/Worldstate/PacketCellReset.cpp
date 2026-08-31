@@ -8,9 +8,9 @@ PacketCellReset::PacketCellReset() : WorldstatePacket()
     packetID = ID_CELL_RESET;
 }
 
-void PacketCellReset::Packet(RakNet::BitStream *newBitstream, bool send)
+void PacketCellReset::Packet(bool send)
 {
-    WorldstatePacket::Packet(newBitstream, send);
+    WorldstatePacket::Packet(send);
 
     uint32_t cellCount = 0;
 

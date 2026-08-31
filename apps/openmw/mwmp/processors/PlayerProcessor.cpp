@@ -12,19 +12,11 @@ PlayerProcessor::~PlayerProcessor()
 
 }
 
-bool PlayerProcessor::Process(mwmp::transport::ApplicationPacketFrame &packet)
+bool PlayerProcessor::Process(const mwmp::transport::ReceivedApplicationPacket& packet)
 {
-    if (packet.length < BasePacket::headerSize())
-        return false;
+    guid = mwmp::transport::TransportConnectionId(packet.subject);
 
-    RakNet::BitStream bsIn(&packet.data[1], packet.length - 1, false);
-    std::uint64_t guidValue = 0;
-    if (!bsIn.Read(guidValue))
-        return false;
-    guid = mwmp::transport::TransportConnectionId(guidValue);
-
-    PlayerPacket *myPacket = Main::get().getNetworking()->getPlayerPacket(packet.data[0]);
-    myPacket->SetReadStream(&bsIn);
+    PlayerPacket *myPacket = Main::get().getNetworking()->getPlayerPacket(static_cast<std::uint16_t>(packet.id));
 
     /*if (myPacket == 0)
     {
@@ -33,10 +25,10 @@ bool PlayerProcessor::Process(mwmp::transport::ApplicationPacketFrame &packet)
 
     for (auto &processor : processors)
     {
-        if (processor.first == packet.data[0])
+        if (processor.first == static_cast<std::uint16_t>(packet.id))
         {
             myGuid = Main::get().getLocalPlayer()->guid;
-            request = packet.length == myPacket->headerSize();
+            request = packet.payload.empty();
 
             BasePlayer *player = 0;
             if (guid != myGuid)
@@ -48,7 +40,7 @@ bool PlayerProcessor::Process(mwmp::transport::ApplicationPacketFrame &packet)
             {
                 BasePlayer validation(guid);
                 myPacket->setPlayer(&validation);
-                myPacket->Read();
+                myPacket->Read(packet.payload);
                 if (!myPacket->isPacketValid())
                 {
                     LOG_MESSAGE_SIMPLE(TimedLog::LOG_ERROR, "Received %s that failed decoding and was ignored!",
@@ -58,7 +50,7 @@ bool PlayerProcessor::Process(mwmp::transport::ApplicationPacketFrame &packet)
                 if (player == nullptr)
                     player = PlayerList::newPlayer(guid);
                 myPacket->setPlayer(player);
-                myPacket->Read();
+                myPacket->Read(packet.payload);
                 if (!myPacket->isPacketValid())
                     return true;
             }

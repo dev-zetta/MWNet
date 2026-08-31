@@ -12,7 +12,7 @@ namespace mwmp
         const static int AttributeCount = 8;
         PacketPlayerSkill();
 
-        virtual void Packet(RakNet::BitStream *newBitstream, bool send);
+        virtual void Packet(bool send);
     };
 }
 

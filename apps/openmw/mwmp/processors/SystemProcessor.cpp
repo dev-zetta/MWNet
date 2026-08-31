@@ -12,19 +12,11 @@ SystemProcessor::~SystemProcessor()
 
 }
 
-bool SystemProcessor::Process(mwmp::transport::ApplicationPacketFrame &packet)
+bool SystemProcessor::Process(const mwmp::transport::ReceivedApplicationPacket& packet)
 {
-    if (packet.length < BasePacket::headerSize())
-        return false;
+    guid = mwmp::transport::TransportConnectionId(packet.subject);
 
-    RakNet::BitStream bsIn(&packet.data[1], packet.length - 1, false);
-    std::uint64_t guidValue = 0;
-    if (!bsIn.Read(guidValue))
-        return false;
-    guid = mwmp::transport::TransportConnectionId(guidValue);
-
-    SystemPacket *myPacket = Main::get().getNetworking()->getSystemPacket(packet.data[0]);
-    myPacket->SetReadStream(&bsIn);
+    SystemPacket *myPacket = Main::get().getNetworking()->getSystemPacket(static_cast<std::uint16_t>(packet.id));
 
     /*if (myPacket == 0)
     {
@@ -33,10 +25,10 @@ bool SystemProcessor::Process(mwmp::transport::ApplicationPacketFrame &packet)
 
     for (auto &processor : processors)
     {
-        if (processor.first == packet.data[0])
+        if (processor.first == static_cast<std::uint16_t>(packet.id))
         {
             myGuid = Main::get().getLocalSystem()->guid;
-            request = packet.length == myPacket->headerSize();
+            request = packet.payload.empty();
 
             BaseSystem *system = 0;
             system = Main::get().getLocalSystem();
@@ -45,7 +37,7 @@ bool SystemProcessor::Process(mwmp::transport::ApplicationPacketFrame &packet)
             {
                 BaseSystem decoded = *system;
                 myPacket->setSystem(&decoded);
-                myPacket->Read();
+                myPacket->Read(packet.payload);
                 if (!myPacket->isPacketValid())
                 {
                     LOG_MESSAGE_SIMPLE(TimedLog::LOG_ERROR, "Received %s that failed decoding and was ignored!",

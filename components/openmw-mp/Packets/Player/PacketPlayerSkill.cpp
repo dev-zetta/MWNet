@@ -11,9 +11,9 @@ PacketPlayerSkill::PacketPlayerSkill() : PlayerPacket()
     packetID = ID_PLAYER_SKILL;
 }
 
-void PacketPlayerSkill::Packet(RakNet::BitStream *newBitstream, bool send)
+void PacketPlayerSkill::Packet(bool send)
 {
-    PlayerPacket::Packet(newBitstream, send);
+    PlayerPacket::Packet(send);
 
     RW(player->exchangeFullInfo, send);
 

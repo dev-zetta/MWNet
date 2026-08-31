@@ -19,9 +19,9 @@ void ActorPacket::setActorList(BaseActorList *newActorList)
     guid = actorList->guid;
 }
 
-void ActorPacket::Packet(RakNet::BitStream *newBitstream, bool send)
+void ActorPacket::Packet(bool send)
 {
-    if (!PacketHeader(newBitstream, send))
+    if (!PacketHeader(send))
         return;
 
     BaseActor actor;
@@ -41,9 +41,9 @@ void ActorPacket::Packet(RakNet::BitStream *newBitstream, bool send)
     }
 }
 
-bool ActorPacket::PacketHeader(RakNet::BitStream *newBitstream, bool send)
+bool ActorPacket::PacketHeader(bool send)
 {
-    BasePacket::Packet(newBitstream, send);
+    BasePacket::Packet(send);
     if (!packetValid || actorList == nullptr)
     {
         invalidate(protocol::CodecError::InvalidValue);

@@ -8,9 +8,9 @@ PacketWorldTime::PacketWorldTime() : WorldstatePacket()
     packetID = ID_WORLD_TIME;
 }
 
-void PacketWorldTime::Packet(RakNet::BitStream *newBitstream, bool send)
+void PacketWorldTime::Packet(bool send)
 {
-    WorldstatePacket::Packet(newBitstream, send);
+    WorldstatePacket::Packet(send);
 
     RW(worldstate->time.hour, send);
     RW(worldstate->time.day, send);

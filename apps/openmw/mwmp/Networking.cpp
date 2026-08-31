@@ -10,7 +10,6 @@
 #include <components/openmw-mp/Security/AuthenticationMessages.hpp>
 #include <components/openmw-mp/Security/PasswordHash.hpp>
 #include <components/openmw-mp/Session/SessionState.hpp>
-#include <components/openmw-mp/Transport/LegacyPacketFrame.hpp>
 
 #include <components/esm3/cellid.hpp>
 #include <components/files/configurationmanager.hpp>
@@ -223,11 +222,6 @@ Networking::Networking()
     dispatcher = std::make_unique<transport::ApplicationPacketDispatcher>(
         endpoint->transport(), transport::ApplicationPacketFlow::ClientToServer, 1);
 
-    systemPacketController.SetStream(0, &bsOut);
-    playerPacketController.SetStream(0, &bsOut);
-    actorPacketController.SetStream(0, &bsOut);
-    objectPacketController.SetStream(0, &bsOut);
-    worldstatePacketController.SetStream(0, &bsOut);
     systemPacketController.SetApplicationPacketDispatcher(dispatcher.get());
     playerPacketController.SetApplicationPacketDispatcher(dispatcher.get());
     actorPacketController.SetApplicationPacketDispatcher(dispatcher.get());
@@ -248,14 +242,10 @@ void Networking::update()
 {
     if (!pendingPackets.empty() && mwmp::Main::isPostInitDone())
     {
-        std::vector<unsigned char> data = std::move(pendingPackets.front());
+        transport::ReceivedApplicationPacket packet = std::move(pendingPackets.front());
         pendingPackets.pop_front();
-        pendingPacketBytes -= data.size();
-        mwmp::transport::ApplicationPacketFrame fake{};
-        fake.data = data.data();
-        fake.length = (unsigned int)data.size();
-        fake.sender = serverConnection;
-        receiveMessage(&fake);
+        pendingPacketBytes -= packet.payload.size();
+        receiveMessage(packet);
     }
 
     for (std::size_t count = 0; connected && count < 256; ++count)
@@ -371,10 +361,8 @@ bool Networking::preInit(std::vector<std::string>& content, Files::Collections& 
     }
 
     PacketPreInit packetPreInit;
-    RakNet::BitStream bs;
     packetPreInit.setChecksums(&checksums);
     packetPreInit.setGUID(mwmp::transport::TransportConnectionId(serverConnection.value));
-    packetPreInit.SetSendStream(&bs);
     packetPreInit.SetApplicationPacketDispatcher(dispatcher.get());
     if (packetPreInit.Send(false) == 0)
         return failConnection("Failed to send the content manifest.");
@@ -397,16 +385,8 @@ bool Networking::preInit(std::vector<std::string>& content, Files::Collections& 
         if (!receiveApplicationMessage(event->message, application)
             || application.id != protocol::ApplicationPacketId::GamePreInit)
             return failConnection("Received an invalid content-verification response.");
-        std::vector<unsigned char> frame;
-        protocol::CodecError codecError = protocol::CodecError::None;
-        if (!transport::buildLegacyPacketFrame(application, frame, codecError))
-            return failConnection("Failed to decode the content-verification response.");
-
-        RakNet::BitStream bsIn(&frame[1], frame.size() - 1, false);
-        bsIn.IgnoreBytes(static_cast<unsigned int>(mwmp::transport::TransportConnectionId::wireSize));
         packetPreInit.setChecksums(&checksumsResponse);
-        packetPreInit.SetReadStream(&bsIn);
-        packetPreInit.Read();
+        packetPreInit.Read(application.payload);
         if (!packetPreInit.isPacketValid())
             return failConnection("The server sent an invalid content-verification response.");
         receivedResponse = true;
@@ -616,69 +596,56 @@ void Networking::processTransportEvent(transport::TransportEvent event)
                 Main::get().getGUIController()->requestShowBrowser();
                 return;
             }
-            std::vector<unsigned char> frame;
-            protocol::CodecError codecError = protocol::CodecError::None;
-            if (!transport::buildLegacyPacketFrame(application, frame, codecError))
-            {
-                failConnection("Failed to adapt a protocol-11 application packet.");
-                Main::get().getGUIController()->requestShowBrowser();
-                return;
-            }
             if (!Main::isPostInitDone())
             {
                 if (pendingPackets.size() >= protocol::limits::defaultCollectionElements
-                    || frame.size() > protocol::limits::bulkTransferBytes - pendingPacketBytes)
+                    || application.payload.size()
+                        > protocol::limits::bulkTransferBytes - pendingPacketBytes)
                 {
                     failConnection("Initial synchronization exceeded the bounded client queue.");
                     Main::get().getGUIController()->requestShowBrowser();
                     return;
                 }
-                pendingPacketBytes += frame.size();
-                pendingPackets.push_back(std::move(frame));
+                pendingPacketBytes += application.payload.size();
+                pendingPackets.push_back(std::move(application));
             }
             else
-            {
-                mwmp::transport::ApplicationPacketFrame packet{};
-                packet.data = frame.data();
-                packet.length = static_cast<unsigned int>(frame.size());
-                packet.sender = serverConnection;
-                receiveMessage(&packet);
-            }
+                receiveMessage(application);
             break;
         }
     }
 }
 
-void Networking::receiveMessage(mwmp::transport::ApplicationPacketFrame *packet)
+void Networking::receiveMessage(const transport::ReceivedApplicationPacket& packet)
 {
-    if (packet->length < BasePacket::headerSize()
-        || packet->length > protocol::limits::normalMessageBytes + BasePacket::headerSize())
+    if (packet.payload.size() > protocol::limits::normalMessageBytes)
         return;
 
-    if (systemPacketController.ContainsPacket(packet->data[0]))
+    const auto packetId = static_cast<std::uint16_t>(packet.id);
+    if (systemPacketController.ContainsPacket(packetId))
     {
-        if (!SystemProcessor::Process(*packet))
-            LOG_MESSAGE_SIMPLE(TimedLog::LOG_WARN, "Unhandled SystemPacket with identifier %i has arrived", packet->data[0]);
+        if (!SystemProcessor::Process(packet))
+            LOG_MESSAGE_SIMPLE(TimedLog::LOG_WARN, "Unhandled SystemPacket with identifier %i has arrived", packetId);
     }
-    else if (playerPacketController.ContainsPacket(packet->data[0]))
+    else if (playerPacketController.ContainsPacket(packetId))
     {
-        if (!PlayerProcessor::Process(*packet))
-            LOG_MESSAGE_SIMPLE(TimedLog::LOG_WARN, "Unhandled PlayerPacket with identifier %i has arrived", packet->data[0]);
+        if (!PlayerProcessor::Process(packet))
+            LOG_MESSAGE_SIMPLE(TimedLog::LOG_WARN, "Unhandled PlayerPacket with identifier %i has arrived", packetId);
     }
-    else if (actorPacketController.ContainsPacket(packet->data[0]))
+    else if (actorPacketController.ContainsPacket(packetId))
     {
-        if (!ActorProcessor::Process(*packet, actorList))
-            LOG_MESSAGE_SIMPLE(TimedLog::LOG_WARN, "Unhandled ActorPacket with identifier %i has arrived", packet->data[0]);
+        if (!ActorProcessor::Process(packet, actorList))
+            LOG_MESSAGE_SIMPLE(TimedLog::LOG_WARN, "Unhandled ActorPacket with identifier %i has arrived", packetId);
     }
-    else if (objectPacketController.ContainsPacket(packet->data[0]))
+    else if (objectPacketController.ContainsPacket(packetId))
     {
-        if (!ObjectProcessor::Process(*packet, objectList))
-            LOG_MESSAGE_SIMPLE(TimedLog::LOG_WARN, "Unhandled ObjectPacket with identifier %i has arrived", packet->data[0]);
+        if (!ObjectProcessor::Process(packet, objectList))
+            LOG_MESSAGE_SIMPLE(TimedLog::LOG_WARN, "Unhandled ObjectPacket with identifier %i has arrived", packetId);
     }
-    else if (worldstatePacketController.ContainsPacket(packet->data[0]))
+    else if (worldstatePacketController.ContainsPacket(packetId))
     {
-        if (!WorldstateProcessor::Process(*packet, worldstate))
-            LOG_MESSAGE_SIMPLE(TimedLog::LOG_WARN, "Unhandled WorldstatePacket with identifier %i has arrived", packet->data[0]);
+        if (!WorldstateProcessor::Process(packet, worldstate))
+            LOG_MESSAGE_SIMPLE(TimedLog::LOG_WARN, "Unhandled WorldstatePacket with identifier %i has arrived", packetId);
     }
 }
 

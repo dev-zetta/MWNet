@@ -22,12 +22,6 @@ mwmp::SystemPacket *mwmp::SystemPacketController::GetPacket(std::uint16_t id)
     return packet == packets.end() ? nullptr : packet->second.get();
 }
 
-void mwmp::SystemPacketController::SetStream(RakNet::BitStream *inStream, RakNet::BitStream *outStream)
-{
-    for(const auto &packet : packets)
-        packet.second->SetStreams(inStream, outStream);
-}
-
 void mwmp::SystemPacketController::SetApplicationPacketDispatcher(
     transport::ApplicationPacketDispatcher* dispatcher)
 {

@@ -9,9 +9,9 @@ PacketWorldMap::PacketWorldMap() : WorldstatePacket()
     packetID = ID_WORLD_MAP;
 }
 
-void PacketWorldMap::Packet(RakNet::BitStream *newBitstream, bool send)
+void PacketWorldMap::Packet(bool send)
 {
-    WorldstatePacket::Packet(newBitstream, send);
+    WorldstatePacket::Packet(send);
 
     uint32_t changesCount = 0;
 

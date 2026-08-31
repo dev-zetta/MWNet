@@ -2,7 +2,6 @@
 #define OPENMW_WORLDSTATEPACKET_HPP
 
 #include <string>
-#include <BitStream.h>
 #include <components/openmw-mp/Base/BaseWorldstate.hpp>
 
 #include <components/openmw-mp/Packets/BasePacket.hpp>

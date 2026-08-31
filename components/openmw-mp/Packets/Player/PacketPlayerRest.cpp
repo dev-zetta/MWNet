@@ -8,9 +8,9 @@ PacketPlayerRest::PacketPlayerRest() : PlayerPacket()
     packetID = ID_PLAYER_REST;
 }
 
-void PacketPlayerRest::Packet(RakNet::BitStream *newBitstream, bool send)
+void PacketPlayerRest::Packet(bool send)
 {
-    PlayerPacket::Packet(newBitstream, send);
+    PlayerPacket::Packet(send);
 
     // Placeholder to be filled in later
 }

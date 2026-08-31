@@ -8,9 +8,9 @@ PacketPlayerFaction::PacketPlayerFaction() : PlayerPacket()
     packetID = ID_PLAYER_FACTION;
 }
 
-void PacketPlayerFaction::Packet(RakNet::BitStream *newBitstream, bool send)
+void PacketPlayerFaction::Packet(bool send)
 {
-    PlayerPacket::Packet(newBitstream, send);
+    PlayerPacket::Packet(send);
 
     RW(player->factionChanges.action, send);
 

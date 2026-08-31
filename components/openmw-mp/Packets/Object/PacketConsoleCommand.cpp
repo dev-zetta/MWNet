@@ -9,9 +9,9 @@ PacketConsoleCommand::PacketConsoleCommand() : ObjectPacket()
     hasCellData = true;
 }
 
-void PacketConsoleCommand::Packet(RakNet::BitStream *newBitstream, bool send)
+void PacketConsoleCommand::Packet(bool send)
 {
-    if (!PacketHeader(newBitstream, send))
+    if (!PacketHeader(send))
         return;
 
     if (!RW(objectList->consoleCommand, send, true, protocol::limits::commandBytes))

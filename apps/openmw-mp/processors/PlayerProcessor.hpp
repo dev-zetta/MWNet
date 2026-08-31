@@ -3,6 +3,7 @@
 
 #include <components/openmw-mp/Base/BasePacketProcessor.hpp>
 #include <components/openmw-mp/Packets/BasePacket.hpp>
+#include <components/openmw-mp/Transport/ApplicationPacketReceiver.hpp>
 #include <components/openmw-mp/NetworkMessages.hpp>
 #include "Player.hpp"
 
@@ -16,7 +17,7 @@ namespace mwmp
         virtual void Do(PlayerPacket &packet, Player &player) = 0;
         virtual bool Validate(Player&, const BasePlayer&) { return true; }
 
-        static bool Process(mwmp::transport::ApplicationPacketFrame &packet);
+        static bool Process(const mwmp::transport::ReceivedApplicationPacket& packet);
     };
 }
 

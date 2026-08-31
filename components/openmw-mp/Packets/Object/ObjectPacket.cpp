@@ -20,9 +20,9 @@ void ObjectPacket::setObjectList(BaseObjectList *newObjectList)
     guid = objectList->guid;
 }
 
-void ObjectPacket::Packet(RakNet::BitStream *newBitstream, bool send)
+void ObjectPacket::Packet(bool send)
 {
-    if (!PacketHeader(newBitstream, send))
+    if (!PacketHeader(send))
         return;
 
     BaseObject baseObject;
@@ -38,9 +38,9 @@ void ObjectPacket::Packet(RakNet::BitStream *newBitstream, bool send)
     }
 }
 
-bool ObjectPacket::PacketHeader(RakNet::BitStream *newBitstream, bool send)
+bool ObjectPacket::PacketHeader(bool send)
 {
-    BasePacket::Packet(newBitstream, send);
+    BasePacket::Packet(send);
     if (!packetValid || objectList == nullptr)
     {
         invalidate(protocol::CodecError::InvalidValue);

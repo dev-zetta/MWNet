@@ -2,7 +2,6 @@
 #define OPENMW_PLAYERPACKET_HPP
 
 #include <string>
-#include <BitStream.h>
 #include <components/openmw-mp/Base/BasePlayer.hpp>
 
 #include <components/openmw-mp/Packets/BasePacket.hpp>

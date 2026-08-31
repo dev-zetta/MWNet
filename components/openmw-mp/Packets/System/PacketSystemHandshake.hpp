@@ -10,7 +10,7 @@ namespace mwmp
     public:
         PacketSystemHandshake();
 
-        virtual void Packet(RakNet::BitStream *newBitstream, bool send);
+        virtual void Packet(bool send);
 
         const static uint32_t maxNameLength = protocol::limits::playerNameBytes;
         const static uint32_t maxPasswordLength = protocol::limits::passwordBytes;

@@ -8,9 +8,9 @@ PacketPlayerDeath::PacketPlayerDeath() : PlayerPacket()
     packetID = ID_PLAYER_DEATH;
 }
 
-void PacketPlayerDeath::Packet(RakNet::BitStream *newBitstream, bool send)
+void PacketPlayerDeath::Packet(bool send)
 {
-    PlayerPacket::Packet(newBitstream, send);
+    PlayerPacket::Packet(send);
 
     RW(player->deathState, send);
     RW(player->killer.isPlayer, send);

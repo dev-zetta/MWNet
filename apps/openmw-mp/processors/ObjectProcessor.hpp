@@ -5,6 +5,7 @@
 #include <components/openmw-mp/Base/BasePacketProcessor.hpp>
 #include <components/openmw-mp/Packets/BasePacket.hpp>
 #include <components/openmw-mp/Packets/Object/ObjectPacket.hpp>
+#include <components/openmw-mp/Transport/ApplicationPacketReceiver.hpp>
 #include <components/openmw-mp/NetworkMessages.hpp>
 #include "Script/Script.hpp"
 #include "Player.hpp"
@@ -22,7 +23,7 @@ namespace mwmp
         static bool ApplyCanonicalMutation(Player& player,
             const BaseObjectList& objectList, const char* packetType);
 
-        static bool Process(mwmp::transport::ApplicationPacketFrame &packet, BaseObjectList &objectList);
+        static bool Process(const mwmp::transport::ReceivedApplicationPacket& packet, BaseObjectList &objectList);
     };
 }
 

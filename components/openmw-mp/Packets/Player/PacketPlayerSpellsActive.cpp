@@ -8,9 +8,9 @@ PacketPlayerSpellsActive::PacketPlayerSpellsActive() : PlayerPacket()
     packetID = ID_PLAYER_SPELLS_ACTIVE;
 }
 
-void PacketPlayerSpellsActive::Packet(RakNet::BitStream *newBitstream, bool send)
+void PacketPlayerSpellsActive::Packet(bool send)
 {
-    PlayerPacket::Packet(newBitstream, send);
+    PlayerPacket::Packet(send);
 
     RW(player->spellsActiveChanges.action, send);
 

@@ -8,9 +8,9 @@ PacketPlayerItemUse::PacketPlayerItemUse() : PlayerPacket()
     packetID = ID_PLAYER_ITEM_USE;
 }
 
-void PacketPlayerItemUse::Packet(RakNet::BitStream *newBitstream, bool send)
+void PacketPlayerItemUse::Packet(bool send)
 {
-    PlayerPacket::Packet(newBitstream, send);
+    PlayerPacket::Packet(send);
 
     RW(player->usedItem.refId, send, true);
     RW(player->usedItem.count, send);

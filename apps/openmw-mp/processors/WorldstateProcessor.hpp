@@ -4,6 +4,7 @@
 #include <components/openmw-mp/Base/BasePacketProcessor.hpp>
 #include <components/openmw-mp/Packets/BasePacket.hpp>
 #include <components/openmw-mp/Packets/Worldstate/WorldstatePacket.hpp>
+#include <components/openmw-mp/Transport/ApplicationPacketReceiver.hpp>
 #include <components/openmw-mp/NetworkMessages.hpp>
 #include "Player.hpp"
 
@@ -17,7 +18,7 @@ namespace mwmp
         virtual void Do(WorldstatePacket &packet, Player &player, BaseWorldstate &worldstate);
         virtual bool Validate(Player&, const BaseWorldstate&) { return true; }
 
-        static bool Process(mwmp::transport::ApplicationPacketFrame &packet, BaseWorldstate &worldstate);
+        static bool Process(const mwmp::transport::ReceivedApplicationPacket& packet, BaseWorldstate &worldstate);
     };
 }
 

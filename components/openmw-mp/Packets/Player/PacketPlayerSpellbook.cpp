@@ -8,9 +8,9 @@ PacketPlayerSpellbook::PacketPlayerSpellbook() : PlayerPacket()
     packetID = ID_PLAYER_SPELLBOOK;
 }
 
-void PacketPlayerSpellbook::Packet(RakNet::BitStream *newBitstream, bool send)
+void PacketPlayerSpellbook::Packet(bool send)
 {
-    PlayerPacket::Packet(newBitstream, send);
+    PlayerPacket::Packet(send);
 
     RW(player->spellbookChanges.action, send);
 

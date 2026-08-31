@@ -2,7 +2,6 @@
 #define OPENMW_ACTORPACKET_HPP
 
 #include <string>
-#include <BitStream.h>
 #include <components/openmw-mp/Base/BaseActor.hpp>
 
 #include <components/openmw-mp/Packets/BasePacket.hpp>
@@ -19,9 +18,9 @@ namespace mwmp
 
         void setActorList(BaseActorList *newActorList);
 
-        virtual void Packet(RakNet::BitStream *newBitstream, bool send);
+        virtual void Packet(bool send);
     protected:
-        bool PacketHeader(RakNet::BitStream *newBitstream, bool send);
+        bool PacketHeader(bool send);
         virtual void Actor(BaseActor &actor, bool send);
         BaseActorList *actorList = nullptr;
         static const int maxActors = 3000;

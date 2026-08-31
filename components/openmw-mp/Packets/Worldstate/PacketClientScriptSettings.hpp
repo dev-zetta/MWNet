@@ -10,7 +10,7 @@ namespace mwmp
     public:
         PacketClientScriptSettings();
 
-        virtual void Packet(RakNet::BitStream *newBitstream, bool send);
+        virtual void Packet(bool send);
     };
 }
 

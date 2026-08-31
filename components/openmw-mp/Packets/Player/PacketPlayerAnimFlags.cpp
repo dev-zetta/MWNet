@@ -6,9 +6,9 @@ mwmp::PacketPlayerAnimFlags::PacketPlayerAnimFlags() : PlayerPacket()
     packetID = ID_PLAYER_ANIM_FLAGS;
 }
 
-void mwmp::PacketPlayerAnimFlags::Packet(RakNet::BitStream *newBitstream, bool send)
+void mwmp::PacketPlayerAnimFlags::Packet(bool send)
 {
-    PlayerPacket::Packet(newBitstream, send);
+    PlayerPacket::Packet(send);
 
     RW(player->movementFlags, send);
     RW(player->drawState, send);

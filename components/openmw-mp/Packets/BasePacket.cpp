@@ -7,62 +7,26 @@ using namespace mwmp;
 
 BasePacket::BasePacket()
     : packetID(0)
-    , bsRead(nullptr)
-    , bsSend(nullptr)
-    , bs(nullptr)
     , guid(mwmp::transport::TransportConnectionId{})
     , packetValid(false)
     , codecError(protocol::CodecError::None)
 {
 }
 
-void BasePacket::Packet(RakNet::BitStream *newBitstream, bool send)
+void BasePacket::Packet(bool send)
 {
-    bs = newBitstream;
-    packetValid = true;
-    codecError = protocol::CodecError::None;
-
-    if (bs == nullptr)
-    {
-        invalidate(protocol::CodecError::InvalidValue);
-        return;
-    }
-
-    mReader.reset();
-    mWriter.reset();
     if (send)
     {
+        packetValid = true;
+        codecError = protocol::CodecError::None;
+        mReader.reset();
+        mWriter.reset();
         mWriter.emplace(protocol::limits::normalMessageBytes);
         return;
     }
 
-    if (bs->GetReadOffset() % 8U != 0 || bs->GetNumberOfUnreadBits() % 8U != 0)
-    {
+    if (!mReader)
         invalidate(protocol::CodecError::InvalidValue);
-        return;
-    }
-    const std::size_t offset = bs->GetReadOffset() / 8U;
-    const std::size_t size = bs->GetNumberOfUnreadBits() / 8U;
-    mReader.emplace(std::span<const std::byte>(
-        reinterpret_cast<const std::byte*>(bs->GetData() + offset), size));
-}
-
-void BasePacket::SetReadStream(RakNet::BitStream *bitStream)
-{
-    bsRead = bitStream;
-}
-
-void BasePacket::SetSendStream(RakNet::BitStream *bitStream)
-{
-    bsSend = bitStream;
-}
-
-void BasePacket::SetStreams(RakNet::BitStream *inStream, RakNet::BitStream *outStream)
-{
-    if (inStream != nullptr)
-        bsRead = inStream;
-    if (outStream != nullptr)
-        bsSend = outStream;
 }
 
 void BasePacket::SetApplicationPacketDispatcher(
@@ -86,14 +50,13 @@ uint32_t BasePacket::Send(bool toOther)
     return dispatchPacket(toOther);
 }
 
-void BasePacket::Read()
+void BasePacket::Read(std::span<const std::byte> payload)
 {
-    if (bsRead == nullptr)
-    {
-        invalidate(protocol::CodecError::InvalidValue);
-        return;
-    }
-    Packet(bsRead, false);
+    packetValid = true;
+    codecError = protocol::CodecError::None;
+    mWriter.reset();
+    mReader.emplace(payload);
+    Packet(false);
     finishRead();
 }
 
@@ -120,20 +83,6 @@ bool BasePacket::readResult(bool result)
     if (result)
         return true;
     return invalidate(mReader ? mReader->error() : protocol::CodecError::InvalidValue);
-}
-
-bool BasePacket::finishWrite()
-{
-    if (!prepareWrite() || bsSend == nullptr)
-        return false;
-    bsSend->Write(packetID);
-    bsSend->Write(guid.value);
-    const auto payload = mWriter->bytes();
-    if (!payload.empty())
-        bsSend->Write(reinterpret_cast<const char*>(payload.data()), payload.size());
-    if (bsSend->GetNumberOfBytesUsed() > protocol::limits::normalMessageBytes + headerSize())
-        return invalidate(protocol::CodecError::LimitExceeded);
-    return true;
 }
 
 bool BasePacket::prepareWrite()
@@ -168,12 +117,10 @@ uint32_t BasePacket::dispatchRequest(mwmp::transport::TransportConnectionId targ
 
 uint32_t BasePacket::dispatchPacket(transport::TransportConnectionId destination)
 {
-    if (mDispatcher == nullptr || bsSend == nullptr
-        || !protocol::isApplicationPacketId(packetID))
+    if (mDispatcher == nullptr || !protocol::isApplicationPacketId(packetID))
         return 0;
 
-    bsSend->ResetWritePointer();
-    Packet(bsSend, true);
+    Packet(true);
     if (!prepareWrite())
         return 0;
 
@@ -189,12 +136,10 @@ uint32_t BasePacket::dispatchPacket(transport::TransportConnectionId destination
 
 uint32_t BasePacket::dispatchPacket(bool toOther)
 {
-    if (mDispatcher == nullptr || bsSend == nullptr
-        || !protocol::isApplicationPacketId(packetID))
+    if (mDispatcher == nullptr || !protocol::isApplicationPacketId(packetID))
         return 0;
 
-    bsSend->ResetWritePointer();
-    Packet(bsSend, true);
+    Packet(true);
     if (!prepareWrite())
         return 0;
 
@@ -217,6 +162,11 @@ bool BasePacket::finishRead()
     if (!packetValid || !mReader)
         return false;
     return readResult(mReader->finish());
+}
+
+std::size_t BasePacket::unreadPayloadBytes() const noexcept
+{
+    return mReader ? mReader->remaining() : 0U;
 }
 
 void BasePacket::setGUID(mwmp::transport::TransportConnectionId newGuid)

@@ -8,9 +8,9 @@ PacketPlayerCooldowns::PacketPlayerCooldowns() : PlayerPacket()
     packetID = ID_PLAYER_COOLDOWNS;
 }
 
-void PacketPlayerCooldowns::Packet(RakNet::BitStream *newBitstream, bool send)
+void PacketPlayerCooldowns::Packet(bool send)
 {
-    PlayerPacket::Packet(newBitstream, send);
+    PlayerPacket::Packet(send);
 
     uint32_t count = 0;
 

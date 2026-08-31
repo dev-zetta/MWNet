@@ -44,16 +44,16 @@ bool ObjectProcessor::ApplyCanonicalMutation(Player& player,
     return false;
 }
 
-bool ObjectProcessor::Process(mwmp::transport::ApplicationPacketFrame &packet, BaseObjectList &objectList)
+bool ObjectProcessor::Process(const mwmp::transport::ReceivedApplicationPacket& packet, BaseObjectList &objectList)
 {
     for (auto &processor : processors)
     {
-        if (processor.first == packet.data[0])
+        if (processor.first == static_cast<std::uint16_t>(packet.id))
         {
             Player *player = Players::getPlayer(mwmp::transport::TransportConnectionId(packet.sender.value));
             if (player == nullptr)
                 return true;
-            ObjectPacket *myPacket = Networking::get().getObjectPacketController()->GetPacket(packet.data[0]);
+            ObjectPacket *myPacket = Networking::get().getObjectPacketController()->GetPacket(static_cast<std::uint16_t>(packet.id));
 
             if (!processor.second->avoidReading)
             {
@@ -61,7 +61,7 @@ bool ObjectProcessor::Process(mwmp::transport::ApplicationPacketFrame &packet, B
                 decoded.guid = mwmp::transport::TransportConnectionId(packet.sender.value);
                 decoded.isValid = true;
                 myPacket->setObjectList(&decoded);
-                myPacket->Read();
+                myPacket->Read(packet.payload);
                 if (!decoded.isValid || !myPacket->isPacketValid())
                 {
                     LOG_MESSAGE_SIMPLE(TimedLog::LOG_ERROR, "Received %s that failed integrity check and was ignored!", processor.second->strPacketID.c_str());

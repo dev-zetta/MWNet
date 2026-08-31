@@ -4,6 +4,7 @@
 #include <components/openmw-mp/TimedLog.hpp>
 #include <components/openmw-mp/NetworkMessages.hpp>
 #include <components/openmw-mp/Packets/Actor/ActorPacket.hpp>
+#include <components/openmw-mp/Transport/ApplicationPacketReceiver.hpp>
 #include "../ObjectList.hpp"
 #include "../ActorList.hpp"
 #include "BaseClientPacketProcessor.hpp"
@@ -15,7 +16,7 @@ namespace mwmp
     public:
         virtual void Do(ActorPacket &packet, ActorList &actorList) = 0;
 
-        static bool Process(mwmp::transport::ApplicationPacketFrame &packet, ActorList &actorList);
+        static bool Process(const mwmp::transport::ReceivedApplicationPacket& packet, ActorList &actorList);
 
         virtual ~ActorProcessor();
     };

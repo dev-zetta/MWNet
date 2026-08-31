@@ -7,9 +7,9 @@ mwmp::PacketPlayerCellChange::PacketPlayerCellChange() : PlayerPacket()
     packetID = ID_PLAYER_CELL_CHANGE;
 }
 
-void mwmp::PacketPlayerCellChange::Packet(RakNet::BitStream *newBitstream, bool send)
+void mwmp::PacketPlayerCellChange::Packet(bool send)
 {
-    PlayerPacket::Packet(newBitstream, send);
+    PlayerPacket::Packet(send);
 
     RW(player->cell.mData, send, true);
     RW(player->cell.mName, send, true);

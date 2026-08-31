@@ -8,9 +8,9 @@ PacketPlayerTopic::PacketPlayerTopic() : PlayerPacket()
     packetID = ID_PLAYER_TOPIC;
 }
 
-void PacketPlayerTopic::Packet(RakNet::BitStream *newBitstream, bool send)
+void PacketPlayerTopic::Packet(bool send)
 {
-    PlayerPacket::Packet(newBitstream, send);
+    PlayerPacket::Packet(send);
 
     uint32_t count = 0;
 

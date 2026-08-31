@@ -8,9 +8,9 @@ PacketPlayerMiscellaneous::PacketPlayerMiscellaneous() : PlayerPacket()
     packetID = ID_PLAYER_MISCELLANEOUS;
 }
 
-void PacketPlayerMiscellaneous::Packet(RakNet::BitStream *newBitstream, bool send)
+void PacketPlayerMiscellaneous::Packet(bool send)
 {
-    PlayerPacket::Packet(newBitstream, send);
+    PlayerPacket::Packet(send);
 
     RW(player->miscellaneousChangeType, send);
 

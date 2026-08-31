@@ -10,9 +10,9 @@ PacketWorldDestinationOverride::PacketWorldDestinationOverride() : WorldstatePac
     packetID = ID_WORLD_DESTINATION_OVERRIDE;
 }
 
-void PacketWorldDestinationOverride::Packet(RakNet::BitStream *newBitstream, bool send)
+void PacketWorldDestinationOverride::Packet(bool send)
 {
-    WorldstatePacket::Packet(newBitstream, send);
+    WorldstatePacket::Packet(send);
 
     uint32_t destinationCount = 0;
 

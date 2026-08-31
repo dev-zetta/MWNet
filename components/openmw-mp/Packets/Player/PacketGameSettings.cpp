@@ -8,9 +8,9 @@ PacketGameSettings::PacketGameSettings() : PlayerPacket()
     packetID = ID_GAME_SETTINGS;
 }
 
-void PacketGameSettings::Packet(RakNet::BitStream *newBitstream, bool send)
+void PacketGameSettings::Packet(bool send)
 {
-    PlayerPacket::Packet(newBitstream, send);
+    PlayerPacket::Packet(send);
 
     RW(player->difficulty, send);
     RW(player->consoleAllowed, send);

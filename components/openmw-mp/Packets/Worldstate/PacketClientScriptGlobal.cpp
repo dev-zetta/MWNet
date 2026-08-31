@@ -8,9 +8,9 @@ PacketClientScriptGlobal::PacketClientScriptGlobal() : WorldstatePacket()
     packetID = ID_CLIENT_SCRIPT_GLOBAL;
 }
 
-void PacketClientScriptGlobal::Packet(RakNet::BitStream *newBitstream, bool send)
+void PacketClientScriptGlobal::Packet(bool send)
 {
-    WorldstatePacket::Packet(newBitstream, send);
+    WorldstatePacket::Packet(send);
 
     uint32_t clientGlobalsCount = 0;
 

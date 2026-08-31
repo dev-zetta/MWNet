@@ -10,7 +10,6 @@
 #include <components/openmw-mp/Security/AuthenticationMessages.hpp>
 #include <components/openmw-mp/Security/PasswordHash.hpp>
 #include <components/openmw-mp/Session/SessionState.hpp>
-#include <components/openmw-mp/Transport/LegacyPacketFrame.hpp>
 
 #include <sodium.h>
 
@@ -74,11 +73,6 @@ Networking::Networking(transport::Protocol11Endpoint& endpoint,
     worldstatePacketController = std::make_unique<WorldstatePacketController>();
 
     // Set send stream
-    systemPacketController->SetStream(0, &bsOut);
-    playerPacketController->SetStream(0, &bsOut);
-    actorPacketController->SetStream(0, &bsOut);
-    objectPacketController->SetStream(0, &bsOut);
-    worldstatePacketController->SetStream(0, &bsOut);
     systemPacketController->SetApplicationPacketDispatcher(&mDispatcher);
     playerPacketController->SetApplicationPacketDispatcher(&mDispatcher);
     actorPacketController->SetApplicationPacketDispatcher(&mDispatcher);
@@ -3995,26 +3989,26 @@ bool Networking::isPassworded() const
     return mAuthentication.requiresAccessPassword();
 }
 
-void Networking::processSystemPacket(mwmp::transport::ApplicationPacketFrame *packet)
+void Networking::processSystemPacket(const transport::ReceivedApplicationPacket& packet)
 {
-    Player *player = Players::getPlayer(mwmp::transport::TransportConnectionId(packet->sender.value));
+    Player *player = Players::getPlayer(mwmp::transport::TransportConnectionId(packet.sender.value));
     if (player == nullptr)
         return;
     LOG_MESSAGE_SIMPLE(TimedLog::LOG_WARN,
         "Rejected deprecated system packet %u after the protocol-11 cutover",
-        static_cast<unsigned int>(packet->data[0]));
+        static_cast<unsigned int>(static_cast<std::uint16_t>(packet.id)));
     kickPlayer(player->guid);
 }
 
-void Networking::processPlayerPacket(mwmp::transport::ApplicationPacketFrame *packet)
+void Networking::processPlayerPacket(const transport::ReceivedApplicationPacket& packet)
 {
-    Player *player = Players::getPlayer(mwmp::transport::TransportConnectionId(packet->sender.value));
+    Player *player = Players::getPlayer(mwmp::transport::TransportConnectionId(packet.sender.value));
     if (player == nullptr)
         return;
     const std::string peerAddress
-        = mEndpoint.peerAddress(packet->sender).value_or(std::string{ "unknown" });
+        = mEndpoint.peerAddress(packet.sender).value_or(std::string{ "unknown" });
 
-    PlayerPacket *myPacket = playerPacketController->GetPacket(packet->data[0]);
+    PlayerPacket *myPacket = playerPacketController->GetPacket(static_cast<std::uint16_t>(packet.id));
 
     if (!player->isHandshaked())
     {
@@ -4031,15 +4025,15 @@ void Networking::processPlayerPacket(mwmp::transport::ApplicationPacketFrame *pa
         return;
     }
 
-    if (packet->data[0] == ID_LOADED)
+    if (static_cast<std::uint16_t>(packet.id) == ID_LOADED)
         player->setLoadState(Player::LOADED);
-    else if (packet->data[0] == ID_PLAYER_BASEINFO)
+    else if (static_cast<std::uint16_t>(packet.id) == ID_PLAYER_BASEINFO)
     {
         LOG_MESSAGE_SIMPLE(TimedLog::LOG_INFO, "Received ID_PLAYER_BASEINFO about %s", player->npc.mName.c_str());
 
-        BasePlayer validation(mwmp::transport::TransportConnectionId(packet->sender.value));
+        BasePlayer validation(mwmp::transport::TransportConnectionId(packet.sender.value));
         myPacket->setPlayer(&validation);
-        myPacket->Read();
+        myPacket->Read(packet.payload);
         if (!myPacket->isPacketValid())
         {
             LOG_MESSAGE_SIMPLE(TimedLog::LOG_ERROR, "Invalid ID_PLAYER_BASEINFO packet from client at %s",
@@ -4048,7 +4042,7 @@ void Networking::processPlayerPacket(mwmp::transport::ApplicationPacketFrame *pa
             return;
         }
         myPacket->setPlayer(player);
-        myPacket->Read();
+        myPacket->Read(packet.payload);
         if (!myPacket->isPacketValid())
         {
             kickPlayer(player->guid);
@@ -4062,82 +4056,81 @@ void Networking::processPlayerPacket(mwmp::transport::ApplicationPacketFrame *pa
     else if (player->getLoadState() == Player::LOADED)
     {
         player->setLoadState(Player::POSTLOADED);
-        newPlayer(mwmp::transport::TransportConnectionId(packet->sender.value));
+        newPlayer(mwmp::transport::TransportConnectionId(packet.sender.value));
         return;
     }
 
 
-    if (!PlayerProcessor::Process(*packet))
-        LOG_MESSAGE_SIMPLE(TimedLog::LOG_WARN, "Unhandled PlayerPacket with identifier %i has arrived", packet->data[0]);
+    if (!PlayerProcessor::Process(packet))
+        LOG_MESSAGE_SIMPLE(TimedLog::LOG_WARN, "Unhandled PlayerPacket with identifier %i has arrived", static_cast<std::uint16_t>(packet.id));
 
 }
 
-void Networking::processActorPacket(mwmp::transport::ApplicationPacketFrame *packet)
+void Networking::processActorPacket(const transport::ReceivedApplicationPacket& packet)
 {
-    Player *player = Players::getPlayer(mwmp::transport::TransportConnectionId(packet->sender.value));
+    Player *player = Players::getPlayer(mwmp::transport::TransportConnectionId(packet.sender.value));
     if (player == nullptr)
         return;
 
     if (!player->isHandshaked() || player->getLoadState() != Player::POSTLOADED)
         return;
 
-    if (!ActorProcessor::Process(*packet, baseActorList))
-        LOG_MESSAGE_SIMPLE(TimedLog::LOG_WARN, "Unhandled ActorPacket with identifier %i has arrived", packet->data[0]);
+    if (!ActorProcessor::Process(packet, baseActorList))
+        LOG_MESSAGE_SIMPLE(TimedLog::LOG_WARN, "Unhandled ActorPacket with identifier %i has arrived", static_cast<std::uint16_t>(packet.id));
 
 }
 
-void Networking::processObjectPacket(mwmp::transport::ApplicationPacketFrame *packet)
+void Networking::processObjectPacket(const transport::ReceivedApplicationPacket& packet)
 {
-    Player *player = Players::getPlayer(mwmp::transport::TransportConnectionId(packet->sender.value));
+    Player *player = Players::getPlayer(mwmp::transport::TransportConnectionId(packet.sender.value));
     if (player == nullptr)
         return;
 
     if (!player->isHandshaked() || player->getLoadState() != Player::POSTLOADED)
         return;
 
-    if (!ObjectProcessor::Process(*packet, baseObjectList))
-        LOG_MESSAGE_SIMPLE(TimedLog::LOG_WARN, "Unhandled ObjectPacket with identifier %i has arrived", packet->data[0]);
+    if (!ObjectProcessor::Process(packet, baseObjectList))
+        LOG_MESSAGE_SIMPLE(TimedLog::LOG_WARN, "Unhandled ObjectPacket with identifier %i has arrived", static_cast<std::uint16_t>(packet.id));
 
 }
 
-void Networking::processWorldstatePacket(mwmp::transport::ApplicationPacketFrame *packet)
+void Networking::processWorldstatePacket(const transport::ReceivedApplicationPacket& packet)
 {
-    Player *player = Players::getPlayer(mwmp::transport::TransportConnectionId(packet->sender.value));
+    Player *player = Players::getPlayer(mwmp::transport::TransportConnectionId(packet.sender.value));
     if (player == nullptr)
         return;
 
     if (!player->isHandshaked() || player->getLoadState() != Player::POSTLOADED)
         return;
 
-    if (!WorldstateProcessor::Process(*packet, baseWorldstate))
-        LOG_MESSAGE_SIMPLE(TimedLog::LOG_WARN, "Unhandled WorldstatePacket with identifier %i has arrived", packet->data[0]);
+    if (!WorldstateProcessor::Process(packet, baseWorldstate))
+        LOG_MESSAGE_SIMPLE(TimedLog::LOG_WARN, "Unhandled WorldstatePacket with identifier %i has arrived", static_cast<std::uint16_t>(packet.id));
 
 }
 
-bool Networking::preInit(mwmp::transport::ApplicationPacketFrame *packet, RakNet::BitStream &bsIn)
+bool Networking::preInit(const transport::ReceivedApplicationPacket& packet)
 {
-    if (packet->data[0] != ID_GAME_PREINIT)
+    if (static_cast<std::uint16_t>(packet.id) != ID_GAME_PREINIT)
     {
         LOG_MESSAGE_SIMPLE(TimedLog::LOG_WARN,
             "Connection %llu sent the wrong first application packet",
-            static_cast<unsigned long long>(packet->sender.value));
-        mEndpoint.disconnect({ packet->sender.value });
+            static_cast<unsigned long long>(packet.sender.value));
+        mEndpoint.disconnect({ packet.sender.value });
         return false;
     }
 
     LOG_MESSAGE_SIMPLE(TimedLog::LOG_INFO, "Received content manifest from connection %llu",
-        static_cast<unsigned long long>(packet->sender.value));
+        static_cast<unsigned long long>(packet.sender.value));
     PacketPreInit::PluginContainer dataFiles;
 
     PacketPreInit packetPreInit;
-    packetPreInit.SetReadStream(&bsIn);
     packetPreInit.setChecksums(&dataFiles);
-    packetPreInit.Read();
+    packetPreInit.Read(packet.payload);
 
     if (!packetPreInit.isPacketValid() || dataFiles.empty())
     {
         LOG_APPEND(TimedLog::LOG_ERROR, "- Packet was invalid");
-        mEndpoint.disconnect({ packet->sender.value });
+        mEndpoint.disconnect({ packet.sender.value });
         return false;
     }
 
@@ -4164,59 +4157,45 @@ bool Networking::preInit(mwmp::transport::ApplicationPacketFrame *packet, RakNet
                 break;
         }
     }
-    RakNet::BitStream bs;
-    packetPreInit.SetSendStream(&bs);
-    packetPreInit.setGUID(mwmp::transport::TransportConnectionId(packet->sender.value));
+    packetPreInit.SetApplicationPacketDispatcher(&mDispatcher);
+    packetPreInit.setGUID(mwmp::transport::TransportConnectionId(packet.sender.value));
 
     // If the loop above was broken, then the client's data files do not match the server's
     if (dataFileEnforcementState && dataFile != dataFiles.end())
     {
         LOG_APPEND(TimedLog::LOG_INFO, "- Client was not allowed to connect due to incompatible data files");
         packetPreInit.setChecksums(&samples);
-        packetPreInit.Send(mwmp::transport::TransportConnectionId(packet->sender.value));
-        mEndpoint.disconnect({ packet->sender.value });
+        packetPreInit.Send(mwmp::transport::TransportConnectionId(packet.sender.value));
+        mEndpoint.disconnect({ packet.sender.value });
     }
     else
     {
         LOG_APPEND(TimedLog::LOG_INFO, "- Client was allowed to connect");
         PacketPreInit::PluginContainer tmp;
         packetPreInit.setChecksums(&tmp);
-        packetPreInit.Send(mwmp::transport::TransportConnectionId(packet->sender.value));
+        packetPreInit.Send(mwmp::transport::TransportConnectionId(packet.sender.value));
         return true;
     }
 
     return false;
 }
 
-void Networking::update(mwmp::transport::ApplicationPacketFrame *packet, RakNet::BitStream &bsIn)
+void Networking::update(const transport::ReceivedApplicationPacket& packet)
 {
-    if (systemPacketController->ContainsPacket(packet->data[0]))
-    {
-        systemPacketController->SetStream(&bsIn, nullptr);
+    if (systemPacketController->ContainsPacket(static_cast<std::uint16_t>(packet.id)))
         processSystemPacket(packet);
-    }
-    else if (playerPacketController->ContainsPacket(packet->data[0]))
-    {
-        playerPacketController->SetStream(&bsIn, nullptr);
+    else if (playerPacketController->ContainsPacket(static_cast<std::uint16_t>(packet.id)))
         processPlayerPacket(packet);
-    }
-    else if (actorPacketController->ContainsPacket(packet->data[0]))
-    {
-        actorPacketController->SetStream(&bsIn, 0);
+    else if (actorPacketController->ContainsPacket(static_cast<std::uint16_t>(packet.id)))
         processActorPacket(packet);
-    }
-    else if (objectPacketController->ContainsPacket(packet->data[0]))
-    {
-        objectPacketController->SetStream(&bsIn, 0);
+    else if (objectPacketController->ContainsPacket(static_cast<std::uint16_t>(packet.id)))
         processObjectPacket(packet);
-    }
-    else if (worldstatePacketController->ContainsPacket(packet->data[0]))
-    {
-        worldstatePacketController->SetStream(&bsIn, 0);
+    else if (worldstatePacketController->ContainsPacket(static_cast<std::uint16_t>(packet.id)))
         processWorldstatePacket(packet);
-    }
     else
-        LOG_MESSAGE_SIMPLE(TimedLog::LOG_WARN, "Unhandled RakNet packet with identifier %i has arrived", packet->data[0]);
+        LOG_MESSAGE_SIMPLE(TimedLog::LOG_WARN,
+            "Unhandled protocol-11 packet with identifier %i has arrived",
+            static_cast<std::uint16_t>(packet.id));
 }
 
 void Networking::newPlayer(mwmp::transport::TransportConnectionId guid)
@@ -4529,25 +4508,10 @@ void Networking::processApplicationMessage(transport::TransportMessage message)
         return;
     }
 
-    std::vector<unsigned char> frame;
-    protocol::CodecError codecError = protocol::CodecError::None;
-    if (!transport::buildLegacyPacketFrame(application, frame, codecError))
-    {
-        disconnectTransport(message.connection, "failed to adapt application packet");
-        return;
-    }
-
-    mwmp::transport::ApplicationPacketFrame packet{};
-    packet.data = frame.data();
-    packet.length = static_cast<unsigned int>(frame.size());
-    packet.sender = message.connection;
-    RakNet::BitStream stream(&packet.data[1], packet.length - 1, false);
-    stream.IgnoreBytes(static_cast<unsigned int>(transport::TransportConnectionId::wireSize));
-
     const auto state = mEndpoint.state(message.connection);
     if (state == session::State::TransportAuthenticated)
     {
-        if (!preInit(&packet, stream))
+        if (!preInit(application))
             return;
         transport::TransportError error;
         if (mEndpoint.advance(message.connection, session::State::ContentVerified, error)
@@ -4559,7 +4523,7 @@ void Networking::processApplicationMessage(transport::TransportMessage message)
     if (application.id == protocol::ApplicationPacketId::Loaded
         && state == session::State::AccountAuthenticated)
     {
-        Player* player = Players::getPlayer(mwmp::transport::TransportConnectionId(packet.sender.value));
+        Player* player = Players::getPlayer(application.sender);
         if (player == nullptr)
         {
             disconnectTransport(message.connection, "spawn requested without a player slot");
@@ -4567,7 +4531,7 @@ void Networking::processApplicationMessage(transport::TransportMessage message)
         }
         PlayerPacket* response = playerPacketController->GetPacket(ID_LOADED);
         response->setPlayer(player);
-        if (response->Send(mwmp::transport::TransportConnectionId(packet.sender.value)) == 0)
+        if (response->Send(application.sender) == 0)
         {
             disconnectTransport(message.connection, "failed to send spawn result");
             return;
@@ -4590,7 +4554,7 @@ void Networking::processApplicationMessage(transport::TransportMessage message)
         }
     }
     mCurrentApplicationSequence = application.sequence;
-    update(&packet, stream);
+    update(application);
 }
 
 void Networking::processAuthenticationMessage(transport::TransportMessage message)

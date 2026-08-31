@@ -9,9 +9,9 @@ PacketPlayerResurrect::PacketPlayerResurrect() : PlayerPacket()
     packetID = ID_PLAYER_RESURRECT;
 }
 
-void PacketPlayerResurrect::Packet(RakNet::BitStream *newBitstream, bool send)
+void PacketPlayerResurrect::Packet(bool send)
 {
-    PlayerPacket::Packet(newBitstream, send);
+    PlayerPacket::Packet(send);
 
     RW(player->resurrectType, send);
 }

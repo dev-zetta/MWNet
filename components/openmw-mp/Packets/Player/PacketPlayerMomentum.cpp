@@ -8,9 +8,9 @@ PacketPlayerMomentum::PacketPlayerMomentum() : PlayerPacket()
     packetID = ID_PLAYER_MOMENTUM;
 }
 
-void PacketPlayerMomentum::Packet(RakNet::BitStream *newBitstream, bool send)
+void PacketPlayerMomentum::Packet(bool send)
 {
-    PlayerPacket::Packet(newBitstream, send);
+    PlayerPacket::Packet(send);
     
     RW(player->momentum.pos, send, true);
 }

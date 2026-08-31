@@ -9,9 +9,9 @@ PacketObjectSound::PacketObjectSound() : ObjectPacket()
     hasCellData = true;
 }
 
-void PacketObjectSound::Packet(RakNet::BitStream *newBitstream, bool send)
+void PacketObjectSound::Packet(bool send)
 {
-    if (!PacketHeader(newBitstream, send))
+    if (!PacketHeader(send))
         return;
 
     BaseObject baseObject;

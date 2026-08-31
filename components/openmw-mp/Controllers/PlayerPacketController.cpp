@@ -107,12 +107,6 @@ mwmp::PlayerPacket *mwmp::PlayerPacketController::GetPacket(std::uint16_t id)
     return packet == packets.end() ? nullptr : packet->second.get();
 }
 
-void mwmp::PlayerPacketController::SetStream(RakNet::BitStream *inStream, RakNet::BitStream *outStream)
-{
-    for(const auto &packet : packets)
-        packet.second->SetStreams(inStream, outStream);
-}
-
 void mwmp::PlayerPacketController::SetApplicationPacketDispatcher(
     transport::ApplicationPacketDispatcher* dispatcher)
 {

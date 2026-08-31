@@ -8,9 +8,9 @@ PacketPlayerAttack::PacketPlayerAttack() : PlayerPacket()
     packetID = ID_PLAYER_ATTACK;
 }
 
-void PacketPlayerAttack::Packet(RakNet::BitStream *newBitstream, bool send)
+void PacketPlayerAttack::Packet(bool send)
 {
-    PlayerPacket::Packet(newBitstream, send);
+    PlayerPacket::Packet(send);
 
     RW(player->attack.target.isPlayer, send);
 

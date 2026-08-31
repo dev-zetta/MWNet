@@ -8,9 +8,9 @@ PacketPlayerReputation::PacketPlayerReputation() : PlayerPacket()
     packetID = ID_PLAYER_REPUTATION;
 }
 
-void PacketPlayerReputation::Packet(RakNet::BitStream *newBitstream, bool send)
+void PacketPlayerReputation::Packet(bool send)
 {
-    PlayerPacket::Packet(newBitstream, send);
+    PlayerPacket::Packet(send);
 
     RW(player->npcStats.mReputation, send);
 }

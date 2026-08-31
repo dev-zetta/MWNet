@@ -8,9 +8,9 @@ PacketPlayerBook::PacketPlayerBook() : PlayerPacket()
     packetID = ID_PLAYER_BOOK;
 }
 
-void PacketPlayerBook::Packet(RakNet::BitStream *newBitstream, bool send)
+void PacketPlayerBook::Packet(bool send)
 {
-    PlayerPacket::Packet(newBitstream, send);
+    PlayerPacket::Packet(send);
 
     uint32_t count = 0;
 

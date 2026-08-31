@@ -6,9 +6,9 @@ mwmp::PacketPlayerAlly::PacketPlayerAlly() : PlayerPacket()
     packetID = ID_PLAYER_ALLY;
 }
 
-void mwmp::PacketPlayerAlly::Packet(RakNet::BitStream *newBitstream, bool send)
+void mwmp::PacketPlayerAlly::Packet(bool send)
 {
-    PlayerPacket::Packet(newBitstream, send);
+    PlayerPacket::Packet(send);
 
     uint32_t count = 0;
 

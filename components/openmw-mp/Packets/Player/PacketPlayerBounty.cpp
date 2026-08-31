@@ -8,9 +8,9 @@ PacketPlayerBounty::PacketPlayerBounty() : PlayerPacket()
     packetID = ID_PLAYER_BOUNTY;
 }
 
-void PacketPlayerBounty::Packet(RakNet::BitStream *newBitstream, bool send)
+void PacketPlayerBounty::Packet(bool send)
 {
-    PlayerPacket::Packet(newBitstream, send);
+    PlayerPacket::Packet(send);
 
     RW(player->npcStats.mBounty, send);
 }

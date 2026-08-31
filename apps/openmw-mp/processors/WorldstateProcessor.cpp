@@ -11,16 +11,16 @@ void WorldstateProcessor::Do(WorldstatePacket &packet, Player &player, BaseWorld
     packet.Send(true);
 }
 
-bool WorldstateProcessor::Process(mwmp::transport::ApplicationPacketFrame &packet, BaseWorldstate &worldstate)
+bool WorldstateProcessor::Process(const mwmp::transport::ReceivedApplicationPacket& packet, BaseWorldstate &worldstate)
 {
     for (auto &processor : processors)
     {
-        if (processor.first == packet.data[0])
+        if (processor.first == static_cast<std::uint16_t>(packet.id))
         {
             Player *player = Players::getPlayer(mwmp::transport::TransportConnectionId(packet.sender.value));
             if (player == nullptr)
                 return true;
-            WorldstatePacket *myPacket = Networking::get().getWorldstatePacketController()->GetPacket(packet.data[0]);
+            WorldstatePacket *myPacket = Networking::get().getWorldstatePacketController()->GetPacket(static_cast<std::uint16_t>(packet.id));
 
             if (!processor.second->avoidReading)
             {
@@ -28,7 +28,7 @@ bool WorldstateProcessor::Process(mwmp::transport::ApplicationPacketFrame &packe
                 decoded.guid = mwmp::transport::TransportConnectionId(packet.sender.value);
                 decoded.isValid = true;
                 myPacket->setWorldstate(&decoded);
-                myPacket->Read();
+                myPacket->Read(packet.payload);
                 if (!decoded.isValid || !myPacket->isPacketValid())
                 {
                     LOG_MESSAGE_SIMPLE(TimedLog::LOG_ERROR, "Received %s that failed integrity check and was ignored!", processor.second->strPacketID.c_str());

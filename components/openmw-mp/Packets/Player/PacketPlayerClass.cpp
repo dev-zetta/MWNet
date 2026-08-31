@@ -24,9 +24,9 @@ mwmp::PacketPlayerClass::PacketPlayerClass() : PlayerPacket()
     packetID = ID_PLAYER_CHARCLASS;
 }
 
-void mwmp::PacketPlayerClass::Packet(RakNet::BitStream *newBitstream, bool send)
+void mwmp::PacketPlayerClass::Packet(bool send)
 {
-    PlayerPacket::Packet(newBitstream,  send);
+    PlayerPacket::Packet(send);
 
     RW(player->charClass.mId, send);
 
