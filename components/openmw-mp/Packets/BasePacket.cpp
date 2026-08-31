@@ -2,12 +2,11 @@
 #include <components/openmw-mp/Protocol/ApplicationPacketId.hpp>
 #include <components/openmw-mp/Transport/ApplicationPacketDispatcher.hpp>
 #include <PacketPriority.h>
-#include <RakPeer.h>
 #include "BasePacket.hpp"
 
 using namespace mwmp;
 
-BasePacket::BasePacket(RakNet::RakPeerInterface *peer)
+BasePacket::BasePacket(RakNet::RakPeerInterface*)
     : packetID(0)
     , reliability(RELIABLE_ORDERED)
     , priority(HIGH_PRIORITY)
@@ -15,7 +14,6 @@ BasePacket::BasePacket(RakNet::RakPeerInterface *peer)
     , bsRead(nullptr)
     , bsSend(nullptr)
     , bs(nullptr)
-    , peer(peer)
     , guid(RakNet::UNASSIGNED_CRABNET_GUID)
     , packetValid(false)
     , codecError(protocol::CodecError::None)
@@ -79,43 +77,17 @@ void BasePacket::SetApplicationPacketDispatcher(
 
 uint32_t BasePacket::RequestData(RakNet::RakNetGUID targetGuid)
 {
-    if (mDispatcher != nullptr)
-        return dispatchRequest(targetGuid);
-    if (bsSend == nullptr || peer == nullptr)
-        return 0;
-
-    bsSend->ResetWritePointer();
-    bsSend->Write(packetID);
-    bsSend->Write(targetGuid.g);
-    return peer->Send(bsSend, HIGH_PRIORITY, RELIABLE_ORDERED, orderChannel, targetGuid, false);
+    return dispatchRequest(targetGuid);
 }
 
 uint32_t BasePacket::Send(RakNet::AddressOrGUID destination)
 {
-    if (mDispatcher != nullptr)
-        return dispatchPacket(destination);
-    if (bsSend == nullptr || peer == nullptr)
-        return 0;
-
-    bsSend->ResetWritePointer();
-    Packet(bsSend, true);
-    if (!finishWrite())
-        return 0;
-    return peer->Send(bsSend, priority, reliability, orderChannel, destination, false);
+    return dispatchPacket(destination);
 }
 
 uint32_t BasePacket::Send(bool toOther)
 {
-    if (mDispatcher != nullptr)
-        return dispatchPacket(toOther);
-    if (bsSend == nullptr || peer == nullptr)
-        return 0;
-
-    bsSend->ResetWritePointer();
-    Packet(bsSend, true);
-    if (!finishWrite())
-        return 0;
-    return peer->Send(bsSend, priority, reliability, orderChannel, guid, toOther);
+    return dispatchPacket(toOther);
 }
 
 void BasePacket::Read()

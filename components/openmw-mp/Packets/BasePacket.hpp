@@ -419,7 +419,6 @@ namespace mwmp
         RakNet::BitStream *bsRead, *bsSend, *bs;
         std::optional<protocol::PacketReader> mReader;
         std::optional<protocol::PacketWriter> mWriter;
-        RakNet::RakPeerInterface *peer;
         transport::ApplicationPacketDispatcher* mDispatcher = nullptr;
         RakNet::RakNetGUID guid;
         bool packetValid;
