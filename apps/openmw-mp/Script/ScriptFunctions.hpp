@@ -165,6 +165,8 @@ public:
             {"OnPlayerDeath",            Callback<unsigned short>()},
             {"OnPlayerResurrect",        Callback<unsigned short>()},
             {"OnPlayerCellChange",       Callback<unsigned short>()},
+            {"OnPlayerCellChangeIntent", Callback<unsigned short, const char*>()},
+            {"OnPlayerCellChangeIntentRejected", Callback<unsigned short, const char*, const char*>()},
             {"OnPlayerMovementViolation", Callback<unsigned short, const char*, double, double, unsigned int>()},
             {"OnActorMovementViolation", Callback<unsigned short, const char*, const char*, double, double, unsigned int>()},
             {"OnPlayerAttribute",        Callback<unsigned short>()},

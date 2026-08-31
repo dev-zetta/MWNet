@@ -102,6 +102,9 @@ namespace  mwmp
         bool releaseActorAuthority(const ESM::Cell& cell, RakNet::RakNetGUID owner,
             std::uint64_t leaseId);
         bool validatePlayerMovement(Player& player, const BasePlayer& incoming);
+        bool validatePlayerCellChange(Player& player, const BasePlayer& incoming);
+        bool commitPlayerCellChange(Player& player);
+        void cancelPlayerCellChange(Player& player) noexcept;
         bool authorizePlayerMovement(const Player& player, double tolerance = 128.0);
         void resetPlayerMovement(std::uint64_t connection) noexcept;
         bool acceptPlayerDeath(Player& player);
@@ -232,6 +235,14 @@ namespace  mwmp
         std::unordered_map<std::uint64_t, unsigned int> mJusticeViolations;
         std::unordered_map<std::uint64_t, unsigned int> mObjectViolations;
         std::unordered_map<std::uint64_t, std::int64_t> mPendingPlayerBounties;
+        struct PendingPlayerCellChange
+        {
+            ESM::Cell cell;
+            ESM::Position previousCellPosition;
+            bool isChangingRegion = false;
+        };
+        std::unordered_map<std::uint64_t, PendingPlayerCellChange>
+            mPendingPlayerCellChanges;
         std::unordered_map<std::uint64_t, std::vector<mechanics::ObjectMutation>>
             mPendingObjectPlacements;
         std::unordered_map<std::uint64_t, std::vector<mechanics::ObjectMutation>>

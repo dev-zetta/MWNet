@@ -226,6 +226,82 @@ bool Networking::validatePlayerMovement(Player& player, const BasePlayer& incomi
     return false;
 }
 
+bool Networking::validatePlayerCellChange(Player& player,
+    const BasePlayer& incoming)
+{
+    const mechanics::MovementValidationResult result
+        = mMovementValidator.previewCellTransition(player.guid.g,
+            incoming.cell.getShortDescription(),
+            { incoming.previousCellPosition.pos[0],
+                incoming.previousCellPosition.pos[1],
+                incoming.previousCellPosition.pos[2] },
+            128.0);
+    if (result.accepted()
+        && !mPendingPlayerCellChanges.contains(player.guid.g))
+    {
+        mPendingPlayerCellChanges.emplace(player.guid.g,
+            PendingPlayerCellChange{ player.cell, player.previousCellPosition,
+                player.isChangingRegion });
+        return true;
+    }
+
+    const unsigned int violations = ++mMovementViolations[player.guid.g];
+    LOG_MESSAGE_SIMPLE(TimedLog::LOG_WARN,
+        "Rejected cell transition intent from connection %llu to %s: %s; distance %.3f, allowed %.3f (violation %u)",
+        static_cast<unsigned long long>(player.guid.g),
+        incoming.cell.getShortDescription().c_str(),
+        mPendingPlayerCellChanges.contains(player.guid.g)
+            ? "another cell transition is pending"
+            : mechanics::describe(result.decision),
+        result.distance, result.allowedDistance, violations);
+    if (violations >= mMovementViolationLimit)
+        disconnectTransport({ player.guid.g },
+            "repeated invalid cell transition intents");
+    return false;
+}
+
+bool Networking::commitPlayerCellChange(Player& player)
+{
+    const auto pending = mPendingPlayerCellChanges.find(player.guid.g);
+    if (pending == mPendingPlayerCellChanges.end())
+        return false;
+
+    const mechanics::MovementValidationResult result
+        = mMovementValidator.acceptCellTransition(player.guid.g,
+            player.cell.getShortDescription(),
+            { player.previousCellPosition.pos[0],
+                player.previousCellPosition.pos[1],
+                player.previousCellPosition.pos[2] },
+            128.0, mechanics::MovementValidator::Clock::now());
+    if (result.accepted())
+    {
+        mPendingPlayerCellChanges.erase(pending);
+        return true;
+    }
+
+    const unsigned int violations = ++mMovementViolations[player.guid.g];
+    LOG_MESSAGE_SIMPLE(TimedLog::LOG_WARN,
+        "Rejected modified cell transition from connection %llu to %s: %s (violation %u)",
+        static_cast<unsigned long long>(player.guid.g),
+        player.cell.getShortDescription().c_str(),
+        mechanics::describe(result.decision), violations);
+    if (violations >= mMovementViolationLimit)
+        disconnectTransport({ player.guid.g },
+            "repeated invalid cell transition intents");
+    return false;
+}
+
+void Networking::cancelPlayerCellChange(Player& player) noexcept
+{
+    const auto pending = mPendingPlayerCellChanges.find(player.guid.g);
+    if (pending == mPendingPlayerCellChanges.end())
+        return;
+    player.cell = pending->second.cell;
+    player.previousCellPosition = pending->second.previousCellPosition;
+    player.isChangingRegion = pending->second.isChangingRegion;
+    mPendingPlayerCellChanges.erase(pending);
+}
+
 bool Networking::authorizePlayerMovement(const Player& player, double tolerance)
 {
     return mMovementValidator.authorizeTransition(player.guid.g,
@@ -238,6 +314,7 @@ void Networking::resetPlayerMovement(std::uint64_t connection) noexcept
 {
     mMovementValidator.erase(connection);
     mMovementViolations.erase(connection);
+    mPendingPlayerCellChanges.erase(connection);
 }
 
 bool Networking::acceptPlayerDeath(Player& player)

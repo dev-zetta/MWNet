@@ -467,6 +467,14 @@ function OnPlayerCellChange(pid)
     eventHandler.OnPlayerCellChange(pid)
 end
 
+function OnPlayerCellChangeIntent(pid, destinationCell)
+    return eventHandler.OnPlayerCellChangeIntent(pid, destinationCell)
+end
+
+function OnPlayerCellChangeIntentRejected(pid, destinationCell, reason)
+    eventHandler.OnPlayerCellChangeIntentRejected(pid, destinationCell, reason)
+end
+
 function OnPlayerEquipment(pid)
     tes3mp.LogMessage(enumerations.log.INFO, "Called \"OnPlayerEquipment\" for " .. logicHandler.GetChatName(pid))
     eventHandler.OnPlayerEquipment(pid)

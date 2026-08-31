@@ -18,12 +18,45 @@ namespace mwmp
             playerController = Networking::get().getPlayerPacketController();
         }
 
+        bool Validate(Player& player, const BasePlayer& incoming) override
+        {
+            return Networking::getPtr()->validatePlayerCellChange(player, incoming);
+        }
+
         void Do(PlayerPacket &packet, Player &player) override
         {
-            // Cell-transition intent validation is introduced separately. Until
-            // then, start a new same-cell movement baseline after the accepted
-            // legacy transition so position validation does not break doors.
-            Networking::getPtr()->resetPlayerMovement(player.guid.g);
+            const std::string destinationCell = player.cell.getShortDescription();
+            bool allowed = false;
+            try
+            {
+                allowed = Script::CallBoolean<
+                    Script::CallbackIdentity("OnPlayerCellChangeIntent")>(
+                        player.getId(), destinationCell.c_str());
+            }
+            catch (...)
+            {
+                Networking::getPtr()->cancelPlayerCellChange(player);
+                throw;
+            }
+            if (!allowed)
+            {
+                Networking::getPtr()->cancelPlayerCellChange(player);
+                const char* reason = "denied by script";
+                Script::Call<Script::CallbackIdentity(
+                    "OnPlayerCellChangeIntentRejected")>(player.getId(),
+                        destinationCell.c_str(), reason);
+                return;
+            }
+            if (!Networking::getPtr()->commitPlayerCellChange(player))
+            {
+                Networking::getPtr()->cancelPlayerCellChange(player);
+                const char* reason = "canonical cell transition rejected";
+                Script::Call<Script::CallbackIdentity(
+                    "OnPlayerCellChangeIntentRejected")>(player.getId(),
+                        destinationCell.c_str(), reason);
+                return;
+            }
+
             LOG_MESSAGE_SIMPLE(TimedLog::LOG_INFO, "Received %s from %s", strPacketID.c_str(), player.npc.mName.c_str());
             LOG_APPEND(TimedLog::LOG_INFO, "- Moved to %s", player.cell.getShortDescription().c_str());
 

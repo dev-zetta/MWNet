@@ -2,6 +2,7 @@ local eventHandler = {}
 local pendingPlayerInventoryEvents = {}
 local pendingPlayerEquipmentEvents = {}
 local pendingPlayerSpellsActiveEvents = {}
+local pendingPlayerCellChangeEvents = {}
 local pendingActorSpellsActiveEvents = {}
 local pendingActorEquipmentEvents = {}
 local pendingActorListEvents = {}
@@ -1159,84 +1160,114 @@ eventHandler.OnPlayerSpellsActiveIntentRejected = function(pid, reason)
         {pid, pendingEvent.playerPacket})
 end
 
-eventHandler.OnPlayerCellChange = function(pid)
-    if Players[pid] ~= nil and Players[pid]:IsLoggedIn() then
-
-        local playerPacket = packetReader.GetPlayerPacketTables(pid, "PlayerCellChange")
-        local currentCellDescription = playerPacket.location.cell
-
-        if not tableHelper.containsValue(config.forbiddenCells, currentCellDescription) then
-            local previousCellDescription = Players[pid].data.location.cell
-            
-            local eventStatus = customEventHooks.triggerValidators("OnPlayerCellChange",
-                {pid, playerPacket, previousCellDescription})
-            
-            if eventStatus.validDefaultHandler then
-                -- If this player is changing their region, add them to the visitors of the new
-                -- region while removing them from the visitors of their old region
-                if tes3mp.IsChangingRegion(pid) then
-                    local regionName = string.lower(tes3mp.GetRegion(pid))
-
-                    if regionName ~= "" then
-
-                        local debugMessage = logicHandler.GetChatName(pid) .. " has "
-
-                        local hasFinishedInitialTeleportation = Players[pid].hasFinishedInitialTeleportation
-                        local previousCellIsStillLoaded = tableHelper.containsValue(Players[pid].cellsLoaded,
-                            previousCellDescription)
-
-                        -- It's possible we've been teleported to a cell we had already loaded when
-                        -- spawning on the server, so also check whether this is the player's first
-                        -- cell change since joining
-                        local isTeleported = not previousCellIsStillLoaded or not hasFinishedInitialTeleportation
-
-                        if isTeleported then
-                            debugMessage = debugMessage .. "teleported"
-                        else
-                            debugMessage = debugMessage .. "walked"
-                        end
-
-                        debugMessage = debugMessage .. " to region " .. regionName .. "\n"
-                        tes3mp.LogMessage(enumerations.log.INFO, debugMessage)
-
-                        logicHandler.LoadRegionForPlayer(pid, regionName, isTeleported)
-                    end
-
-                    local previousRegionName = Players[pid].data.location.regionName
-
-                    if previousRegionName ~= nil and previousRegionName ~= regionName then
-                        logicHandler.UnloadRegionForPlayer(pid, previousRegionName)
-                    end
-
-                    Players[pid].data.location.regionName = regionName
-                    Players[pid].hasFinishedInitialTeleportation = true
-                end
-
-                Players[pid]:SaveCell(packetReader.GetPlayerPacketTables(pid, "PlayerCellChange"))
-                Players[pid]:SaveStatsDynamic(packetReader.GetPlayerPacketTables(pid, "PlayerStatsDynamic"))
-                Players[pid]:QuicksaveToDrive()
-
-                -- Exchange generated records with the other players who have this cell loaded
-                if LoadedCells[currentCellDescription] ~= nil then
-                    logicHandler.ExchangeGeneratedRecords(pid, LoadedCells[currentCellDescription].visitors)
-                end
-
-                if config.shareMapExploration == true then
-                    WorldInstance:SaveMapExploration(pid)
-                    WorldInstance:QuicksaveToDrive()
-                end
-            end
-            
-            customEventHooks.triggerHandlers("OnPlayerCellChange", eventStatus,
-                {pid, playerPacket, previousCellDescription})
-        else
-            Players[pid].data.location.posX = tes3mp.GetPreviousCellPosX(pid)
-            Players[pid].data.location.posY = tes3mp.GetPreviousCellPosY(pid)
-            Players[pid].data.location.posZ = tes3mp.GetPreviousCellPosZ(pid)
-            Players[pid]:LoadCell()
-            tes3mp.MessageBox(pid, -1, "You are forbidden from entering that area.")
-        end
+eventHandler.OnPlayerCellChangeIntent = function(pid, destinationCell)
+    pendingPlayerCellChangeEvents[pid] = nil
+    if Players[pid] == nil or not Players[pid]:IsLoggedIn() then
+        return false
     end
+
+    local playerPacket = packetReader.GetPlayerPacketTables(pid, "PlayerCellChange")
+    local currentCellDescription = playerPacket.location.cell
+    local previousCellDescription = Players[pid].data.location.cell
+    if currentCellDescription ~= destinationCell then
+        return false
+    end
+
+    local forbidden = tableHelper.containsValue(config.forbiddenCells,
+        currentCellDescription)
+    local eventStatus
+    if forbidden then
+        eventStatus = customEventHooks.makeEventStatus(false, false)
+    else
+        eventStatus = customEventHooks.triggerValidators("OnPlayerCellChange",
+            {pid, playerPacket, previousCellDescription})
+    end
+    pendingPlayerCellChangeEvents[pid] = {
+        eventStatus = eventStatus,
+        playerPacket = playerPacket,
+        previousCellDescription = previousCellDescription,
+        forbidden = forbidden
+    }
+    return not forbidden and eventStatus.validDefaultHandler
+end
+
+eventHandler.OnPlayerCellChangeIntentRejected = function(pid, destinationCell, reason)
+    local pendingEvent = pendingPlayerCellChangeEvents[pid]
+    pendingPlayerCellChangeEvents[pid] = nil
+    if pendingEvent == nil or Players[pid] == nil then
+        return
+    end
+
+    Players[pid].data.location.posX = tes3mp.GetPosX(pid)
+    Players[pid].data.location.posY = tes3mp.GetPosY(pid)
+    Players[pid].data.location.posZ = tes3mp.GetPosZ(pid)
+    Players[pid]:LoadCell()
+    if pendingEvent.forbidden then
+        tes3mp.MessageBox(pid, -1, "You are forbidden from entering that area.")
+    else
+        tes3mp.LogAppend(enumerations.log.WARN,
+            "- Rejected PlayerCellChange to " .. destinationCell .. ": " .. reason)
+        local eventStatus = customEventHooks.makeEventStatus(false,
+            pendingEvent.eventStatus.validCustomHandlers)
+        customEventHooks.triggerHandlers("OnPlayerCellChange", eventStatus,
+            {pid, pendingEvent.playerPacket,
+                pendingEvent.previousCellDescription})
+    end
+end
+
+eventHandler.OnPlayerCellChange = function(pid)
+    local pendingEvent = pendingPlayerCellChangeEvents[pid]
+    pendingPlayerCellChangeEvents[pid] = nil
+    if pendingEvent == nil or Players[pid] == nil or
+        not Players[pid]:IsLoggedIn() then
+        return
+    end
+
+    local currentCellDescription = pendingEvent.playerPacket.location.cell
+    local previousCellDescription = pendingEvent.previousCellDescription
+    -- If this player is changing their region, add them to the visitors of the new
+    -- region while removing them from the visitors of their old region.
+    if tes3mp.IsChangingRegion(pid) then
+        local regionName = string.lower(tes3mp.GetRegion(pid))
+        if regionName ~= "" then
+            local debugMessage = logicHandler.GetChatName(pid) .. " has "
+            local hasFinishedInitialTeleportation =
+                Players[pid].hasFinishedInitialTeleportation
+            local previousCellIsStillLoaded = tableHelper.containsValue(
+                Players[pid].cellsLoaded, previousCellDescription)
+            local isTeleported = not previousCellIsStillLoaded or
+                not hasFinishedInitialTeleportation
+            debugMessage = debugMessage ..
+                (isTeleported and "teleported" or "walked") ..
+                " to region " .. regionName .. "\n"
+            tes3mp.LogMessage(enumerations.log.INFO, debugMessage)
+            logicHandler.LoadRegionForPlayer(pid, regionName, isTeleported)
+        end
+
+        local previousRegionName = Players[pid].data.location.regionName
+        if previousRegionName ~= nil and previousRegionName ~= regionName then
+            logicHandler.UnloadRegionForPlayer(pid, previousRegionName)
+        end
+        Players[pid].data.location.regionName = regionName
+        Players[pid].hasFinishedInitialTeleportation = true
+    end
+
+    Players[pid]:SaveCell(pendingEvent.playerPacket)
+    Players[pid]:SaveStatsDynamic(
+        packetReader.GetPlayerPacketTables(pid, "PlayerStatsDynamic"))
+    Players[pid]:QuicksaveToDrive()
+    if LoadedCells[currentCellDescription] ~= nil then
+        logicHandler.ExchangeGeneratedRecords(pid,
+            LoadedCells[currentCellDescription].visitors)
+    end
+    if config.shareMapExploration == true then
+        WorldInstance:SaveMapExploration(pid)
+        WorldInstance:QuicksaveToDrive()
+    end
+
+    customEventHooks.triggerHandlers("OnPlayerCellChange",
+        pendingEvent.eventStatus,
+        {pid, pendingEvent.playerPacket, previousCellDescription})
 end
 
 eventHandler.OnPlayerDeath = function(pid)

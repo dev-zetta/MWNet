@@ -104,6 +104,13 @@ namespace
                    start + 2s).decision == MovementDecision::TransitionNotAuthorized);
         EXPECT(validator.validate(1, { { 4, 2, 3 }, "Seyda Neen", 5 }, 100,
                    start + 2s).decision == MovementDecision::AcceptedTransition);
+
+        MovementValidator initial;
+        EXPECT(initial.acceptCellTransition(2, "Caldera", {}, 64, start).accepted());
+        EXPECT(initial.validate(2, { {}, "Balmora", 1 }, 100, start)
+                   .decision == MovementDecision::TransitionNotAuthorized);
+        EXPECT(initial.validate(2, { {}, "Caldera", 2 }, 100, start)
+                   .decision == MovementDecision::AcceptedTransition);
     }
 
     void testInvalidInputCapacityAndCleanup()

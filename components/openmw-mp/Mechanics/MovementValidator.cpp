@@ -29,6 +29,25 @@ namespace mwmp::mechanics
         {
             if (mStates.size() >= mMaximumConnections)
                 return { MovementDecision::CapacityReached };
+
+            const auto transitionIt = mTransitions.find(connection);
+            if (transitionIt != mTransitions.end())
+            {
+                const Transition& transition = transitionIt->second;
+                if (now <= transition.expiresAt && sample.cell == transition.cell
+                    && (!transition.position
+                        || distance(sample.position, *transition.position)
+                            <= transition.tolerance))
+                {
+                    mStates.emplace(connection, State{ sample, now });
+                    mTransitions.erase(transitionIt);
+                    return { MovementDecision::AcceptedTransition };
+                }
+                if (now > transition.expiresAt)
+                    mTransitions.erase(transitionIt);
+                else
+                    return { MovementDecision::TransitionNotAuthorized };
+            }
             mStates.emplace(connection, State{ sample, now });
             return { MovementDecision::AcceptedInitial };
         }
