@@ -57,6 +57,50 @@ namespace mwmp::mechanics
         std::uint64_t sequence = 0;
     };
 
+    enum class ActorAiAction : std::uint8_t
+    {
+        Cancel,
+        Activate,
+        Combat,
+        Escort,
+        Follow,
+        Travel,
+        Wander,
+    };
+
+    enum class ActorAiTargetKind : std::uint8_t
+    {
+        Player,
+        Reference,
+    };
+
+    struct ActorAiTarget
+    {
+        ActorAiTargetKind kind = ActorAiTargetKind::Reference;
+        std::uint64_t player = 0;
+        ActorIdentity reference;
+
+        bool operator==(const ActorAiTarget&) const = default;
+    };
+
+    struct ActorAiState
+    {
+        ActorAiAction action = ActorAiAction::Cancel;
+        std::optional<ActorAiTarget> target;
+        Position3 coordinates;
+        std::uint32_t distance = 0;
+        std::uint32_t duration = 0;
+        bool repeat = false;
+
+        bool operator==(const ActorAiState&) const = default;
+    };
+
+    struct ActorAiUpdate
+    {
+        ActorIdentity identity;
+        ActorAiState state;
+    };
+
     enum class ActorRosterAction : std::uint8_t
     {
         Set,
@@ -86,6 +130,8 @@ namespace mwmp::mechanics
         InvalidRefId,
         UnknownActor,
         DestinationOccupied,
+        InvalidAiState,
+        InvalidAiTarget,
         ActorLimitReached,
     };
 
@@ -131,6 +177,8 @@ namespace mwmp::mechanics
         ActorStateResult applyCellChanges(
             const std::vector<ActorCellChangeUpdate>& updates,
             Clock::time_point now);
+        ActorStateResult previewAi(const std::vector<ActorAiUpdate>& updates) const;
+        ActorStateResult applyAi(const std::vector<ActorAiUpdate>& updates);
         ActorStateResult previewRoster(ActorRosterAction action,
             const std::string& cell,
             const std::vector<ActorRosterUpdate>& updates) const;
@@ -141,6 +189,7 @@ namespace mwmp::mechanics
             const ActorIdentity& identity) const;
         std::optional<ActorTransform> position(const ActorIdentity& identity) const;
         std::optional<std::string> refId(const ActorIdentity& identity) const;
+        std::optional<ActorAiState> ai(const ActorIdentity& identity) const;
         bool contains(const ActorIdentity& identity) const noexcept;
         std::vector<ActorIdentity> identities(const std::string& cell) const;
         std::size_t eraseCell(const std::string& cell) noexcept;
@@ -156,6 +205,7 @@ namespace mwmp::mechanics
             double theoreticalMaximumSpeed, Clock::time_point now) const;
         ActorStateResult validateCellChanges(
             const std::vector<ActorCellChangeUpdate>& updates) const;
+        ActorStateResult validateAi(const std::vector<ActorAiUpdate>& updates) const;
         ActorStateResult validateRoster(ActorRosterAction action,
             const std::string& cell,
             const std::vector<ActorRosterUpdate>& updates) const;
@@ -176,6 +226,7 @@ namespace mwmp::mechanics
             std::string refId;
             std::optional<EquipmentLedger::Equipment> equipment;
             std::optional<ActorMovementState> movement;
+            std::optional<ActorAiState> ai;
         };
 
         std::size_t mMaximumActors;

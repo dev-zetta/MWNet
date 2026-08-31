@@ -237,6 +237,44 @@ namespace
         EXPECT(ledger.contains({ "Balmora", 2, 0 }));
         EXPECT(!ledger.contains({ "Seyda Neen", 2, 0 }));
     }
+
+    void testAtomicAiUpdates()
+    {
+        ActorStateLedger ledger;
+        EXPECT(ledger.applyRoster(ActorRosterAction::Add, "Balmora",
+                   { rosterActor("Balmora", 1, "guard"),
+                       rosterActor("Balmora", 2, "rat") }).applied());
+
+        ActorAiUpdate combat;
+        combat.identity = { "Balmora", 1, 0 };
+        combat.state.action = ActorAiAction::Combat;
+        combat.state.target = ActorAiTarget{ ActorAiTargetKind::Reference, 0,
+            { "Balmora", 2, 0 } };
+        EXPECT(ledger.previewAi({ combat }).applied());
+        EXPECT(!ledger.ai(combat.identity));
+        EXPECT(ledger.applyAi({ combat }).applied());
+        EXPECT(ledger.ai(combat.identity)->action == ActorAiAction::Combat);
+
+        ActorAiUpdate invalid = combat;
+        invalid.identity.refNum = 2;
+        invalid.state.coordinates.x = std::numeric_limits<double>::quiet_NaN();
+        EXPECT(ledger.applyAi({ invalid }).decision
+            == ActorStateDecision::InvalidAiState);
+        EXPECT(!ledger.ai(invalid.identity));
+
+        invalid = combat;
+        invalid.state.target->reference.cell = "Seyda Neen";
+        EXPECT(ledger.previewAi({ invalid }).decision
+            == ActorStateDecision::InvalidAiTarget);
+        invalid = combat;
+        invalid.state.target->reference = { "Balmora", 0, 0 };
+        EXPECT(ledger.previewAi({ invalid }).decision
+            == ActorStateDecision::InvalidAiTarget);
+        invalid = combat;
+        invalid.identity.refNum = 99;
+        EXPECT(ledger.previewAi({ invalid }).decision
+            == ActorStateDecision::UnknownActor);
+    }
 }
 
 int runActorStateTests()
@@ -247,5 +285,6 @@ int runActorStateTests()
     testAtomicPositionUpdates();
     testAtomicRosterUpdates();
     testAtomicCellChanges();
+    testAtomicAiUpdates();
     return sFailures;
 }

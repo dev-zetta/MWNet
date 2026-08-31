@@ -108,6 +108,23 @@ namespace mwmp::mechanics
         return { ActorStateDecision::Applied, mActors.size() };
     }
 
+    ActorStateResult ActorStateLedger::previewAi(
+        const std::vector<ActorAiUpdate>& updates) const
+    {
+        return validateAi(updates);
+    }
+
+    ActorStateResult ActorStateLedger::applyAi(
+        const std::vector<ActorAiUpdate>& updates)
+    {
+        const ActorStateResult result = validateAi(updates);
+        if (!result.applied())
+            return result;
+        for (const ActorAiUpdate& update : updates)
+            mActors.find(update.identity)->second.ai = update.state;
+        return { ActorStateDecision::Applied, mActors.size() };
+    }
+
     ActorStateResult ActorStateLedger::previewRoster(ActorRosterAction action,
         const std::string& cell,
         const std::vector<ActorRosterUpdate>& updates) const
@@ -176,6 +193,15 @@ namespace mwmp::mechanics
         if (found == mActors.end() || found->second.refId.empty())
             return std::nullopt;
         return found->second.refId;
+    }
+
+    std::optional<ActorAiState> ActorStateLedger::ai(
+        const ActorIdentity& identity) const
+    {
+        const auto found = mActors.find(identity);
+        if (found == mActors.end() || !found->second.ai)
+            return std::nullopt;
+        return found->second.ai;
     }
 
     bool ActorStateLedger::contains(const ActorIdentity& identity) const noexcept
@@ -390,6 +416,54 @@ namespace mwmp::mechanics
         return { ActorStateDecision::Applied, mActors.size() };
     }
 
+    ActorStateResult ActorStateLedger::validateAi(
+        const std::vector<ActorAiUpdate>& updates) const
+    {
+        if (updates.empty() || updates.size() > MaximumChanges)
+            return { ActorStateDecision::InvalidBatch, mActors.size() };
+
+        std::unordered_set<ActorIdentity, ActorIdentityHash> identities;
+        for (const ActorAiUpdate& update : updates)
+        {
+            if (!validIdentity(update.identity))
+                return { ActorStateDecision::InvalidIdentity, mActors.size() };
+            if (!identities.insert(update.identity).second)
+                return { ActorStateDecision::DuplicateActor, mActors.size() };
+            if (!mActors.contains(update.identity))
+                return { ActorStateDecision::UnknownActor, mActors.size() };
+
+            const unsigned int action = static_cast<unsigned int>(update.state.action);
+            const bool requiresTarget = action >= static_cast<unsigned int>(
+                ActorAiAction::Activate)
+                && action <= static_cast<unsigned int>(ActorAiAction::Follow);
+            if (action > static_cast<unsigned int>(ActorAiAction::Wander)
+                || update.state.distance > 1'000'000
+                || update.state.duration > 1'000'000
+                || !std::isfinite(update.state.coordinates.x)
+                || !std::isfinite(update.state.coordinates.y)
+                || !std::isfinite(update.state.coordinates.z)
+                || requiresTarget != update.state.target.has_value())
+            {
+                return { ActorStateDecision::InvalidAiState, mActors.size() };
+            }
+
+            if (!update.state.target)
+                continue;
+            const ActorAiTarget& target = *update.state.target;
+            if (target.kind == ActorAiTargetKind::Player)
+            {
+                if (target.player == 0)
+                    return { ActorStateDecision::InvalidAiTarget, mActors.size() };
+            }
+            else if (!validIdentity(target.reference)
+                || target.reference.cell != update.identity.cell)
+            {
+                return { ActorStateDecision::InvalidAiTarget, mActors.size() };
+            }
+        }
+        return { ActorStateDecision::Applied, mActors.size() };
+    }
+
     bool ActorStateLedger::validIdentity(const ActorIdentity& identity) noexcept
     {
         return !identity.cell.empty() && identity.cell.size() <= MaximumCellBytes
@@ -472,6 +546,10 @@ namespace mwmp::mechanics
                 return "the actor is not present in canonical state";
             case ActorStateDecision::DestinationOccupied:
                 return "the actor destination is already occupied";
+            case ActorStateDecision::InvalidAiState:
+                return "the actor AI package is invalid";
+            case ActorStateDecision::InvalidAiTarget:
+                return "the actor AI target is invalid or unknown";
             case ActorStateDecision::ActorLimitReached:
                 return "the canonical actor limit was reached";
         }
