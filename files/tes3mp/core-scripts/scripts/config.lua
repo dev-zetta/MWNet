@@ -459,10 +459,10 @@ config.databaseType = "json"
 -- Note: Not applicable when using json
 config.databasePath = config.dataPath .. "/database.db" -- Path where database is stored
 
--- Disallow players from including the following in their own names or the names of their custom items
--- Note: Unfortunately, these are based on real names that trolls have been using on servers
-config.disallowedNameStrings = { "bitch", "blowjob", "blow job", "cocksuck", "cunt", "ejaculat",
-    "faggot", "fellatio", "fuck", "gas the ", "Hitler", "jizz", "nigga", "nigger", "smegma", "vagina", "whore" }
+-- Operator-editable moderation rules are loaded from this file under the server data directory.
+-- The bundled file preserves the historical defaults without embedding them in executable Lua.
+config.moderationFile = "moderation.json"
+config.disallowedNameStrings = {}
 
 -- The order in which table keys should be saved to JSON files
 config.playerKeyOrder = { "login", "name", "schemaVersion", "passwordScheme", "timestamps", "settings",

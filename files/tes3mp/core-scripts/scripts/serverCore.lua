@@ -44,6 +44,33 @@ updateTimerId = nil
 
 banList = {}
 
+function LoadModerationRules()
+    local moderation = jsonInterface.load(config.moderationFile)
+
+    if type(moderation) ~= "table" or moderation.schemaVersion ~= 1 or
+        type(moderation.disallowedNameStrings) ~= "table" then
+        config.disallowedNameStrings = {}
+        tes3mp.LogMessage(enumerations.log.WARN,
+            "Moderation rules are missing or invalid; no name terms were loaded")
+        return
+    end
+
+    local validatedTerms = {}
+    for _, term in ipairs(moderation.disallowedNameStrings) do
+        if type(term) == "string" and string.len(term) > 0 and string.len(term) <= 64 then
+            table.insert(validatedTerms, term)
+        end
+
+        if #validatedTerms >= 4096 then
+            break
+        end
+    end
+
+    config.disallowedNameStrings = validatedTerms
+    tes3mp.LogMessage(enumerations.log.INFO,
+        "Loaded " .. #validatedTerms .. " private moderation name rules")
+end
+
 if (config.databaseType ~= nil and config.databaseType ~= "json") and doesModuleExist("luasql." .. config.databaseType) then
 
     Database = require("database")
@@ -200,6 +227,7 @@ function OnServerInit()
 
         logicHandler.PushPlayerList(Players)
 
+        LoadModerationRules()
         LoadBanList()
 
         tes3mp.SetDataFileEnforcementState(config.enforceDataFiles)
