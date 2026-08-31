@@ -100,6 +100,7 @@ namespace MWWorld
         struct MagicBoltState : public State
         {
             ESM::RefId mSpellId;
+            bool mServerManaged = false;
 
             // Name of item to display as effect source in magic menu (in case we casted an enchantment)
             std::string mSourceName;

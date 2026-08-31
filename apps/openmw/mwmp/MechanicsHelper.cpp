@@ -157,6 +157,25 @@ Cast *MechanicsHelper::getDedicatedCast(const MWWorld::Ptr& ptr)
     return nullptr;
 }
 
+bool MechanicsHelper::isServerManagedCast(
+    const MWWorld::Ptr& caster, const ESM::RefId& sourceId)
+{
+    if (caster.isEmpty() || sourceId.empty())
+        return false;
+
+    Cast* cast = getLocalCast(caster);
+    if (cast == nullptr)
+        cast = getDedicatedCast(caster);
+    if (cast == nullptr)
+        return false;
+
+    const std::string& submittedSource = cast->type == Cast::ITEM
+        ? cast->itemId : cast->spellId;
+    return !submittedSource.empty()
+        && Misc::StringUtils::ciEqual(
+            submittedSource, sourceId.getRefIdString());
+}
+
 MWWorld::Ptr MechanicsHelper::getPlayerPtr(const Target& target)
 {
     if (target.guid == mwmp::Main::get().getLocalPlayer()->guid)

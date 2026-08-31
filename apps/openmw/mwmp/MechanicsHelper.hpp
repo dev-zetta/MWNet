@@ -22,6 +22,8 @@ namespace MechanicsHelper
 
     mwmp::Cast *getLocalCast(const MWWorld::Ptr& ptr);
     mwmp::Cast *getDedicatedCast(const MWWorld::Ptr& ptr);
+    bool isServerManagedCast(
+        const MWWorld::Ptr& caster, const ESM::RefId& sourceId);
 
     MWWorld::Ptr getPlayerPtr(const mwmp::Target& target);
     unsigned int getActorId(const mwmp::Target& target);

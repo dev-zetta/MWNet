@@ -159,9 +159,10 @@ namespace MWMechanics
         const MWWorld::Ptr& target, const ESM::EffectList& effects, ESM::RangeType range, bool exploded) const
     {
         const bool targetIsActor = !target.isEmpty() && target.getClass().isActor();
-        const bool targetIsDedicatedActor = targetIsActor
+        const bool targetUsesServerAuthority = targetIsActor
             && (mwmp::PlayerList::isDedicatedPlayer(target)
-                || mwmp::Main::get().getCellController()->isDedicatedActor(target));
+                || mwmp::Main::get().getCellController()->isDedicatedActor(target)
+                || MechanicsHelper::isServerManagedCast(mCaster, mId));
 
         // If none of the effects need to apply, we can early-out
         bool found = false;
@@ -211,8 +212,10 @@ namespace MWMechanics
                 && (mCaster.isEmpty() || !mCaster.getClass().isActor()))
                 continue;
 
-            // Dedicated actors are driven by authoritative SpellsActive packets.
-            if (targetIsDedicatedActor)
+            // Multiplayer spell outcomes are driven by authoritative dynamic
+            // stat and SpellsActive packets. The local cast still predicts
+            // animation and projectile presentation.
+            if (targetUsesServerAuthority)
                 continue;
 
             indexes.push_back(enam.mIndex);
@@ -277,6 +280,23 @@ namespace MWMechanics
             isProjectile = (weapclass == ESM::WeaponType::Thrown || weapclass == ESM::WeaponType::Ammo);
         }
         int type = enchantment->mData.mType;
+
+        mwmp::Cast* localCast = nullptr;
+        const bool submittedItemCast = launchProjectile && !mScriptedSpell
+            && (type == ESM::Enchantment::WhenUsed
+                || type == ESM::Enchantment::CastOnce);
+        if (submittedItemCast)
+        {
+            localCast = MechanicsHelper::getLocalCast(mCaster);
+            if (localCast != nullptr)
+            {
+                MechanicsHelper::resetCast(localCast);
+                localCast->type = mwmp::Cast::ITEM;
+                localCast->itemId = mId.getRefIdString();
+                localCast->spellId.clear();
+                localCast->target = MechanicsHelper::getTarget(mTarget);
+            }
+        }
 
         // Check if there's enough charge left
         if (!godmode
@@ -354,6 +374,13 @@ namespace MWMechanics
         else if (isProjectile || !mTarget.isEmpty())
             inflict(mTarget, enchantment->mEffects, ESM::RT_Target);
 
+        if (localCast != nullptr)
+        {
+            localCast->success = true;
+            localCast->pressed = false;
+            localCast->shouldSend = true;
+        }
+
         return true;
     }
 
@@ -381,6 +408,20 @@ namespace MWMechanics
 
         bool godmode = mCaster == MWMechanics::getPlayer() && MWBase::Environment::get().getWorld()->getGodModeState();
 
+        mwmp::Cast* localCast = nullptr;
+        if (mCaster.getClass().isActor() && !mAlwaysSucceed && !mScriptedSpell)
+        {
+            localCast = MechanicsHelper::getLocalCast(mCaster);
+            if (localCast != nullptr)
+            {
+                MechanicsHelper::resetCast(localCast);
+                localCast->type = mwmp::Cast::REGULAR;
+                localCast->spellId = mId.getRefIdString();
+                localCast->itemId.clear();
+                localCast->target = MechanicsHelper::getTarget(mTarget);
+            }
+        }
+
         if (mCaster.getClass().isActor() && !mAlwaysSucceed && !mScriptedSpell)
         {
             school = getSpellSchool(spell, mCaster);
@@ -397,14 +438,12 @@ namespace MWMechanics
                     Make spell casting fail based on the casting success rated determined
                     in MechanicsHelper::getSpellSuccess()
                 */
-                mwmp::Cast *localCast = NULL;
                 mwmp::Cast *dedicatedCast = MechanicsHelper::getDedicatedCast(mCaster);
 
                 if (dedicatedCast)
                     dedicatedCast->pressed = false;
                 else
                 {
-                    localCast = MechanicsHelper::getLocalCast(mCaster);
                     if (localCast)
                     {
                         localCast->success = MechanicsHelper::getSpellSuccess(mId.getRefIdString(), mCaster);

@@ -53,6 +53,8 @@
 
 #include "../mwrender/animation.hpp"
 #include "../mwrender/renderingmanager.hpp"
+
+#include "../mwmp/MechanicsHelper.hpp"
 #include "../mwrender/util.hpp"
 #include "../mwrender/vismask.hpp"
 
@@ -355,6 +357,7 @@ namespace MWWorld
 
         MagicBoltState state;
         state.mSpellId = spellId;
+        state.mServerManaged = MechanicsHelper::isServerManagedCast(caster, spellId);
         state.mCasterHandle = caster;
         state.mItem = item;
         MWBase::Environment::get().getWorldModel()->registerPtr(caster);
@@ -648,8 +651,12 @@ namespace MWWorld
                 hitNormal = projectile->velocity();
                 hitNormal.normalize();
             }
-            MWBase::Environment::get().getLuaManager()->magicProjectileHit(
-                magicBoltState.mSpellId, caster, magicBoltState.mItem, target, hitPos, hitNormal);
+            if (!magicBoltState.mServerManaged)
+            {
+                MWBase::Environment::get().getLuaManager()->magicProjectileHit(
+                    magicBoltState.mSpellId, caster, magicBoltState.mItem,
+                    target, hitPos, hitNormal);
+            }
 
             magicBoltState.mToDelete = true;
         }
