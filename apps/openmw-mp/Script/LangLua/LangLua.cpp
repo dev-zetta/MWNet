@@ -1,3 +1,5 @@
+#include <cstdio>
+#include <exception>
 #include <iostream>
 #include "LangLua.hpp"
 #include <Script/Script.hpp>
@@ -5,6 +7,33 @@
 
 std::set<std::string> LangLua::packagePath;
 std::set<std::string> LangLua::packageCPath;
+
+namespace
+{
+    int raiseLuaApiError(lua_State* lua, const char* message) noexcept
+    {
+        return luaL_error(lua, "TES3MP API error: %s", message);
+    }
+
+    template<int (*Function)(lua_State*)>
+    int safeLuaFunction(lua_State* lua) noexcept
+    {
+        char error[512]{};
+        try
+        {
+            return Function(lua);
+        }
+        catch (const std::exception& exception)
+        {
+            std::snprintf(error, sizeof(error), "%s", exception.what());
+        }
+        catch (...)
+        {
+            std::snprintf(error, sizeof(error), "%s", "unknown C++ exception");
+        }
+        return raiseLuaApiError(lua, error);
+    }
+}
 
 void setLuaPath(lua_State* L, const char* path, bool cpath = false)
 {
@@ -58,7 +87,7 @@ template <unsigned int ArgIndex, unsigned int FunctionIndex>
 struct LuaFunctionDispatcher {
     // Dispatch Lua function with the given arguments
     template <typename ReturnType, typename... Args>
-    inline static ReturnType Dispatch(lua_State*&& lua, Args&&... args) noexcept {
+    inline static ReturnType Dispatch(lua_State*&& lua, Args&&... args) {
         // Retrieve function data
         constexpr ScriptFunctionData const& functionData = ScriptFunctions::functions[FunctionIndex];
         // Retrieve argument from the Lua stack
@@ -74,7 +103,7 @@ template <unsigned int FunctionIndex>
 struct LuaFunctionDispatcher<0, FunctionIndex> {
     // Dispatch Lua function with the given arguments
     template <typename ReturnType, typename... Args>
-    inline static ReturnType Dispatch(lua_State*&&, Args&&... args) noexcept {
+    inline static ReturnType Dispatch(lua_State*&&, Args&&... args) {
         // Retrieve function data
         constexpr ScriptFunctionData const& functionData = ScriptFunctions::functions[FunctionIndex];
         // Call the C++ function using reinterpret_cast
@@ -85,20 +114,46 @@ struct LuaFunctionDispatcher<0, FunctionIndex> {
 // Lua function wrapper for functions returning 'void'
 template <unsigned int FunctionIndex>
 static typename std::enable_if<ScriptFunctions::functions[FunctionIndex].func.ret == 'v', int>::type LuaFunctionWrapper(lua_State* lua) noexcept {
-    // Dispatch the Lua function
-    LuaFunctionDispatcher<ScriptFunctions::functions[FunctionIndex].func.numargs, FunctionIndex>::template Dispatch<void>(std::forward<lua_State*>(lua));
-    return 0;
+    char error[512]{};
+    try
+    {
+        LuaFunctionDispatcher<ScriptFunctions::functions[FunctionIndex].func.numargs,
+            FunctionIndex>::template Dispatch<void>(std::forward<lua_State*>(lua));
+        return 0;
+    }
+    catch (const std::exception& exception)
+    {
+        std::snprintf(error, sizeof(error), "%s", exception.what());
+    }
+    catch (...)
+    {
+        std::snprintf(error, sizeof(error), "%s", "unknown C++ exception");
+    }
+    return raiseLuaApiError(lua, error);
 }
 
 // Lua function wrapper for functions with non-void return types
 template <unsigned int FunctionIndex>
 static typename std::enable_if<ScriptFunctions::functions[FunctionIndex].func.ret != 'v', int>::type LuaFunctionWrapper(lua_State* lua) noexcept {
-    // Dispatch the Lua function
-    auto result = LuaFunctionDispatcher<ScriptFunctions::functions[FunctionIndex].func.numargs, FunctionIndex>::template Dispatch<
-        typename CharType<ScriptFunctions::functions[FunctionIndex].func.ret>::type>(std::forward<lua_State*>(lua));
-    // Push the result onto the Lua stack
-    sol::stack::push(lua, result);
-    return 1;
+    char error[512]{};
+    try
+    {
+        auto result = LuaFunctionDispatcher<ScriptFunctions::functions[FunctionIndex].func.numargs,
+            FunctionIndex>::template Dispatch<typename CharType<
+                ScriptFunctions::functions[FunctionIndex].func.ret>::type>(
+                    std::forward<lua_State*>(lua));
+        sol::stack::push(lua, result);
+        return 1;
+    }
+    catch (const std::exception& exception)
+    {
+        std::snprintf(error, sizeof(error), "%s", exception.what());
+    }
+    catch (...)
+    {
+        std::snprintf(error, sizeof(error), "%s", "unknown C++ exception");
+    }
+    return raiseLuaApiError(lua, error);
 }
 
 // Struct for defining Lua functions with names and wrappers
@@ -109,10 +164,10 @@ struct LuaFunctionDefinition {
     };
 };
 
-template<> struct LuaFunctionDefinition<0> { static constexpr LuaFunctionData FunctionInfo{"CreateTimer", LangLua::CreateTimer}; };
-template<> struct LuaFunctionDefinition<1> { static constexpr LuaFunctionData FunctionInfo{"CreateTimerEx", LangLua::CreateTimerEx}; };
-template<> struct LuaFunctionDefinition<2> { static constexpr LuaFunctionData FunctionInfo{"MakePublic", LangLua::MakePublic}; };
-template<> struct LuaFunctionDefinition<3> { static constexpr LuaFunctionData FunctionInfo{"CallPublic", LangLua::CallPublic}; };
+template<> struct LuaFunctionDefinition<0> { static constexpr LuaFunctionData FunctionInfo{"CreateTimer", safeLuaFunction<&LangLua::CreateTimer>}; };
+template<> struct LuaFunctionDefinition<1> { static constexpr LuaFunctionData FunctionInfo{"CreateTimerEx", safeLuaFunction<&LangLua::CreateTimerEx>}; };
+template<> struct LuaFunctionDefinition<2> { static constexpr LuaFunctionData FunctionInfo{"MakePublic", safeLuaFunction<&LangLua::MakePublic>}; };
+template<> struct LuaFunctionDefinition<3> { static constexpr LuaFunctionData FunctionInfo{"CallPublic", safeLuaFunction<&LangLua::CallPublic>}; };
 
 
 #ifdef __arm__

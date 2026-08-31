@@ -29,10 +29,10 @@ public:
     static void AddPackagePath(const std::string &path);
     static void AddPackageCPath(const std::string &path);
 
-    static int MakePublic(lua_State *lua) noexcept;
+    static int MakePublic(lua_State *lua);
     static int CallPublic(lua_State *lua);
 
-    static int CreateTimer(lua_State *lua) noexcept;
+    static int CreateTimer(lua_State *lua);
     static int CreateTimerEx(lua_State *lua);
 
     virtual void LoadProgram(const char *filename) override;

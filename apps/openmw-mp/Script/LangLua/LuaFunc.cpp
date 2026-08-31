@@ -58,7 +58,7 @@ inline std::vector<boost::any> DefToVec(lua_State *lua, std::string types, int a
     return args;
 }
 
-int LangLua::MakePublic(lua_State *lua) noexcept
+int LangLua::MakePublic(lua_State *lua)
 {
     const char * callback = sol::stack::get<const char*>(lua, 1);
     const char * name = sol::stack::get<const char*>(lua, 2);
@@ -98,7 +98,7 @@ int LangLua::CallPublic(lua_State *lua)
     return 1;
 }
 
-int LangLua::CreateTimer(lua_State *lua) noexcept
+int LangLua::CreateTimer(lua_State *lua)
 {
 
     const char * callback= sol::stack::get<const char*>(lua, 1);
