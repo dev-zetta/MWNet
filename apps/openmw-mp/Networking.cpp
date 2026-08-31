@@ -3213,6 +3213,8 @@ bool Networking::resolvePlayerCast(Player& player, std::string& rejectionReason)
             packet->setPlayer(affected);
             packet->Send(affected->guid);
             affected->sendToLoaded(packet);
+            Script::Call<Script::CallbackIdentity("OnPlayerSpellsActive")>(
+                affected->getId());
         }
         else if (targetActor != nullptr && targetCell != nullptr
             && operation.owner == *presentationIntent.target)
@@ -3797,6 +3799,8 @@ bool Networking::resolveActorCast(Player& player, BaseActorList& actorList,
             packet->setPlayer(affected);
             packet->Send(affected->guid);
             affected->sendToLoaded(packet);
+            Script::Call<Script::CallbackIdentity("OnPlayerSpellsActive")>(
+                affected->getId());
         }
         else
         {
@@ -5595,6 +5599,8 @@ void Networking::advanceActiveEffects(double elapsedSeconds)
                 packet->setPlayer(player);
                 packet->Send(player->guid);
                 player->sendToLoaded(packet);
+                Script::Call<Script::CallbackIdentity("OnPlayerSpellsActive")>(
+                    player->getId());
             }
             if (change.died)
             {

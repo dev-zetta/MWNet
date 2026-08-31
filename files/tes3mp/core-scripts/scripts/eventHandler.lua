@@ -1289,6 +1289,16 @@ eventHandler.OnPlayerSpellsActive = function(pid)
     local pendingEvent = pendingPlayerSpellsActiveEvents[pid]
     pendingPlayerSpellsActiveEvents[pid] = nil
     if pendingEvent == nil then
+        if Players[pid] == nil or not Players[pid]:IsLoggedIn() then
+            return
+        end
+
+        local playerPacket = packetReader.GetPlayerPacketTables(
+            pid, "PlayerSpellsActive")
+        Players[pid]:SaveSpellsActive(playerPacket)
+        local eventStatus = customEventHooks.makeEventStatus(true, true)
+        customEventHooks.triggerHandlers("OnPlayerSpellsActive", eventStatus,
+            {pid, playerPacket})
         return
     end
 
