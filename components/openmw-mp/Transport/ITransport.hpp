@@ -13,7 +13,15 @@ namespace mwmp::transport
 {
     struct TransportConnectionId
     {
+        static constexpr std::size_t wireSize = sizeof(std::uint64_t);
+
         std::uint64_t value = 0;
+
+        constexpr TransportConnectionId() noexcept = default;
+        constexpr TransportConnectionId(std::uint64_t id) noexcept
+            : value(id)
+        {
+        }
 
         explicit operator bool() const noexcept { return value != 0; }
         auto operator<=>(const TransportConnectionId&) const = default;

@@ -12,7 +12,7 @@
 #include "DedicatedPlayer.hpp"
 
 #include <map>
-#include <RakNetTypes.h>
+#include <memory>
 
 namespace MWMechanics
 {
@@ -27,15 +27,15 @@ namespace mwmp
 
         static void update(float dt);
 
-        static DedicatedPlayer *newPlayer(RakNet::RakNetGUID guid);
+        static DedicatedPlayer *newPlayer(mwmp::transport::TransportConnectionId guid);
 
-        static void deletePlayer(RakNet::RakNetGUID guid);
+        static void deletePlayer(mwmp::transport::TransportConnectionId guid);
         static void cleanUp();
 
-        static DedicatedPlayer *getPlayer(RakNet::RakNetGUID guid);
+        static DedicatedPlayer *getPlayer(mwmp::transport::TransportConnectionId guid);
         static DedicatedPlayer *getPlayer(const MWWorld::Ptr &ptr);
         static DedicatedPlayer* getPlayer(int actorId);
-        static std::vector<RakNet::RakNetGUID> getPlayersInCell(const ESM::Cell& cell);
+        static std::vector<mwmp::transport::TransportConnectionId> getPlayersInCell(const ESM::Cell& cell);
 
         static bool isDedicatedPlayer(const MWWorld::Ptr &ptr);
 
@@ -45,7 +45,7 @@ namespace mwmp
 
     private:
 
-        static std::map<RakNet::RakNetGUID, DedicatedPlayer *> playerList;
+        static std::map<mwmp::transport::TransportConnectionId, std::unique_ptr<DedicatedPlayer>> playerList;
     };
 }
 

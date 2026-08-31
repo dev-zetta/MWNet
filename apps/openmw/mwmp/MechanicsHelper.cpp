@@ -312,7 +312,7 @@ void MechanicsHelper::resetAttack(Attack* attack)
     attack->applyWeaponEnchantment = false;
     attack->applyAmmoEnchantment = false;
     attack->hitPosition.pos[0] = attack->hitPosition.pos[1] = attack->hitPosition.pos[2] = 0;
-    attack->target.guid = RakNet::RakNetGUID();
+    attack->target.guid = mwmp::transport::TransportConnectionId();
     attack->target.refId.clear();
     attack->target.refNum = 0;
     attack->target.mpNum = 0;
@@ -322,7 +322,7 @@ void MechanicsHelper::resetCast(Cast* cast)
 {
     cast->isHit = false;
     cast->success = false;
-    cast->target.guid = RakNet::RakNetGUID();
+    cast->target.guid = mwmp::transport::TransportConnectionId();
     cast->target.refId.clear();
     cast->target.refNum = 0;
     cast->target.mpNum = 0;
@@ -345,7 +345,7 @@ bool MechanicsHelper::isTeamMember(const MWWorld::Ptr& playerChecked, const MWWo
     {
         if (playerWithTeamIsLocal || playerWithTeamIsDedicated)
         {
-            RakNet::RakNetGUID playerCheckedGuid;
+            mwmp::transport::TransportConnectionId playerCheckedGuid;
 
             if (playerCheckedIsLocal)
                 playerCheckedGuid = mwmp::Main::get().getLocalPlayer()->guid;

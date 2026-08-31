@@ -6,8 +6,7 @@
 #include <components/esm3/activespells.hpp>
 #include <components/esm3/loadcell.hpp>
 #include <components/esm3/statstate.hpp>
-
-#include <RakNetTypes.h>
+#include <components/openmw-mp/Transport/ITransport.hpp>
 
 namespace mwmp
 {
@@ -101,7 +100,7 @@ namespace mwmp
 
         std::string name; // Remove this once the server can get names corresponding to different refIds
 
-        RakNet::RakNetGUID guid{};
+        mwmp::transport::TransportConnectionId guid{};
     };
 
     class Attack

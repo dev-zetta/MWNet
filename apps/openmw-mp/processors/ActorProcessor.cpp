@@ -17,7 +17,7 @@ bool ActorProcessor::Process(mwmp::transport::ApplicationPacketFrame &packet, Ba
     {
         if (processor.first == packet.data[0])
         {
-            Player *player = Players::getPlayer(RakNet::RakNetGUID(packet.sender.value));
+            Player *player = Players::getPlayer(mwmp::transport::TransportConnectionId(packet.sender.value));
             if (player == nullptr)
                 return true;
             ActorPacket *myPacket = Networking::get().getActorPacketController()->GetPacket(packet.data[0]);
@@ -25,7 +25,7 @@ bool ActorProcessor::Process(mwmp::transport::ApplicationPacketFrame &packet, Ba
             if (!processor.second->avoidReading)
             {
                 BaseActorList decoded;
-                decoded.guid = RakNet::RakNetGUID(packet.sender.value);
+                decoded.guid = mwmp::transport::TransportConnectionId(packet.sender.value);
                 decoded.isValid = true;
                 myPacket->setActorList(&decoded);
                 myPacket->Read();
@@ -43,7 +43,7 @@ bool ActorProcessor::Process(mwmp::transport::ApplicationPacketFrame &packet, Ba
             {
                 actorList.cell.blank();
                 actorList.baseActors.clear();
-                actorList.guid = RakNet::RakNetGUID(packet.sender.value);
+                actorList.guid = mwmp::transport::TransportConnectionId(packet.sender.value);
                 actorList.isValid = true;
             }
 

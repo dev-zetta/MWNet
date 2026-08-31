@@ -5,7 +5,6 @@
 #include <memory>
 #include <string>
 #include <chrono>
-#include <RakNetTypes.h>
 
 #include <components/esm3/npcstats.hpp>
 #include <components/esm3/cellid.hpp>
@@ -18,7 +17,7 @@
 #include "Cell.hpp"
 #include "CellController.hpp"
 
-using TPlayers = std::map<RakNet::RakNetGUID, std::unique_ptr<Player>>;
+using TPlayers = std::map<mwmp::transport::TransportConnectionId, std::unique_ptr<Player>>;
 using TSlots = std::map<unsigned short, Player*>;
 
 class Players
@@ -39,13 +38,13 @@ public:
         explicit operator bool() const { return status == CreationStatus::Created; }
     };
 
-    static CreationResult newPlayer(RakNet::RakNetGUID guid, unsigned int maximumPlayers);
-    static bool deletePlayer(RakNet::RakNetGUID guid);
-    static Player *getPlayer(RakNet::RakNetGUID guid);
+    static CreationResult newPlayer(mwmp::transport::TransportConnectionId guid, unsigned int maximumPlayers);
+    static bool deletePlayer(mwmp::transport::TransportConnectionId guid);
+    static Player *getPlayer(mwmp::transport::TransportConnectionId guid);
     static Player *getPlayer(unsigned short id);
     static TPlayers *getPlayers();
     static unsigned short getLastPlayerId();
-    static bool doesPlayerExist(RakNet::RakNetGUID guid);
+    static bool doesPlayerExist(mwmp::transport::TransportConnectionId guid);
 
 private:
     static TPlayers players;
@@ -65,7 +64,7 @@ public:
         POSTLOADED,
         KICKED
     };
-    Player(RakNet::RakNetGUID guid);
+    Player(mwmp::transport::TransportConnectionId guid);
 
     unsigned short getId();
     void setId(unsigned short id);

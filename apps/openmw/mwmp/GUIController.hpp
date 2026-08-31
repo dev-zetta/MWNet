@@ -70,7 +70,7 @@ namespace mwmp
         void updatePlayersMarkers(MWGui::LocalMapBase *localMapBase);
         void updateGlobalMapMarkerTooltips(MWGui::MapWindow *pWindow);
 
-        ESM::CustomMarker createMarker(const RakNet::RakNetGUID &guid);
+        ESM::CustomMarker createMarker(const mwmp::transport::TransportConnectionId &guid);
         PlayerMarkerCollection mPlayerMarkers;
     private:
         void setGlobalMapMarkerTooltip(MWGui::MapWindow *mapWindow ,MyGUI::Widget* markerWidget, int x, int y);

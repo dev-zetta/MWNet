@@ -48,7 +48,7 @@ namespace mwmp
         virtual DedicatedActor *getDedicatedActor(std::string actorIndex);
 
         bool hasLocalAuthority();
-        void setAuthority(const RakNet::RakNetGUID& guid, std::uint64_t leaseId = 0);
+        void setAuthority(const mwmp::transport::TransportConnectionId& guid, std::uint64_t leaseId = 0);
         std::uint64_t getAuthorityLeaseId() const;
 
         MWWorld::CellStore* getCellStore();
@@ -58,7 +58,7 @@ namespace mwmp
 
     private:
         MWWorld::CellStore* store;
-        RakNet::RakNetGUID authorityGuid{};
+        mwmp::transport::TransportConnectionId authorityGuid{};
         std::uint64_t authorityLeaseId = 0;
 
         std::map<std::string, std::unique_ptr<LocalActor>> localActors;

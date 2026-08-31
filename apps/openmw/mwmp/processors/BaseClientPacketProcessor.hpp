@@ -24,7 +24,7 @@ namespace mwmp
         LocalPlayer *getLocalPlayer();
 
     protected:
-        static RakNet::RakNetGUID guid, myGuid;
+        static mwmp::transport::TransportConnectionId guid, myGuid;
         static bool request;
     };
 }

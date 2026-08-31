@@ -373,7 +373,7 @@ bool Networking::preInit(std::vector<std::string>& content, Files::Collections& 
     PacketPreInit packetPreInit;
     RakNet::BitStream bs;
     packetPreInit.setChecksums(&checksums);
-    packetPreInit.setGUID(RakNet::RakNetGUID(serverConnection.value));
+    packetPreInit.setGUID(mwmp::transport::TransportConnectionId(serverConnection.value));
     packetPreInit.SetSendStream(&bs);
     packetPreInit.SetApplicationPacketDispatcher(dispatcher.get());
     if (packetPreInit.Send(false) == 0)
@@ -403,7 +403,7 @@ bool Networking::preInit(std::vector<std::string>& content, Files::Collections& 
             return failConnection("Failed to decode the content-verification response.");
 
         RakNet::BitStream bsIn(&frame[1], frame.size() - 1, false);
-        bsIn.IgnoreBytes(static_cast<unsigned int>(RakNet::RakNetGUID::size()));
+        bsIn.IgnoreBytes(static_cast<unsigned int>(mwmp::transport::TransportConnectionId::wireSize));
         packetPreInit.setChecksums(&checksumsResponse);
         packetPreInit.SetReadStream(&bsIn);
         packetPreInit.Read();
@@ -499,7 +499,7 @@ bool Networking::authenticate(ClientConnectionOptions& options)
                     ? "Account authentication failed." : response.message);
 
         getLocalPlayer()->guid = getLocalSystem()->guid
-            = RakNet::RakNetGUID(event->message.subject);
+            = mwmp::transport::TransportConnectionId(event->message.subject);
         if (endpoint->advance(serverConnection, session::State::AccountAuthenticated,
                 transportError) != session::TransitionResult::Advanced)
             return failConnection(transportError.detail.empty()

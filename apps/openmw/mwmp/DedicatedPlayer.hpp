@@ -13,7 +13,6 @@
 #include "../mwworld/manualref.hpp"
 
 #include <map>
-#include <RakNetTypes.h>
 
 namespace MWMechanics
 {
@@ -27,6 +26,8 @@ namespace mwmp
         friend class PlayerList;
 
     public:
+
+        virtual ~DedicatedPlayer();
 
         void update(float dt);
 
@@ -66,9 +67,7 @@ namespace mwmp
 
     private:
 
-        DedicatedPlayer(RakNet::RakNetGUID guid);
-        virtual ~DedicatedPlayer();
-
+        DedicatedPlayer(mwmp::transport::TransportConnectionId guid);
         MWWorld::ManualRef* reference;
 
         MWWorld::Ptr ptr;

@@ -111,7 +111,7 @@ namespace mwmp::transport
 
         for (const std::uint64_t destination : destinations)
         {
-            if (!sendOne(id, subject, { destination }, payload, error))
+            if (!sendOne(id, subject, TransportConnectionId{ destination }, payload, error))
                 return false;
         }
         error = {};

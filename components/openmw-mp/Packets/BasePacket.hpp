@@ -9,7 +9,6 @@
 #include <type_traits>
 #include <utility>
 #include <variant>
-#include <RakNetTypes.h>
 #include <BitStream.h>
 #include <components/esm/path.hpp>
 #include <components/esm/position.hpp>
@@ -36,17 +35,17 @@ namespace mwmp
 
         virtual void Packet(RakNet::BitStream *newBitstream, bool send);
         virtual uint32_t Send(bool toOtherPlayers = true);
-        virtual uint32_t Send(RakNet::AddressOrGUID destination);
+        virtual uint32_t Send(transport::TransportConnectionId destination);
         virtual void Read();
 
-        void setGUID(RakNet::RakNetGUID newGuid);
-        RakNet::RakNetGUID getGUID();
+        void setGUID(mwmp::transport::TransportConnectionId newGuid);
+        mwmp::transport::TransportConnectionId getGUID();
 
         void SetReadStream(RakNet::BitStream *bitStream);
         void SetSendStream(RakNet::BitStream *bitStream);
         void SetStreams(RakNet::BitStream *inStream, RakNet::BitStream *outStream);
         void SetApplicationPacketDispatcher(transport::ApplicationPacketDispatcher* dispatcher);
-        virtual uint32_t RequestData(RakNet::RakNetGUID targetGuid);
+        virtual uint32_t RequestData(mwmp::transport::TransportConnectionId targetGuid);
 
         static inline uint32_t headerSize()
         {
@@ -242,7 +241,7 @@ namespace mwmp
             return true;
         }
 
-        bool RW(RakNet::RakNetGUID& value, bool write, bool compress = false);
+        bool RW(mwmp::transport::TransportConnectionId& value, bool write, bool compress = false);
 
         bool RW(ESM::Cell::DATAstruct& value, bool write, bool compress = false)
         {
@@ -408,8 +407,8 @@ namespace mwmp
         bool finishRead();
         bool prepareWrite();
         std::span<const std::byte> writePayload() const noexcept;
-        uint32_t dispatchRequest(RakNet::RakNetGUID targetGuid);
-        uint32_t dispatchPacket(RakNet::AddressOrGUID destination);
+        uint32_t dispatchRequest(mwmp::transport::TransportConnectionId targetGuid);
+        uint32_t dispatchPacket(transport::TransportConnectionId destination);
         uint32_t dispatchPacket(bool toOther);
 
         uint8_t packetID;
@@ -417,7 +416,7 @@ namespace mwmp
         std::optional<protocol::PacketReader> mReader;
         std::optional<protocol::PacketWriter> mWriter;
         transport::ApplicationPacketDispatcher* mDispatcher = nullptr;
-        RakNet::RakNetGUID guid;
+        mwmp::transport::TransportConnectionId guid;
         bool packetValid;
         protocol::CodecError codecError;
     };

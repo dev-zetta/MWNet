@@ -3,8 +3,6 @@
 
 #include <components/esm3/loadcell.hpp>
 #include <components/openmw-mp/Base/BaseStructs.hpp>
-#include <RakNetTypes.h>
-
 namespace mwmp
 {
     struct ContainerItem
@@ -86,7 +84,7 @@ namespace mwmp
         std::vector<ContainerItem> containerItems;
         unsigned int containerItemCount = 0;
 
-        RakNet::RakNetGUID guid{}; // only for object lists that can also include players
+        mwmp::transport::TransportConnectionId guid{}; // only for object lists that can also include players
         bool isPlayer = false;
     };
 
@@ -94,7 +92,7 @@ namespace mwmp
     {
     public:
 
-        explicit BaseObjectList(RakNet::RakNetGUID guid)
+        explicit BaseObjectList(mwmp::transport::TransportConnectionId guid)
             : guid(guid)
         {
         }
@@ -119,7 +117,7 @@ namespace mwmp
             RESTOCK_RESULT = 5
         };
 
-        RakNet::RakNetGUID guid{};
+        mwmp::transport::TransportConnectionId guid{};
         
         std::vector<BaseObject> baseObjects;
         unsigned int baseObjectCount = 0;

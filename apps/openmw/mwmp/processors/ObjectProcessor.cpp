@@ -22,7 +22,7 @@ bool ObjectProcessor::Process(mwmp::transport::ApplicationPacketFrame &packet, O
     std::uint64_t guidValue = 0;
     if (!bsIn.Read(guidValue))
         return false;
-    guid = RakNet::RakNetGUID(guidValue);
+    guid = mwmp::transport::TransportConnectionId(guidValue);
 
     ObjectPacket *myPacket = Main::get().getNetworking()->getObjectPacket(packet.data[0]);
     myPacket->SetReadStream(&bsIn);

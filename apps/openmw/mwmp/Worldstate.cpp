@@ -480,7 +480,7 @@ void Worldstate::resetCells(std::vector<ESM::Cell>* cells)
     bool haveUnloadedActiveCells = false;
     ESM::Cell playerCell = world->getPlayerPtr().getCell()->getCell()->getEsm3();
     ESM::Position playerPos = world->getPlayerPtr().getRefData().getPosition();
-    std::vector<RakNet::RakNetGUID> playersInCell;
+    std::vector<mwmp::transport::TransportConnectionId> playersInCell;
 
     for (auto cell : *cells)
     {
@@ -493,7 +493,7 @@ void Worldstate::resetCells(std::vector<ESM::Cell>* cells)
                 // If there are any DedicatedPlayers in this cell, also move them to the temporary holding interior cell
                 if (!playersInCell.empty())
                 {
-                    for (RakNet::RakNetGUID otherGuid : playersInCell)
+                    for (mwmp::transport::TransportConnectionId otherGuid : playersInCell)
                     {
                         DedicatedPlayer* dedicatedPlayer = mwmp::PlayerList::getPlayer(otherGuid);
                         dedicatedPlayer->cell = ESM::Cell{};
@@ -513,7 +513,7 @@ void Worldstate::resetCells(std::vector<ESM::Cell>* cells)
 
         world->clearCellStore(cell);
 
-        for (RakNet::RakNetGUID otherGuid : playersInCell)
+        for (mwmp::transport::TransportConnectionId otherGuid : playersInCell)
         {
             DedicatedPlayer* dedicatedPlayer = mwmp::PlayerList::getPlayer(otherGuid);
             dedicatedPlayer->cell = cell;

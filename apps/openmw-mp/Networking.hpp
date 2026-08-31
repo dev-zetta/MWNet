@@ -49,13 +49,13 @@ namespace  mwmp
             double movementMaximumSpeed, unsigned int movementViolationLimit);
         ~Networking();
 
-        void newPlayer(RakNet::RakNetGUID guid);
-        void disconnectPlayer(RakNet::RakNetGUID guid);
-        void kickPlayer(RakNet::RakNetGUID guid, bool sendNotification = true);
+        void newPlayer(mwmp::transport::TransportConnectionId guid);
+        void disconnectPlayer(mwmp::transport::TransportConnectionId guid);
+        void kickPlayer(mwmp::transport::TransportConnectionId guid, bool sendNotification = true);
         
         void banAddress(const char *ipAddress);
         void unbanAddress(const char *ipAddress);
-        std::string getPeerAddress(RakNet::RakNetGUID guid) const;
+        std::string getPeerAddress(mwmp::transport::TransportConnectionId guid) const;
 
         void processSystemPacket(mwmp::transport::ApplicationPacketFrame *packet);
         void processPlayerPacket(mwmp::transport::ApplicationPacketFrame *packet);
@@ -66,7 +66,7 @@ namespace  mwmp
 
         unsigned short numberOfConnections() const;
         unsigned int maxConnections() const;
-        int getAvgPing(RakNet::AddressOrGUID) const;
+        int getAvgPing(transport::TransportConnectionId connection) const;
         unsigned short getPort() const;
 
         int mainLoop();
@@ -98,9 +98,9 @@ namespace  mwmp
         bool isPassworded() const;
 
         std::optional<session::AuthorityLease> assignActorAuthority(
-            const ESM::Cell& cell, RakNet::RakNetGUID owner);
+            const ESM::Cell& cell, mwmp::transport::TransportConnectionId owner);
         bool validateActorAuthority(const BaseActorList& actorList);
-        bool releaseActorAuthority(const ESM::Cell& cell, RakNet::RakNetGUID owner,
+        bool releaseActorAuthority(const ESM::Cell& cell, mwmp::transport::TransportConnectionId owner,
             std::uint64_t leaseId);
         bool validatePlayerMovement(Player& player, const BasePlayer& incoming);
         bool validatePlayerCellChange(Player& player, const BasePlayer& incoming);

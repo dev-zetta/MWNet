@@ -31,8 +31,6 @@
 
 #include <components/openmw-mp/Base/BaseStructs.hpp>
 
-#include <RakNetTypes.h>
-
 namespace mwmp
 {
     enum RECORD_TYPE
@@ -372,7 +370,7 @@ namespace mwmp
             time.timeScale = -1;
         }
 
-        RakNet::RakNetGUID guid{};
+        mwmp::transport::TransportConnectionId guid{};
 
         mwmp::Time time;
         std::vector<std::string> synchronizedClientScriptIds;

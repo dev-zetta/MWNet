@@ -2,7 +2,6 @@
 #define OPENMW_OBJECTPACKET_HPP
 
 #include <string>
-#include <RakNetTypes.h>
 #include <BitStream.h>
 #include <components/openmw-mp/Base/BaseObject.hpp>
 

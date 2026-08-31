@@ -12,14 +12,14 @@ bool PlayerProcessor::Process(mwmp::transport::ApplicationPacketFrame &packet)
     {
         if (processor.first == packet.data[0])
         {
-            Player *player = Players::getPlayer(RakNet::RakNetGUID(packet.sender.value));
+            Player *player = Players::getPlayer(mwmp::transport::TransportConnectionId(packet.sender.value));
             if (player == nullptr)
                 return true;
             PlayerPacket *myPacket = Networking::get().getPlayerPacketController()->GetPacket(packet.data[0]);
 
             if (!processor.second->avoidReading)
             {
-                BasePlayer validation(RakNet::RakNetGUID(packet.sender.value));
+                BasePlayer validation(mwmp::transport::TransportConnectionId(packet.sender.value));
                 myPacket->setPlayer(&validation);
                 myPacket->Read();
                 if (!myPacket->isPacketValid())

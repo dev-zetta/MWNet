@@ -2,8 +2,7 @@
 #define OPENMW_BASESYSTEM_HPP
 
 #include <string>
-
-#include <RakNetTypes.h>
+#include <components/openmw-mp/Transport/ITransport.hpp>
 
 namespace mwmp
 {
@@ -11,14 +10,14 @@ namespace mwmp
     {
     public:
 
-        explicit BaseSystem(RakNet::RakNetGUID guid)
+        explicit BaseSystem(mwmp::transport::TransportConnectionId guid)
             : guid(guid)
         {
         }
 
         BaseSystem() = default;
 
-        RakNet::RakNetGUID guid{};
+        mwmp::transport::TransportConnectionId guid{};
         std::string playerName;
         std::string serverPassword;
 

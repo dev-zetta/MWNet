@@ -38,7 +38,7 @@ namespace mwmp::transport
 
         TransportConnectionId connectionId(HSteamNetConnection handle)
         {
-            return { static_cast<std::uint64_t>(handle) };
+            return TransportConnectionId{ static_cast<std::uint64_t>(handle) };
         }
 
         HSteamNetConnection connectionHandle(TransportConnectionId id)

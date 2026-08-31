@@ -3,8 +3,8 @@
 
 using namespace mwmp;
 
-RakNet::RakNetGUID BaseClientPacketProcessor::guid;
-RakNet::RakNetGUID BaseClientPacketProcessor::myGuid;
+mwmp::transport::TransportConnectionId BaseClientPacketProcessor::guid;
+mwmp::transport::TransportConnectionId BaseClientPacketProcessor::myGuid;
 bool BaseClientPacketProcessor::request;
 
 LocalPlayer *BaseClientPacketProcessor::getLocalPlayer()

@@ -585,7 +585,7 @@ void ActorFunctions::SendActorAuthority()
             LOG_MESSAGE_SIMPLE(TimedLog::LOG_ERROR,
                 "Could not assign actor authority for %s to connection %llu",
                 writeActorList.cell.getShortDescription().c_str(),
-                static_cast<unsigned long long>(writeActorList.guid.g));
+                static_cast<unsigned long long>(writeActorList.guid.value));
             return;
         }
 

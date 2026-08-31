@@ -2,7 +2,6 @@
 #define OPENMW_LOCALSYSTEM_HPP
 
 #include <components/openmw-mp/Base/BaseSystem.hpp>
-#include <RakNetTypes.h>
 
 namespace mwmp
 {

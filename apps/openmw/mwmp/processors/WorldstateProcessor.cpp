@@ -22,7 +22,7 @@ bool WorldstateProcessor::Process(mwmp::transport::ApplicationPacketFrame &packe
     std::uint64_t guidValue = 0;
     if (!bsIn.Read(guidValue))
         return false;
-    guid = RakNet::RakNetGUID(guidValue);
+    guid = mwmp::transport::TransportConnectionId(guidValue);
 
     WorldstatePacket *myPacket = Main::get().getNetworking()->getWorldstatePacket(packet.data[0]);
     myPacket->SetReadStream(&bsIn);

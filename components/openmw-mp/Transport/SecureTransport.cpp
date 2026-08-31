@@ -575,7 +575,7 @@ namespace mwmp::transport
                 for (const auto& [id, connection] : connections)
                 {
                     if (connection.phase != Phase::Authenticated && now > connection.handshakeDeadline)
-                        expired.push_back({ id });
+                        expired.push_back(TransportConnectionId{ id });
                 }
                 for (const auto id : expired)
                     failLocked(id, "secure handshake deadline exceeded");

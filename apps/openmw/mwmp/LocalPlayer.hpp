@@ -5,7 +5,6 @@
 #include "../mwmechanics/activespells.hpp"
 #include "../mwworld/ptr.hpp"
 #include "../mwworld/timestamp.hpp"
-#include <RakNetTypes.h>
 
 namespace mwmp
 {

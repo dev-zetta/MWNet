@@ -4,7 +4,6 @@
 #include <components/openmw-mp/Base/BaseObject.hpp>
 #include "../mwgui/itemmodel.hpp"
 #include "../mwworld/worldimp.hpp"
-#include <RakNetTypes.h>
 
 namespace mwmp
 {

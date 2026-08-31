@@ -21,7 +21,7 @@ bool ActorProcessor::Process(mwmp::transport::ApplicationPacketFrame &packet, Ac
     std::uint64_t guidValue = 0;
     if (!bsIn.Read(guidValue))
         return false;
-    guid = RakNet::RakNetGUID(guidValue);
+    guid = mwmp::transport::TransportConnectionId(guidValue);
 
     ActorPacket *myPacket = Main::get().getNetworking()->getActorPacket(packet.data[0]);
     myPacket->SetReadStream(&bsIn);

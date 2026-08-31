@@ -669,7 +669,7 @@ bool Cell::hasLocalAuthority()
     return authorityGuid == Main::get().getLocalPlayer()->guid;
 }
 
-void Cell::setAuthority(const RakNet::RakNetGUID& guid, std::uint64_t leaseId)
+void Cell::setAuthority(const mwmp::transport::TransportConnectionId& guid, std::uint64_t leaseId)
 {
     authorityGuid = guid;
     authorityLeaseId = leaseId;

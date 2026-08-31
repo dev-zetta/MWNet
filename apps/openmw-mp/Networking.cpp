@@ -136,16 +136,16 @@ bool Networking::setServerPassword(std::string_view password, std::string& error
 }
 
 std::optional<session::AuthorityLease> Networking::assignActorAuthority(
-    const ESM::Cell& cell, RakNet::RakNetGUID owner)
+    const ESM::Cell& cell, mwmp::transport::TransportConnectionId owner)
 {
-    if (!mAuthenticatedConnections.contains(owner.g))
+    if (!mAuthenticatedConnections.contains(owner.value))
         return std::nullopt;
 
     const std::string cellDescription = cell.getShortDescription();
     const auto now = session::AuthorityLeaseManager::Clock::now();
     if (const auto current = mAuthorityLeases.find(cellDescription); current)
     {
-        if (current->owner == owner.g
+        if (current->owner == owner.value
             && mAuthorityLeases.renew(current->cell, current->owner, current->leaseId, now)
                 == session::LeaseValidation::Valid)
             return mAuthorityLeases.find(cellDescription);
@@ -153,7 +153,7 @@ std::optional<session::AuthorityLease> Networking::assignActorAuthority(
     }
 
     const session::LeaseGrantResult result = mAuthorityLeases.grant(
-        cellDescription, owner.g, now);
+        cellDescription, owner.value, now);
     if (!result.lease || (result.decision != session::LeaseGrantDecision::Granted
             && result.decision != session::LeaseGrantDecision::Existing))
         return std::nullopt;
@@ -163,25 +163,25 @@ std::optional<session::AuthorityLease> Networking::assignActorAuthority(
 bool Networking::validateActorAuthority(const BaseActorList& actorList)
 {
     const auto validation = mAuthorityLeases.validateAndRenew(
-        actorList.cell.getShortDescription(), actorList.guid.g, actorList.authorityLeaseId,
+        actorList.cell.getShortDescription(), actorList.guid.value, actorList.authorityLeaseId,
         session::AuthorityLeaseManager::Clock::now());
     if (validation == session::LeaseValidation::Valid)
         return true;
 
-    const unsigned int violations = ++mAuthorityViolations[actorList.guid.g];
+    const unsigned int violations = ++mAuthorityViolations[actorList.guid.value];
     LOG_MESSAGE_SIMPLE(TimedLog::LOG_WARN,
         "Rejected actor simulation update from connection %llu for cell %s: %s (violation %u)",
-        static_cast<unsigned long long>(actorList.guid.g),
+        static_cast<unsigned long long>(actorList.guid.value),
         actorList.cell.getShortDescription().c_str(), session::describe(validation), violations);
     if (violations >= 5)
-        disconnectTransport({ actorList.guid.g }, "repeated invalid actor authority leases");
+        disconnectTransport({ actorList.guid.value }, "repeated invalid actor authority leases");
     return false;
 }
 
-bool Networking::releaseActorAuthority(const ESM::Cell& cell, RakNet::RakNetGUID owner,
+bool Networking::releaseActorAuthority(const ESM::Cell& cell, mwmp::transport::TransportConnectionId owner,
     std::uint64_t leaseId)
 {
-    return mAuthorityLeases.release(cell.getShortDescription(), owner.g, leaseId);
+    return mAuthorityLeases.release(cell.getShortDescription(), owner.value, leaseId);
 }
 
 bool Networking::validatePlayerMovement(Player& player, const BasePlayer& incoming)
@@ -197,15 +197,15 @@ bool Networking::validatePlayerMovement(Player& player, const BasePlayer& incomi
         return true;
 
     const mechanics::MovementValidationResult result = mMovementValidator.validate(
-        player.guid.g, sample, mMovementMaximumSpeed,
+        player.guid.value, sample, mMovementMaximumSpeed,
         mechanics::MovementValidator::Clock::now());
     if (result.accepted())
         return true;
 
-    const unsigned int violations = ++mMovementViolations[player.guid.g];
+    const unsigned int violations = ++mMovementViolations[player.guid.value];
     LOG_MESSAGE_SIMPLE(TimedLog::LOG_WARN,
         "Rejected movement from connection %llu: %s; distance %.3f, allowed %.3f (violation %u)",
-        static_cast<unsigned long long>(player.guid.g), mechanics::describe(result.decision),
+        static_cast<unsigned long long>(player.guid.value), mechanics::describe(result.decision),
         result.distance, result.allowedDistance, violations);
     try
     {
@@ -221,7 +221,7 @@ bool Networking::validatePlayerMovement(Player& player, const BasePlayer& incomi
             "%s", "OnPlayerMovementViolation failed; movement remains rejected");
     }
     if (violations >= mMovementViolationLimit)
-        disconnectTransport({ player.guid.g }, "repeated invalid movement samples");
+        disconnectTransport({ player.guid.value }, "repeated invalid movement samples");
     return false;
 }
 
@@ -229,44 +229,44 @@ bool Networking::validatePlayerCellChange(Player& player,
     const BasePlayer& incoming)
 {
     const mechanics::MovementValidationResult result
-        = mMovementValidator.previewCellTransition(player.guid.g,
+        = mMovementValidator.previewCellTransition(player.guid.value,
             incoming.cell.getShortDescription(),
             { incoming.previousCellPosition.pos[0],
                 incoming.previousCellPosition.pos[1],
                 incoming.previousCellPosition.pos[2] },
             128.0);
     if (result.accepted()
-        && !mPendingPlayerCellChanges.contains(player.guid.g))
+        && !mPendingPlayerCellChanges.contains(player.guid.value))
     {
-        mPendingPlayerCellChanges.emplace(player.guid.g,
+        mPendingPlayerCellChanges.emplace(player.guid.value,
             PendingPlayerCellChange{ player.cell, player.previousCellPosition,
                 player.isChangingRegion });
         return true;
     }
 
-    const unsigned int violations = ++mMovementViolations[player.guid.g];
+    const unsigned int violations = ++mMovementViolations[player.guid.value];
     LOG_MESSAGE_SIMPLE(TimedLog::LOG_WARN,
         "Rejected cell transition intent from connection %llu to %s: %s; distance %.3f, allowed %.3f (violation %u)",
-        static_cast<unsigned long long>(player.guid.g),
+        static_cast<unsigned long long>(player.guid.value),
         incoming.cell.getShortDescription().c_str(),
-        mPendingPlayerCellChanges.contains(player.guid.g)
+        mPendingPlayerCellChanges.contains(player.guid.value)
             ? "another cell transition is pending"
             : mechanics::describe(result.decision),
         result.distance, result.allowedDistance, violations);
     if (violations >= mMovementViolationLimit)
-        disconnectTransport({ player.guid.g },
+        disconnectTransport({ player.guid.value },
             "repeated invalid cell transition intents");
     return false;
 }
 
 bool Networking::commitPlayerCellChange(Player& player)
 {
-    const auto pending = mPendingPlayerCellChanges.find(player.guid.g);
+    const auto pending = mPendingPlayerCellChanges.find(player.guid.value);
     if (pending == mPendingPlayerCellChanges.end())
         return false;
 
     const mechanics::MovementValidationResult result
-        = mMovementValidator.acceptCellTransition(player.guid.g,
+        = mMovementValidator.acceptCellTransition(player.guid.value,
             player.cell.getShortDescription(),
             { player.previousCellPosition.pos[0],
                 player.previousCellPosition.pos[1],
@@ -278,21 +278,21 @@ bool Networking::commitPlayerCellChange(Player& player)
         return true;
     }
 
-    const unsigned int violations = ++mMovementViolations[player.guid.g];
+    const unsigned int violations = ++mMovementViolations[player.guid.value];
     LOG_MESSAGE_SIMPLE(TimedLog::LOG_WARN,
         "Rejected modified cell transition from connection %llu to %s: %s (violation %u)",
-        static_cast<unsigned long long>(player.guid.g),
+        static_cast<unsigned long long>(player.guid.value),
         player.cell.getShortDescription().c_str(),
         mechanics::describe(result.decision), violations);
     if (violations >= mMovementViolationLimit)
-        disconnectTransport({ player.guid.g },
+        disconnectTransport({ player.guid.value },
             "repeated invalid cell transition intents");
     return false;
 }
 
 void Networking::cancelPlayerCellChange(Player& player) noexcept
 {
-    const auto pending = mPendingPlayerCellChanges.find(player.guid.g);
+    const auto pending = mPendingPlayerCellChanges.find(player.guid.value);
     if (pending == mPendingPlayerCellChanges.end())
         return;
     player.cell = pending->second.cell;
@@ -303,7 +303,7 @@ void Networking::cancelPlayerCellChange(Player& player) noexcept
 
 bool Networking::authorizePlayerMovement(const Player& player, double tolerance)
 {
-    return mMovementValidator.authorizeTransition(player.guid.g,
+    return mMovementValidator.authorizeTransition(player.guid.value,
         player.cell.getShortDescription(),
         { player.position.pos[0], player.position.pos[1], player.position.pos[2] },
         tolerance, mechanics::MovementValidator::Clock::now());
@@ -319,56 +319,56 @@ void Networking::resetPlayerMovement(std::uint64_t connection) noexcept
 bool Networking::acceptPlayerDeath(Player& player)
 {
     const mechanics::CombatantId combatant{
-        mechanics::CombatantKind::Player, player.guid.g, {} };
+        mechanics::CombatantKind::Player, player.guid.value, {} };
     const auto combatState = mCombatResolver.find(combatant);
     if (!combatState || combatState->alive || combatState->health > 0)
     {
-        const unsigned int violations = ++mLifecycleViolations[player.guid.g];
+        const unsigned int violations = ++mLifecycleViolations[player.guid.value];
         LOG_MESSAGE_SIMPLE(TimedLog::LOG_WARN,
             "Rejected non-canonical death intent from connection %llu (violation %u)",
-            static_cast<unsigned long long>(player.guid.g), violations);
+            static_cast<unsigned long long>(player.guid.value), violations);
         if (violations >= 5)
-            disconnectTransport({ player.guid.g }, "repeated non-canonical death intents");
+            disconnectTransport({ player.guid.value }, "repeated non-canonical death intents");
         return false;
     }
 
     const mechanics::PlayerLifeState lifeState
-        = mPlayerLifecycle.state(player.guid.g);
+        = mPlayerLifecycle.state(player.guid.value);
     if (lifeState == mechanics::PlayerLifeState::Dead
         || lifeState == mechanics::PlayerLifeState::Respawning)
     {
         LOG_MESSAGE_SIMPLE(TimedLog::LOG_VERBOSE,
             "Ignored duplicate death acknowledgement from connection %llu",
-            static_cast<unsigned long long>(player.guid.g));
+            static_cast<unsigned long long>(player.guid.value));
         return false;
     }
 
     const mechanics::PlayerLifeTransition transition
-        = mPlayerLifecycle.reportDeath(player.guid.g);
+        = mPlayerLifecycle.reportDeath(player.guid.value);
     if (transition.applied())
         return true;
 
-    const unsigned int violations = ++mLifecycleViolations[player.guid.g];
+    const unsigned int violations = ++mLifecycleViolations[player.guid.value];
     LOG_MESSAGE_SIMPLE(TimedLog::LOG_WARN,
         "Rejected death intent from connection %llu: %s (violation %u)",
-        static_cast<unsigned long long>(player.guid.g),
+        static_cast<unsigned long long>(player.guid.value),
         mechanics::describe(transition.decision), violations);
     if (violations >= 5)
-        disconnectTransport({ player.guid.g }, "repeated invalid death intents");
+        disconnectTransport({ player.guid.value }, "repeated invalid death intents");
     return false;
 }
 
 bool Networking::publishCanonicalPlayerDeath(Player& player, const Target& killer)
 {
     const mechanics::PlayerLifeTransition transition
-        = mPlayerLifecycle.reportDeath(player.guid.g);
+        = mPlayerLifecycle.reportDeath(player.guid.value);
     if (!transition.applied())
     {
         if (transition.decision == mechanics::PlayerLifeDecision::AlreadyDead)
             return false;
         LOG_MESSAGE_SIMPLE(TimedLog::LOG_WARN,
             "Failed to publish canonical death for connection %llu: %s",
-            static_cast<unsigned long long>(player.guid.g),
+            static_cast<unsigned long long>(player.guid.value),
             mechanics::describe(transition.decision));
         return false;
     }
@@ -386,12 +386,12 @@ bool Networking::publishCanonicalPlayerDeath(Player& player, const Target& kille
 bool Networking::beginPlayerRespawn(Player& player, std::uint32_t respawnType)
 {
     const mechanics::PlayerLifeTransition transition
-        = mPlayerLifecycle.beginRespawn(player.guid.g, respawnType);
+        = mPlayerLifecycle.beginRespawn(player.guid.value, respawnType);
     if (transition.applied())
         return true;
     LOG_MESSAGE_SIMPLE(TimedLog::LOG_WARN,
         "Rejected server respawn transition for connection %llu: %s",
-        static_cast<unsigned long long>(player.guid.g),
+        static_cast<unsigned long long>(player.guid.value),
         mechanics::describe(transition.decision));
     return false;
 }
@@ -399,17 +399,17 @@ bool Networking::beginPlayerRespawn(Player& player, std::uint32_t respawnType)
 bool Networking::acknowledgePlayerRespawn(Player& player, const BasePlayer& incoming)
 {
     const mechanics::PlayerLifeTransition transition
-        = mPlayerLifecycle.acknowledgeRespawn(player.guid.g, incoming.resurrectType);
+        = mPlayerLifecycle.acknowledgeRespawn(player.guid.value, incoming.resurrectType);
     if (transition.applied())
         return true;
 
-    const unsigned int violations = ++mLifecycleViolations[player.guid.g];
+    const unsigned int violations = ++mLifecycleViolations[player.guid.value];
     LOG_MESSAGE_SIMPLE(TimedLog::LOG_WARN,
         "Rejected respawn acknowledgement from connection %llu: %s (violation %u)",
-        static_cast<unsigned long long>(player.guid.g),
+        static_cast<unsigned long long>(player.guid.value),
         mechanics::describe(transition.decision), violations);
     if (violations >= 5)
-        disconnectTransport({ player.guid.g }, "repeated invalid respawn acknowledgements");
+        disconnectTransport({ player.guid.value }, "repeated invalid respawn acknowledgements");
     return false;
 }
 
@@ -574,7 +574,7 @@ namespace
                 if (actor.aiTarget.isPlayer)
                 {
                     target.kind = mwmp::mechanics::ActorAiTargetKind::Player;
-                    target.player = actor.aiTarget.guid.g;
+                    target.player = actor.aiTarget.guid.value;
                 }
                 else
                 {
@@ -724,23 +724,23 @@ bool Networking::validatePlayerInventory(Player& player, const BasePlayer& incom
     if (action)
     {
         result = mInventoryLedger.previewSnapshot(
-            { mechanics::InventoryOwnerKind::Player, player.guid.g }, *action,
+            { mechanics::InventoryOwnerKind::Player, player.guid.value }, *action,
             inventoryItems(incoming.inventoryChanges), candidate);
         if (result.applied())
-            equipmentResult = mEquipmentLedger.validateInventory(player.guid.g, candidate);
+            equipmentResult = mEquipmentLedger.validateInventory(player.guid.value, candidate);
     }
     if (result.applied() && equipmentResult.applied())
         return true;
 
-    const unsigned int violations = ++mInventoryViolations[player.guid.g];
+    const unsigned int violations = ++mInventoryViolations[player.guid.value];
     LOG_MESSAGE_SIMPLE(TimedLog::LOG_WARN,
         "Rejected inventory action from connection %llu: %s (violation %u)",
-        static_cast<unsigned long long>(player.guid.g),
+        static_cast<unsigned long long>(player.guid.value),
         result.applied() ? mechanics::describe(equipmentResult.decision)
                          : mechanics::describe(result.decision),
         violations);
     if (violations >= 5)
-        disconnectTransport({ player.guid.g }, "repeated invalid inventory actions");
+        disconnectTransport({ player.guid.value }, "repeated invalid inventory actions");
     return false;
 }
 
@@ -753,29 +753,29 @@ bool Networking::commitPlayerInventory(Player& player)
     if (action)
     {
         result = mInventoryLedger.previewSnapshot(
-            { mechanics::InventoryOwnerKind::Player, player.guid.g }, *action,
+            { mechanics::InventoryOwnerKind::Player, player.guid.value }, *action,
             inventoryItems(player.inventoryChanges), candidate);
         if (result.applied())
-            equipmentResult = mEquipmentLedger.validateInventory(player.guid.g, candidate);
+            equipmentResult = mEquipmentLedger.validateInventory(player.guid.value, candidate);
         if (result.applied() && equipmentResult.applied())
         {
             result = mInventoryLedger.apply(
-                { mechanics::InventoryOwnerKind::Player, player.guid.g }, *action,
+                { mechanics::InventoryOwnerKind::Player, player.guid.value }, *action,
                 inventoryItems(player.inventoryChanges));
         }
     }
     if (result.applied() && equipmentResult.applied())
         return true;
 
-    const unsigned int violations = ++mInventoryViolations[player.guid.g];
+    const unsigned int violations = ++mInventoryViolations[player.guid.value];
     LOG_MESSAGE_SIMPLE(TimedLog::LOG_WARN,
         "Rejected modified inventory intent from connection %llu: %s (violation %u)",
-        static_cast<unsigned long long>(player.guid.g),
+        static_cast<unsigned long long>(player.guid.value),
         result.applied() ? mechanics::describe(equipmentResult.decision)
                          : mechanics::describe(result.decision),
         violations);
     if (violations >= 5)
-        disconnectTransport({ player.guid.g }, "repeated invalid inventory actions");
+        disconnectTransport({ player.guid.value }, "repeated invalid inventory actions");
     return false;
 }
 
@@ -786,22 +786,22 @@ bool Networking::applyServerInventoryChanges(Player& player)
         return false;
     std::vector<mechanics::InventoryItem> candidate;
     mechanics::InventoryResult result = mInventoryLedger.previewSnapshot(
-        { mechanics::InventoryOwnerKind::Player, player.guid.g }, *action,
+        { mechanics::InventoryOwnerKind::Player, player.guid.value }, *action,
         inventoryItems(player.inventoryChanges), candidate);
     mechanics::EquipmentResult equipmentResult{ mechanics::EquipmentDecision::Applied };
     if (result.applied())
-        equipmentResult = mEquipmentLedger.validateInventory(player.guid.g, candidate);
+        equipmentResult = mEquipmentLedger.validateInventory(player.guid.value, candidate);
     if (result.applied() && equipmentResult.applied())
     {
         result = mInventoryLedger.apply(
-            { mechanics::InventoryOwnerKind::Player, player.guid.g }, *action,
+            { mechanics::InventoryOwnerKind::Player, player.guid.value }, *action,
             inventoryItems(player.inventoryChanges));
     }
     if (!result.applied() || !equipmentResult.applied())
     {
         LOG_MESSAGE_SIMPLE(TimedLog::LOG_ERROR,
             "Rejected server-authored inventory action for connection %llu: %s",
-            static_cast<unsigned long long>(player.guid.g),
+            static_cast<unsigned long long>(player.guid.value),
             result.applied() ? mechanics::describe(equipmentResult.decision)
                              : mechanics::describe(result.decision));
     }
@@ -812,22 +812,22 @@ bool Networking::validatePlayerEquipment(Player& player, const BasePlayer& incom
 {
     mechanics::EquipmentResult result{ mechanics::EquipmentDecision::MissingInventory };
     const auto inventory = mInventoryLedger.snapshot(
-        { mechanics::InventoryOwnerKind::Player, player.guid.g });
+        { mechanics::InventoryOwnerKind::Player, player.guid.value });
     if (inventory)
     {
-        result = mEquipmentLedger.preview(player.guid.g, incoming.exchangeFullInfo,
+        result = mEquipmentLedger.preview(player.guid.value, incoming.exchangeFullInfo,
             equipmentChanges(incoming), *inventory);
     }
     if (result.applied())
         return true;
 
-    const unsigned int violations = ++mInventoryViolations[player.guid.g];
+    const unsigned int violations = ++mInventoryViolations[player.guid.value];
     LOG_MESSAGE_SIMPLE(TimedLog::LOG_WARN,
         "Rejected equipment action from connection %llu: %s (violation %u)",
-        static_cast<unsigned long long>(player.guid.g),
+        static_cast<unsigned long long>(player.guid.value),
         mechanics::describe(result.decision), violations);
     if (violations >= 5)
-        disconnectTransport({ player.guid.g }, "repeated invalid equipment actions");
+        disconnectTransport({ player.guid.value }, "repeated invalid equipment actions");
     return false;
 }
 
@@ -835,32 +835,32 @@ bool Networking::commitPlayerEquipment(Player& player)
 {
     mechanics::EquipmentResult result{ mechanics::EquipmentDecision::MissingInventory };
     const auto inventory = mInventoryLedger.snapshot(
-        { mechanics::InventoryOwnerKind::Player, player.guid.g });
+        { mechanics::InventoryOwnerKind::Player, player.guid.value });
     if (inventory)
     {
-        result = mEquipmentLedger.apply(player.guid.g, player.exchangeFullInfo,
+        result = mEquipmentLedger.apply(player.guid.value, player.exchangeFullInfo,
             equipmentChanges(player), *inventory);
     }
     if (result.applied())
         return true;
 
-    const unsigned int violations = ++mInventoryViolations[player.guid.g];
+    const unsigned int violations = ++mInventoryViolations[player.guid.value];
     LOG_MESSAGE_SIMPLE(TimedLog::LOG_WARN,
         "Rejected modified equipment intent from connection %llu: %s (violation %u)",
-        static_cast<unsigned long long>(player.guid.g),
+        static_cast<unsigned long long>(player.guid.value),
         mechanics::describe(result.decision), violations);
     if (violations >= 5)
-        disconnectTransport({ player.guid.g }, "repeated invalid equipment actions");
+        disconnectTransport({ player.guid.value }, "repeated invalid equipment actions");
     return false;
 }
 
 bool Networking::applyServerPlayerEquipment(Player& player)
 {
     const auto inventory = mInventoryLedger.snapshot(
-        { mechanics::InventoryOwnerKind::Player, player.guid.g });
+        { mechanics::InventoryOwnerKind::Player, player.guid.value });
     if (!inventory)
         return false;
-    return mEquipmentLedger.apply(player.guid.g, player.exchangeFullInfo,
+    return mEquipmentLedger.apply(player.guid.value, player.exchangeFullInfo,
         equipmentChanges(player), *inventory).applied();
 }
 
@@ -873,13 +873,13 @@ bool Networking::validateContainerAction(Player& player, const BaseObjectList& i
     if (result.applied())
         return true;
 
-    const unsigned int violations = ++mInventoryViolations[player.guid.g];
+    const unsigned int violations = ++mInventoryViolations[player.guid.value];
     LOG_MESSAGE_SIMPLE(TimedLog::LOG_WARN,
         "Rejected container action from connection %llu: %s (violation %u)",
-        static_cast<unsigned long long>(player.guid.g),
+        static_cast<unsigned long long>(player.guid.value),
         mechanics::describe(result.decision), violations);
     if (violations >= 5)
-        disconnectTransport({ player.guid.g }, "repeated invalid container actions");
+        disconnectTransport({ player.guid.value }, "repeated invalid container actions");
     return false;
 }
 
@@ -892,13 +892,13 @@ bool Networking::commitContainerAction(Player& player, const BaseObjectList& inc
     if (result.applied())
         return true;
 
-    const unsigned int violations = ++mInventoryViolations[player.guid.g];
+    const unsigned int violations = ++mInventoryViolations[player.guid.value];
     LOG_MESSAGE_SIMPLE(TimedLog::LOG_WARN,
         "Rejected container intent at commit for connection %llu: %s (violation %u)",
-        static_cast<unsigned long long>(player.guid.g),
+        static_cast<unsigned long long>(player.guid.value),
         mechanics::describe(result.decision), violations);
     if (violations >= 5)
-        disconnectTransport({ player.guid.g }, "repeated invalid container actions");
+        disconnectTransport({ player.guid.value }, "repeated invalid container actions");
     return false;
 }
 
@@ -1037,7 +1037,7 @@ bool Networking::validateObjectPlace(Player& player, const BaseObjectList& incom
             const int assignedMpNum = currentMpNum
                 + static_cast<int>(mutations.size()) + 1;
             mutations.push_back({ mechanics::ObjectMutationKind::Place,
-                canonicalPlacedObject(object, cellDescription, player.guid.g,
+                canonicalPlacedObject(object, cellDescription, player.guid.value,
                     static_cast<std::uint32_t>(assignedMpNum)) });
         }
         result = mObjectStateLedger.previewBatch(mutations);
@@ -1048,24 +1048,24 @@ bool Networking::validateObjectPlace(Player& player, const BaseObjectList& incom
             for (std::size_t index = 0; index < mutations.size(); ++index)
                 incrementMpNum();
             mPendingObjectPlacements.insert_or_assign(
-                player.guid.g, std::move(mutations));
+                player.guid.value, std::move(mutations));
             return true;
         }
     }
 
-    const unsigned int violations = ++mObjectViolations[player.guid.g];
+    const unsigned int violations = ++mObjectViolations[player.guid.value];
     LOG_MESSAGE_SIMPLE(TimedLog::LOG_WARN,
         "Rejected object placement from connection %llu: %s (violation %u)",
-        static_cast<unsigned long long>(player.guid.g),
+        static_cast<unsigned long long>(player.guid.value),
         mechanics::describe(result.decision), violations);
     if (violations >= 5)
-        disconnectTransport({ player.guid.g }, "repeated invalid object placements");
+        disconnectTransport({ player.guid.value }, "repeated invalid object placements");
     return false;
 }
 
 bool Networking::prepareObjectPlace(Player& player, BaseObjectList& objectList)
 {
-    const auto pending = mPendingObjectPlacements.find(player.guid.g);
+    const auto pending = mPendingObjectPlacements.find(player.guid.value);
     if (pending == mPendingObjectPlacements.end()
         || pending->second.size() != objectList.baseObjects.size())
     {
@@ -1079,7 +1079,7 @@ bool Networking::prepareObjectPlace(Player& player, BaseObjectList& objectList)
 
 bool Networking::commitObjectPlace(Player& player)
 {
-    const auto pending = mPendingObjectPlacements.find(player.guid.g);
+    const auto pending = mPendingObjectPlacements.find(player.guid.value);
     if (pending == mPendingObjectPlacements.end())
         return false;
 
@@ -1089,19 +1089,19 @@ bool Networking::commitObjectPlace(Player& player)
     if (result.applied())
         return true;
 
-    const unsigned int violations = ++mObjectViolations[player.guid.g];
+    const unsigned int violations = ++mObjectViolations[player.guid.value];
     LOG_MESSAGE_SIMPLE(TimedLog::LOG_WARN,
         "Rejected object placement at commit from connection %llu: %s (violation %u)",
-        static_cast<unsigned long long>(player.guid.g),
+        static_cast<unsigned long long>(player.guid.value),
         mechanics::describe(result.decision), violations);
     if (violations >= 5)
-        disconnectTransport({ player.guid.g }, "repeated invalid object placements");
+        disconnectTransport({ player.guid.value }, "repeated invalid object placements");
     return false;
 }
 
 void Networking::cancelObjectPlace(Player& player) noexcept
 {
-    mPendingObjectPlacements.erase(player.guid.g);
+    mPendingObjectPlacements.erase(player.guid.value);
 }
 
 bool Networking::seedServerObjectState(const BaseObjectList& objectList)
@@ -1137,7 +1137,7 @@ bool Networking::seedServerObjectState(const BaseObjectList& objectList)
 bool Networking::validateObjectMutation(Player& player,
     const BaseObjectList& incoming, mechanics::ObjectMutationKind kind)
 {
-    mPendingObjectMutations.erase(player.guid.g);
+    mPendingObjectMutations.erase(player.guid.value);
     mechanics::ObjectResult result{ mechanics::ObjectDecision::InvalidMutation };
     const std::string cellDescription = incoming.cell.getShortDescription();
     if (!isClientObjectMutation(kind))
@@ -1165,7 +1165,7 @@ bool Networking::validateObjectMutation(Player& player,
                     break;
                 }
                 mutations.push_back({ mechanics::ObjectMutationKind::Seed,
-                    canonicalStaticObject(object, cellDescription, player.guid.g) });
+                    canonicalStaticObject(object, cellDescription, player.guid.value) });
             }
             mutations.push_back(std::move(mutation));
         }
@@ -1176,26 +1176,26 @@ bool Networking::validateObjectMutation(Player& player,
             if (result.applied())
             {
                 mPendingObjectMutations.insert_or_assign(
-                    player.guid.g, std::move(mutations));
+                    player.guid.value, std::move(mutations));
                 return true;
             }
         }
     }
 
-    const unsigned int violations = ++mObjectViolations[player.guid.g];
+    const unsigned int violations = ++mObjectViolations[player.guid.value];
     LOG_MESSAGE_SIMPLE(TimedLog::LOG_WARN,
         "Rejected object mutation from connection %llu: %s (violation %u)",
-        static_cast<unsigned long long>(player.guid.g),
+        static_cast<unsigned long long>(player.guid.value),
         mechanics::describe(result.decision), violations);
     if (violations >= 5)
-        disconnectTransport({ player.guid.g }, "repeated invalid object mutations");
+        disconnectTransport({ player.guid.value }, "repeated invalid object mutations");
     return false;
 }
 
 bool Networking::validateObjectActivation(Player& player,
     const BaseObjectList& incoming)
 {
-    mPendingObjectMutations.erase(player.guid.g);
+    mPendingObjectMutations.erase(player.guid.value);
     mechanics::ObjectResult result{ mechanics::ObjectDecision::InvalidObject };
     const std::string cellDescription = incoming.cell.getShortDescription();
     if (!cellDescription.empty()
@@ -1210,7 +1210,7 @@ bool Networking::validateObjectActivation(Player& player,
         for (const BaseObject& object : incoming.baseObjects)
         {
             if (!object.activatingActor.isPlayer
-                || object.activatingActor.guid.g != player.guid.g)
+                || object.activatingActor.guid.value != player.guid.value)
             {
                 complete = false;
                 break;
@@ -1244,7 +1244,7 @@ bool Networking::validateObjectActivation(Player& player,
                 break;
             }
             seeds.push_back({ mechanics::ObjectMutationKind::Seed,
-                canonicalStaticObject(object, cellDescription, player.guid.g) });
+                canonicalStaticObject(object, cellDescription, player.guid.value) });
         }
 
         if (complete)
@@ -1253,25 +1253,25 @@ bool Networking::validateObjectActivation(Player& player,
             if (result.applied())
             {
                 mPendingObjectMutations.insert_or_assign(
-                    player.guid.g, std::move(seeds));
+                    player.guid.value, std::move(seeds));
                 return true;
             }
         }
     }
 
-    const unsigned int violations = ++mObjectViolations[player.guid.g];
+    const unsigned int violations = ++mObjectViolations[player.guid.value];
     LOG_MESSAGE_SIMPLE(TimedLog::LOG_WARN,
         "Rejected object activation from connection %llu: %s (violation %u)",
-        static_cast<unsigned long long>(player.guid.g),
+        static_cast<unsigned long long>(player.guid.value),
         mechanics::describe(result.decision), violations);
     if (violations >= 5)
-        disconnectTransport({ player.guid.g }, "repeated invalid object activations");
+        disconnectTransport({ player.guid.value }, "repeated invalid object activations");
     return false;
 }
 
 bool Networking::validateObjectSpawn(Player& player, const BaseObjectList& incoming)
 {
-    mPendingObjectMutations.erase(player.guid.g);
+    mPendingObjectMutations.erase(player.guid.value);
     mechanics::ObjectResult result{ mechanics::ObjectDecision::InvalidObject };
     const std::string cellDescription = incoming.cell.getShortDescription();
     if (!cellDescription.empty()
@@ -1303,13 +1303,13 @@ bool Networking::validateObjectSpawn(Player& player, const BaseObjectList& incom
                 }
                 if (object.master.isPlayer)
                 {
-                    if (object.master.guid.g != player.guid.g)
+                    if (object.master.guid.value != player.guid.value)
                     {
                         complete = false;
                         break;
                     }
                 }
-                else if (!authority || authority->owner != player.guid.g
+                else if (!authority || authority->owner != player.guid.value
                     || authority->expiresAt <= now
                     || object.master.refId.empty()
                     || (object.master.refNum == 0 && object.master.mpNum == 0))
@@ -1322,7 +1322,7 @@ bool Networking::validateObjectSpawn(Player& player, const BaseObjectList& incom
             const int assignedMpNum = currentMpNum
                 + static_cast<int>(mutations.size()) + 1;
             mutations.push_back({ mechanics::ObjectMutationKind::Place,
-                canonicalSpawnedObject(object, cellDescription, player.guid.g,
+                canonicalSpawnedObject(object, cellDescription, player.guid.value,
                     static_cast<std::uint32_t>(assignedMpNum)) });
         }
 
@@ -1334,25 +1334,25 @@ bool Networking::validateObjectSpawn(Player& player, const BaseObjectList& incom
                 for (std::size_t index = 0; index < mutations.size(); ++index)
                     incrementMpNum();
                 mPendingObjectMutations.insert_or_assign(
-                    player.guid.g, std::move(mutations));
+                    player.guid.value, std::move(mutations));
                 return true;
             }
         }
     }
 
-    const unsigned int violations = ++mObjectViolations[player.guid.g];
+    const unsigned int violations = ++mObjectViolations[player.guid.value];
     LOG_MESSAGE_SIMPLE(TimedLog::LOG_WARN,
         "Rejected object spawn from connection %llu: %s (violation %u)",
-        static_cast<unsigned long long>(player.guid.g),
+        static_cast<unsigned long long>(player.guid.value),
         mechanics::describe(result.decision), violations);
     if (violations >= 5)
-        disconnectTransport({ player.guid.g }, "repeated invalid object spawns");
+        disconnectTransport({ player.guid.value }, "repeated invalid object spawns");
     return false;
 }
 
 bool Networking::prepareObjectMutationIds(Player& player, BaseObjectList& objectList)
 {
-    const auto pending = mPendingObjectMutations.find(player.guid.g);
+    const auto pending = mPendingObjectMutations.find(player.guid.value);
     if (pending == mPendingObjectMutations.end()
         || pending->second.size() != objectList.baseObjects.size())
     {
@@ -1366,7 +1366,7 @@ bool Networking::prepareObjectMutationIds(Player& player, BaseObjectList& object
 
 bool Networking::commitObjectMutation(Player& player)
 {
-    const auto pending = mPendingObjectMutations.find(player.guid.g);
+    const auto pending = mPendingObjectMutations.find(player.guid.value);
     if (pending == mPendingObjectMutations.end())
         return false;
 
@@ -1376,19 +1376,19 @@ bool Networking::commitObjectMutation(Player& player)
     if (result.applied())
         return true;
 
-    const unsigned int violations = ++mObjectViolations[player.guid.g];
+    const unsigned int violations = ++mObjectViolations[player.guid.value];
     LOG_MESSAGE_SIMPLE(TimedLog::LOG_WARN,
         "Rejected object mutation at commit from connection %llu: %s (violation %u)",
-        static_cast<unsigned long long>(player.guid.g),
+        static_cast<unsigned long long>(player.guid.value),
         mechanics::describe(result.decision), violations);
     if (violations >= 5)
-        disconnectTransport({ player.guid.g }, "repeated invalid object mutations");
+        disconnectTransport({ player.guid.value }, "repeated invalid object mutations");
     return false;
 }
 
 void Networking::cancelObjectMutation(Player& player) noexcept
 {
-    mPendingObjectMutations.erase(player.guid.g);
+    mPendingObjectMutations.erase(player.guid.value);
 }
 
 namespace
@@ -1431,10 +1431,10 @@ namespace
 
             if (spell.caster.isPlayer)
             {
-                if (spell.caster.guid.g == 0)
+                if (spell.caster.guid.value == 0)
                     return false;
                 canonical.caster = mwmp::mechanics::CombatantId{
-                    mwmp::mechanics::CombatantKind::Player, spell.caster.guid.g, {} };
+                    mwmp::mechanics::CombatantKind::Player, spell.caster.guid.value, {} };
             }
             else
             {
@@ -1534,20 +1534,20 @@ bool Networking::validatePlayerActiveEffects(Player& player, const BasePlayer& i
             player.cell.getShortDescription(), spells))
     {
         result = mActiveEffectLedger.preview(
-            { mechanics::CombatantKind::Player, player.guid.g, {} }, *action, spells);
+            { mechanics::CombatantKind::Player, player.guid.value, {} }, *action, spells);
     }
     else if (action)
         result.decision = mechanics::ActiveEffectDecision::InvalidSpell;
 
     if (result.applied())
         return true;
-    const unsigned int violations = ++mActiveEffectViolations[player.guid.g];
+    const unsigned int violations = ++mActiveEffectViolations[player.guid.value];
     LOG_MESSAGE_SIMPLE(TimedLog::LOG_WARN,
         "Rejected active-effect change from connection %llu: %s (violation %u)",
-        static_cast<unsigned long long>(player.guid.g),
+        static_cast<unsigned long long>(player.guid.value),
         mechanics::describe(result.decision), violations);
     if (violations >= 5)
-        disconnectTransport({ player.guid.g }, "repeated invalid active-effect changes");
+        disconnectTransport({ player.guid.value }, "repeated invalid active-effect changes");
     return false;
 }
 
@@ -1558,7 +1558,7 @@ bool Networking::commitPlayerActiveEffects(Player& player)
     mechanics::ActiveEffectResult result{
         mechanics::ActiveEffectDecision::InvalidAction };
     mechanics::ActiveEffectOperation operation;
-    operation.owner = { mechanics::CombatantKind::Player, player.guid.g, {} };
+    operation.owner = { mechanics::CombatantKind::Player, player.guid.value, {} };
     if (action && canonicalActiveSpells(player.spellsActiveChanges,
             player.cell.getShortDescription(), spells))
     {
@@ -1573,17 +1573,17 @@ bool Networking::commitPlayerActiveEffects(Player& player)
     if (result.applied())
     {
         mAcceptedPlayerActiveEffectIntents.insert_or_assign(
-            player.guid.g, std::move(operation));
-        mRelayedPlayerActiveEffectIntents.erase(player.guid.g);
+            player.guid.value, std::move(operation));
+        mRelayedPlayerActiveEffectIntents.erase(player.guid.value);
         return true;
     }
-    const unsigned int violations = ++mActiveEffectViolations[player.guid.g];
+    const unsigned int violations = ++mActiveEffectViolations[player.guid.value];
     LOG_MESSAGE_SIMPLE(TimedLog::LOG_WARN,
         "Rejected modified active-effect intent from connection %llu: %s (violation %u)",
-        static_cast<unsigned long long>(player.guid.g),
+        static_cast<unsigned long long>(player.guid.value),
         mechanics::describe(result.decision), violations);
     if (violations >= 5)
-        disconnectTransport({ player.guid.g }, "repeated invalid active-effect changes");
+        disconnectTransport({ player.guid.value }, "repeated invalid active-effect changes");
     return false;
 }
 
@@ -1594,17 +1594,17 @@ bool Networking::applyServerPlayerActiveEffects(Player& player)
     mechanics::ActiveEffectResult result{
         mechanics::ActiveEffectDecision::InvalidAction };
     mechanics::ActiveEffectOperation operation;
-    operation.owner = { mechanics::CombatantKind::Player, player.guid.g, {} };
+    operation.owner = { mechanics::CombatantKind::Player, player.guid.value, {} };
     if (action && canonicalActiveSpells(player.spellsActiveChanges,
             player.cell.getShortDescription(), spells))
     {
         operation.action = *action;
         operation.spells = std::move(spells);
-        const auto accepted = mAcceptedPlayerActiveEffectIntents.find(player.guid.g);
+        const auto accepted = mAcceptedPlayerActiveEffectIntents.find(player.guid.value);
         if (accepted != mAcceptedPlayerActiveEffectIntents.end()
             && accepted->second == operation)
         {
-            mRelayedPlayerActiveEffectIntents.insert(player.guid.g);
+            mRelayedPlayerActiveEffectIntents.insert(player.guid.value);
             return true;
         }
         result = mActiveEffectLedger.apply(
@@ -1616,7 +1616,7 @@ bool Networking::applyServerPlayerActiveEffects(Player& player)
     {
         LOG_MESSAGE_SIMPLE(TimedLog::LOG_ERROR,
             "Rejected server-authored active-effect change for connection %llu: %s",
-            static_cast<unsigned long long>(player.guid.g),
+            static_cast<unsigned long long>(player.guid.value),
             mechanics::describe(result.decision));
     }
     return result.applied();
@@ -1624,8 +1624,8 @@ bool Networking::applyServerPlayerActiveEffects(Player& player)
 
 bool Networking::finishPlayerActiveEffectIntent(Player& player) noexcept
 {
-    mAcceptedPlayerActiveEffectIntents.erase(player.guid.g);
-    return mRelayedPlayerActiveEffectIntents.erase(player.guid.g) != 0;
+    mAcceptedPlayerActiveEffectIntents.erase(player.guid.value);
+    return mRelayedPlayerActiveEffectIntents.erase(player.guid.value) != 0;
 }
 
 bool Networking::validateActorActiveEffects(Player& player,
@@ -1638,13 +1638,13 @@ bool Networking::validateActorActiveEffects(Player& player,
     if (result.applied())
         return true;
 
-    const unsigned int violations = ++mActiveEffectViolations[player.guid.g];
+    const unsigned int violations = ++mActiveEffectViolations[player.guid.value];
     LOG_MESSAGE_SIMPLE(TimedLog::LOG_WARN,
         "Rejected actor active-effect change from connection %llu: %s (violation %u)",
-        static_cast<unsigned long long>(player.guid.g),
+        static_cast<unsigned long long>(player.guid.value),
         mechanics::describe(result.decision), violations);
     if (violations >= 5)
-        disconnectTransport({ player.guid.g }, "repeated invalid actor active-effect changes");
+        disconnectTransport({ player.guid.value }, "repeated invalid actor active-effect changes");
     return false;
 }
 
@@ -1657,19 +1657,19 @@ bool Networking::commitActorActiveEffects(Player& player,
         result = mActiveEffectLedger.applyBatch(operations.operations);
     if (result.applied())
     {
-        mAcceptedActorActiveEffectIntents.insert_or_assign(player.guid.g,
+        mAcceptedActorActiveEffectIntents.insert_or_assign(player.guid.value,
             std::move(operations.operations));
-        mRelayedActorActiveEffectIntents.erase(player.guid.g);
+        mRelayedActorActiveEffectIntents.erase(player.guid.value);
         return true;
     }
 
-    const unsigned int violations = ++mActiveEffectViolations[player.guid.g];
+    const unsigned int violations = ++mActiveEffectViolations[player.guid.value];
     LOG_MESSAGE_SIMPLE(TimedLog::LOG_WARN,
         "Rejected modified actor active-effect intent from connection %llu: %s (violation %u)",
-        static_cast<unsigned long long>(player.guid.g),
+        static_cast<unsigned long long>(player.guid.value),
         mechanics::describe(result.decision), violations);
     if (violations >= 5)
-        disconnectTransport({ player.guid.g }, "repeated invalid actor active-effect changes");
+        disconnectTransport({ player.guid.value }, "repeated invalid actor active-effect changes");
     return false;
 }
 
@@ -1679,11 +1679,11 @@ bool Networking::applyServerActorActiveEffects(const BaseActorList& actorList)
     mechanics::ActiveEffectResult result{ operations.decision };
     if (operations.decision == mechanics::ActiveEffectDecision::Applied)
     {
-        const auto accepted = mAcceptedActorActiveEffectIntents.find(actorList.guid.g);
+        const auto accepted = mAcceptedActorActiveEffectIntents.find(actorList.guid.value);
         if (accepted != mAcceptedActorActiveEffectIntents.end()
             && accepted->second == operations.operations)
         {
-            mRelayedActorActiveEffectIntents.insert(actorList.guid.g);
+            mRelayedActorActiveEffectIntents.insert(actorList.guid.value);
             return true;
         }
         result = mActiveEffectLedger.applyBatch(operations.operations);
@@ -1700,8 +1700,8 @@ bool Networking::applyServerActorActiveEffects(const BaseActorList& actorList)
 
 bool Networking::finishActorActiveEffectIntent(Player& player) noexcept
 {
-    mAcceptedActorActiveEffectIntents.erase(player.guid.g);
-    return mRelayedActorActiveEffectIntents.erase(player.guid.g) != 0;
+    mAcceptedActorActiveEffectIntents.erase(player.guid.value);
+    return mRelayedActorActiveEffectIntents.erase(player.guid.value) != 0;
 }
 
 bool Networking::validateActorEquipment(Player& player,
@@ -1725,15 +1725,15 @@ bool Networking::validateActorEquipment(Player& player,
     if (result.applied())
         return true;
 
-    const unsigned int violations = ++mActorStateViolations[player.guid.g];
+    const unsigned int violations = ++mActorStateViolations[player.guid.value];
     LOG_MESSAGE_SIMPLE(TimedLog::LOG_WARN,
         "Rejected actor equipment from connection %llu: %s (violation %u)",
-        static_cast<unsigned long long>(player.guid.g),
+        static_cast<unsigned long long>(player.guid.value),
         actorsExist ? mechanics::describe(result.decision)
                     : "the actor is absent or its authority lease is stale",
         violations);
     if (violations >= 5)
-        disconnectTransport({ player.guid.g }, "repeated invalid actor equipment");
+        disconnectTransport({ player.guid.value }, "repeated invalid actor equipment");
     return false;
 }
 
@@ -1753,13 +1753,13 @@ bool Networking::commitActorEquipment(Player& player, BaseActorList& actorList)
         }
     }
 
-    const unsigned int violations = ++mActorStateViolations[player.guid.g];
+    const unsigned int violations = ++mActorStateViolations[player.guid.value];
     LOG_MESSAGE_SIMPLE(TimedLog::LOG_WARN,
         "Rejected modified actor equipment from connection %llu: %s (violation %u)",
-        static_cast<unsigned long long>(player.guid.g),
+        static_cast<unsigned long long>(player.guid.value),
         mechanics::describe(result.decision), violations);
     if (violations >= 5)
-        disconnectTransport({ player.guid.g }, "repeated invalid actor equipment");
+        disconnectTransport({ player.guid.value }, "repeated invalid actor equipment");
     return false;
 }
 
@@ -1801,7 +1801,7 @@ bool Networking::validActorAiTargets(const BaseActorList& actorList) const
         {
             const Player* target = Players::getPlayer(actor.aiTarget.guid);
             if (target == nullptr
-                || !mAuthenticatedConnections.contains(actor.aiTarget.guid.g)
+                || !mAuthenticatedConnections.contains(actor.aiTarget.guid.value)
                 || target->cell.getShortDescription() != cell)
             {
                 return false;
@@ -1847,16 +1847,16 @@ bool Networking::validateActorAi(Player& player, const BaseActorList& incoming)
     if (result.applied())
         return true;
 
-    const unsigned int violations = ++mActorStateViolations[player.guid.g];
+    const unsigned int violations = ++mActorStateViolations[player.guid.value];
     LOG_MESSAGE_SIMPLE(TimedLog::LOG_WARN,
         "Rejected actor AI intent from connection %llu for %s: %s (violation %u)",
-        static_cast<unsigned long long>(player.guid.g),
+        static_cast<unsigned long long>(player.guid.value),
         incoming.cell.getShortDescription().c_str(),
         actorsExist ? mechanics::describe(result.decision)
                     : "the actor is absent or its authority lease is stale",
         violations);
     if (violations >= 5)
-        disconnectTransport({ player.guid.g }, "repeated invalid actor AI intents");
+        disconnectTransport({ player.guid.value }, "repeated invalid actor AI intents");
     return false;
 }
 
@@ -1875,33 +1875,33 @@ bool Networking::commitActorAi(Player& player, BaseActorList& actorList)
         // Reserve the pending relay record before changing canonical state.
         // This makes allocation failure fail closed instead of committing a
         // package that the post-commit callback cannot identify.
-        mAcceptedActorAiIntents.insert_or_assign(player.guid.g, updates);
+        mAcceptedActorAiIntents.insert_or_assign(player.guid.value, updates);
         try
         {
             result = mActorStateLedger.applyAi(updates);
         }
         catch (...)
         {
-            mAcceptedActorAiIntents.erase(player.guid.g);
+            mAcceptedActorAiIntents.erase(player.guid.value);
             throw;
         }
         if (result.applied())
         {
             serverCell->readActorList(ID_ACTOR_AI, &actorList);
-            mRelayedActorAiIntents.erase(player.guid.g);
+            mRelayedActorAiIntents.erase(player.guid.value);
             return true;
         }
-        mAcceptedActorAiIntents.erase(player.guid.g);
+        mAcceptedActorAiIntents.erase(player.guid.value);
     }
 
-    const unsigned int violations = ++mActorStateViolations[player.guid.g];
+    const unsigned int violations = ++mActorStateViolations[player.guid.value];
     LOG_MESSAGE_SIMPLE(TimedLog::LOG_WARN,
         "Rejected modified actor AI intent from connection %llu for %s: %s (violation %u)",
-        static_cast<unsigned long long>(player.guid.g),
+        static_cast<unsigned long long>(player.guid.value),
         actorList.cell.getShortDescription().c_str(),
         mechanics::describe(result.decision), violations);
     if (violations >= 5)
-        disconnectTransport({ player.guid.g }, "repeated invalid actor AI intents");
+        disconnectTransport({ player.guid.value }, "repeated invalid actor AI intents");
     return false;
 }
 
@@ -1912,11 +1912,11 @@ bool Networking::applyServerActorAi(BaseActorList& actorList)
     mechanics::ActorStateResult result{
         mechanics::ActorStateDecision::InvalidIdentity };
     std::vector<mechanics::ActorAiUpdate> updates = actorAiUpdates(actorList);
-    const auto accepted = mAcceptedActorAiIntents.find(actorList.guid.g);
+    const auto accepted = mAcceptedActorAiIntents.find(actorList.guid.value);
     if (accepted != mAcceptedActorAiIntents.end()
         && accepted->second == updates)
     {
-        mRelayedActorAiIntents.insert(actorList.guid.g);
+        mRelayedActorAiIntents.insert(actorList.guid.value);
         return true;
     }
 
@@ -1936,8 +1936,8 @@ bool Networking::applyServerActorAi(BaseActorList& actorList)
 
 bool Networking::finishActorAiIntent(Player& player) noexcept
 {
-    mAcceptedActorAiIntents.erase(player.guid.g);
-    return mRelayedActorAiIntents.erase(player.guid.g) != 0;
+    mAcceptedActorAiIntents.erase(player.guid.value);
+    return mRelayedActorAiIntents.erase(player.guid.value) != 0;
 }
 
 bool Networking::validateActorList(Player& player, const BaseActorList& incoming)
@@ -1953,14 +1953,14 @@ bool Networking::validateActorList(Player& player, const BaseActorList& incoming
     if (result.applied())
         return true;
 
-    const unsigned int violations = ++mActorStateViolations[player.guid.g];
+    const unsigned int violations = ++mActorStateViolations[player.guid.value];
     LOG_MESSAGE_SIMPLE(TimedLog::LOG_WARN,
         "Rejected actor roster from connection %llu for %s: %s (violation %u)",
-        static_cast<unsigned long long>(player.guid.g),
+        static_cast<unsigned long long>(player.guid.value),
         incoming.cell.getShortDescription().c_str(),
         mechanics::describe(result.decision), violations);
     if (violations >= 5)
-        disconnectTransport({ player.guid.g }, "repeated invalid actor roster changes");
+        disconnectTransport({ player.guid.value }, "repeated invalid actor roster changes");
     return false;
 }
 
@@ -1986,14 +1986,14 @@ bool Networking::commitActorList(Player& player, BaseActorList& actorList)
         }
     }
 
-    const unsigned int violations = ++mActorStateViolations[player.guid.g];
+    const unsigned int violations = ++mActorStateViolations[player.guid.value];
     LOG_MESSAGE_SIMPLE(TimedLog::LOG_WARN,
         "Rejected modified actor roster from connection %llu for %s: %s (violation %u)",
-        static_cast<unsigned long long>(player.guid.g),
+        static_cast<unsigned long long>(player.guid.value),
         actorList.cell.getShortDescription().c_str(),
         mechanics::describe(result.decision), violations);
     if (violations >= 5)
-        disconnectTransport({ player.guid.g }, "repeated invalid actor roster changes");
+        disconnectTransport({ player.guid.value }, "repeated invalid actor roster changes");
     return false;
 }
 
@@ -2055,10 +2055,10 @@ bool Networking::validateActorPositions(Player& player,
     if (result.applied())
         return true;
 
-    const unsigned int violations = ++mActorStateViolations[player.guid.g];
+    const unsigned int violations = ++mActorStateViolations[player.guid.value];
     LOG_MESSAGE_SIMPLE(TimedLog::LOG_WARN,
         "Rejected actor movement from connection %llu for %s: %s; distance %.3f, allowed %.3f (violation %u)",
-        static_cast<unsigned long long>(player.guid.g),
+        static_cast<unsigned long long>(player.guid.value),
         incoming.cell.getShortDescription().c_str(), mechanics::describe(result.decision),
         result.distance, result.allowedDistance, violations);
     try
@@ -2077,7 +2077,7 @@ bool Networking::validateActorPositions(Player& player,
             "%s", "OnActorMovementViolation failed; actor movement remains rejected");
     }
     if (violations >= mMovementViolationLimit)
-        disconnectTransport({ player.guid.g }, "repeated invalid actor movement samples");
+        disconnectTransport({ player.guid.value }, "repeated invalid actor movement samples");
     return false;
 }
 
@@ -2099,14 +2099,14 @@ bool Networking::commitActorPositions(Player& player, BaseActorList& actorList)
         }
     }
 
-    const unsigned int violations = ++mActorStateViolations[player.guid.g];
+    const unsigned int violations = ++mActorStateViolations[player.guid.value];
     LOG_MESSAGE_SIMPLE(TimedLog::LOG_WARN,
         "Rejected modified actor movement from connection %llu for %s: %s (violation %u)",
-        static_cast<unsigned long long>(player.guid.g),
+        static_cast<unsigned long long>(player.guid.value),
         actorList.cell.getShortDescription().c_str(),
         mechanics::describe(result.decision), violations);
     if (violations >= mMovementViolationLimit)
-        disconnectTransport({ player.guid.g }, "repeated invalid actor movement samples");
+        disconnectTransport({ player.guid.value }, "repeated invalid actor movement samples");
     return false;
 }
 
@@ -2153,14 +2153,14 @@ bool Networking::validateActorCellChanges(Player& player,
             result.decision = mechanics::ActorStateDecision::DestinationOccupied;
     }
 
-    const unsigned int violations = ++mActorStateViolations[player.guid.g];
+    const unsigned int violations = ++mActorStateViolations[player.guid.value];
     LOG_MESSAGE_SIMPLE(TimedLog::LOG_WARN,
         "Rejected actor cell change from connection %llu for %s: %s (violation %u)",
-        static_cast<unsigned long long>(player.guid.g),
+        static_cast<unsigned long long>(player.guid.value),
         incoming.cell.getShortDescription().c_str(),
         mechanics::describe(result.decision), violations);
     if (violations >= 5)
-        disconnectTransport({ player.guid.g },
+        disconnectTransport({ player.guid.value },
             "repeated invalid actor cell changes");
     return false;
 }
@@ -2298,14 +2298,14 @@ bool Networking::commitActorCellChanges(Player& player, BaseActorList& actorList
     }
 
 reject:
-    const unsigned int violations = ++mActorStateViolations[player.guid.g];
+    const unsigned int violations = ++mActorStateViolations[player.guid.value];
     LOG_MESSAGE_SIMPLE(TimedLog::LOG_WARN,
         "Rejected modified actor cell change from connection %llu for %s: %s (violation %u)",
-        static_cast<unsigned long long>(player.guid.g),
+        static_cast<unsigned long long>(player.guid.value),
         actorList.cell.getShortDescription().c_str(),
         mechanics::describe(result.decision), violations);
     if (violations >= 5)
-        disconnectTransport({ player.guid.g },
+        disconnectTransport({ player.guid.value },
             "repeated invalid actor cell changes");
     return false;
 }
@@ -2327,10 +2327,10 @@ namespace
         result.reset();
         if (target.isPlayer)
         {
-            if (target.guid.g == 0)
+            if (target.guid.value == 0)
                 return mwmp::mechanics::CastIntentDecision::InvalidTarget;
             result = mwmp::mechanics::CombatantId{
-                mwmp::mechanics::CombatantKind::Player, target.guid.g, {} };
+                mwmp::mechanics::CombatantKind::Player, target.guid.value, {} };
             return mwmp::mechanics::CastIntentDecision::Accepted;
         }
 
@@ -2406,7 +2406,7 @@ bool Networking::validatePlayerCast(Player& player, const BasePlayer& incoming)
 {
     mechanics::CastIntent intent;
     mechanics::CastIntentDecision decision = canonicalCastIntent(
-        { mechanics::CombatantKind::Player, player.guid.g, {} }, incoming.cast,
+        { mechanics::CombatantKind::Player, player.guid.value, {} }, incoming.cast,
         player.cell.getShortDescription(), intent,
         incoming.cast.hasProjectile ? &incoming.position : nullptr,
         incoming.cast.hasProjectile ? &player.position : nullptr,
@@ -2419,9 +2419,9 @@ bool Networking::validatePlayerCast(Player& player, const BasePlayer& incoming)
         if (intent.target->kind == mechanics::CombatantKind::Player)
         {
             const Player* target = Players::getPlayer(
-                RakNet::RakNetGUID(intent.target->value));
+                mwmp::transport::TransportConnectionId(intent.target->value));
             if (target == nullptr
-                || !mAuthenticatedConnections.contains(target->guid.g)
+                || !mAuthenticatedConnections.contains(target->guid.value)
                 || target->cell.getShortDescription()
                     != player.cell.getShortDescription())
             {
@@ -2441,13 +2441,13 @@ bool Networking::validatePlayerCast(Player& player, const BasePlayer& incoming)
     if (decision == mechanics::CastIntentDecision::Accepted)
         return true;
 
-    const unsigned int violations = ++mCastViolations[player.guid.g];
+    const unsigned int violations = ++mCastViolations[player.guid.value];
     LOG_MESSAGE_SIMPLE(TimedLog::LOG_WARN,
         "Rejected invalid cast intent from connection %llu: %s (violation %u)",
-        static_cast<unsigned long long>(player.guid.g),
+        static_cast<unsigned long long>(player.guid.value),
         mechanics::describe(decision), violations);
     if (violations >= 5)
-        disconnectTransport({ player.guid.g }, "repeated invalid cast intents");
+        disconnectTransport({ player.guid.value }, "repeated invalid cast intents");
     return false;
 }
 
@@ -2490,9 +2490,9 @@ bool Networking::validateActorCasts(Player& player, const BaseActorList& incomin
             if (intent.target->kind == mechanics::CombatantKind::Player)
             {
                 const Player* target = Players::getPlayer(
-                    RakNet::RakNetGUID(intent.target->value));
+                    mwmp::transport::TransportConnectionId(intent.target->value));
                 if (target == nullptr
-                    || !mAuthenticatedConnections.contains(target->guid.g)
+                    || !mAuthenticatedConnections.contains(target->guid.value)
                     || target->cell.getShortDescription() != cellDescription)
                 {
                     decision = mechanics::CastIntentDecision::InvalidTarget;
@@ -2508,40 +2508,40 @@ bool Networking::validateActorCasts(Player& player, const BaseActorList& incomin
     if (decision == mechanics::CastIntentDecision::Accepted)
         return true;
 
-    const unsigned int violations = ++mCastViolations[player.guid.g];
+    const unsigned int violations = ++mCastViolations[player.guid.value];
     LOG_MESSAGE_SIMPLE(TimedLog::LOG_WARN,
         "Rejected invalid actor cast list from connection %llu: %s (violation %u)",
-        static_cast<unsigned long long>(player.guid.g),
+        static_cast<unsigned long long>(player.guid.value),
         mechanics::describe(decision), violations);
     if (violations >= 5)
-        disconnectTransport({ player.guid.g }, "repeated invalid actor cast intents");
+        disconnectTransport({ player.guid.value }, "repeated invalid actor cast intents");
     return false;
 }
 
 bool Networking::validatePlayerBounty(Player& player, const BasePlayer& incoming)
 {
     const mechanics::JusticeResult result = mJusticeLedger.previewBountyIntent(
-        player.guid.g, incoming.npcStats.mBounty);
+        player.guid.value, incoming.npcStats.mBounty);
     if (result.applied())
     {
         mPendingPlayerBounties.insert_or_assign(
-            player.guid.g, incoming.npcStats.mBounty);
+            player.guid.value, incoming.npcStats.mBounty);
         return true;
     }
 
-    const unsigned int violations = ++mJusticeViolations[player.guid.g];
+    const unsigned int violations = ++mJusticeViolations[player.guid.value];
     LOG_MESSAGE_SIMPLE(TimedLog::LOG_WARN,
         "Rejected bounty intent from connection %llu: %s (violation %u)",
-        static_cast<unsigned long long>(player.guid.g),
+        static_cast<unsigned long long>(player.guid.value),
         mechanics::describe(result.decision), violations);
     if (violations >= 5)
-        disconnectTransport({ player.guid.g }, "repeated invalid bounty intents");
+        disconnectTransport({ player.guid.value }, "repeated invalid bounty intents");
     return false;
 }
 
 bool Networking::commitPlayerBounty(Player& player)
 {
-    const auto pending = mPendingPlayerBounties.find(player.guid.g);
+    const auto pending = mPendingPlayerBounties.find(player.guid.value);
     if (pending == mPendingPlayerBounties.end())
         return false;
 
@@ -2549,39 +2549,39 @@ bool Networking::commitPlayerBounty(Player& player)
     const bool serverOverride = proposedBounty != pending->second;
     mPendingPlayerBounties.erase(pending);
     const mechanics::JusticeResult result = serverOverride
-        ? mJusticeLedger.setBounty(player.guid.g, proposedBounty)
-        : mJusticeLedger.applyBountyIntent(player.guid.g, proposedBounty);
+        ? mJusticeLedger.setBounty(player.guid.value, proposedBounty)
+        : mJusticeLedger.applyBountyIntent(player.guid.value, proposedBounty);
     if (result.applied())
     {
         player.npcStats.mBounty = static_cast<std::int32_t>(result.state.bounty);
         return true;
     }
 
-    if (const auto canonical = mJusticeLedger.find(player.guid.g))
+    if (const auto canonical = mJusticeLedger.find(player.guid.value))
         player.npcStats.mBounty = static_cast<std::int32_t>(canonical->bounty);
-    const unsigned int violations = ++mJusticeViolations[player.guid.g];
+    const unsigned int violations = ++mJusticeViolations[player.guid.value];
     LOG_MESSAGE_SIMPLE(TimedLog::LOG_WARN,
         "Rejected modified bounty intent from connection %llu: %s (violation %u)",
-        static_cast<unsigned long long>(player.guid.g),
+        static_cast<unsigned long long>(player.guid.value),
         mechanics::describe(result.decision), violations);
     if (violations >= 5)
-        disconnectTransport({ player.guid.g }, "repeated invalid bounty intents");
+        disconnectTransport({ player.guid.value }, "repeated invalid bounty intents");
     return false;
 }
 
 bool Networking::applyServerPlayerBounty(Player& player)
 {
     const std::int64_t bounty = player.npcStats.mBounty;
-    if (mPendingPlayerBounties.contains(player.guid.g))
+    if (mPendingPlayerBounties.contains(player.guid.value))
         return bounty >= 0 && bounty <= mechanics::JusticeLedger::MaximumBounty;
 
     const mechanics::JusticeResult result = mJusticeLedger.setBounty(
-        player.guid.g, bounty);
+        player.guid.value, bounty);
     if (!result.applied())
     {
         LOG_MESSAGE_SIMPLE(TimedLog::LOG_ERROR,
             "Rejected server-authored bounty for connection %llu: %s",
-            static_cast<unsigned long long>(player.guid.g),
+            static_cast<unsigned long long>(player.guid.value),
             mechanics::describe(result.decision));
     }
     return result.applied();
@@ -2589,13 +2589,13 @@ bool Networking::applyServerPlayerBounty(Player& player)
 
 bool Networking::isPlayerBountyIntentPending(const Player& player) const noexcept
 {
-    return mPendingPlayerBounties.contains(player.guid.g);
+    return mPendingPlayerBounties.contains(player.guid.value);
 }
 
 void Networking::cancelPlayerBountyIntent(Player& player) noexcept
 {
-    mPendingPlayerBounties.erase(player.guid.g);
-    if (const auto canonical = mJusticeLedger.find(player.guid.g))
+    mPendingPlayerBounties.erase(player.guid.value);
+    if (const auto canonical = mJusticeLedger.find(player.guid.value))
         player.npcStats.mBounty = static_cast<std::int32_t>(canonical->bounty);
 }
 
@@ -2603,28 +2603,28 @@ bool Networking::beginPlayerJail(Player& player, std::uint32_t days,
     bool ignoreTeleportation, bool ignoreSkillIncreases,
     std::string progressText, std::string endText)
 {
-    if (!mJusticeLedger.find(player.guid.g))
+    if (!mJusticeLedger.find(player.guid.value))
     {
         const mechanics::JusticeResult seeded = mJusticeLedger.setBounty(
-            player.guid.g, player.npcStats.mBounty);
+            player.guid.value, player.npcStats.mBounty);
         if (!seeded.applied())
         {
             LOG_MESSAGE_SIMPLE(TimedLog::LOG_ERROR,
                 "Failed to seed justice state for connection %llu: %s",
-                static_cast<unsigned long long>(player.guid.g),
+                static_cast<unsigned long long>(player.guid.value),
                 mechanics::describe(seeded.decision));
             return false;
         }
     }
 
     const mechanics::JusticeResult result = mJusticeLedger.beginSentence(
-        player.guid.g, days, ignoreTeleportation, ignoreSkillIncreases,
+        player.guid.value, days, ignoreTeleportation, ignoreSkillIncreases,
         std::move(progressText), std::move(endText));
     if (!result.applied())
     {
         LOG_MESSAGE_SIMPLE(TimedLog::LOG_ERROR,
             "Rejected server-authored jail sentence for connection %llu: %s",
-            static_cast<unsigned long long>(player.guid.g),
+            static_cast<unsigned long long>(player.guid.value),
             mechanics::describe(result.decision));
         return false;
     }
@@ -2642,7 +2642,7 @@ bool Networking::beginPlayerJail(Player& player, std::uint32_t days,
     }
     catch (...)
     {
-        mJusticeLedger.completeSentence(player.guid.g, sentence.id, false);
+        mJusticeLedger.completeSentence(player.guid.value, sentence.id, false);
         throw;
     }
     return true;
@@ -2657,25 +2657,25 @@ bool Networking::validatePlayerJailCompletion(
     else
     {
         result = mJusticeLedger.previewSentenceCompletion(
-            player.guid.g, incoming.jailSentenceId);
+            player.guid.value, incoming.jailSentenceId);
     }
     if (result.applied())
         return true;
 
-    const unsigned int violations = ++mJusticeViolations[player.guid.g];
+    const unsigned int violations = ++mJusticeViolations[player.guid.value];
     LOG_MESSAGE_SIMPLE(TimedLog::LOG_WARN,
         "Rejected jail completion from connection %llu: %s (violation %u)",
-        static_cast<unsigned long long>(player.guid.g),
+        static_cast<unsigned long long>(player.guid.value),
         mechanics::describe(result.decision), violations);
     if (violations >= 5)
-        disconnectTransport({ player.guid.g }, "repeated invalid jail completions");
+        disconnectTransport({ player.guid.value }, "repeated invalid jail completions");
     return false;
 }
 
 bool Networking::completePlayerJail(Player& player)
 {
     const mechanics::JusticeResult result = mJusticeLedger.completeSentence(
-        player.guid.g, player.jailSentenceId, false);
+        player.guid.value, player.jailSentenceId, false);
     if (!result.applied())
         return false;
 
@@ -2820,76 +2820,76 @@ namespace
 bool Networking::validatePlayerShapeshift(
     Player& player, const BasePlayer& incoming)
 {
-    if (!mShapeshiftLedger.find(player.guid.g))
+    if (!mShapeshiftLedger.find(player.guid.value))
     {
         const mechanics::ShapeshiftResult seeded = mShapeshiftLedger.set(
-            player.guid.g, { player.scale, player.isWerewolf,
+            player.guid.value, { player.scale, player.isWerewolf,
                 player.displayCreatureName, player.creatureRefId });
         if (!seeded.applied())
         {
             LOG_MESSAGE_SIMPLE(TimedLog::LOG_ERROR,
                 "Failed to seed shapeshift state for connection %llu: %s",
-                static_cast<unsigned long long>(player.guid.g),
+                static_cast<unsigned long long>(player.guid.value),
                 mechanics::describe(seeded.decision));
             return false;
         }
     }
 
     const mechanics::ShapeshiftResult result
-        = mShapeshiftLedger.previewClientIntent(player.guid.g,
+        = mShapeshiftLedger.previewClientIntent(player.guid.value,
             { incoming.scale, incoming.isWerewolf,
                 incoming.displayCreatureName, incoming.creatureRefId });
     if (result.applied())
     {
-        mPendingPlayerShapeshifts.insert(player.guid.g);
+        mPendingPlayerShapeshifts.insert(player.guid.value);
         return true;
     }
 
-    const unsigned int violations = ++mShapeshiftViolations[player.guid.g];
+    const unsigned int violations = ++mShapeshiftViolations[player.guid.value];
     LOG_MESSAGE_SIMPLE(TimedLog::LOG_WARN,
         "Rejected shapeshift intent from connection %llu: %s (violation %u)",
-        static_cast<unsigned long long>(player.guid.g),
+        static_cast<unsigned long long>(player.guid.value),
         mechanics::describe(result.decision), violations);
     if (violations >= 5)
-        disconnectTransport({ player.guid.g }, "repeated invalid shapeshift intents");
+        disconnectTransport({ player.guid.value }, "repeated invalid shapeshift intents");
     return false;
 }
 
 bool Networking::commitPlayerShapeshift(Player& player)
 {
-    if (mPendingPlayerShapeshifts.erase(player.guid.g) == 0)
+    if (mPendingPlayerShapeshifts.erase(player.guid.value) == 0)
         return false;
 
     const mechanics::ShapeshiftResult result
-        = mShapeshiftLedger.applyClientIntent(player.guid.g,
+        = mShapeshiftLedger.applyClientIntent(player.guid.value,
             { player.scale, player.isWerewolf,
                 player.displayCreatureName, player.creatureRefId });
     if (result.applied())
         return true;
 
     cancelPlayerShapeshiftIntent(player);
-    const unsigned int violations = ++mShapeshiftViolations[player.guid.g];
+    const unsigned int violations = ++mShapeshiftViolations[player.guid.value];
     LOG_MESSAGE_SIMPLE(TimedLog::LOG_WARN,
         "Rejected modified shapeshift intent from connection %llu: %s (violation %u)",
-        static_cast<unsigned long long>(player.guid.g),
+        static_cast<unsigned long long>(player.guid.value),
         mechanics::describe(result.decision), violations);
     if (violations >= 5)
-        disconnectTransport({ player.guid.g }, "repeated invalid shapeshift intents");
+        disconnectTransport({ player.guid.value }, "repeated invalid shapeshift intents");
     return false;
 }
 
 bool Networking::applyServerPlayerShapeshift(Player& player)
 {
-    if (mPendingPlayerShapeshifts.contains(player.guid.g))
+    if (mPendingPlayerShapeshifts.contains(player.guid.value))
         return false;
     const mechanics::ShapeshiftResult result = mShapeshiftLedger.set(
-        player.guid.g, { player.scale, player.isWerewolf,
+        player.guid.value, { player.scale, player.isWerewolf,
             player.displayCreatureName, player.creatureRefId });
     if (!result.applied())
     {
         LOG_MESSAGE_SIMPLE(TimedLog::LOG_ERROR,
             "Rejected server-authored shapeshift state for connection %llu: %s",
-            static_cast<unsigned long long>(player.guid.g),
+            static_cast<unsigned long long>(player.guid.value),
             mechanics::describe(result.decision));
     }
     return result.applied();
@@ -2898,13 +2898,13 @@ bool Networking::applyServerPlayerShapeshift(Player& player)
 bool Networking::isPlayerShapeshiftIntentPending(
     const Player& player) const noexcept
 {
-    return mPendingPlayerShapeshifts.contains(player.guid.g);
+    return mPendingPlayerShapeshifts.contains(player.guid.value);
 }
 
 void Networking::cancelPlayerShapeshiftIntent(Player& player) noexcept
 {
-    mPendingPlayerShapeshifts.erase(player.guid.g);
-    if (const auto canonical = mShapeshiftLedger.find(player.guid.g))
+    mPendingPlayerShapeshifts.erase(player.guid.value);
+    if (const auto canonical = mShapeshiftLedger.find(player.guid.value))
     {
         player.scale = canonical->scale;
         player.isWerewolf = canonical->isWerewolf;
@@ -3038,15 +3038,15 @@ namespace
 bool Networking::validatePlayerAttributes(
     Player& player, const BasePlayer& incoming)
 {
-    if (!mProgressionLedger.find(player.guid.g))
+    if (!mProgressionLedger.find(player.guid.value))
     {
         const mechanics::ProgressionResult seeded
-            = mProgressionLedger.set(player.guid.g, progressionState(player));
+            = mProgressionLedger.set(player.guid.value, progressionState(player));
         if (!seeded.applied())
         {
             LOG_MESSAGE_SIMPLE(TimedLog::LOG_ERROR,
                 "Failed to seed progression state for connection %llu: %s",
-                static_cast<unsigned long long>(player.guid.g),
+                static_cast<unsigned long long>(player.guid.value),
                 mechanics::describe(seeded.decision));
             return false;
         }
@@ -3055,31 +3055,31 @@ bool Networking::validatePlayerAttributes(
     const std::vector<mechanics::AttributeProgressionChange> changes
         = attributeChanges(incoming);
     const mechanics::ProgressionResult result = mProgressionLedger.previewAttributes(
-        player.guid.g, incoming.exchangeFullInfo, changes);
+        player.guid.value, incoming.exchangeFullInfo, changes);
     if (result.applied())
     {
-        mPendingPlayerAttributes.insert(player.guid.g);
+        mPendingPlayerAttributes.insert(player.guid.value);
         return true;
     }
 
-    const unsigned int violations = ++mProgressionViolations[player.guid.g];
+    const unsigned int violations = ++mProgressionViolations[player.guid.value];
     LOG_MESSAGE_SIMPLE(TimedLog::LOG_WARN,
         "Rejected attribute intent from connection %llu: %s (violation %u)",
-        static_cast<unsigned long long>(player.guid.g),
+        static_cast<unsigned long long>(player.guid.value),
         mechanics::describe(result.decision), violations);
     if (violations >= 5)
-        disconnectTransport({ player.guid.g }, "repeated invalid progression intents");
+        disconnectTransport({ player.guid.value }, "repeated invalid progression intents");
     return false;
 }
 
 bool Networking::commitPlayerAttributes(Player& player)
 {
-    if (mPendingPlayerAttributes.erase(player.guid.g) == 0)
+    if (mPendingPlayerAttributes.erase(player.guid.value) == 0)
         return false;
     const std::vector<mechanics::AttributeProgressionChange> changes
         = attributeChanges(player);
     const mechanics::ProgressionResult result = mProgressionLedger.applyAttributes(
-        player.guid.g, player.exchangeFullInfo, changes);
+        player.guid.value, player.exchangeFullInfo, changes);
     if (result.applied())
     {
         applyCanonicalAttributes(player, result.state);
@@ -3087,32 +3087,32 @@ bool Networking::commitPlayerAttributes(Player& player)
     }
 
     cancelPlayerAttributeIntent(player);
-    const unsigned int violations = ++mProgressionViolations[player.guid.g];
+    const unsigned int violations = ++mProgressionViolations[player.guid.value];
     LOG_MESSAGE_SIMPLE(TimedLog::LOG_WARN,
         "Rejected modified attribute intent from connection %llu: %s (violation %u)",
-        static_cast<unsigned long long>(player.guid.g),
+        static_cast<unsigned long long>(player.guid.value),
         mechanics::describe(result.decision), violations);
     if (violations >= 5)
-        disconnectTransport({ player.guid.g }, "repeated invalid progression intents");
+        disconnectTransport({ player.guid.value }, "repeated invalid progression intents");
     return false;
 }
 
 bool Networking::applyServerPlayerAttributes(Player& player)
 {
-    if (mPendingPlayerAttributes.contains(player.guid.g))
+    if (mPendingPlayerAttributes.contains(player.guid.value))
         return false;
-    mechanics::PlayerProgressionState state = mProgressionLedger.find(player.guid.g)
+    mechanics::PlayerProgressionState state = mProgressionLedger.find(player.guid.value)
         .value_or(progressionState(player));
     const mechanics::PlayerProgressionState proposed = progressionState(player);
     state.attributes = proposed.attributes;
     state.skillIncreases = proposed.skillIncreases;
     const mechanics::ProgressionResult result
-        = mProgressionLedger.set(player.guid.g, std::move(state));
+        = mProgressionLedger.set(player.guid.value, std::move(state));
     if (!result.applied())
     {
         LOG_MESSAGE_SIMPLE(TimedLog::LOG_ERROR,
             "Rejected server-authored attributes for connection %llu: %s",
-            static_cast<unsigned long long>(player.guid.g),
+            static_cast<unsigned long long>(player.guid.value),
             mechanics::describe(result.decision));
     }
     return result.applied();
@@ -3121,27 +3121,27 @@ bool Networking::applyServerPlayerAttributes(Player& player)
 bool Networking::isPlayerAttributeIntentPending(
     const Player& player) const noexcept
 {
-    return mPendingPlayerAttributes.contains(player.guid.g);
+    return mPendingPlayerAttributes.contains(player.guid.value);
 }
 
 void Networking::cancelPlayerAttributeIntent(Player& player) noexcept
 {
-    mPendingPlayerAttributes.erase(player.guid.g);
-    if (const auto canonical = mProgressionLedger.find(player.guid.g))
+    mPendingPlayerAttributes.erase(player.guid.value);
+    if (const auto canonical = mProgressionLedger.find(player.guid.value))
         applyCanonicalAttributes(player, *canonical);
 }
 
 bool Networking::validatePlayerSkills(Player& player, const BasePlayer& incoming)
 {
-    if (!mProgressionLedger.find(player.guid.g))
+    if (!mProgressionLedger.find(player.guid.value))
     {
         const mechanics::ProgressionResult seeded
-            = mProgressionLedger.set(player.guid.g, progressionState(player));
+            = mProgressionLedger.set(player.guid.value, progressionState(player));
         if (!seeded.applied())
         {
             LOG_MESSAGE_SIMPLE(TimedLog::LOG_ERROR,
                 "Failed to seed progression state for connection %llu: %s",
-                static_cast<unsigned long long>(player.guid.g),
+                static_cast<unsigned long long>(player.guid.value),
                 mechanics::describe(seeded.decision));
             return false;
         }
@@ -3150,31 +3150,31 @@ bool Networking::validatePlayerSkills(Player& player, const BasePlayer& incoming
     const std::vector<mechanics::SkillProgressionChange> changes
         = skillChanges(incoming);
     const mechanics::ProgressionResult result = mProgressionLedger.previewSkills(
-        player.guid.g, incoming.exchangeFullInfo, changes);
+        player.guid.value, incoming.exchangeFullInfo, changes);
     if (result.applied())
     {
-        mPendingPlayerSkills.insert(player.guid.g);
+        mPendingPlayerSkills.insert(player.guid.value);
         return true;
     }
 
-    const unsigned int violations = ++mProgressionViolations[player.guid.g];
+    const unsigned int violations = ++mProgressionViolations[player.guid.value];
     LOG_MESSAGE_SIMPLE(TimedLog::LOG_WARN,
         "Rejected skill intent from connection %llu: %s (violation %u)",
-        static_cast<unsigned long long>(player.guid.g),
+        static_cast<unsigned long long>(player.guid.value),
         mechanics::describe(result.decision), violations);
     if (violations >= 5)
-        disconnectTransport({ player.guid.g }, "repeated invalid progression intents");
+        disconnectTransport({ player.guid.value }, "repeated invalid progression intents");
     return false;
 }
 
 bool Networking::commitPlayerSkills(Player& player)
 {
-    if (mPendingPlayerSkills.erase(player.guid.g) == 0)
+    if (mPendingPlayerSkills.erase(player.guid.value) == 0)
         return false;
     const std::vector<mechanics::SkillProgressionChange> changes
         = skillChanges(player);
     const mechanics::ProgressionResult result = mProgressionLedger.applySkills(
-        player.guid.g, player.exchangeFullInfo, changes);
+        player.guid.value, player.exchangeFullInfo, changes);
     if (result.applied())
     {
         applyCanonicalSkills(player, result.state);
@@ -3182,30 +3182,30 @@ bool Networking::commitPlayerSkills(Player& player)
     }
 
     cancelPlayerSkillIntent(player);
-    const unsigned int violations = ++mProgressionViolations[player.guid.g];
+    const unsigned int violations = ++mProgressionViolations[player.guid.value];
     LOG_MESSAGE_SIMPLE(TimedLog::LOG_WARN,
         "Rejected modified skill intent from connection %llu: %s (violation %u)",
-        static_cast<unsigned long long>(player.guid.g),
+        static_cast<unsigned long long>(player.guid.value),
         mechanics::describe(result.decision), violations);
     if (violations >= 5)
-        disconnectTransport({ player.guid.g }, "repeated invalid progression intents");
+        disconnectTransport({ player.guid.value }, "repeated invalid progression intents");
     return false;
 }
 
 bool Networking::applyServerPlayerSkills(Player& player)
 {
-    if (mPendingPlayerSkills.contains(player.guid.g))
+    if (mPendingPlayerSkills.contains(player.guid.value))
         return false;
-    mechanics::PlayerProgressionState state = mProgressionLedger.find(player.guid.g)
+    mechanics::PlayerProgressionState state = mProgressionLedger.find(player.guid.value)
         .value_or(progressionState(player));
     state.skills = progressionState(player).skills;
     const mechanics::ProgressionResult result
-        = mProgressionLedger.set(player.guid.g, std::move(state));
+        = mProgressionLedger.set(player.guid.value, std::move(state));
     if (!result.applied())
     {
         LOG_MESSAGE_SIMPLE(TimedLog::LOG_ERROR,
             "Rejected server-authored skills for connection %llu: %s",
-            static_cast<unsigned long long>(player.guid.g),
+            static_cast<unsigned long long>(player.guid.value),
             mechanics::describe(result.decision));
     }
     return result.applied();
@@ -3213,57 +3213,57 @@ bool Networking::applyServerPlayerSkills(Player& player)
 
 bool Networking::isPlayerSkillIntentPending(const Player& player) const noexcept
 {
-    return mPendingPlayerSkills.contains(player.guid.g);
+    return mPendingPlayerSkills.contains(player.guid.value);
 }
 
 void Networking::cancelPlayerSkillIntent(Player& player) noexcept
 {
-    mPendingPlayerSkills.erase(player.guid.g);
-    if (const auto canonical = mProgressionLedger.find(player.guid.g))
+    mPendingPlayerSkills.erase(player.guid.value);
+    if (const auto canonical = mProgressionLedger.find(player.guid.value))
         applyCanonicalSkills(player, *canonical);
 }
 
 bool Networking::validatePlayerLevel(Player& player, const BasePlayer& incoming)
 {
-    if (!mProgressionLedger.find(player.guid.g))
+    if (!mProgressionLedger.find(player.guid.value))
     {
         const mechanics::ProgressionResult seeded
-            = mProgressionLedger.set(player.guid.g, progressionState(player));
+            = mProgressionLedger.set(player.guid.value, progressionState(player));
         if (!seeded.applied())
         {
             LOG_MESSAGE_SIMPLE(TimedLog::LOG_ERROR,
                 "Failed to seed progression state for connection %llu: %s",
-                static_cast<unsigned long long>(player.guid.g),
+                static_cast<unsigned long long>(player.guid.value),
                 mechanics::describe(seeded.decision));
             return false;
         }
     }
 
     const mechanics::ProgressionResult result = mProgressionLedger.previewLevel(
-        player.guid.g, incoming.creatureStats.mLevel,
+        player.guid.value, incoming.creatureStats.mLevel,
         incoming.npcStats.mLevelProgress);
     if (result.applied())
     {
-        mPendingPlayerLevels.insert(player.guid.g);
+        mPendingPlayerLevels.insert(player.guid.value);
         return true;
     }
 
-    const unsigned int violations = ++mProgressionViolations[player.guid.g];
+    const unsigned int violations = ++mProgressionViolations[player.guid.value];
     LOG_MESSAGE_SIMPLE(TimedLog::LOG_WARN,
         "Rejected level intent from connection %llu: %s (violation %u)",
-        static_cast<unsigned long long>(player.guid.g),
+        static_cast<unsigned long long>(player.guid.value),
         mechanics::describe(result.decision), violations);
     if (violations >= 5)
-        disconnectTransport({ player.guid.g }, "repeated invalid progression intents");
+        disconnectTransport({ player.guid.value }, "repeated invalid progression intents");
     return false;
 }
 
 bool Networking::commitPlayerLevel(Player& player)
 {
-    if (mPendingPlayerLevels.erase(player.guid.g) == 0)
+    if (mPendingPlayerLevels.erase(player.guid.value) == 0)
         return false;
     const mechanics::ProgressionResult result = mProgressionLedger.applyLevel(
-        player.guid.g, player.creatureStats.mLevel,
+        player.guid.value, player.creatureStats.mLevel,
         player.npcStats.mLevelProgress);
     if (result.applied())
     {
@@ -3273,31 +3273,31 @@ bool Networking::commitPlayerLevel(Player& player)
     }
 
     cancelPlayerLevelIntent(player);
-    const unsigned int violations = ++mProgressionViolations[player.guid.g];
+    const unsigned int violations = ++mProgressionViolations[player.guid.value];
     LOG_MESSAGE_SIMPLE(TimedLog::LOG_WARN,
         "Rejected modified level intent from connection %llu: %s (violation %u)",
-        static_cast<unsigned long long>(player.guid.g),
+        static_cast<unsigned long long>(player.guid.value),
         mechanics::describe(result.decision), violations);
     if (violations >= 5)
-        disconnectTransport({ player.guid.g }, "repeated invalid progression intents");
+        disconnectTransport({ player.guid.value }, "repeated invalid progression intents");
     return false;
 }
 
 bool Networking::applyServerPlayerLevel(Player& player)
 {
-    if (mPendingPlayerLevels.contains(player.guid.g))
+    if (mPendingPlayerLevels.contains(player.guid.value))
         return false;
-    mechanics::PlayerProgressionState state = mProgressionLedger.find(player.guid.g)
+    mechanics::PlayerProgressionState state = mProgressionLedger.find(player.guid.value)
         .value_or(progressionState(player));
     state.level = player.creatureStats.mLevel;
     state.levelProgress = player.npcStats.mLevelProgress;
     const mechanics::ProgressionResult result
-        = mProgressionLedger.set(player.guid.g, std::move(state));
+        = mProgressionLedger.set(player.guid.value, std::move(state));
     if (!result.applied())
     {
         LOG_MESSAGE_SIMPLE(TimedLog::LOG_ERROR,
             "Rejected server-authored level for connection %llu: %s",
-            static_cast<unsigned long long>(player.guid.g),
+            static_cast<unsigned long long>(player.guid.value),
             mechanics::describe(result.decision));
     }
     return result.applied();
@@ -3305,13 +3305,13 @@ bool Networking::applyServerPlayerLevel(Player& player)
 
 bool Networking::isPlayerLevelIntentPending(const Player& player) const noexcept
 {
-    return mPendingPlayerLevels.contains(player.guid.g);
+    return mPendingPlayerLevels.contains(player.guid.value);
 }
 
 void Networking::cancelPlayerLevelIntent(Player& player) noexcept
 {
-    mPendingPlayerLevels.erase(player.guid.g);
-    if (const auto canonical = mProgressionLedger.find(player.guid.g))
+    mPendingPlayerLevels.erase(player.guid.value);
+    if (const auto canonical = mProgressionLedger.find(player.guid.value))
     {
         player.creatureStats.mLevel = canonical->level;
         player.npcStats.mLevelProgress = canonical->levelProgress;
@@ -3321,7 +3321,7 @@ void Networking::cancelPlayerLevelIntent(Player& player) noexcept
 bool Networking::validatePlayerStats(Player& player, const BasePlayer& incoming)
 {
     bool valid = true;
-    const mechanics::CombatantId id{ mechanics::CombatantKind::Player, player.guid.g, {} };
+    const mechanics::CombatantId id{ mechanics::CombatantKind::Player, player.guid.value, {} };
     const bool hasCanonicalState = mCombatResolver.find(id).has_value();
     bool includesHealth = incoming.exchangeFullInfo;
     if (incoming.exchangeFullInfo)
@@ -3346,18 +3346,18 @@ bool Networking::validatePlayerStats(Player& player, const BasePlayer& incoming)
     if (valid)
         return true;
 
-    const unsigned int violations = ++mCombatViolations[player.guid.g];
+    const unsigned int violations = ++mCombatViolations[player.guid.value];
     LOG_MESSAGE_SIMPLE(TimedLog::LOG_WARN,
         "Rejected invalid dynamic stats from connection %llu (violation %u)",
-        static_cast<unsigned long long>(player.guid.g), violations);
+        static_cast<unsigned long long>(player.guid.value), violations);
     if (violations >= 5)
-        disconnectTransport({ player.guid.g }, "repeated invalid dynamic stats");
+        disconnectTransport({ player.guid.value }, "repeated invalid dynamic stats");
     return false;
 }
 
 bool Networking::reconcilePlayerStats(Player& player)
 {
-    const mechanics::CombatantId id{ mechanics::CombatantKind::Player, player.guid.g, {} };
+    const mechanics::CombatantId id{ mechanics::CombatantKind::Player, player.guid.value, {} };
     const auto existing = mCombatResolver.find(id);
     mechanics::CombatantState state = playerCombatState(player, existing, false);
     if (existing)
@@ -3365,25 +3365,25 @@ bool Networking::reconcilePlayerStats(Player& player)
     if (mCombatResolver.upsert(id, state))
         return true;
 
-    const unsigned int violations = ++mCombatViolations[player.guid.g];
+    const unsigned int violations = ++mCombatViolations[player.guid.value];
     LOG_MESSAGE_SIMPLE(TimedLog::LOG_WARN,
         "Failed to reconcile canonical stats for connection %llu (violation %u)",
-        static_cast<unsigned long long>(player.guid.g), violations);
+        static_cast<unsigned long long>(player.guid.value), violations);
     if (violations >= 5)
-        disconnectTransport({ player.guid.g }, "repeated invalid canonical stats");
+        disconnectTransport({ player.guid.value }, "repeated invalid canonical stats");
     return false;
 }
 
 bool Networking::applyServerPlayerStats(Player& player)
 {
-    const mechanics::CombatantId id{ mechanics::CombatantKind::Player, player.guid.g, {} };
+    const mechanics::CombatantId id{ mechanics::CombatantKind::Player, player.guid.value, {} };
     mechanics::CombatantState state = playerCombatState(
         player, mCombatResolver.find(id), true);
     if (!mCombatResolver.upsert(id, state))
     {
         LOG_MESSAGE_SIMPLE(TimedLog::LOG_ERROR,
             "Rejected server-authored dynamic stats for connection %llu",
-            static_cast<unsigned long long>(player.guid.g));
+            static_cast<unsigned long long>(player.guid.value));
         return false;
     }
     applyCanonicalHealth(player, state);
@@ -3404,12 +3404,12 @@ bool Networking::validateActorStats(Player& player, const BaseActorList& incomin
     if (valid)
         return true;
 
-    const unsigned int violations = ++mCombatViolations[player.guid.g];
+    const unsigned int violations = ++mCombatViolations[player.guid.value];
     LOG_MESSAGE_SIMPLE(TimedLog::LOG_WARN,
         "Rejected invalid actor stats from connection %llu (violation %u)",
-        static_cast<unsigned long long>(player.guid.g), violations);
+        static_cast<unsigned long long>(player.guid.value), violations);
     if (violations >= 5)
-        disconnectTransport({ player.guid.g }, "repeated invalid actor stats");
+        disconnectTransport({ player.guid.value }, "repeated invalid actor stats");
     return false;
 }
 
@@ -3430,12 +3430,12 @@ bool Networking::reconcileActorStats(Player& player, BaseActorList& incoming)
             applyCanonicalHealth(actor, state);
         if (!mCombatResolver.upsert(id, state))
         {
-            const unsigned int violations = ++mCombatViolations[player.guid.g];
+            const unsigned int violations = ++mCombatViolations[player.guid.value];
             LOG_MESSAGE_SIMPLE(TimedLog::LOG_WARN,
                 "Failed to reconcile canonical actor stats from connection %llu (violation %u)",
-                static_cast<unsigned long long>(player.guid.g), violations);
+                static_cast<unsigned long long>(player.guid.value), violations);
             if (violations >= 5)
-                disconnectTransport({ player.guid.g }, "repeated invalid canonical actor stats");
+                disconnectTransport({ player.guid.value }, "repeated invalid canonical actor stats");
             return false;
         }
     }
@@ -3490,7 +3490,7 @@ bool Networking::validatePlayerAttack(Player& player, const BasePlayer& incoming
     if (!attack.pressed)
     {
         if (attack.target.isPlayer)
-            valid = valid && attack.target.guid.g != 0 && attack.target.guid != player.guid;
+            valid = valid && attack.target.guid.value != 0 && attack.target.guid != player.guid;
         else
             valid = valid && (attack.target.refNum != 0 || attack.target.mpNum != 0)
                 && !(attack.target.refNum != 0 && attack.target.mpNum != 0);
@@ -3498,12 +3498,12 @@ bool Networking::validatePlayerAttack(Player& player, const BasePlayer& incoming
     if (valid)
         return true;
 
-    const unsigned int violations = ++mCombatViolations[player.guid.g];
+    const unsigned int violations = ++mCombatViolations[player.guid.value];
     LOG_MESSAGE_SIMPLE(TimedLog::LOG_WARN,
         "Rejected invalid attack intent from connection %llu (violation %u)",
-        static_cast<unsigned long long>(player.guid.g), violations);
+        static_cast<unsigned long long>(player.guid.value), violations);
     if (violations >= 5)
-        disconnectTransport({ player.guid.g }, "repeated invalid attack intents");
+        disconnectTransport({ player.guid.value }, "repeated invalid attack intents");
     return false;
 }
 
@@ -3522,7 +3522,7 @@ bool Networking::resolvePlayerAttack(Player& player, std::string& rejectionReaso
 {
     rejectionReason.clear();
     const mechanics::CombatantId attackerId{
-        mechanics::CombatantKind::Player, player.guid.g, {} };
+        mechanics::CombatantKind::Player, player.guid.value, {} };
     auto attackerState = mCombatResolver.find(attackerId);
     if (!attackerState)
     {
@@ -3545,13 +3545,13 @@ bool Networking::resolvePlayerAttack(Player& player, std::string& rejectionReaso
     {
         targetPlayer = Players::getPlayer(player.attack.target.guid);
         if (targetPlayer == nullptr
-            || !mAuthenticatedConnections.contains(targetPlayer->guid.g)
+            || !mAuthenticatedConnections.contains(targetPlayer->guid.value)
             || targetPlayer->cell.getShortDescription() != player.cell.getShortDescription())
         {
             rejectionReason = "the target player is unavailable or in another cell";
             return false;
         }
-        targetId = { mechanics::CombatantKind::Player, targetPlayer->guid.g, {} };
+        targetId = { mechanics::CombatantKind::Player, targetPlayer->guid.value, {} };
         auto state = mCombatResolver.find(targetId);
         if (!state)
         {
@@ -3709,7 +3709,7 @@ bool Networking::validateActorAttacks(Player& player, const BaseActorList& incom
         if (!attack.pressed)
         {
             if (attack.target.isPlayer)
-                valid = valid && attack.target.guid.g != 0;
+                valid = valid && attack.target.guid.value != 0;
             else
                 valid = valid && (attack.target.refNum != 0 || attack.target.mpNum != 0)
                     && !(attack.target.refNum != 0 && attack.target.mpNum != 0);
@@ -3718,12 +3718,12 @@ bool Networking::validateActorAttacks(Player& player, const BaseActorList& incom
     if (valid)
         return true;
 
-    const unsigned int violations = ++mCombatViolations[player.guid.g];
+    const unsigned int violations = ++mCombatViolations[player.guid.value];
     LOG_MESSAGE_SIMPLE(TimedLog::LOG_WARN,
         "Rejected invalid actor attack list from connection %llu (violation %u)",
-        static_cast<unsigned long long>(player.guid.g), violations);
+        static_cast<unsigned long long>(player.guid.value), violations);
     if (violations >= 5)
-        disconnectTransport({ player.guid.g }, "repeated invalid actor attack intents");
+        disconnectTransport({ player.guid.value }, "repeated invalid actor attack intents");
     return false;
 }
 
@@ -3797,14 +3797,14 @@ bool Networking::resolveActorAttack(Player& player, BaseActorList& actorList,
     {
         targetPlayer = Players::getPlayer(submittedActor.attack.target.guid);
         if (targetPlayer == nullptr
-            || !mAuthenticatedConnections.contains(targetPlayer->guid.g)
+            || !mAuthenticatedConnections.contains(targetPlayer->guid.value)
             || targetPlayer->cell.getShortDescription()
                 != actorList.cell.getShortDescription())
         {
             rejectionReason = "the target player is unavailable or in another cell";
             return false;
         }
-        targetId = { mechanics::CombatantKind::Player, targetPlayer->guid.g, {} };
+        targetId = { mechanics::CombatantKind::Player, targetPlayer->guid.value, {} };
         auto state = mCombatResolver.find(targetId);
         if (!state)
         {
@@ -3947,16 +3947,16 @@ void Networking::rejectActorDeathClaims(Player& player,
     {
         LOG_MESSAGE_SIMPLE(TimedLog::LOG_VERBOSE,
             "Ignored duplicate canonical actor death acknowledgement from connection %llu",
-            static_cast<unsigned long long>(player.guid.g));
+            static_cast<unsigned long long>(player.guid.value));
         return;
     }
 
-    const unsigned int violations = ++mCombatViolations[player.guid.g];
+    const unsigned int violations = ++mCombatViolations[player.guid.value];
     LOG_MESSAGE_SIMPLE(TimedLog::LOG_WARN,
         "Rejected client-claimed actor death from connection %llu (violation %u)",
-        static_cast<unsigned long long>(player.guid.g), violations);
+        static_cast<unsigned long long>(player.guid.value), violations);
     if (violations >= 5)
-        disconnectTransport({ player.guid.g }, "repeated client-claimed actor deaths");
+        disconnectTransport({ player.guid.value }, "repeated client-claimed actor deaths");
 }
 
 persistence::QueueDecision Networking::queuePersistenceWrite(
@@ -3997,7 +3997,7 @@ bool Networking::isPassworded() const
 
 void Networking::processSystemPacket(mwmp::transport::ApplicationPacketFrame *packet)
 {
-    Player *player = Players::getPlayer(RakNet::RakNetGUID(packet->sender.value));
+    Player *player = Players::getPlayer(mwmp::transport::TransportConnectionId(packet->sender.value));
     if (player == nullptr)
         return;
     LOG_MESSAGE_SIMPLE(TimedLog::LOG_WARN,
@@ -4008,7 +4008,7 @@ void Networking::processSystemPacket(mwmp::transport::ApplicationPacketFrame *pa
 
 void Networking::processPlayerPacket(mwmp::transport::ApplicationPacketFrame *packet)
 {
-    Player *player = Players::getPlayer(RakNet::RakNetGUID(packet->sender.value));
+    Player *player = Players::getPlayer(mwmp::transport::TransportConnectionId(packet->sender.value));
     if (player == nullptr)
         return;
     const std::string peerAddress
@@ -4037,7 +4037,7 @@ void Networking::processPlayerPacket(mwmp::transport::ApplicationPacketFrame *pa
     {
         LOG_MESSAGE_SIMPLE(TimedLog::LOG_INFO, "Received ID_PLAYER_BASEINFO about %s", player->npc.mName.c_str());
 
-        BasePlayer validation(RakNet::RakNetGUID(packet->sender.value));
+        BasePlayer validation(mwmp::transport::TransportConnectionId(packet->sender.value));
         myPacket->setPlayer(&validation);
         myPacket->Read();
         if (!myPacket->isPacketValid())
@@ -4062,7 +4062,7 @@ void Networking::processPlayerPacket(mwmp::transport::ApplicationPacketFrame *pa
     else if (player->getLoadState() == Player::LOADED)
     {
         player->setLoadState(Player::POSTLOADED);
-        newPlayer(RakNet::RakNetGUID(packet->sender.value));
+        newPlayer(mwmp::transport::TransportConnectionId(packet->sender.value));
         return;
     }
 
@@ -4074,7 +4074,7 @@ void Networking::processPlayerPacket(mwmp::transport::ApplicationPacketFrame *pa
 
 void Networking::processActorPacket(mwmp::transport::ApplicationPacketFrame *packet)
 {
-    Player *player = Players::getPlayer(RakNet::RakNetGUID(packet->sender.value));
+    Player *player = Players::getPlayer(mwmp::transport::TransportConnectionId(packet->sender.value));
     if (player == nullptr)
         return;
 
@@ -4088,7 +4088,7 @@ void Networking::processActorPacket(mwmp::transport::ApplicationPacketFrame *pac
 
 void Networking::processObjectPacket(mwmp::transport::ApplicationPacketFrame *packet)
 {
-    Player *player = Players::getPlayer(RakNet::RakNetGUID(packet->sender.value));
+    Player *player = Players::getPlayer(mwmp::transport::TransportConnectionId(packet->sender.value));
     if (player == nullptr)
         return;
 
@@ -4102,7 +4102,7 @@ void Networking::processObjectPacket(mwmp::transport::ApplicationPacketFrame *pa
 
 void Networking::processWorldstatePacket(mwmp::transport::ApplicationPacketFrame *packet)
 {
-    Player *player = Players::getPlayer(RakNet::RakNetGUID(packet->sender.value));
+    Player *player = Players::getPlayer(mwmp::transport::TransportConnectionId(packet->sender.value));
     if (player == nullptr)
         return;
 
@@ -4166,14 +4166,14 @@ bool Networking::preInit(mwmp::transport::ApplicationPacketFrame *packet, RakNet
     }
     RakNet::BitStream bs;
     packetPreInit.SetSendStream(&bs);
-    packetPreInit.setGUID(RakNet::RakNetGUID(packet->sender.value));
+    packetPreInit.setGUID(mwmp::transport::TransportConnectionId(packet->sender.value));
 
     // If the loop above was broken, then the client's data files do not match the server's
     if (dataFileEnforcementState && dataFile != dataFiles.end())
     {
         LOG_APPEND(TimedLog::LOG_INFO, "- Client was not allowed to connect due to incompatible data files");
         packetPreInit.setChecksums(&samples);
-        packetPreInit.Send(RakNet::RakNetGUID(packet->sender.value));
+        packetPreInit.Send(mwmp::transport::TransportConnectionId(packet->sender.value));
         mEndpoint.disconnect({ packet->sender.value });
     }
     else
@@ -4181,7 +4181,7 @@ bool Networking::preInit(mwmp::transport::ApplicationPacketFrame *packet, RakNet
         LOG_APPEND(TimedLog::LOG_INFO, "- Client was allowed to connect");
         PacketPreInit::PluginContainer tmp;
         packetPreInit.setChecksums(&tmp);
-        packetPreInit.Send(RakNet::RakNetGUID(packet->sender.value));
+        packetPreInit.Send(mwmp::transport::TransportConnectionId(packet->sender.value));
         return true;
     }
 
@@ -4219,7 +4219,7 @@ void Networking::update(mwmp::transport::ApplicationPacketFrame *packet, RakNet:
         LOG_MESSAGE_SIMPLE(TimedLog::LOG_WARN, "Unhandled RakNet packet with identifier %i has arrived", packet->data[0]);
 }
 
-void Networking::newPlayer(RakNet::RakNetGUID guid)
+void Networking::newPlayer(mwmp::transport::TransportConnectionId guid)
 {
     playerPacketController->GetPacket(ID_PLAYER_BASEINFO)->RequestData(guid);
     playerPacketController->GetPacket(ID_PLAYER_STATS_DYNAMIC)->RequestData(guid);
@@ -4227,7 +4227,7 @@ void Networking::newPlayer(RakNet::RakNetGUID guid)
     playerPacketController->GetPacket(ID_PLAYER_CELL_CHANGE)->RequestData(guid);
     playerPacketController->GetPacket(ID_PLAYER_EQUIPMENT)->RequestData(guid);
 
-    LOG_MESSAGE_SIMPLE(TimedLog::LOG_WARN, "Sending info about other players to %lu", guid.g);
+    LOG_MESSAGE_SIMPLE(TimedLog::LOG_WARN, "Sending info about other players to %lu", guid.value);
 
     for (const auto& [playerGuid, ownedPlayer] : *players) //sending other players to new player
     {
@@ -4235,7 +4235,7 @@ void Networking::newPlayer(RakNet::RakNetGUID guid)
         if (playerGuid == guid) continue;
 
         // If an invalid key makes it into the Players map, ignore it
-        else if (playerGuid == RakNet::UNASSIGNED_CRABNET_GUID) continue;
+        else if (playerGuid == mwmp::transport::TransportConnectionId{}) continue;
 
         // if player not fully connected
         else if (!ownedPlayer) continue;
@@ -4266,51 +4266,51 @@ void Networking::newPlayer(RakNet::RakNetGUID guid)
 
 }
 
-void Networking::disconnectPlayer(RakNet::RakNetGUID guid)
+void Networking::disconnectPlayer(mwmp::transport::TransportConnectionId guid)
 {
     Player *player = Players::getPlayer(guid);
     if (!player)
         return;
-    if (mAuthenticatedConnections.contains(guid.g))
+    if (mAuthenticatedConnections.contains(guid.value))
     {
         Script::Call<Script::CallbackIdentity("OnPlayerDisconnect")>(player->getId());
         playerPacketController->GetPacket(ID_USER_DISCONNECTED)->setPlayer(player);
         playerPacketController->GetPacket(ID_USER_DISCONNECTED)->Send(true);
     }
-    mAuthorityLeases.releaseOwner(guid.g);
-    mAuthorityViolations.erase(guid.g);
-    resetPlayerMovement(guid.g);
-    mPlayerLifecycle.erase(guid.g);
-    mLifecycleViolations.erase(guid.g);
-    mEquipmentLedger.erase(guid.g);
-    mInventoryLedger.erase({ mechanics::InventoryOwnerKind::Player, guid.g });
-    mInventoryViolations.erase(guid.g);
-    mCombatResolver.erase({ mechanics::CombatantKind::Player, guid.g, {} });
-    mCombatViolations.erase(guid.g);
-    mActiveEffectLedger.erase({ mechanics::CombatantKind::Player, guid.g, {} });
-    mActiveEffectViolations.erase(guid.g);
-    mActorStateViolations.erase(guid.g);
-    mCastViolations.erase(guid.g);
-    mJusticeLedger.erase(guid.g);
-    mJusticeViolations.erase(guid.g);
-    mPendingPlayerBounties.erase(guid.g);
-    mShapeshiftLedger.erase(guid.g);
-    mShapeshiftViolations.erase(guid.g);
-    mPendingPlayerShapeshifts.erase(guid.g);
-    mProgressionLedger.erase(guid.g);
-    mProgressionViolations.erase(guid.g);
-    mPendingPlayerAttributes.erase(guid.g);
-    mPendingPlayerSkills.erase(guid.g);
-    mPendingPlayerLevels.erase(guid.g);
-    mObjectViolations.erase(guid.g);
-    mPendingObjectPlacements.erase(guid.g);
-    mPendingObjectMutations.erase(guid.g);
-    mAcceptedPlayerActiveEffectIntents.erase(guid.g);
-    mRelayedPlayerActiveEffectIntents.erase(guid.g);
-    mAcceptedActorActiveEffectIntents.erase(guid.g);
-    mRelayedActorActiveEffectIntents.erase(guid.g);
-    mAcceptedActorAiIntents.erase(guid.g);
-    mRelayedActorAiIntents.erase(guid.g);
+    mAuthorityLeases.releaseOwner(guid.value);
+    mAuthorityViolations.erase(guid.value);
+    resetPlayerMovement(guid.value);
+    mPlayerLifecycle.erase(guid.value);
+    mLifecycleViolations.erase(guid.value);
+    mEquipmentLedger.erase(guid.value);
+    mInventoryLedger.erase({ mechanics::InventoryOwnerKind::Player, guid.value });
+    mInventoryViolations.erase(guid.value);
+    mCombatResolver.erase({ mechanics::CombatantKind::Player, guid.value, {} });
+    mCombatViolations.erase(guid.value);
+    mActiveEffectLedger.erase({ mechanics::CombatantKind::Player, guid.value, {} });
+    mActiveEffectViolations.erase(guid.value);
+    mActorStateViolations.erase(guid.value);
+    mCastViolations.erase(guid.value);
+    mJusticeLedger.erase(guid.value);
+    mJusticeViolations.erase(guid.value);
+    mPendingPlayerBounties.erase(guid.value);
+    mShapeshiftLedger.erase(guid.value);
+    mShapeshiftViolations.erase(guid.value);
+    mPendingPlayerShapeshifts.erase(guid.value);
+    mProgressionLedger.erase(guid.value);
+    mProgressionViolations.erase(guid.value);
+    mPendingPlayerAttributes.erase(guid.value);
+    mPendingPlayerSkills.erase(guid.value);
+    mPendingPlayerLevels.erase(guid.value);
+    mObjectViolations.erase(guid.value);
+    mPendingObjectPlacements.erase(guid.value);
+    mPendingObjectMutations.erase(guid.value);
+    mAcceptedPlayerActiveEffectIntents.erase(guid.value);
+    mRelayedPlayerActiveEffectIntents.erase(guid.value);
+    mAcceptedActorActiveEffectIntents.erase(guid.value);
+    mRelayedActorActiveEffectIntents.erase(guid.value);
+    mAcceptedActorAiIntents.erase(guid.value);
+    mRelayedActorAiIntents.erase(guid.value);
     Players::deletePlayer(guid);
 }
 
@@ -4397,9 +4397,9 @@ Networking *Networking::getPtr()
     return sThis;
 }
 
-std::string Networking::getPeerAddress(RakNet::RakNetGUID guid) const
+std::string Networking::getPeerAddress(mwmp::transport::TransportConnectionId guid) const
 {
-    return mEndpoint.peerAddress({ guid.g }).value_or(std::string{});
+    return mEndpoint.peerAddress({ guid.value }).value_or(std::string{});
 }
 
 void Networking::stopServer(int code)
@@ -4447,7 +4447,7 @@ int Networking::mainLoop()
 
 void Networking::processTransportEvent(transport::TransportEvent event)
 {
-    const RakNet::RakNetGUID guid(event.connection.value);
+    const mwmp::transport::TransportConnectionId guid(event.connection.value);
     switch (event.type)
     {
         case transport::TransportEventType::Connected:
@@ -4542,7 +4542,7 @@ void Networking::processApplicationMessage(transport::TransportMessage message)
     packet.length = static_cast<unsigned int>(frame.size());
     packet.sender = message.connection;
     RakNet::BitStream stream(&packet.data[1], packet.length - 1, false);
-    stream.IgnoreBytes(static_cast<unsigned int>(RakNet::RakNetGUID::size()));
+    stream.IgnoreBytes(static_cast<unsigned int>(transport::TransportConnectionId::wireSize));
 
     const auto state = mEndpoint.state(message.connection);
     if (state == session::State::TransportAuthenticated)
@@ -4559,7 +4559,7 @@ void Networking::processApplicationMessage(transport::TransportMessage message)
     if (application.id == protocol::ApplicationPacketId::Loaded
         && state == session::State::AccountAuthenticated)
     {
-        Player* player = Players::getPlayer(RakNet::RakNetGUID(packet.sender.value));
+        Player* player = Players::getPlayer(mwmp::transport::TransportConnectionId(packet.sender.value));
         if (player == nullptr)
         {
             disconnectTransport(message.connection, "spawn requested without a player slot");
@@ -4567,7 +4567,7 @@ void Networking::processApplicationMessage(transport::TransportMessage message)
         }
         PlayerPacket* response = playerPacketController->GetPacket(ID_LOADED);
         response->setPlayer(player);
-        if (response->Send(RakNet::RakNetGUID(packet.sender.value)) == 0)
+        if (response->Send(mwmp::transport::TransportConnectionId(packet.sender.value)) == 0)
         {
             disconnectTransport(message.connection, "failed to send spawn result");
             return;
@@ -4621,7 +4621,7 @@ void Networking::processAuthenticationMessage(transport::TransportMessage messag
     if (!result.response.authenticated())
         return;
 
-    Player* player = Players::getPlayer(RakNet::RakNetGUID(message.connection.value));
+    Player* player = Players::getPlayer(mwmp::transport::TransportConnectionId(message.connection.value));
     if (player == nullptr)
     {
         disconnectTransport(message.connection, "authenticated player slot was missing");
@@ -4678,10 +4678,10 @@ void Networking::disconnectTransport(
     mEndpoint.disconnect(connection);
 }
 
-void Networking::kickPlayer(RakNet::RakNetGUID guid, bool sendNotification)
+void Networking::kickPlayer(mwmp::transport::TransportConnectionId guid, bool sendNotification)
 {
     (void)sendNotification;
-    disconnectTransport({ guid.g }, "kicked by server");
+    disconnectTransport({ guid.value }, "kicked by server");
 }
 
 void Networking::banAddress(const char *ipAddress)
@@ -4706,9 +4706,9 @@ unsigned int Networking::maxConnections() const
     return mMaximumConnections;
 }
 
-int Networking::getAvgPing(RakNet::AddressOrGUID addr) const
+int Networking::getAvgPing(transport::TransportConnectionId connection) const
 {
-    (void)addr;
+    (void)connection;
     return -1;
 }
 

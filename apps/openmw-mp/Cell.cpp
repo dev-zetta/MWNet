@@ -252,12 +252,12 @@ void Cell::rebuildActorIndex()
     }
 }
 
-RakNet::RakNetGUID *Cell::getAuthority()
+mwmp::transport::TransportConnectionId *Cell::getAuthority()
 {
     return &authorityGuid;
 }
 
-void Cell::setAuthority(const RakNet::RakNetGUID& guid, std::uint64_t leaseId)
+void Cell::setAuthority(const mwmp::transport::TransportConnectionId& guid, std::uint64_t leaseId)
 {
     authorityGuid = guid;
     authorityLeaseId = leaseId;
@@ -265,7 +265,7 @@ void Cell::setAuthority(const RakNet::RakNetGUID& guid, std::uint64_t leaseId)
 
 void Cell::clearAuthority()
 {
-    authorityGuid = RakNet::UNASSIGNED_CRABNET_GUID;
+    authorityGuid = mwmp::transport::TransportConnectionId{};
     authorityLeaseId = 0;
 }
 

@@ -22,7 +22,6 @@
 #include <Script/Functions/Spells.hpp>
 #include <Script/Functions/Stats.hpp>
 #include <Script/Functions/Worldstate.hpp>
-#include <RakNetTypes.h>
 #include <stdexcept>
 #include <string>
 #include <tuple>

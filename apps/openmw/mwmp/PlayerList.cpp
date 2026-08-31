@@ -20,61 +20,66 @@
 
 using namespace mwmp;
 
-std::map <RakNet::RakNetGUID, DedicatedPlayer *> PlayerList::playerList;
+std::map<mwmp::transport::TransportConnectionId, std::unique_ptr<DedicatedPlayer>> PlayerList::playerList;
 
 void PlayerList::update(float dt)
 {
     for (auto &playerEntry : playerList)
     {
-        DedicatedPlayer *player = playerEntry.second;
-        if (player == nullptr) continue;
-
-        player->update(dt);
+        playerEntry.second->update(dt);
     }
 }
 
-DedicatedPlayer *PlayerList::newPlayer(RakNet::RakNetGUID guid)
+DedicatedPlayer *PlayerList::newPlayer(mwmp::transport::TransportConnectionId guid)
 {
-    LOG_APPEND(TimedLog::LOG_INFO, "- Creating new DedicatedPlayer with guid %s", guid.ToString());
+    if (const auto existing = playerList.find(guid); existing != playerList.end())
+        return existing->second.get();
 
-    playerList[guid] = new DedicatedPlayer(guid);
+    LOG_APPEND(TimedLog::LOG_INFO, "- Creating new DedicatedPlayer with connection %llu",
+        static_cast<unsigned long long>(guid.value));
 
-    LOG_APPEND(TimedLog::LOG_INFO, "- There are now %i DedicatedPlayers", playerList.size());
+    std::unique_ptr<DedicatedPlayer> player(new DedicatedPlayer(guid));
+    DedicatedPlayer* result = player.get();
+    playerList.insert_or_assign(guid, std::move(player));
 
-    return playerList[guid];
+    LOG_APPEND(TimedLog::LOG_INFO, "- There are now %zu DedicatedPlayers", playerList.size());
+
+    return result;
 }
 
-void PlayerList::deletePlayer(RakNet::RakNetGUID guid)
+void PlayerList::deletePlayer(mwmp::transport::TransportConnectionId guid)
 {
-    if (playerList[guid]->reference)
-        playerList[guid]->deleteReference();
+    const auto player = playerList.find(guid);
+    if (player == playerList.end())
+        return;
 
-    delete playerList[guid];
-    playerList.erase(guid);
+    if (player->second->reference)
+        player->second->deleteReference();
+    playerList.erase(player);
 }
 
 void PlayerList::cleanUp()
 {
-    for (auto &playerEntry : playerList)
-        delete playerEntry.second;
+    playerList.clear();
 }
 
-DedicatedPlayer *PlayerList::getPlayer(RakNet::RakNetGUID guid)
+DedicatedPlayer *PlayerList::getPlayer(mwmp::transport::TransportConnectionId guid)
 {
-    return playerList[guid];
+    const auto player = playerList.find(guid);
+    return player == playerList.end() ? nullptr : player->second.get();
 }
 
 DedicatedPlayer *PlayerList::getPlayer(const MWWorld::Ptr &ptr)
 {
     for (auto &playerEntry : playerList)
     {
-        if (playerEntry.second == nullptr || playerEntry.second->getPtr().mRef == nullptr)
+        if (playerEntry.second->getPtr().mRef == nullptr)
             continue;
         
         ESM::RefId refId = ptr.getCellRef().getRefId();
         
         if (playerEntry.second->getPtr().getCellRef().getRefId() == refId)
-            return playerEntry.second;
+            return playerEntry.second.get();
     }
 
     return nullptr;
@@ -84,26 +89,26 @@ DedicatedPlayer* PlayerList::getPlayer(int actorId)
 {
     for (auto& playerEntry : playerList)
     {
-        if (playerEntry.second == nullptr || playerEntry.second->getPtr().mRef == nullptr)
+        if (playerEntry.second->getPtr().mRef == nullptr)
             continue;
 
         MWWorld::Ptr playerPtr = playerEntry.second->getPtr();
         int playerActorId = playerPtr.getClass().getCreatureStats(playerPtr).getActorId();
 
         if (actorId == playerActorId)
-            return playerEntry.second;
+            return playerEntry.second.get();
     }
 
     return nullptr;
 }
 
-std::vector<RakNet::RakNetGUID> PlayerList::getPlayersInCell(const ESM::Cell& cell)
+std::vector<mwmp::transport::TransportConnectionId> PlayerList::getPlayersInCell(const ESM::Cell& cell)
 {
-    std::vector<RakNet::RakNetGUID> playersInCell;
+    std::vector<mwmp::transport::TransportConnectionId> playersInCell;
 
     for (auto& playerEntry : playerList)
     {
-        if (playerEntry.first != RakNet::UNASSIGNED_CRABNET_GUID)
+        if (playerEntry.first != mwmp::transport::TransportConnectionId{})
         {
             if (Main::get().getCellController()->isSameCell(cell, playerEntry.second->cell))
             {
@@ -131,7 +136,7 @@ void PlayerList::enableMarkers(const ESM::Cell& cell)
 {
     for (auto &playerEntry : playerList)
     {
-        if (playerEntry.second == nullptr || playerEntry.second->getPtr().mRef == nullptr)
+        if (playerEntry.second->getPtr().mRef == nullptr)
             continue;
 
         if (Main::get().getCellController()->isSameCell(cell, playerEntry.second->cell))
@@ -151,7 +156,7 @@ void PlayerList::clearHitAttemptActorId(int actorId)
 {
     for (auto &playerEntry : playerList)
     {
-        if (playerEntry.second == nullptr || playerEntry.second->getPtr().mRef == nullptr)
+        if (playerEntry.second->getPtr().mRef == nullptr)
             continue;
 
         MWMechanics::CreatureStats &playerCreatureStats = playerEntry.second->getPtr().getClass().getCreatureStats(playerEntry.second->getPtr());

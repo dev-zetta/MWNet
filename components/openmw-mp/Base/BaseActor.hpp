@@ -5,8 +5,6 @@
 
 #include <components/openmw-mp/Base/BaseStructs.hpp>
 
-#include <RakNetTypes.h>
-
 #include <cstdint>
 
 namespace mwmp
@@ -84,7 +82,7 @@ namespace mwmp
             WANDER = 6
         };
 
-        RakNet::RakNetGUID guid{};
+        mwmp::transport::TransportConnectionId guid{};
 
         std::uint64_t authorityLeaseId = 0;
         std::uint32_t authorityLeaseDurationMs = 0;

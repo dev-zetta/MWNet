@@ -6,9 +6,10 @@
 TPlayers Players::players;
 TSlots Players::slots;
 
-bool Players::deletePlayer(RakNet::RakNetGUID guid)
+bool Players::deletePlayer(mwmp::transport::TransportConnectionId guid)
 {
-    LOG_MESSAGE_SIMPLE(TimedLog::LOG_INFO, "Deleting player with guid %lu", guid.g);
+    LOG_MESSAGE_SIMPLE(TimedLog::LOG_INFO, "Deleting player connection %llu",
+        static_cast<unsigned long long>(guid.value));
 
     const auto playerIt = players.find(guid);
     if (playerIt == players.end() || !playerIt->second)
@@ -26,9 +27,10 @@ bool Players::deletePlayer(RakNet::RakNetGUID guid)
     return true;
 }
 
-Players::CreationResult Players::newPlayer(RakNet::RakNetGUID guid, unsigned int maximumPlayers)
+Players::CreationResult Players::newPlayer(mwmp::transport::TransportConnectionId guid, unsigned int maximumPlayers)
 {
-    LOG_MESSAGE_SIMPLE(TimedLog::LOG_INFO, "Creating new player with guid %lu", guid.g);
+    LOG_MESSAGE_SIMPLE(TimedLog::LOG_INFO, "Creating player connection %llu",
+        static_cast<unsigned long long>(guid.value));
 
     const auto existingPlayer = players.find(guid);
     if (existingPlayer != players.end())
@@ -66,7 +68,7 @@ Players::CreationResult Players::newPlayer(RakNet::RakNetGUID guid, unsigned int
     return { result, CreationStatus::Created };
 }
 
-Player *Players::getPlayer(RakNet::RakNetGUID guid)
+Player *Players::getPlayer(mwmp::transport::TransportConnectionId guid)
 {
     auto it = players.find(guid);
     if (it == players.end())
@@ -86,7 +88,7 @@ unsigned short Players::getLastPlayerId()
     return slots.rbegin()->first;
 }
 
-Player::Player(RakNet::RakNetGUID guid)
+Player::Player(mwmp::transport::TransportConnectionId guid)
     : BasePlayer(guid)
     , id(std::numeric_limits<unsigned short>::max())
     , loadState(NOTLOADED)
@@ -195,7 +197,7 @@ void Player::forEachLoaded(std::function<void(Player *pl, Player *other)> func)
     }
 }
 
-bool Players::doesPlayerExist(RakNet::RakNetGUID guid)
+bool Players::doesPlayerExist(mwmp::transport::TransportConnectionId guid)
 {
     const auto it = players.find(guid);
     return it != players.end() && it->second != nullptr;

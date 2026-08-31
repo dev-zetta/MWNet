@@ -13,8 +13,6 @@
 
 #include <components/openmw-mp/Base/BaseStructs.hpp>
 
-#include <RakNetTypes.h>
-
 namespace mwmp
 {
     enum class JailAction : std::uint8_t
@@ -177,14 +175,14 @@ namespace mwmp
             std::string data;
         };
 
-        explicit BasePlayer(RakNet::RakNetGUID guid)
+        explicit BasePlayer(mwmp::transport::TransportConnectionId guid)
             : guid(guid)
         {
         }
 
         BasePlayer() = default;
 
-        RakNet::RakNetGUID guid{};
+        mwmp::transport::TransportConnectionId guid{};
 
         GUIMessageBox guiMessageBox;
 
@@ -217,7 +215,7 @@ namespace mwmp
         std::vector<Book> bookChanges;
         std::vector<CellState> cellStateChanges;
 
-        std::vector<RakNet::RakNetGUID> alliedPlayers;
+        std::vector<mwmp::transport::TransportConnectionId> alliedPlayers;
         CurrentContainer currentContainer;
 
         int difficulty = 0;

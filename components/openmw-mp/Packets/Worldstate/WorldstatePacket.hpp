@@ -2,7 +2,6 @@
 #define OPENMW_WORLDSTATEPACKET_HPP
 
 #include <string>
-#include <RakNetTypes.h>
 #include <BitStream.h>
 #include <components/openmw-mp/Base/BaseWorldstate.hpp>
 

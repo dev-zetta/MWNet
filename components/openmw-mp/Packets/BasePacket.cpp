@@ -10,7 +10,7 @@ BasePacket::BasePacket()
     , bsRead(nullptr)
     , bsSend(nullptr)
     , bs(nullptr)
-    , guid(RakNet::UNASSIGNED_CRABNET_GUID)
+    , guid(mwmp::transport::TransportConnectionId{})
     , packetValid(false)
     , codecError(protocol::CodecError::None)
 {
@@ -71,12 +71,12 @@ void BasePacket::SetApplicationPacketDispatcher(
     mDispatcher = dispatcher;
 }
 
-uint32_t BasePacket::RequestData(RakNet::RakNetGUID targetGuid)
+uint32_t BasePacket::RequestData(mwmp::transport::TransportConnectionId targetGuid)
 {
     return dispatchRequest(targetGuid);
 }
 
-uint32_t BasePacket::Send(RakNet::AddressOrGUID destination)
+uint32_t BasePacket::Send(transport::TransportConnectionId destination)
 {
     return dispatchPacket(destination);
 }
@@ -97,14 +97,14 @@ void BasePacket::Read()
     finishRead();
 }
 
-bool BasePacket::RW(RakNet::RakNetGUID& value, bool write, bool compress)
+bool BasePacket::RW(mwmp::transport::TransportConnectionId& value, bool write, bool compress)
 {
     (void)compress;
-    std::uint64_t decoded = value.g;
+    std::uint64_t decoded = value.value;
     if (!RW(decoded, write))
         return false;
     if (!write)
-        value = RakNet::RakNetGUID(decoded);
+        value = mwmp::transport::TransportConnectionId(decoded);
     return true;
 }
 
@@ -127,7 +127,7 @@ bool BasePacket::finishWrite()
     if (!prepareWrite() || bsSend == nullptr)
         return false;
     bsSend->Write(packetID);
-    bsSend->Write(guid.g);
+    bsSend->Write(guid.value);
     const auto payload = mWriter->bytes();
     if (!payload.empty())
         bsSend->Write(reinterpret_cast<const char*>(payload.data()), payload.size());
@@ -150,7 +150,7 @@ std::span<const std::byte> BasePacket::writePayload() const noexcept
     return mWriter ? mWriter->bytes() : std::span<const std::byte>{};
 }
 
-uint32_t BasePacket::dispatchRequest(RakNet::RakNetGUID targetGuid)
+uint32_t BasePacket::dispatchRequest(mwmp::transport::TransportConnectionId targetGuid)
 {
     if (mDispatcher == nullptr || !protocol::isApplicationPacketId(packetID))
         return 0;
@@ -159,14 +159,14 @@ uint32_t BasePacket::dispatchRequest(RakNet::RakNetGUID targetGuid)
     const auto id = static_cast<protocol::ApplicationPacketId>(packetID);
     bool sent = false;
     if (mDispatcher->flow() == transport::ApplicationPacketFlow::ClientToServer)
-        sent = mDispatcher->sendToServer(id, targetGuid.g, {}, error);
+        sent = mDispatcher->sendToServer(id, targetGuid.value, {}, error);
     else
-        sent = mDispatcher->sendTo(id, targetGuid.g,
-            transport::TransportConnectionId{ targetGuid.g }, {}, error);
+        sent = mDispatcher->sendTo(id, targetGuid.value,
+            transport::TransportConnectionId{ targetGuid.value }, {}, error);
     return sent ? 1U : 0U;
 }
 
-uint32_t BasePacket::dispatchPacket(RakNet::AddressOrGUID destination)
+uint32_t BasePacket::dispatchPacket(transport::TransportConnectionId destination)
 {
     if (mDispatcher == nullptr || bsSend == nullptr
         || !protocol::isApplicationPacketId(packetID))
@@ -181,10 +181,9 @@ uint32_t BasePacket::dispatchPacket(RakNet::AddressOrGUID destination)
     const auto id = static_cast<protocol::ApplicationPacketId>(packetID);
     bool sent = false;
     if (mDispatcher->flow() == transport::ApplicationPacketFlow::ClientToServer)
-        sent = mDispatcher->sendToServer(id, guid.g, writePayload(), error);
-    else if (destination.rakNetGuid != RakNet::UNASSIGNED_CRABNET_GUID)
-        sent = mDispatcher->sendTo(id, guid.g,
-            transport::TransportConnectionId{ destination.rakNetGuid.g }, writePayload(), error);
+        sent = mDispatcher->sendToServer(id, guid.value, writePayload(), error);
+    else if (destination)
+        sent = mDispatcher->sendTo(id, guid.value, destination, writePayload(), error);
     return sent ? 1U : 0U;
 }
 
@@ -203,13 +202,13 @@ uint32_t BasePacket::dispatchPacket(bool toOther)
     const auto id = static_cast<protocol::ApplicationPacketId>(packetID);
     bool sent = false;
     if (mDispatcher->flow() == transport::ApplicationPacketFlow::ClientToServer)
-        sent = mDispatcher->sendToServer(id, guid.g, writePayload(), error);
+        sent = mDispatcher->sendToServer(id, guid.value, writePayload(), error);
     else if (toOther)
-        sent = mDispatcher->sendToAll(id, guid.g, writePayload(), error,
-            transport::TransportConnectionId{ guid.g });
+        sent = mDispatcher->sendToAll(id, guid.value, writePayload(), error,
+            transport::TransportConnectionId{ guid.value });
     else
-        sent = mDispatcher->sendTo(id, guid.g,
-            transport::TransportConnectionId{ guid.g }, writePayload(), error);
+        sent = mDispatcher->sendTo(id, guid.value,
+            transport::TransportConnectionId{ guid.value }, writePayload(), error);
     return sent ? 1U : 0U;
 }
 
@@ -220,12 +219,12 @@ bool BasePacket::finishRead()
     return readResult(mReader->finish());
 }
 
-void BasePacket::setGUID(RakNet::RakNetGUID newGuid)
+void BasePacket::setGUID(mwmp::transport::TransportConnectionId newGuid)
 {
     guid = newGuid;
 }
 
-RakNet::RakNetGUID BasePacket::getGUID()
+mwmp::transport::TransportConnectionId BasePacket::getGUID()
 {
     return guid;
 }

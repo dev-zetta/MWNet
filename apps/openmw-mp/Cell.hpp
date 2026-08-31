@@ -43,8 +43,8 @@ public:
         std::vector<mwmp::BaseActor> actors) const;
     void commitActorRoster(PreparedActorRoster&& roster) noexcept;
 
-    RakNet::RakNetGUID *getAuthority();
-    void setAuthority(const RakNet::RakNetGUID& guid, std::uint64_t leaseId);
+    mwmp::transport::TransportConnectionId *getAuthority();
+    void setAuthority(const mwmp::transport::TransportConnectionId& guid, std::uint64_t leaseId);
     void clearAuthority();
     std::uint64_t getAuthorityLeaseId() const;
     mwmp::BaseActorList *getActorList();
@@ -63,7 +63,7 @@ private:
     TPlayers players;
     ESM::Cell cell;
 
-    RakNet::RakNetGUID authorityGuid{};
+    mwmp::transport::TransportConnectionId authorityGuid{};
     std::uint64_t authorityLeaseId = 0;
     mwmp::BaseActorList cellActorList;
     std::unordered_map<std::uint64_t, std::size_t> actorIndexes;
