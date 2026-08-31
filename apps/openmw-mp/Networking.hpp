@@ -13,6 +13,7 @@
 #include <components/openmw-mp/Mechanics/CombatResolver.hpp>
 #include <components/openmw-mp/Mechanics/ActiveEffectLedger.hpp>
 #include <components/openmw-mp/Mechanics/CastIntentValidator.hpp>
+#include <components/openmw-mp/Mechanics/JusticeLedger.hpp>
 #include <components/openmw-mp/Persistence/PersistenceService.hpp>
 #include <components/openmw-mp/Security/ServerAuthenticationService.hpp>
 #include <components/openmw-mp/Session/AuthorityLease.hpp>
@@ -119,6 +120,11 @@ namespace  mwmp
         bool finishActorActiveEffectIntent(Player& player) noexcept;
         bool validatePlayerCast(Player& player, const BasePlayer& incoming);
         bool validateActorCasts(Player& player, const BaseActorList& incoming);
+        bool validatePlayerBounty(Player& player, const BasePlayer& incoming);
+        bool commitPlayerBounty(Player& player);
+        bool applyServerPlayerBounty(Player& player);
+        bool isPlayerBountyIntentPending(const Player& player) const noexcept;
+        void cancelPlayerBountyIntent(Player& player) noexcept;
         bool validatePlayerStats(Player& player, const BasePlayer& incoming);
         bool reconcilePlayerStats(Player& player);
         bool applyServerPlayerStats(Player& player);
@@ -170,6 +176,7 @@ namespace  mwmp
         mechanics::CombatResolver mCombatResolver;
         mechanics::ActiveEffectLedger mActiveEffectLedger;
         mechanics::CastIntentValidator mCastIntentValidator;
+        mechanics::JusticeLedger mJusticeLedger;
         std::unordered_set<std::uint64_t> mAuthenticatedConnections;
         std::unordered_map<std::uint64_t, unsigned int> mAuthorityViolations;
         std::unordered_map<std::uint64_t, unsigned int> mMovementViolations;
@@ -178,6 +185,8 @@ namespace  mwmp
         std::unordered_map<std::uint64_t, unsigned int> mCombatViolations;
         std::unordered_map<std::uint64_t, unsigned int> mActiveEffectViolations;
         std::unordered_map<std::uint64_t, unsigned int> mCastViolations;
+        std::unordered_map<std::uint64_t, unsigned int> mJusticeViolations;
+        std::unordered_map<std::uint64_t, std::int64_t> mPendingPlayerBounties;
         std::unordered_map<std::uint64_t, mechanics::ActiveEffectOperation>
             mAcceptedPlayerActiveEffectIntents;
         std::unordered_set<std::uint64_t> mRelayedPlayerActiveEffectIntents;

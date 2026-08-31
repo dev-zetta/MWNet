@@ -604,7 +604,7 @@ public:
     * \param value The new bounty.
     * \return void
     */
-    static void SetBounty(unsigned short pid, int value) noexcept;
+    static void SetBounty(unsigned short pid, int value);
 
     /**
     * \brief Set the current and ending stages of character generation for a player.
@@ -681,7 +681,7 @@ public:
     * \param pid The player ID.
     * \return void
     */
-    static void SendBounty(unsigned short pid) noexcept;
+    static void SendBounty(unsigned short pid);
 };
 
 #endif //OPENMW_STATAPI_HPP

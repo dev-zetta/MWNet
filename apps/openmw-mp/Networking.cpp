@@ -1090,6 +1090,87 @@ bool Networking::validateActorCasts(Player& player, const BaseActorList& incomin
     return false;
 }
 
+bool Networking::validatePlayerBounty(Player& player, const BasePlayer& incoming)
+{
+    const mechanics::JusticeResult result = mJusticeLedger.previewBountyIntent(
+        player.guid.g, incoming.npcStats.mBounty);
+    if (result.applied())
+    {
+        mPendingPlayerBounties.insert_or_assign(
+            player.guid.g, incoming.npcStats.mBounty);
+        return true;
+    }
+
+    const unsigned int violations = ++mJusticeViolations[player.guid.g];
+    LOG_MESSAGE_SIMPLE(TimedLog::LOG_WARN,
+        "Rejected bounty intent from connection %llu: %s (violation %u)",
+        static_cast<unsigned long long>(player.guid.g),
+        mechanics::describe(result.decision), violations);
+    if (violations >= 5)
+        disconnectTransport({ player.guid.g }, "repeated invalid bounty intents");
+    return false;
+}
+
+bool Networking::commitPlayerBounty(Player& player)
+{
+    const auto pending = mPendingPlayerBounties.find(player.guid.g);
+    if (pending == mPendingPlayerBounties.end())
+        return false;
+
+    const std::int64_t proposedBounty = player.npcStats.mBounty;
+    const bool serverOverride = proposedBounty != pending->second;
+    mPendingPlayerBounties.erase(pending);
+    const mechanics::JusticeResult result = serverOverride
+        ? mJusticeLedger.setBounty(player.guid.g, proposedBounty)
+        : mJusticeLedger.applyBountyIntent(player.guid.g, proposedBounty);
+    if (result.applied())
+    {
+        player.npcStats.mBounty = static_cast<std::int32_t>(result.state.bounty);
+        return true;
+    }
+
+    if (const auto canonical = mJusticeLedger.find(player.guid.g))
+        player.npcStats.mBounty = static_cast<std::int32_t>(canonical->bounty);
+    const unsigned int violations = ++mJusticeViolations[player.guid.g];
+    LOG_MESSAGE_SIMPLE(TimedLog::LOG_WARN,
+        "Rejected modified bounty intent from connection %llu: %s (violation %u)",
+        static_cast<unsigned long long>(player.guid.g),
+        mechanics::describe(result.decision), violations);
+    if (violations >= 5)
+        disconnectTransport({ player.guid.g }, "repeated invalid bounty intents");
+    return false;
+}
+
+bool Networking::applyServerPlayerBounty(Player& player)
+{
+    const std::int64_t bounty = player.npcStats.mBounty;
+    if (mPendingPlayerBounties.contains(player.guid.g))
+        return bounty >= 0 && bounty <= mechanics::JusticeLedger::MaximumBounty;
+
+    const mechanics::JusticeResult result = mJusticeLedger.setBounty(
+        player.guid.g, bounty);
+    if (!result.applied())
+    {
+        LOG_MESSAGE_SIMPLE(TimedLog::LOG_ERROR,
+            "Rejected server-authored bounty for connection %llu: %s",
+            static_cast<unsigned long long>(player.guid.g),
+            mechanics::describe(result.decision));
+    }
+    return result.applied();
+}
+
+bool Networking::isPlayerBountyIntentPending(const Player& player) const noexcept
+{
+    return mPendingPlayerBounties.contains(player.guid.g);
+}
+
+void Networking::cancelPlayerBountyIntent(Player& player) noexcept
+{
+    mPendingPlayerBounties.erase(player.guid.g);
+    if (const auto canonical = mJusticeLedger.find(player.guid.g))
+        player.npcStats.mBounty = static_cast<std::int32_t>(canonical->bounty);
+}
+
 namespace
 {
     constexpr double maximumCanonicalStat =
@@ -2179,6 +2260,9 @@ void Networking::disconnectPlayer(RakNet::RakNetGUID guid)
     mActiveEffectLedger.erase({ mechanics::CombatantKind::Player, guid.g, {} });
     mActiveEffectViolations.erase(guid.g);
     mCastViolations.erase(guid.g);
+    mJusticeLedger.erase(guid.g);
+    mJusticeViolations.erase(guid.g);
+    mPendingPlayerBounties.erase(guid.g);
     mAcceptedPlayerActiveEffectIntents.erase(guid.g);
     mRelayedPlayerActiveEffectIntents.erase(guid.g);
     mAcceptedActorActiveEffectIntents.erase(guid.g);

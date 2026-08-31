@@ -1,5 +1,7 @@
 #include "Stats.hpp"
 
+#include <stdexcept>
+
 #include <iostream>
 
 #include <components/esm/attr.hpp>
@@ -579,12 +581,18 @@ void StatsFunctions::SetSkillIncrease(unsigned short pid, unsigned int attribute
         player->attributeIndexChanges.push_back(attributeId);
 }
 
-void StatsFunctions::SetBounty(unsigned short pid, int value) noexcept
+void StatsFunctions::SetBounty(unsigned short pid, int value)
 {
     Player *player;
     GET_PLAYER(pid, player, );
 
+    const int previousValue = player->npcStats.mBounty;
     player->npcStats.mBounty = value;
+    if (!mwmp::Networking::getPtr()->applyServerPlayerBounty(*player))
+    {
+        player->npcStats.mBounty = previousValue;
+        throw std::runtime_error("the server-authored bounty was rejected");
+    }
 }
 
 void StatsFunctions::SetCharGenStage(unsigned short pid, int currentStage, int endStage) noexcept
@@ -671,10 +679,16 @@ void StatsFunctions::SendLevel(unsigned short pid) noexcept
     packet->Send(true);
 }
 
-void StatsFunctions::SendBounty(unsigned short pid) noexcept
+void StatsFunctions::SendBounty(unsigned short pid)
 {
     Player *player;
     GET_PLAYER(pid, player, );
+
+    if (mwmp::Networking::getPtr()->isPlayerBountyIntentPending(*player))
+        throw std::runtime_error(
+            "a pending bounty intent cannot be sent before canonical commit");
+    if (!mwmp::Networking::getPtr()->applyServerPlayerBounty(*player))
+        throw std::runtime_error("the server-authored bounty was rejected");
 
     mwmp::PlayerPacket *packet = mwmp::Networking::get().getPlayerPacketController()->GetPacket(ID_PLAYER_BOUNTY);
     packet->setPlayer(player);

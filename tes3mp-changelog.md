@@ -86,6 +86,7 @@ This is the first hardening milestone for the major OpenMW 0.52 compatibility an
 * Add a rendering-independent cast-intent validator for canonical caster/target identities, bounded source IDs and finite projectile geometry
 * Validate player and authority-leased actor cast presentation intents before relay, including reported player transforms, and expose allow/deny Lua hooks
 * Add a canonical justice ledger with server-owned bounty reductions and bounded, ID-tracked jail sentences
+* Treat player bounty packets as increase-only intents, preserve legacy validators before canonical commit, and reserve bounty reductions for server scripts
 
 0.8.1
 -----

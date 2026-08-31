@@ -549,6 +549,14 @@ function OnPlayerBounty(pid)
     eventHandler.OnPlayerBounty(pid)
 end
 
+function OnPlayerBountyIntent(pid)
+    return eventHandler.OnPlayerBountyIntent(pid)
+end
+
+function OnPlayerBountyIntentRejected(pid, reason)
+    eventHandler.OnPlayerBountyIntentRejected(pid, reason)
+end
+
 function OnPlayerReputation(pid)
     tes3mp.LogMessage(enumerations.log.INFO, "Called \"OnPlayerReputation\" for " .. logicHandler.GetChatName(pid))
     eventHandler.OnPlayerReputation(pid)

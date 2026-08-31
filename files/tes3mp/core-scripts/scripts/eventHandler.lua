@@ -2,6 +2,7 @@ local eventHandler = {}
 local pendingPlayerInventoryEvents = {}
 local pendingPlayerSpellsActiveEvents = {}
 local pendingActorSpellsActiveEvents = {}
+local pendingPlayerBountyEvents = {}
 local pendingContainerEvents = {}
 local pendingContainerRestocks = {}
 
@@ -1275,36 +1276,65 @@ eventHandler.OnPlayerTopic = function(pid)
 end
 
 eventHandler.OnPlayerBounty = function(pid)
+    local eventStatus = pendingPlayerBountyEvents[pid]
+    pendingPlayerBountyEvents[pid] = nil
+    if eventStatus == nil then
+        return
+    end
+
     if Players[pid] ~= nil and Players[pid]:IsLoggedIn() then
-        
-        local eventStatus = customEventHooks.triggerValidators("OnPlayerBounty", {pid})
-        
-        if eventStatus.validDefaultHandler then
-            if config.shareBounty == true then
-                WorldInstance:SaveBounty(pid)
+        if config.shareBounty == true then
+            WorldInstance:SaveBounty(pid)
 
-                -- Bounty packets are special in that they are always sent
-                -- to all players, but only affect their target player on
-                -- any given client
-                --
-                -- To set the same bounty for each LocalPlayer, we need
-                -- to separately set each player as the target and
-                -- send the packet
-                local bountyValue = tes3mp.GetBounty(pid)
+            -- Bounty packets are special in that they are always sent
+            -- to all players, but only affect their target player on
+            -- any given client
+            --
+            -- To set the same bounty for each LocalPlayer, we need
+            -- to separately set each player as the target and
+            -- send the packet
+            local bountyValue = tes3mp.GetBounty(pid)
 
-                for playerIndex, player in pairs(Players) do
-                    if player.pid ~= pid then
-                        tes3mp.SetBounty(player.pid, bountyValue)
-                        tes3mp.SendBounty(player.pid)
-                    end
+            for playerIndex, player in pairs(Players) do
+                if player.pid ~= pid then
+                    tes3mp.SetBounty(player.pid, bountyValue)
+                    tes3mp.SendBounty(player.pid)
                 end
-            else
-                Players[pid]:SaveBounty()
             end
+        else
+            Players[pid]:SaveBounty()
         end
-        
+
         customEventHooks.triggerHandlers("OnPlayerBounty", eventStatus, {pid})
     end
+end
+
+eventHandler.OnPlayerBountyIntent = function(pid)
+    pendingPlayerBountyEvents[pid] = nil
+    if Players[pid] == nil or not Players[pid]:IsLoggedIn() then
+        return false
+    end
+
+    local eventStatus = customEventHooks.triggerValidators("OnPlayerBounty", {pid})
+    if not eventStatus.validDefaultHandler then
+        customEventHooks.triggerHandlers("OnPlayerBounty", eventStatus, {pid})
+        return false
+    end
+    pendingPlayerBountyEvents[pid] = eventStatus
+    return true
+end
+
+eventHandler.OnPlayerBountyIntentRejected = function(pid, reason)
+    local eventStatus = pendingPlayerBountyEvents[pid]
+    pendingPlayerBountyEvents[pid] = nil
+    if eventStatus ~= nil then
+        eventStatus = customEventHooks.makeEventStatus(false,
+            eventStatus.validCustomHandlers)
+        customEventHooks.triggerHandlers("OnPlayerBounty", eventStatus, {pid})
+    end
+    local rejectionStatus = customEventHooks.makeEventStatus(false, true)
+    customEventHooks.triggerHandlers("OnPlayerBountyIntentRejected", rejectionStatus,
+        {pid, reason})
 end
 
 eventHandler.OnPlayerReputation = function(pid)

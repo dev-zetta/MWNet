@@ -14,6 +14,8 @@ Protocol 11 changes the network and trust boundaries, not the safe TES3MP 0.8.1 
 | `OnPlayerMovementViolation(pid, reason, actualDistance, allowedDistance, violationCount)` | New | Observes rejected movement and may apply script policy; it cannot make the rejected snapshot canonical |
 | `OnPlayerInventoryIntent(pid)` | New | Runs before canonical inventory commit; `false` denies, while `true` or `nil` allows native validation |
 | `OnPlayerInventoryIntentRejected(pid)` | New | Optional cleanup notification when a script-modified inventory intent fails canonical validation |
+| `OnPlayerBountyIntent(pid)` | New | Runs legacy bounty validators before an increase-only canonical bounty commit; server scripts may override through `SetBounty` |
+| `OnPlayerBountyIntentRejected(pid, reason)` | New | Reports script denial or canonical bounty validation failure |
 | `OnContainerIntent(pid, cellDescription)` | New | Runs existing container validators before the transactional canonical container commit; `false` denies the intent |
 | `OnContainerIntentRejected(pid, cellDescription, reason)` | New | Reports an intent that passed script policy but failed canonical validation at commit |
 | `OnPlayerAttackIntent(pid, isRanged, targetPid, refNum, mpNum, strength)` | New | Runs before server combat resolution; `false` denies, while `true` or `nil` allows the sanitized intent |
@@ -55,6 +57,7 @@ Duplicate or out-of-order initialization is rejected. Gameplay mutation and rela
 - Keep account-dependent setup in `OnPlayerConnect`, which now has an authenticated identity.
 - Use `OnPlayerAuthenticated` when a script needs the canonical account name or whether registration just occurred.
 - Use `OnPlayerInventoryIntent` to allow or deny an inventory request before commit. Existing inventory-change setters may propose a modified intent, which is validated again. `OnPlayerInventory` keeps its 0.8.1 signature and now runs after canonical commit.
+- Existing `OnPlayerBounty` validators now run at `OnPlayerBountyIntent`; the legacy callback and handlers run after commit. Clients may report bounty increases, but only server code may reduce or clear canonical bounty.
 - Use `OnContainerIntent` to allow or deny container changes before commit. Existing `OnContainer` validators are invoked from this secure boundary, while the legacy `OnContainer(pid, cellDescription)` callback and handlers run after the entire packet has committed canonically.
 - CoreScripts use the additive `SeedContainerInventory()` API when loading persisted cell data, so canonical state is restored after a server restart before any client delta can be accepted.
 - Use `OnPlayerAttackIntent` to inspect or deny a sanitized combat request. `SetPlayerAttackStrength` may modify its normalized strength; the server validates the result, rolls hit chance, computes damage and publishes canonical health.
