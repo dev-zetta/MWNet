@@ -154,6 +154,23 @@ namespace
                    InventoryAction::Set, {}).decision == InventoryDecision::InvalidOwner);
         EXPECT(ledger.apply({ InventoryOwnerKind::Player, 7, "Balmora" },
                    InventoryAction::Set, {}).decision == InventoryDecision::InvalidOwner);
+        EXPECT(ledger.apply({ static_cast<InventoryOwnerKind>(255), 1, "Balmora" },
+                   InventoryAction::Set, {}).decision == InventoryDecision::InvalidOwner);
+    }
+
+    void testActorOwnersAreCellScoped()
+    {
+        InventoryLedger ledger;
+        const InventoryOwner balmora{ InventoryOwnerKind::Actor, 8, "Balmora" };
+        const InventoryOwner aldRuhn{ InventoryOwnerKind::Actor, 8, "Ald-ruhn" };
+
+        EXPECT(ledger.apply(balmora, InventoryAction::Set,
+                   { item("potion", 1) }).applied());
+        EXPECT(ledger.apply(aldRuhn, InventoryAction::Set,
+                   { item("ring", 1) }).applied());
+        EXPECT(ledger.snapshot(balmora)->front().refId == "potion");
+        EXPECT(ledger.snapshot(aldRuhn)->front().refId == "ring");
+        EXPECT(ledger.size() == 2);
     }
 
     void testBatchIsAtomic()
@@ -209,6 +226,7 @@ int runInventoryTests()
     testAtomicTransfer();
     testLimits();
     testContainerOwnersAreCellScoped();
+    testActorOwnersAreCellScoped();
     testBatchIsAtomic();
     testSwap();
     return sFailures;

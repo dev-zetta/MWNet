@@ -57,6 +57,8 @@ namespace
         const mwmp::BaseActor& actor, const mwmp::BaseActor* cachedActor,
         const std::optional<mwmp::mechanics::CombatantState>& existing,
         bool replaceHealth);
+    mwmp::mechanics::CombatantId actorCombatantId(
+        const ESM::Cell& cell, const mwmp::BaseActor& actor);
     void applyCanonicalHealth(
         Player& player, const mwmp::mechanics::CombatantState& state) noexcept;
     void applyCanonicalHealth(mwmp::BaseActor& actor,
@@ -94,7 +96,8 @@ Networking::Networking(transport::Protocol11Endpoint& endpoint,
     , mAuthentication(credentialDirectory, legacyPlayerDirectory)
     , mMovementValidator(maximumConnections)
     , mPlayerLifecycle(maximumConnections)
-    , mInventoryLedger(maximumConnections * 2U)
+    , mInventoryLedger(mechanics::ActorMagicRegistry::MaximumActors
+        + maximumConnections * 2U)
     , mProgressionLedger(maximumConnections)
     , mShapeshiftLedger(maximumConnections)
     , mSpellbookLedger(maximumConnections)
@@ -2169,7 +2172,10 @@ void Networking::eraseRemovedActorState(
             actor.cell
         };
         mCombatResolver.erase(id);
+        mSpellResolver.eraseCombatant(id);
         mActiveEffectLedger.erase(id);
+        mInventoryLedger.erase({ mechanics::InventoryOwnerKind::Actor,
+            id.value, id.scope });
     }
 }
 
@@ -2621,6 +2627,37 @@ namespace
         state.maximumMagicka = dynamicMaximum(actor.creatureStats.mDynamic[1]);
         state.position = combat.position;
         state.alive = combat.alive;
+        applyMagicDefences(state, effects);
+        return state;
+    }
+
+    mwmp::mechanics::SpellCombatantState actorCasterSpellState(
+        const mwmp::BaseActor& actor,
+        const mwmp::mechanics::ActorMagicTemplate& actorTemplate,
+        const mwmp::mechanics::CombatantState& combat,
+        const std::optional<std::vector<mwmp::mechanics::CanonicalActiveSpell>>& effects,
+        double fatigueBase, double fatigueMultiplier)
+    {
+        mwmp::mechanics::SpellCombatantState state;
+        state.health = combat.health;
+        state.maximumHealth = combat.maximumHealth;
+        state.magicka = std::clamp(
+            static_cast<double>(actor.creatureStats.mDynamic[1].mCurrent),
+            0.0, actorTemplate.maximumMagicka);
+        state.maximumMagicka = actorTemplate.maximumMagicka;
+        state.position = combat.position;
+        state.alive = combat.alive;
+        state.willpower = actorTemplate.willpower;
+        state.luck = actorTemplate.luck;
+        state.enchantSkill = actorTemplate.enchantSkill;
+        state.magicSkills = actorTemplate.magicSkills;
+        const double fatigueMaximum = std::max(1.0,
+            actorTemplate.maximumFatigue);
+        const double fatigue = std::clamp(
+            static_cast<double>(actor.creatureStats.mDynamic[2].mCurrent),
+            0.0, fatigueMaximum);
+        state.fatigueTerm = std::max(0.0, fatigueBase
+            - fatigueMultiplier * (1.0 - fatigue / fatigueMaximum));
         applyMagicDefences(state, effects);
         return state;
     }
@@ -3298,6 +3335,506 @@ bool Networking::validateActorCasts(Player& player, const BaseActorList& incomin
     if (violations >= 5)
         disconnectTransport({ player.guid.value }, "repeated invalid actor cast intents");
     return false;
+}
+
+void Networking::sanitizeActorCast(BaseActor& actor) noexcept
+{
+    actor.cast.success = false;
+    actor.cast.isHit = false;
+}
+
+bool Networking::resolveActorCast(Player& player, BaseActorList& actorList,
+    std::size_t actorIndex, std::optional<BaseActor>& actorDeath,
+    std::string& rejectionReason)
+{
+    actorDeath.reset();
+    rejectionReason.clear();
+    if (actorIndex >= actorList.baseActors.size())
+    {
+        rejectionReason = "the actor cast index is invalid";
+        return false;
+    }
+
+    Cell* serverCell = CellController::get()->getCell(&actorList.cell);
+    if (serverCell == nullptr || *serverCell->getAuthority() != player.guid
+        || serverCell->getAuthorityLeaseId() != actorList.authorityLeaseId)
+    {
+        rejectionReason = "the actor authority lease is no longer valid";
+        return false;
+    }
+
+    BaseActor& submittedActor = actorList.baseActors[actorIndex];
+    BaseActor* casterActor = serverCell->getActor(
+        submittedActor.refNum, submittedActor.mpNum);
+    if (casterActor == nullptr)
+    {
+        rejectionReason = "the casting actor is absent from canonical cell state";
+        return false;
+    }
+    const std::string casterRefId = Misc::StringUtils::lowerCase(
+        casterActor->refId);
+    const auto actorTemplate = mActorMagicRegistry.find(casterRefId);
+    if (!actorTemplate)
+    {
+        rejectionReason = "the casting actor has no canonical content template";
+        return false;
+    }
+
+    const mechanics::CombatantId casterId = actorCombatantId(
+        actorList.cell, *casterActor);
+    mechanics::CastIntent presentationIntent;
+    if (canonicalCastIntent(casterId, submittedActor.cast,
+            actorList.cell.getShortDescription(), presentationIntent)
+        != mechanics::CastIntentDecision::Accepted)
+    {
+        rejectionReason = "the canonical actor cast intent is invalid";
+        return false;
+    }
+    const mechanics::CastIntentDecision intentDecision
+        = mCastIntentValidator.validate(presentationIntent);
+    if (intentDecision != mechanics::CastIntentDecision::Accepted)
+    {
+        rejectionReason = mechanics::describe(intentDecision);
+        return false;
+    }
+
+    const std::string sourceId = Misc::StringUtils::lowerCase(
+        presentationIntent.sourceId);
+    const auto definition = mSpellResolver.findDefinition(sourceId);
+    if (!definition)
+    {
+        rejectionReason = "the spell is not in the canonical content registry";
+        return false;
+    }
+    const bool itemCast = presentationIntent.kind == mechanics::CastKind::Item;
+    if (itemCast != (definition->sourceKind == mechanics::SpellSourceKind::Item))
+    {
+        rejectionReason = "the cast source kind does not match canonical content";
+        return false;
+    }
+    if (!itemCast && !actorTemplate->spells.contains(sourceId))
+    {
+        rejectionReason = "the spell is not in the canonical actor spellbook";
+        return false;
+    }
+    if (itemCast)
+        submittedActor.cast.itemId = sourceId;
+    else
+        submittedActor.cast.spellId = sourceId;
+
+    auto casterCombat = mCombatResolver.find(casterId);
+    if (!casterCombat && casterActor->hasStatsDynamicData)
+    {
+        const mechanics::CombatantState initial = actorCombatState(
+            *casterActor, casterActor, std::nullopt, true);
+        if (mCombatResolver.upsert(casterId, initial))
+            casterCombat = initial;
+    }
+    if (!casterCombat)
+    {
+        rejectionReason = "the casting actor has no canonical combat state";
+        return false;
+    }
+    casterCombat->maximumHealth = actorTemplate->maximumHealth;
+    casterCombat->health = std::clamp(casterCombat->health,
+        0.0, casterCombat->maximumHealth);
+    casterCombat->alive = casterCombat->health > 0;
+    casterCombat->position = { casterActor->position.pos[0],
+        casterActor->position.pos[1], casterActor->position.pos[2] };
+
+    mechanics::CombatResolver combat = mCombatResolver;
+    if (!combat.upsert(casterId, *casterCombat))
+    {
+        rejectionReason = "the canonical actor combat state is invalid";
+        return false;
+    }
+    mechanics::SpellResolver spells = mSpellResolver;
+    if (!spells.upsertCombatant(casterId, actorCasterSpellState(*casterActor,
+            *actorTemplate, *casterCombat, mActiveEffectLedger.snapshot(casterId),
+            mSpellFatigueBase, mSpellFatigueMultiplier)))
+    {
+        rejectionReason = "the canonical actor magic state is invalid";
+        return false;
+    }
+
+    Player* targetPlayer = nullptr;
+    BaseActor* targetActor = nullptr;
+    if (presentationIntent.target)
+    {
+        if (presentationIntent.target->kind == mechanics::CombatantKind::Player)
+        {
+            targetPlayer = Players::getPlayer(transport::TransportConnectionId(
+                presentationIntent.target->value));
+            if (targetPlayer == nullptr
+                || !mAuthenticatedConnections.contains(targetPlayer->guid.value)
+                || targetPlayer->cell.getShortDescription()
+                    != actorList.cell.getShortDescription())
+            {
+                rejectionReason = "the target player is unavailable or in another cell";
+                return false;
+            }
+            auto targetCombat = mCombatResolver.find(*presentationIntent.target);
+            if (!targetCombat)
+            {
+                rejectionReason = "the target player has no canonical combat state";
+                return false;
+            }
+            targetCombat->position = { targetPlayer->position.pos[0],
+                targetPlayer->position.pos[1], targetPlayer->position.pos[2] };
+            if (!combat.upsert(*presentationIntent.target, *targetCombat)
+                || !spells.upsertCombatant(*presentationIntent.target,
+                    playerSpellState(*targetPlayer, *targetCombat,
+                        mActiveEffectLedger.snapshot(*presentationIntent.target),
+                        mSpellFatigueBase, mSpellFatigueMultiplier)))
+            {
+                rejectionReason = "the canonical target player state is invalid";
+                return false;
+            }
+        }
+        else
+        {
+            targetActor = serverCell->getActor(submittedActor.cast.target.refNum,
+                submittedActor.cast.target.mpNum);
+            if (targetActor == nullptr)
+            {
+                rejectionReason = "the target actor is absent from canonical cell state";
+                return false;
+            }
+            auto targetCombat = mCombatResolver.find(*presentationIntent.target);
+            if (!targetCombat && targetActor->hasStatsDynamicData)
+            {
+                const mechanics::CombatantState initial = actorCombatState(
+                    *targetActor, targetActor, std::nullopt, true);
+                if (combat.upsert(*presentationIntent.target, initial))
+                    targetCombat = initial;
+            }
+            if (!targetCombat)
+            {
+                rejectionReason = "the target actor has no canonical combat state";
+                return false;
+            }
+            const auto targetTemplate = mActorMagicRegistry.find(
+                Misc::StringUtils::lowerCase(targetActor->refId));
+            if (!targetTemplate)
+            {
+                rejectionReason = "the target actor has no canonical content template";
+                return false;
+            }
+            submittedActor.cast.target.refId = targetActor->refId;
+            targetCombat->maximumHealth = targetTemplate->maximumHealth;
+            targetCombat->health = std::clamp(targetCombat->health,
+                0.0, targetCombat->maximumHealth);
+            targetCombat->alive = targetCombat->health > 0;
+            targetCombat->position = { targetActor->position.pos[0],
+                targetActor->position.pos[1], targetActor->position.pos[2] };
+            if (!combat.upsert(*presentationIntent.target, *targetCombat)
+                || !spells.upsertCombatant(*presentationIntent.target,
+                    actorTargetSpellState(*targetActor, *targetCombat,
+                        mActiveEffectLedger.snapshot(*presentationIntent.target))))
+            {
+                rejectionReason = "the canonical target actor state is invalid";
+                return false;
+            }
+        }
+    }
+
+    struct ItemMutation
+    {
+        mechanics::InventoryItem before;
+        mechanics::InventoryItem after;
+        bool remove = false;
+        bool add = false;
+        std::optional<std::size_t> equipmentSlot;
+    };
+    std::optional<ItemMutation> itemMutation;
+    std::optional<double> availableItemCharge;
+    const mechanics::InventoryOwner inventoryOwner{
+        mechanics::InventoryOwnerKind::Actor, casterId.value, casterId.scope };
+    mechanics::InventoryLedger inventory = mInventoryLedger;
+    if (itemCast)
+    {
+        auto canonicalInventory = inventory.snapshot(inventoryOwner);
+        if (!canonicalInventory)
+        {
+            const mechanics::InventoryResult seeded = inventory.apply(inventoryOwner,
+                mechanics::InventoryAction::Set, actorTemplate->inventory);
+            if (!seeded.applied())
+            {
+                rejectionReason = "the canonical actor inventory could not be initialized";
+                return false;
+            }
+            canonicalInventory = inventory.snapshot(inventoryOwner);
+        }
+        if (!canonicalInventory)
+        {
+            rejectionReason = "the casting actor has no canonical inventory";
+            return false;
+        }
+        const bool consumable = mConsumableMagicItems.contains(sourceId);
+        const auto selected = std::ranges::max_element(*canonicalInventory, {},
+            [sourceId, consumable, &definition](
+                const mechanics::InventoryItem& item) {
+                if (Misc::StringUtils::lowerCase(item.refId) != sourceId)
+                    return -1.0;
+                if (consumable)
+                    return 0.0;
+                return item.enchantmentCharge < 0
+                    ? definition->itemMaximumCharge : item.enchantmentCharge;
+            });
+        if (selected == canonicalInventory->end()
+            || Misc::StringUtils::lowerCase(selected->refId) != sourceId)
+        {
+            rejectionReason = "the magic item is not in the canonical actor inventory";
+            return false;
+        }
+        availableItemCharge = consumable ? 0.0
+            : (selected->enchantmentCharge < 0
+                ? definition->itemMaximumCharge : selected->enchantmentCharge);
+        itemMutation.emplace();
+        itemMutation->before = *selected;
+        itemMutation->before.count = 1;
+        itemMutation->after = itemMutation->before;
+        itemMutation->remove = consumable;
+        for (std::size_t slot = 0; slot < std::size(casterActor->equipmentItems);
+            ++slot)
+        {
+            const Item& equipped = casterActor->equipmentItems[slot];
+            if (Misc::StringUtils::lowerCase(equipped.refId) == sourceId
+                && equipped.charge == selected->charge
+                && equipped.enchantmentCharge == selected->enchantmentCharge)
+            {
+                itemMutation->equipmentSlot = slot;
+                break;
+            }
+        }
+    }
+
+    constexpr double randomScale = 1.0 / 4294967296.0;
+    const mechanics::SpellResult result = spells.resolve(
+        { casterId, presentationIntent.target, sourceId,
+            mCurrentApplicationSequence, availableItemCharge },
+        static_cast<double>(randombytes_random()) * randomScale,
+        static_cast<double>(randombytes_random()) * randomScale);
+    if (!result.resolved())
+    {
+        rejectionReason = mechanics::describe(result.decision);
+        return false;
+    }
+
+    if (itemMutation)
+    {
+        std::vector<mechanics::InventoryOperation> operations;
+        if (itemMutation->remove)
+        {
+            operations.push_back({ inventoryOwner,
+                mechanics::InventoryAction::Remove, { itemMutation->before } });
+        }
+        else if (result.itemChargeSpent > 0)
+        {
+            itemMutation->remove = true;
+            itemMutation->add = true;
+            itemMutation->after.enchantmentCharge = std::max(0.0,
+                *availableItemCharge - result.itemChargeSpent);
+            operations.push_back({ inventoryOwner,
+                mechanics::InventoryAction::Remove, { itemMutation->before } });
+            operations.push_back({ inventoryOwner,
+                mechanics::InventoryAction::Add, { itemMutation->after } });
+        }
+        if (!operations.empty() && !inventory.applyBatch(operations).applied())
+        {
+            rejectionReason = "the canonical actor magic-item update failed";
+            return false;
+        }
+    }
+
+    mechanics::ActiveEffectLedger activeEffects = mActiveEffectLedger;
+    std::vector<mechanics::ActiveEffectOperation> activeOperations;
+    for (const mechanics::SpellApplication& application : result.applications)
+    {
+        if (application.activeSpell)
+        {
+            activeOperations.push_back({ application.target,
+                mechanics::ActiveEffectAction::Add,
+                { *application.activeSpell } });
+        }
+    }
+    if (!activeOperations.empty()
+        && !activeEffects.applyBatch(activeOperations).applied())
+    {
+        rejectionReason = "the canonical actor active-effect update failed";
+        return false;
+    }
+    for (const mechanics::SpellApplication& application : result.applications)
+    {
+        auto state = combat.find(application.target);
+        if (!state)
+        {
+            rejectionReason = "a canonical actor spell target disappeared";
+            return false;
+        }
+        state->health = application.health;
+        state->alive = !application.died;
+        if (!combat.upsert(application.target, *state))
+        {
+            rejectionReason = "a canonical actor spell target became invalid";
+            return false;
+        }
+    }
+
+    mSpellResolver.swap(spells);
+    mInventoryLedger.swap(inventory);
+    mActiveEffectLedger.swap(activeEffects);
+    mCombatResolver.swap(combat);
+    submittedActor.cast.success = result.applied();
+
+    if (const auto casterMagic = mSpellResolver.findCombatant(casterId))
+    {
+        casterActor->creatureStats.mDynamic[1].mCurrent
+            = static_cast<float>(casterMagic->magicka);
+        casterActor->hasStatsDynamicData = true;
+        submittedActor.creatureStats = casterActor->creatureStats;
+        submittedActor.hasStatsDynamicData = true;
+    }
+    if (itemMutation && itemMutation->equipmentSlot)
+    {
+        const std::size_t slot = *itemMutation->equipmentSlot;
+        Item updated;
+        if (itemMutation->add)
+            updated = wireInventoryItem(itemMutation->after, 1);
+        casterActor->equipmentItems[slot] = updated;
+        submittedActor.equipmentItems[slot] = updated;
+
+        BaseActorList equipmentList;
+        equipmentList.guid = player.guid;
+        equipmentList.cell = actorList.cell;
+        equipmentList.authorityLeaseId = serverCell->getAuthorityLeaseId();
+        equipmentList.baseActors.push_back(*casterActor);
+        equipmentList.count = 1;
+        ActorPacket* equipmentPacket = actorPacketController->GetPacket(
+            ID_ACTOR_EQUIPMENT);
+        equipmentPacket->setActorList(&equipmentList);
+        equipmentPacket->Send(player.guid);
+        serverCell->sendToLoaded(equipmentPacket, &equipmentList);
+    }
+
+    std::vector<BaseActor*> changedActors{ casterActor };
+    for (const mechanics::SpellApplication& application : result.applications)
+    {
+        const auto canonical = mCombatResolver.find(application.target);
+        if (!canonical)
+            continue;
+        if (application.target.kind == mechanics::CombatantKind::Player)
+        {
+            Player* affected = Players::getPlayer(
+                transport::TransportConnectionId(application.target.value));
+            if (affected == nullptr)
+                continue;
+            applyCanonicalHealth(*affected, *canonical);
+            affected->exchangeFullInfo = false;
+            affected->statsDynamicIndexChanges = { 0 };
+            PlayerPacket* statsPacket = playerPacketController->GetPacket(
+                ID_PLAYER_STATS_DYNAMIC);
+            statsPacket->setPlayer(affected);
+            statsPacket->Send(affected->guid);
+            affected->sendToLoaded(statsPacket);
+        }
+        else
+        {
+            BaseActor* affected = application.target == casterId
+                ? casterActor : targetActor;
+            if (affected != nullptr)
+            {
+                applyCanonicalHealth(*affected, *canonical);
+                affected->hasStatsDynamicData = true;
+                if (std::ranges::find(changedActors, affected)
+                    == changedActors.end())
+                {
+                    changedActors.push_back(affected);
+                }
+            }
+        }
+    }
+    for (BaseActor* changed : changedActors)
+    {
+        BaseActorList statsList;
+        statsList.guid = player.guid;
+        statsList.cell = actorList.cell;
+        statsList.authorityLeaseId = serverCell->getAuthorityLeaseId();
+        statsList.baseActors.push_back(*changed);
+        statsList.count = 1;
+        ActorPacket* statsPacket = actorPacketController->GetPacket(
+            ID_ACTOR_STATS_DYNAMIC);
+        statsPacket->setActorList(&statsList);
+        statsPacket->Send(player.guid);
+        serverCell->sendToLoaded(statsPacket, &statsList);
+    }
+
+    for (const mechanics::ActiveEffectOperation& operation : activeOperations)
+    {
+        if (operation.owner.kind == mechanics::CombatantKind::Player)
+        {
+            Player* affected = Players::getPlayer(
+                transport::TransportConnectionId(operation.owner.value));
+            if (affected == nullptr)
+                continue;
+            affected->spellsActiveChanges.action = SpellsActiveChanges::ADD;
+            affected->spellsActiveChanges.activeSpells = {
+                wireActiveSpell(operation.spells.front()) };
+            PlayerPacket* packet = playerPacketController->GetPacket(
+                ID_PLAYER_SPELLS_ACTIVE);
+            packet->setPlayer(affected);
+            packet->Send(affected->guid);
+            affected->sendToLoaded(packet);
+        }
+        else
+        {
+            BaseActor* affected = operation.owner == casterId
+                ? casterActor : targetActor;
+            if (affected == nullptr)
+                continue;
+            BaseActor activeActor = *affected;
+            activeActor.spellsActiveChanges.action = SpellsActiveChanges::ADD;
+            activeActor.spellsActiveChanges.activeSpells = {
+                wireActiveSpell(operation.spells.front()) };
+            BaseActorList activeList;
+            activeList.guid = player.guid;
+            activeList.cell = actorList.cell;
+            activeList.authorityLeaseId = serverCell->getAuthorityLeaseId();
+            activeList.baseActors.push_back(std::move(activeActor));
+            activeList.count = 1;
+            ActorPacket* packet = actorPacketController->GetPacket(
+                ID_ACTOR_SPELLS_ACTIVE);
+            packet->setActorList(&activeList);
+            serverCell->sendToLoaded(packet, &activeList);
+        }
+    }
+
+    for (const mechanics::SpellApplication& application : result.applications)
+    {
+        if (!application.died)
+            continue;
+        if (application.target.kind == mechanics::CombatantKind::Player)
+        {
+            if (Player* victim = Players::getPlayer(
+                    transport::TransportConnectionId(application.target.value)))
+            {
+                Target killer;
+                killer.refId = casterActor->refId;
+                killer.refNum = casterActor->refNum;
+                killer.mpNum = casterActor->mpNum;
+                killer.name = casterActor->refId;
+                publishCanonicalPlayerDeath(*victim, killer);
+            }
+        }
+        else
+        {
+            BaseActor* victim = application.target == casterId
+                ? casterActor : targetActor;
+            if (victim != nullptr)
+                actorDeath = *victim;
+        }
+    }
+    return true;
 }
 
 bool Networking::validatePlayerBounty(Player& player, const BasePlayer& incoming)

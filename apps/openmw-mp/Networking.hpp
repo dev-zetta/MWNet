@@ -172,6 +172,10 @@ namespace  mwmp
         void sanitizePlayerCast(Player& player) noexcept;
         bool resolvePlayerCast(Player& player, std::string& rejectionReason);
         bool validateActorCasts(Player& player, const BaseActorList& incoming);
+        void sanitizeActorCast(BaseActor& actor) noexcept;
+        bool resolveActorCast(Player& player, BaseActorList& actorList,
+            std::size_t actorIndex, std::optional<BaseActor>& actorDeath,
+            std::string& rejectionReason);
         bool validatePlayerBounty(Player& player, const BasePlayer& incoming);
         bool commitPlayerBounty(Player& player);
         bool applyServerPlayerBounty(Player& player);

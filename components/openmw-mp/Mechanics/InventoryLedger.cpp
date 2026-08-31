@@ -153,9 +153,15 @@ namespace mwmp::mechanics
     {
         if (owner.value == 0)
             return false;
-        if (owner.kind == InventoryOwnerKind::Player)
+        switch (owner.kind)
+        {
+        case InventoryOwnerKind::Player:
             return owner.scope.empty();
-        return !owner.scope.empty();
+        case InventoryOwnerKind::Container:
+        case InventoryOwnerKind::Actor:
+            return !owner.scope.empty();
+        }
+        return false;
     }
 
     bool InventoryLedger::validItem(const InventoryItem& item) noexcept
