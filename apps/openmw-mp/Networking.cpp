@@ -1,6 +1,5 @@
 #include "Player.hpp"
 #include "processors/ProcessorInitializer.hpp"
-#include <RakPeer.h>
 #include <Kbhit.h>
 
 #include <components/misc/stringops.hpp>
@@ -43,8 +42,7 @@ static bool dataFileEnforcementState = true;
 static bool scriptErrorIgnoringState = false;
 bool killLoop = false;
 
-Networking::Networking(RakNet::RakPeerInterface *peer,
-    transport::Protocol11Endpoint& endpoint,
+Networking::Networking(transport::Protocol11Endpoint& endpoint,
     const std::filesystem::path& credentialDirectory,
     const std::filesystem::path& legacyPlayerDirectory,
     unsigned int maximumConnections, unsigned short port,
@@ -65,16 +63,15 @@ Networking::Networking(RakNet::RakPeerInterface *peer,
     , mMovementViolationLimit(movementViolationLimit)
 {
     sThis = this;
-    this->peer = peer;
     players = Players::getPlayers();
 
     CellController::create();
 
-    systemPacketController = std::make_unique<SystemPacketController>(peer);
-    playerPacketController = std::make_unique<PlayerPacketController>(peer);
-    actorPacketController = std::make_unique<ActorPacketController>(peer);
-    objectPacketController = std::make_unique<ObjectPacketController>(peer);
-    worldstatePacketController = std::make_unique<WorldstatePacketController>(peer);
+    systemPacketController = std::make_unique<SystemPacketController>(nullptr);
+    playerPacketController = std::make_unique<PlayerPacketController>(nullptr);
+    actorPacketController = std::make_unique<ActorPacketController>(nullptr);
+    objectPacketController = std::make_unique<ObjectPacketController>(nullptr);
+    worldstatePacketController = std::make_unique<WorldstatePacketController>(nullptr);
 
     // Set send stream
     systemPacketController->SetStream(0, &bsOut);
@@ -4129,7 +4126,7 @@ bool Networking::preInit(RakNet::Packet *packet, RakNet::BitStream &bsIn)
         static_cast<unsigned long long>(packet->guid.g));
     PacketPreInit::PluginContainer dataFiles;
 
-    PacketPreInit packetPreInit(peer);
+    PacketPreInit packetPreInit(nullptr);
     packetPreInit.SetReadStream(&bsIn);
     packetPreInit.setChecksums(&dataFiles);
     packetPreInit.Read();

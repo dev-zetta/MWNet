@@ -21,10 +21,6 @@
 #include <components/openmw-mp/Utils.hpp>
 #include <components/openmw-mp/Version.hpp>
 
-#include <BitStream.h>
-#include <MessageIdentifiers.h>
-#include <RakPeer.h>
-#include <RakPeerInterface.h>
 #include <sodium.h>
 
 #ifndef _WIN32
@@ -307,8 +303,6 @@ int main(int argc, char *argv[])
 
     int code;
 
-    RakNet::RakPeerInterface *peer = RakNet::RakPeerInterface::GetInstance();
-
     if (!protocol::isListenAddressAllowed(address, publicListen))
     {
         LOG_MESSAGE_SIMPLE(TimedLog::LOG_ERROR,
@@ -351,7 +345,7 @@ int main(int argc, char *argv[])
                 "Server identity fingerprint: %s", fingerprint->c_str());
 
         const std::filesystem::path serverData(dataDirectory);
-        Networking networking(peer, *endpoint, serverData / "account",
+        Networking networking(*endpoint, serverData / "account",
             serverData / "player", static_cast<unsigned int>(players),
             static_cast<unsigned short>(port), movementMaximumSpeed,
             static_cast<unsigned int>(movementViolationLimit));
@@ -370,8 +364,6 @@ int main(int argc, char *argv[])
         Script::Call<Script::CallbackIdentity("OnServerScriptCrash")>(e.what());
         throw; //fall through
     }
-
-    RakNet::RakPeerInterface::DestroyInstance(peer);
 
     if (code == 0)
         LOG_MESSAGE_SIMPLE(TimedLog::LOG_INFO, "Quitting peacefully.");

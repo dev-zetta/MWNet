@@ -42,8 +42,7 @@ namespace  mwmp
     class Networking
     {
     public:
-        Networking(RakNet::RakPeerInterface *peer,
-            transport::Protocol11Endpoint& endpoint,
+        Networking(transport::Protocol11Endpoint& endpoint,
             const std::filesystem::path& credentialDirectory,
             const std::filesystem::path& legacyPlayerDirectory,
             unsigned int maximumConnections, unsigned short port,
@@ -231,7 +230,6 @@ namespace  mwmp
             const char* reason);
         static Networking *sThis;
 
-        RakNet::RakPeerInterface *peer;
         RakNet::BitStream bsOut;
         TPlayers *players;
         transport::Protocol11Endpoint& mEndpoint;

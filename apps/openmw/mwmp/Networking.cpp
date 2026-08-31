@@ -206,10 +206,13 @@ std::string listComparison(PacketPreInit::PluginContainer checksums, PacketPreIn
     return sstr.str();
 }
 
-Networking::Networking(): peer(RakNet::RakPeerInterface::GetInstance()),
-    receiver(transport::ApplicationPacketFlow::ServerToClient), systemPacketController(peer),
-    playerPacketController(peer), actorPacketController(peer), objectPacketController(peer),
-    worldstatePacketController(peer)
+Networking::Networking()
+    : receiver(transport::ApplicationPacketFlow::ServerToClient)
+    , systemPacketController(nullptr)
+    , playerPacketController(nullptr)
+    , actorPacketController(nullptr)
+    , objectPacketController(nullptr)
+    , worldstatePacketController(nullptr)
 {
     Files::ConfigurationManager configuration;
     std::string error;
@@ -239,7 +242,6 @@ Networking::~Networking()
 {
     disconnect();
     endpoint->shutdown(std::chrono::seconds(5));
-    RakNet::RakPeerInterface::DestroyInstance(peer);
 }
 
 void Networking::update()
@@ -373,7 +375,7 @@ bool Networking::preInit(std::vector<std::string>& content, Files::Collections& 
         }
     }
 
-    PacketPreInit packetPreInit(peer);
+    PacketPreInit packetPreInit(nullptr);
     RakNet::BitStream bs;
     packetPreInit.setChecksums(&checksums);
     packetPreInit.setGUID(RakNet::RakNetGUID(serverConnection.value));

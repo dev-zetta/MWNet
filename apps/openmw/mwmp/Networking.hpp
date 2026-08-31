@@ -1,7 +1,6 @@
 #ifndef OPENMW_NETWORKING_HPP
 #define OPENMW_NETWORKING_HPP
 
-#include <RakPeerInterface.h>
 #include <BitStream.h>
 #include <deque>
 #include <filesystem>
@@ -85,7 +84,6 @@ namespace mwmp
         std::string lastError;
         std::deque<std::vector<unsigned char>> pendingPackets;
         std::size_t pendingPacketBytes = 0;
-        RakNet::RakPeerInterface *peer;
         RakNet::SystemAddress serverAddr;
         RakNet::BitStream bsOut;
         std::unique_ptr<transport::Protocol11Endpoint> endpoint;
