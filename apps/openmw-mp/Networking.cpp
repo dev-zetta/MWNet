@@ -6,6 +6,7 @@
 #include <components/openmw-mp/TimedLog.hpp>
 #include <components/openmw-mp/Version.hpp>
 #include <components/openmw-mp/Packets/PacketPreInit.hpp>
+#include <components/openmw-mp/Metrics/ProcessMemory.hpp>
 #include <components/openmw-mp/Security/AuthenticationMessages.hpp>
 #include <components/openmw-mp/Security/PasswordHash.hpp>
 #include <components/openmw-mp/Session/SessionState.hpp>
@@ -76,7 +77,7 @@ Networking::Networking(transport::Protocol11Endpoint& endpoint,
     double movementMaximumSpeed, unsigned int movementViolationLimit)
     : mEndpoint(endpoint)
     , mDispatcher(endpoint.transport(), transport::ApplicationPacketFlow::ServerToClient,
-        maximumConnections)
+        maximumConnections, &mMetrics)
     , mReceiver(transport::ApplicationPacketFlow::ClientToServer)
     , mAuthentication(credentialDirectory, legacyPlayerDirectory)
     , mMovementValidator(maximumConnections)
@@ -4434,9 +4435,13 @@ int Networking::mainLoop()
     sigemptyset(&sigIntHandler.sa_mask);
     sigIntHandler.sa_flags = 0;
 #endif
+
+    auto nextMetricsReport = std::chrono::steady_clock::now()
+        + std::chrono::minutes(1);
     
     while (running && !killLoop)
     {
+        const auto tickStarted = std::chrono::steady_clock::now();
 #ifndef _WIN32
         sigaction(SIGTERM, &sigIntHandler, NULL);
         sigaction(SIGINT, &sigIntHandler, NULL);
@@ -4450,6 +4455,28 @@ int Networking::mainLoop()
         if (auto event = mEndpoint.poll(std::chrono::milliseconds(1)))
             processTransportEvent(std::move(*event));
         TimerAPI::Tick();
+        mMetrics.observeQueueDepth(mPersistenceService.pending());
+        const auto now = std::chrono::steady_clock::now();
+        mMetrics.observeTick(now - tickStarted);
+        if (now >= nextMetricsReport)
+        {
+            mMetrics.setResidentMemoryBytes(metrics::residentMemoryBytes());
+            const auto snapshot = mMetrics.snapshot();
+            LOG_MESSAGE_SIMPLE(TimedLog::LOG_INFO,
+                "Server metrics: tick_p99_us=%llu serialization_p99_us=%llu "
+                "queue=%llu queue_max=%llu inbound_messages=%llu inbound_bytes=%llu "
+                "outbound_messages=%llu outbound_bytes=%llu resident_bytes=%llu",
+                static_cast<unsigned long long>(snapshot.tickP99Microseconds),
+                static_cast<unsigned long long>(snapshot.serializationP99Microseconds),
+                static_cast<unsigned long long>(snapshot.queueDepth),
+                static_cast<unsigned long long>(snapshot.maximumQueueDepth),
+                static_cast<unsigned long long>(snapshot.inbound.messages),
+                static_cast<unsigned long long>(snapshot.inbound.bytes),
+                static_cast<unsigned long long>(snapshot.outbound.messages),
+                static_cast<unsigned long long>(snapshot.outbound.bytes),
+                static_cast<unsigned long long>(snapshot.residentMemoryBytes));
+            nextMetricsReport = now + std::chrono::minutes(1);
+        }
     }
 
     TimerAPI::Terminate();
@@ -4459,6 +4486,11 @@ int Networking::mainLoop()
 void Networking::processTransportEvent(transport::TransportEvent event)
 {
     const mwmp::transport::TransportConnectionId guid(event.connection.value);
+    if (event.type == transport::TransportEventType::Message)
+    {
+        mMetrics.recordInbound(event.connection.value,
+            protocol::envelopeBytes + event.message.payload.size());
+    }
     switch (event.type)
     {
         case transport::TransportEventType::Connected:
@@ -4511,6 +4543,7 @@ void Networking::processTransportEvent(transport::TransportEvent event)
             mAuthenticatedConnections.erase(event.connection.value);
             mReceiver.removeConnection(event.connection);
             mDispatcher.removeConnection(event.connection);
+            mMetrics.removeConnection(event.connection.value);
             break;
         case transport::TransportEventType::Message:
             if (event.message.messageType
@@ -4651,8 +4684,15 @@ bool Networking::sendAuthenticationResponse(transport::TransportConnectionId con
 {
     std::vector<std::byte> payload;
     protocol::CodecError codecError = protocol::CodecError::None;
+    const auto serializationStarted = std::chrono::steady_clock::now();
     if (!security::encodeAuthenticationResponse(response, payload, codecError))
+    {
+        mMetrics.observeSerialization(
+            std::chrono::steady_clock::now() - serializationStarted);
         return false;
+    }
+    mMetrics.observeSerialization(
+        std::chrono::steady_clock::now() - serializationStarted);
     transport::TransportMessage message;
     message.connection = connection;
     message.delivery = transport::DeliveryMode::ReliableOrdered;
@@ -4662,8 +4702,13 @@ bool Networking::sendAuthenticationResponse(transport::TransportConnectionId con
     message.subject = connection.value;
     message.sequence = 1;
     message.payload = std::move(payload);
+    const std::size_t messageBytes
+        = protocol::envelopeBytes + message.payload.size();
     transport::TransportError error;
-    return mEndpoint.send(std::move(message), error);
+    const bool sent = mEndpoint.send(std::move(message), error);
+    if (sent)
+        mMetrics.recordOutbound(connection.value, messageBytes);
+    return sent;
 }
 
 void Networking::disconnectTransport(

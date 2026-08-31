@@ -19,6 +19,7 @@
 #include <components/openmw-mp/Mechanics/ObjectStateLedger.hpp>
 #include <components/openmw-mp/Mechanics/PlayerProgressionLedger.hpp>
 #include <components/openmw-mp/Mechanics/ShapeshiftLedger.hpp>
+#include <components/openmw-mp/Metrics/ServerMetrics.hpp>
 #include <components/openmw-mp/Persistence/PersistenceService.hpp>
 #include <components/openmw-mp/Security/ServerAuthenticationService.hpp>
 #include <components/openmw-mp/Session/AuthorityLease.hpp>
@@ -232,6 +233,7 @@ namespace  mwmp
 
         TPlayers *players;
         transport::Protocol11Endpoint& mEndpoint;
+        metrics::ServerMetrics mMetrics;
         transport::ApplicationPacketDispatcher mDispatcher;
         transport::ApplicationPacketReceiver mReceiver;
         security::ServerAuthenticationService mAuthentication;

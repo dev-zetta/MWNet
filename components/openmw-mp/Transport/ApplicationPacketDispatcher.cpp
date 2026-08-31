@@ -1,13 +1,16 @@
 #include "ApplicationPacketDispatcher.hpp"
 
 #include <algorithm>
+#include <chrono>
 #include <vector>
 
 namespace mwmp::transport
 {
     ApplicationPacketDispatcher::ApplicationPacketDispatcher(ITransport& transport,
-        ApplicationPacketFlow flow, std::size_t maximumConnections)
+        ApplicationPacketFlow flow, std::size_t maximumConnections,
+        metrics::ServerMetrics* metrics)
         : mTransport(transport)
+        , mMetrics(metrics)
         , mFlow(flow)
         , mMaximumConnections(maximumConnections)
     {
@@ -132,15 +135,27 @@ namespace mwmp::transport
 
         TransportMessage message;
         protocol::CodecError codecError = protocol::CodecError::None;
+        const auto started = std::chrono::steady_clock::now();
         if (!encodeApplicationPacket(id, mFlow, destination, subject,
                 nextSequence(route.lane), payload, message, codecError))
         {
+            if (mMetrics != nullptr)
+                mMetrics->observeSerialization(
+                    std::chrono::steady_clock::now() - started);
             error = { TransportErrorCode::MessageRejected,
                 std::string("application packet encoding failed: ")
                     + protocol::describe(codecError) };
             return false;
         }
-        return mTransport.send(std::move(message), error);
+        if (mMetrics != nullptr)
+            mMetrics->observeSerialization(
+                std::chrono::steady_clock::now() - started);
+        const std::size_t messageBytes
+            = protocol::envelopeBytes + message.payload.size();
+        const bool sent = mTransport.send(std::move(message), error);
+        if (sent && mMetrics != nullptr)
+            mMetrics->recordOutbound(destination.value, messageBytes);
+        return sent;
     }
 
     std::uint64_t ApplicationPacketDispatcher::nextSequence(MessageLane lane) noexcept

@@ -3,6 +3,8 @@
 
 #include "ApplicationPacketBridge.hpp"
 
+#include <components/openmw-mp/Metrics/ServerMetrics.hpp>
+
 #include <array>
 #include <atomic>
 #include <cstddef>
@@ -18,7 +20,8 @@ namespace mwmp::transport
     {
     public:
         ApplicationPacketDispatcher(ITransport& transport, ApplicationPacketFlow flow,
-            std::size_t maximumConnections = 64);
+            std::size_t maximumConnections = 64,
+            metrics::ServerMetrics* metrics = nullptr);
 
         bool addConnection(TransportConnectionId connection);
         void removeConnection(TransportConnectionId connection);
@@ -43,6 +46,7 @@ namespace mwmp::transport
         std::uint64_t nextSequence(MessageLane lane) noexcept;
 
         ITransport& mTransport;
+        metrics::ServerMetrics* mMetrics;
         ApplicationPacketFlow mFlow;
         std::size_t mMaximumConnections;
         mutable std::mutex mMutex;

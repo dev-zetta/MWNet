@@ -182,6 +182,7 @@ target_link_libraries(tes3mp-server
     ${LuaJit_LIBRARIES}
     ${Breakpad_Library}
     tes3mp-mechanics
+    tes3mp-metrics
     tes3mp-protocol11-endpoint
 )
 

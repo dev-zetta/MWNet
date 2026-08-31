@@ -6,6 +6,7 @@
 #include <components/openmw-mp/Transport/SnapshotSequenceTracker.hpp>
 #include <components/openmw-mp/Transport/TransportCodec.hpp>
 #include <components/openmw-mp/Transport/TransportQueue.hpp>
+#include <components/openmw-mp/Metrics/ServerMetrics.hpp>
 
 #include <chrono>
 #include <cstddef>
@@ -244,8 +245,9 @@ namespace
             55, { 8 }, body, error));
 
         RecordingTransport serverTransport;
+        mwmp::metrics::ServerMetrics metrics;
         ApplicationPacketDispatcher server(
-            serverTransport, ApplicationPacketFlow::ServerToClient, 3);
+            serverTransport, ApplicationPacketFlow::ServerToClient, 3, &metrics);
         EXPECT(server.addConnection({ 3 }));
         EXPECT(server.addConnection({ 1 }));
         EXPECT(server.addConnection({ 2 }));
@@ -255,6 +257,10 @@ namespace
         EXPECT(serverTransport.sent[0].connection == TransportConnectionId{ 1 });
         EXPECT(serverTransport.sent[1].connection == TransportConnectionId{ 3 });
         EXPECT(serverTransport.sent[0].sequence < serverTransport.sent[1].sequence);
+        const auto traffic = metrics.snapshot();
+        EXPECT(traffic.outbound.messages == 2);
+        EXPECT(traffic.outbound.bytes
+            == 2 * (protocol::envelopeBytes + sizeof(std::uint16_t) + body.size()));
         EXPECT(server.sendTo(protocol::ApplicationPacketId::PlayerAttack,
             77, { 2 }, body, error));
         EXPECT(serverTransport.sent.back().messageType
