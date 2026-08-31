@@ -7,6 +7,8 @@
 #include <apps/openmw-mp/Networking.hpp>
 #include <apps/openmw/mwworld/inventorystore.hpp>
 
+#include <stdexcept>
+
 using namespace mwmp;
 
 void ItemFunctions::ClearInventoryChanges(unsigned short pid) noexcept
@@ -245,10 +247,13 @@ void ItemFunctions::SendEquipment(unsigned short pid) noexcept
     player->equipmentIndexChanges.clear();
 }
 
-void ItemFunctions::SendInventoryChanges(unsigned short pid, bool sendToOtherPlayers, bool skipAttachedPlayer) noexcept
+void ItemFunctions::SendInventoryChanges(unsigned short pid, bool sendToOtherPlayers, bool skipAttachedPlayer)
 {
     Player *player;
     GET_PLAYER(pid, player, );
+
+    if (!mwmp::Networking::getPtr()->applyServerInventoryChanges(*player))
+        throw std::runtime_error("the server-authored inventory action was rejected");
 
     mwmp::PlayerPacket *packet = mwmp::Networking::get().getPlayerPacketController()->GetPacket(ID_PLAYER_INVENTORY);
     packet->setPlayer(player);

@@ -50,6 +50,7 @@ Networking::Networking(RakNet::RakPeerInterface *peer,
     , mAuthentication(credentialDirectory, legacyPlayerDirectory)
     , mMovementValidator(maximumConnections)
     , mPlayerLifecycle(maximumConnections)
+    , mInventoryLedger(maximumConnections * 2U)
     , mMaximumConnections(maximumConnections)
     , mPort(port)
     , mMovementMaximumSpeed(movementMaximumSpeed)
@@ -263,6 +264,78 @@ bool Networking::acknowledgePlayerRespawn(Player& player, const BasePlayer& inco
     if (violations >= 5)
         disconnectTransport({ player.guid.g }, "repeated invalid respawn acknowledgements");
     return false;
+}
+
+namespace
+{
+    std::optional<mwmp::mechanics::InventoryAction> inventoryAction(int action)
+    {
+        switch (action)
+        {
+            case mwmp::InventoryChanges::SET:
+                return mwmp::mechanics::InventoryAction::Set;
+            case mwmp::InventoryChanges::ADD:
+                return mwmp::mechanics::InventoryAction::Add;
+            case mwmp::InventoryChanges::REMOVE:
+                return mwmp::mechanics::InventoryAction::Remove;
+            default:
+                return std::nullopt;
+        }
+    }
+
+    std::vector<mwmp::mechanics::InventoryItem> inventoryItems(
+        const mwmp::InventoryChanges& changes)
+    {
+        std::vector<mwmp::mechanics::InventoryItem> result;
+        result.reserve(changes.items.size());
+        for (const mwmp::Item& item : changes.items)
+        {
+            result.push_back({ item.refId, item.soul, item.charge,
+                item.enchantmentCharge, item.count });
+        }
+        return result;
+    }
+}
+
+bool Networking::validatePlayerInventory(Player& player, const BasePlayer& incoming)
+{
+    const auto action = inventoryAction(incoming.inventoryChanges.action);
+    mechanics::InventoryResult result{ mechanics::InventoryDecision::InvalidAction };
+    if (action)
+    {
+        result = mInventoryLedger.apply(
+            { mechanics::InventoryOwnerKind::Player, player.guid.g }, *action,
+            inventoryItems(incoming.inventoryChanges));
+    }
+    if (result.applied())
+        return true;
+
+    const unsigned int violations = ++mInventoryViolations[player.guid.g];
+    LOG_MESSAGE_SIMPLE(TimedLog::LOG_WARN,
+        "Rejected inventory action from connection %llu: %s (violation %u)",
+        static_cast<unsigned long long>(player.guid.g),
+        mechanics::describe(result.decision), violations);
+    if (violations >= 5)
+        disconnectTransport({ player.guid.g }, "repeated invalid inventory actions");
+    return false;
+}
+
+bool Networking::applyServerInventoryChanges(Player& player)
+{
+    const auto action = inventoryAction(player.inventoryChanges.action);
+    if (!action)
+        return false;
+    const mechanics::InventoryResult result = mInventoryLedger.apply(
+        { mechanics::InventoryOwnerKind::Player, player.guid.g }, *action,
+        inventoryItems(player.inventoryChanges));
+    if (!result.applied())
+    {
+        LOG_MESSAGE_SIMPLE(TimedLog::LOG_ERROR,
+            "Rejected server-authored inventory action for connection %llu: %s",
+            static_cast<unsigned long long>(player.guid.g),
+            mechanics::describe(result.decision));
+    }
+    return result.applied();
 }
 
 bool Networking::isPassworded() const
@@ -554,6 +627,8 @@ void Networking::disconnectPlayer(RakNet::RakNetGUID guid)
     resetPlayerMovement(guid.g);
     mPlayerLifecycle.erase(guid.g);
     mLifecycleViolations.erase(guid.g);
+    mInventoryLedger.erase({ mechanics::InventoryOwnerKind::Player, guid.g });
+    mInventoryViolations.erase(guid.g);
     Players::deletePlayer(guid);
 }
 

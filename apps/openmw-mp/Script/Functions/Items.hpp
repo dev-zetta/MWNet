@@ -302,7 +302,7 @@ public:
     *                           to the packet (false by default).
     * \return void
     */
-    static void SendInventoryChanges(unsigned short pid, bool sendToOtherPlayers, bool skipAttachedPlayer) noexcept;
+    static void SendInventoryChanges(unsigned short pid, bool sendToOtherPlayers, bool skipAttachedPlayer);
 
     /**
     * \brief Send a PlayerItemUse causing a player to use their recorded usedItem.
