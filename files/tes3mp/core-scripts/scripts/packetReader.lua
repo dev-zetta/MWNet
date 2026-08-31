@@ -508,6 +508,18 @@ packetReader.GetObjectPacketTables = function(packetType)
                 object.scale = tes3mp.GetObjectScale(packetIndex)
             elseif packetType == "ObjectState" then
                 object.state = tes3mp.GetObjectState(packetIndex)
+            elseif packetType == "ObjectMove" then
+                object.location = {
+                    posX = tes3mp.GetObjectPosX(packetIndex),
+                    posY = tes3mp.GetObjectPosY(packetIndex),
+                    posZ = tes3mp.GetObjectPosZ(packetIndex)
+                }
+            elseif packetType == "ObjectRotate" then
+                object.location = {
+                    rotX = tes3mp.GetObjectRotX(packetIndex),
+                    rotY = tes3mp.GetObjectRotY(packetIndex),
+                    rotZ = tes3mp.GetObjectRotZ(packetIndex)
+                }
             elseif packetType == "DoorState" then
                 object.doorState = tes3mp.GetObjectDoorState(packetIndex)
             elseif packetType =="ClientScriptLocal" then

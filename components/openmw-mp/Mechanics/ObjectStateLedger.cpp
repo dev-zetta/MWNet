@@ -164,7 +164,7 @@ namespace mwmp::mechanics
                     prepared.result = { ObjectDecision::ObjectLimitReached, mObjects.size() };
                     return prepared;
                 }
-                if (mutation.kind == ObjectMutationKind::Place)
+                if (mutation.object.creator != 0)
                 {
                     const std::size_t existingCount = dynamicObjectCount(
                         mutation.object.creator);
@@ -272,7 +272,7 @@ namespace mwmp::mechanics
             case ObjectDecision::ObjectLimitReached:
                 return "the world object quota was reached";
             case ObjectDecision::PlayerLimitReached:
-                return "the player dynamic-object quota was reached";
+                return "the per-player object quota was reached";
             case ObjectDecision::MutationLimitReached:
                 return "the object mutation batch is too large";
         }

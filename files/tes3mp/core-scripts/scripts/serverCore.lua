@@ -692,6 +692,18 @@ function OnObjectPlaceIntentRejected(pid, cellDescription, reason)
     eventHandler.OnObjectPlaceIntentRejected(pid, cellDescription, reason)
 end
 
+function OnObjectMutationIntent(pid, cellDescription, packetType)
+    return eventHandler.OnObjectMutationIntent(pid, cellDescription, packetType)
+end
+
+function OnObjectMutationIntentRejected(pid, cellDescription, packetType, reason)
+    eventHandler.OnObjectMutationIntentRejected(pid, cellDescription, packetType, reason)
+end
+
+function OnObjectMutationCommitted(pid, cellDescription, packetType)
+    eventHandler.OnObjectMutationCommitted(pid, cellDescription, packetType)
+end
+
 function OnObjectSpawn(pid, cellDescription)
     tes3mp.LogMessage(enumerations.log.INFO, "Called \"OnObjectSpawn\" for " .. logicHandler.GetChatName(pid) ..
         " and cell " .. cellDescription)

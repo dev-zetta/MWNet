@@ -11,6 +11,36 @@ void ObjectProcessor::Do(ObjectPacket &packet, Player &player, BaseObjectList &o
     packet.Send(true);
 }
 
+bool ObjectProcessor::ApplyCanonicalMutation(Player& player,
+    const BaseObjectList& objectList, const char* packetType)
+{
+    Networking* networking = Networking::getPtr();
+    const std::string cellDescription = objectList.cell.getShortDescription();
+    bool allowed = false;
+    try
+    {
+        allowed = Script::CallBoolean<Script::CallbackIdentity(
+            "OnObjectMutationIntent")>(player.getId(), cellDescription.c_str(), packetType);
+    }
+    catch (...)
+    {
+        networking->cancelObjectMutation(player);
+        throw;
+    }
+    if (!allowed)
+    {
+        networking->cancelObjectMutation(player);
+        return false;
+    }
+    if (networking->commitObjectMutation(player))
+        return true;
+
+    const char* reason = "canonical object mutation failed";
+    Script::Call<Script::CallbackIdentity("OnObjectMutationIntentRejected")>(
+        player.getId(), cellDescription.c_str(), packetType, reason);
+    return false;
+}
+
 bool ObjectProcessor::Process(RakNet::Packet &packet, BaseObjectList &objectList)
 {
     for (auto &processor : processors)

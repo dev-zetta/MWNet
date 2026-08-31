@@ -597,6 +597,46 @@ namespace
         result.hasContainer = object.hasContainer;
         return result;
     }
+
+    mwmp::mechanics::ObjectState canonicalStaticObject(
+        const mwmp::BaseObject& object, std::string cell, std::uint64_t creator)
+    {
+        mwmp::mechanics::ObjectState result;
+        result.identity = { std::move(cell), object.refNum, object.mpNum };
+        result.refId = object.refId;
+        result.creator = creator;
+        result.count = 1;
+        result.charge = -1;
+        result.enchantmentCharge = -1.0;
+        result.enabled = true;
+        return result;
+    }
+
+    mwmp::mechanics::ObjectMutation canonicalObjectMutation(
+        const mwmp::BaseObject& object, std::string cell,
+        mwmp::mechanics::ObjectMutationKind kind)
+    {
+        mwmp::mechanics::ObjectMutation mutation;
+        mutation.kind = kind;
+        mutation.object.identity = { std::move(cell), object.refNum, object.mpNum };
+        mutation.object.enabled = object.objectState;
+        mutation.object.scale = object.scale;
+        mutation.object.lockLevel = object.lockLevel;
+        for (std::size_t index = 0; index < 3; ++index)
+        {
+            mutation.object.position[index] = object.position.pos[index];
+            mutation.object.rotation[index] = object.position.rot[index];
+        }
+        return mutation;
+    }
+
+    bool isClientObjectMutation(mwmp::mechanics::ObjectMutationKind kind) noexcept
+    {
+        using Kind = mwmp::mechanics::ObjectMutationKind;
+        return kind == Kind::SetEnabled || kind == Kind::Move
+            || kind == Kind::Rotate || kind == Kind::Scale
+            || kind == Kind::SetLock || kind == Kind::Delete;
+    }
 }
 
 bool Networking::validateObjectPlace(Player& player, const BaseObjectList& incoming)
@@ -690,7 +730,7 @@ bool Networking::seedServerObjectState(const BaseObjectList& objectList)
     const std::string cellDescription = objectList.cell.getShortDescription();
     std::vector<mechanics::ObjectMutation> mutations;
     if (cellDescription.empty()
-        || objectList.baseObjects.size() > mechanics::ObjectStateLedger::MaximumMutations)
+        || objectList.baseObjects.size() > mechanics::ObjectStateLedger::MaximumChanges)
     {
         return false;
     }
@@ -713,6 +753,91 @@ bool Networking::seedServerObjectState(const BaseObjectList& objectList)
             cellDescription.c_str(), mechanics::describe(result.decision));
     }
     return result.applied();
+}
+
+bool Networking::validateObjectMutation(Player& player,
+    const BaseObjectList& incoming, mechanics::ObjectMutationKind kind)
+{
+    mPendingObjectMutations.erase(player.guid.g);
+    mechanics::ObjectResult result{ mechanics::ObjectDecision::InvalidMutation };
+    const std::string cellDescription = incoming.cell.getShortDescription();
+    if (!isClientObjectMutation(kind))
+        return false;
+
+    if (!cellDescription.empty()
+        && incoming.packetOrigin <= PACKET_ORIGIN::CLIENT_SCRIPT_GLOBAL
+        && !incoming.baseObjects.empty()
+        && incoming.baseObjectCount == incoming.baseObjects.size()
+        && incoming.baseObjects.size() <= mechanics::ObjectStateLedger::MaximumChanges)
+    {
+        std::vector<mechanics::ObjectMutation> mutations;
+        mutations.reserve(incoming.baseObjects.size() * 2);
+        bool complete = true;
+        for (const BaseObject& object : incoming.baseObjects)
+        {
+            mechanics::ObjectMutation mutation = canonicalObjectMutation(
+                object, cellDescription, kind);
+            if (!mObjectStateLedger.find(mutation.object.identity))
+            {
+                if (object.refNum == 0 || object.mpNum != 0)
+                {
+                    result.decision = mechanics::ObjectDecision::MissingObject;
+                    complete = false;
+                    break;
+                }
+                mutations.push_back({ mechanics::ObjectMutationKind::Seed,
+                    canonicalStaticObject(object, cellDescription, player.guid.g) });
+            }
+            mutations.push_back(std::move(mutation));
+        }
+
+        if (complete)
+        {
+            result = mObjectStateLedger.previewBatch(mutations);
+            if (result.applied())
+            {
+                mPendingObjectMutations.insert_or_assign(
+                    player.guid.g, std::move(mutations));
+                return true;
+            }
+        }
+    }
+
+    const unsigned int violations = ++mObjectViolations[player.guid.g];
+    LOG_MESSAGE_SIMPLE(TimedLog::LOG_WARN,
+        "Rejected object mutation from connection %llu: %s (violation %u)",
+        static_cast<unsigned long long>(player.guid.g),
+        mechanics::describe(result.decision), violations);
+    if (violations >= 5)
+        disconnectTransport({ player.guid.g }, "repeated invalid object mutations");
+    return false;
+}
+
+bool Networking::commitObjectMutation(Player& player)
+{
+    const auto pending = mPendingObjectMutations.find(player.guid.g);
+    if (pending == mPendingObjectMutations.end())
+        return false;
+
+    std::vector<mechanics::ObjectMutation> mutations = std::move(pending->second);
+    mPendingObjectMutations.erase(pending);
+    const mechanics::ObjectResult result = mObjectStateLedger.applyBatch(mutations);
+    if (result.applied())
+        return true;
+
+    const unsigned int violations = ++mObjectViolations[player.guid.g];
+    LOG_MESSAGE_SIMPLE(TimedLog::LOG_WARN,
+        "Rejected object mutation at commit from connection %llu: %s (violation %u)",
+        static_cast<unsigned long long>(player.guid.g),
+        mechanics::describe(result.decision), violations);
+    if (violations >= 5)
+        disconnectTransport({ player.guid.g }, "repeated invalid object mutations");
+    return false;
+}
+
+void Networking::cancelObjectMutation(Player& player) noexcept
+{
+    mPendingObjectMutations.erase(player.guid.g);
 }
 
 namespace
@@ -2501,6 +2626,7 @@ void Networking::disconnectPlayer(RakNet::RakNetGUID guid)
     mPendingPlayerBounties.erase(guid.g);
     mObjectViolations.erase(guid.g);
     mPendingObjectPlacements.erase(guid.g);
+    mPendingObjectMutations.erase(guid.g);
     mAcceptedPlayerActiveEffectIntents.erase(guid.g);
     mRelayedPlayerActiveEffectIntents.erase(guid.g);
     mAcceptedActorActiveEffectIntents.erase(guid.g);

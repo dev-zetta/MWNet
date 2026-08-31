@@ -106,7 +106,14 @@ namespace
             { ObjectMutationKind::Seed, invalid } }).decision
             == ObjectDecision::InvalidIdentity);
         EXPECT(std::string(describe(ObjectDecision::PlayerLimitReached))
-            == "the player dynamic-object quota was reached");
+            == "the per-player object quota was reached");
+
+        ObjectStateLedger staticLedger(4, 1);
+        EXPECT(staticLedger.applyBatch({
+            { ObjectMutationKind::Seed, object(10, 0, 9) } }).applied());
+        EXPECT(staticLedger.applyBatch({
+            { ObjectMutationKind::Seed, object(11, 0, 9) } }).decision
+            == ObjectDecision::PlayerLimitReached);
     }
 
     void testBatchLimit()
@@ -116,6 +123,7 @@ namespace
             ObjectStateLedger::MaximumMutations + 1);
         EXPECT(ledger.previewBatch(mutations).decision
             == ObjectDecision::MutationLimitReached);
+        EXPECT(ObjectStateLedger::MaximumChanges == 3000);
     }
 }
 

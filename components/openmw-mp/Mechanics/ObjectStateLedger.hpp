@@ -94,7 +94,10 @@ namespace mwmp::mechanics
     public:
         static constexpr std::size_t MaximumCellBytes = 4096;
         static constexpr std::size_t MaximumStringBytes = 4096;
-        static constexpr std::size_t MaximumMutations = 3000;
+        static constexpr std::size_t MaximumChanges = 3000;
+        // A first mutation of a static reference is represented internally as
+        // one seed plus one change while still counting as one wire change.
+        static constexpr std::size_t MaximumMutations = MaximumChanges * 2;
         static constexpr std::size_t DefaultMaximumObjects = 100'000;
         static constexpr std::size_t DefaultMaximumDynamicObjectsPerPlayer = 4096;
         static constexpr std::int64_t MaximumCount = 1'000'000'000;

@@ -4,6 +4,7 @@ local pendingPlayerSpellsActiveEvents = {}
 local pendingActorSpellsActiveEvents = {}
 local pendingPlayerBountyEvents = {}
 local pendingObjectPlaceEvents = {}
+local pendingObjectMutationEvents = {}
 local pendingContainerEvents = {}
 local pendingContainerRestocks = {}
 
@@ -660,6 +661,7 @@ end
 eventHandler.OnPlayerDisconnect = function(pid)
 
     pendingObjectPlaceEvents[pid] = nil
+    pendingObjectMutationEvents[pid] = nil
 
     local message = logicHandler.GetChatName(pid) .. " has left the server.\n"
     tes3mp.SendMessage(pid, message, true)
@@ -1894,16 +1896,134 @@ eventHandler.OnObjectPlaceIntentRejected = function(pid, cellDescription, reason
     end
 end
 
+eventHandler.OnObjectMutationIntent = function(pid, cellDescription, packetType)
+    pendingObjectMutationEvents[pid] = nil
+    if Players[pid] == nil or not Players[pid]:IsLoggedIn() then
+        tes3mp.Kick(pid)
+        return false
+    end
+
+    tes3mp.ReadReceivedObjectList()
+    local packetOrigin = tes3mp.GetObjectListOrigin()
+    tes3mp.LogAppend(enumerations.log.INFO, "- packetOrigin was " ..
+        tableHelper.getIndexByValue(enumerations.packetOrigin, packetOrigin))
+    if logicHandler.IsPacketFromConsole(packetOrigin) and
+        not logicHandler.IsPlayerAllowedConsole(pid) then
+        tes3mp.Kick(pid)
+        tes3mp.SendMessage(pid, logicHandler.GetChatName(pid) .. consoleKickMessage, true)
+        return false
+    elseif logicHandler.IsPacketFromClientScript(packetOrigin) then
+        tes3mp.LogAppend(enumerations.log.INFO, "- clientScript was " ..
+            tes3mp.GetObjectListClientScript())
+    end
+
+    local wasCellLoaded = LoadedCells[cellDescription] ~= nil
+    if not wasCellLoaded and logicHandler.DoesPacketOriginRequireLoadedCell(packetOrigin) then
+        tes3mp.LogMessage(enumerations.log.WARN, "Invalid " .. packetType .. " from " ..
+            logicHandler.GetChatName(pid) .. " used impossible packetOrigin for unloaded " ..
+            cellDescription)
+        return false
+    end
+
+    local packetTables = packetReader.GetObjectPacketTables(packetType)
+    local objects = packetTables.objects
+    local targetPlayers = packetTables.players
+    if tableHelper.isEmpty(objects) then
+        return false
+    end
+    if not wasCellLoaded then
+        logicHandler.LoadCell(cellDescription)
+    end
+
+    local eventStatus = customEventHooks.triggerValidators("On" .. packetType,
+        {pid, cellDescription, objects, targetPlayers})
+    if not eventStatus.validDefaultHandler then
+        customEventHooks.triggerHandlers("On" .. packetType, eventStatus,
+            {pid, cellDescription, objects, targetPlayers})
+        if not wasCellLoaded then
+            logicHandler.UnloadCell(cellDescription)
+        end
+        return false
+    end
+
+    pendingObjectMutationEvents[pid] = {
+        eventStatus = eventStatus,
+        objects = objects,
+        targetPlayers = targetPlayers,
+        packetType = packetType,
+        cellDescription = cellDescription,
+        wasCellLoaded = wasCellLoaded
+    }
+    return true
+end
+
+eventHandler.OnObjectMutationCommitted = function(pid, cellDescription, packetType)
+    local pendingEvent = pendingObjectMutationEvents[pid]
+    pendingObjectMutationEvents[pid] = nil
+    if pendingEvent == nil then
+        return
+    end
+    if pendingEvent.cellDescription ~= cellDescription or
+        pendingEvent.packetType ~= packetType then
+        if not pendingEvent.wasCellLoaded then
+            logicHandler.UnloadCell(pendingEvent.cellDescription)
+        end
+        return
+    end
+
+    local objects = pendingEvent.objects
+    local targetPlayers = pendingEvent.targetPlayers
+    local debugMessage = "Accepted " .. packetType .. " from " ..
+        logicHandler.GetChatName(pid) .. " about " .. cellDescription .. " for objects: "
+    local includeComma = false
+    for uniqueIndex, object in pairs(objects) do
+        if includeComma then debugMessage = debugMessage .. ", " end
+        debugMessage = debugMessage .. object.refId .. " " .. uniqueIndex
+        includeComma = true
+    end
+    tes3mp.LogMessage(enumerations.log.INFO, debugMessage)
+
+    if packetType ~= "ObjectMove" and packetType ~= "ObjectRotate" then
+        LoadedCells[cellDescription]:SaveObjectsByPacketType(packetType, objects)
+        LoadedCells[cellDescription]:LoadObjectsByPacketType(packetType, pid, objects,
+            tableHelper.getArrayFromIndexes(objects), true)
+    end
+    customEventHooks.triggerHandlers("On" .. packetType, pendingEvent.eventStatus,
+        {pid, cellDescription, objects, targetPlayers})
+
+    if not pendingEvent.wasCellLoaded then
+        logicHandler.UnloadCell(cellDescription)
+    end
+end
+
+eventHandler.OnObjectMutationIntentRejected = function(pid, cellDescription, packetType, reason)
+    local pendingEvent = pendingObjectMutationEvents[pid]
+    pendingObjectMutationEvents[pid] = nil
+    if pendingEvent == nil then
+        return
+    end
+
+    tes3mp.LogAppend(enumerations.log.WARN,
+        "- Rejected " .. packetType .. " after script validation: " .. reason)
+    local eventStatus = customEventHooks.makeEventStatus(false,
+        pendingEvent.eventStatus.validCustomHandlers)
+    customEventHooks.triggerHandlers("On" .. packetType, eventStatus,
+        {pid, cellDescription, pendingEvent.objects, pendingEvent.targetPlayers})
+    if not pendingEvent.wasCellLoaded then
+        logicHandler.UnloadCell(pendingEvent.cellDescription)
+    end
+end
+
 eventHandler.OnObjectSpawn = function(pid, cellDescription)
     eventHandler.OnGenericObjectEvent(pid, cellDescription, "ObjectSpawn")
 end
 
 eventHandler.OnObjectDelete = function(pid, cellDescription)
-    eventHandler.OnGenericObjectEvent(pid, cellDescription, "ObjectDelete")
+    eventHandler.OnObjectMutationCommitted(pid, cellDescription, "ObjectDelete")
 end
 
 eventHandler.OnObjectLock = function(pid, cellDescription)
-    eventHandler.OnGenericObjectEvent(pid, cellDescription, "ObjectLock")
+    eventHandler.OnObjectMutationCommitted(pid, cellDescription, "ObjectLock")
 end
 
 eventHandler.OnObjectDialogueChoice = function(pid, cellDescription)
@@ -1923,11 +2043,11 @@ eventHandler.OnObjectTrap = function(pid, cellDescription)
 end
 
 eventHandler.OnObjectScale = function(pid, cellDescription)
-    eventHandler.OnGenericObjectEvent(pid, cellDescription, "ObjectScale")
+    eventHandler.OnObjectMutationCommitted(pid, cellDescription, "ObjectScale")
 end
 
 eventHandler.OnObjectState = function(pid, cellDescription)
-    eventHandler.OnGenericObjectEvent(pid, cellDescription, "ObjectState")
+    eventHandler.OnObjectMutationCommitted(pid, cellDescription, "ObjectState")
 end
 
 eventHandler.OnDoorState = function(pid, cellDescription)

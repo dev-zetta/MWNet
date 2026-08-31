@@ -116,6 +116,10 @@ namespace  mwmp
         bool commitObjectPlace(Player& player);
         void cancelObjectPlace(Player& player) noexcept;
         bool seedServerObjectState(const BaseObjectList& objectList);
+        bool validateObjectMutation(Player& player, const BaseObjectList& incoming,
+            mechanics::ObjectMutationKind kind);
+        bool commitObjectMutation(Player& player);
+        void cancelObjectMutation(Player& player) noexcept;
         bool validatePlayerActiveEffects(Player& player, const BasePlayer& incoming);
         bool commitPlayerActiveEffects(Player& player);
         bool applyServerPlayerActiveEffects(Player& player);
@@ -203,6 +207,8 @@ namespace  mwmp
         std::unordered_map<std::uint64_t, std::int64_t> mPendingPlayerBounties;
         std::unordered_map<std::uint64_t, std::vector<mechanics::ObjectMutation>>
             mPendingObjectPlacements;
+        std::unordered_map<std::uint64_t, std::vector<mechanics::ObjectMutation>>
+            mPendingObjectMutations;
         std::unordered_map<std::uint64_t, mechanics::ActiveEffectOperation>
             mAcceptedPlayerActiveEffectIntents;
         std::unordered_set<std::uint64_t> mRelayedPlayerActiveEffectIntents;

@@ -19,6 +19,9 @@ namespace mwmp
         virtual void Do(ObjectPacket &packet, Player &player, BaseObjectList &objectList);
         virtual bool Validate(Player&, const BaseObjectList&) { return true; }
 
+        static bool ApplyCanonicalMutation(Player& player,
+            const BaseObjectList& objectList, const char* packetType);
+
         static bool Process(RakNet::Packet &packet, BaseObjectList &objectList);
     };
 }
