@@ -617,6 +617,14 @@ function OnActorList(pid, cellDescription)
     eventHandler.OnActorList(pid, cellDescription)
 end
 
+function OnActorListIntent(pid, cellDescription)
+    return eventHandler.OnActorListIntent(pid, cellDescription)
+end
+
+function OnActorListIntentRejected(pid, cellDescription)
+    eventHandler.OnActorListIntentRejected(pid, cellDescription)
+end
+
 function OnActorEquipment(pid, cellDescription)
     tes3mp.LogMessage(enumerations.log.INFO, "Called \"OnActorEquipment\" for " .. logicHandler.GetChatName(pid) ..
         " and cell " .. cellDescription)

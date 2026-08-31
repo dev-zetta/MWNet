@@ -5,6 +5,7 @@
 #include <algorithm>
 #include <iostream>
 #include <unordered_set>
+#include <vector>
 #include "Networking.hpp"
 #include "Player.hpp"
 #include "Script/Script.hpp"
@@ -86,6 +87,50 @@ void Cell::removePlayer(Player *player, bool cleanPlayer)
 
 void Cell::readActorList(unsigned char packetID, const mwmp::BaseActorList *newActorList)
 {
+    if (packetID == ID_ACTOR_LIST)
+    {
+        if (newActorList->action == mwmp::BaseActorList::REQUEST)
+            return;
+        if (newActorList->action == mwmp::BaseActorList::REMOVE)
+        {
+            removeActors(newActorList);
+            return;
+        }
+        if (newActorList->action == mwmp::BaseActorList::SET)
+        {
+            std::vector<mwmp::BaseActor> replacement;
+            replacement.reserve(newActorList->baseActors.size());
+            for (const mwmp::BaseActor& actor : newActorList->baseActors)
+            {
+                if (mwmp::BaseActor* existing = getActor(actor.refNum, actor.mpNum))
+                {
+                    replacement.push_back(*existing);
+                    replacement.back().refId = actor.refId;
+                }
+                else
+                    replacement.push_back(actor);
+            }
+            cellActorList.baseActors = std::move(replacement);
+            cellActorList.count = cellActorList.baseActors.size();
+            rebuildActorIndex();
+            return;
+        }
+
+        for (const mwmp::BaseActor& actor : newActorList->baseActors)
+        {
+            if (mwmp::BaseActor* existing = getActor(actor.refNum, actor.mpNum))
+                existing->refId = actor.refId;
+            else
+            {
+                cellActorList.baseActors.push_back(actor);
+                actorIndexes.insert_or_assign(actorKey(actor.refNum, actor.mpNum),
+                    cellActorList.baseActors.size() - 1);
+            }
+        }
+        cellActorList.count = cellActorList.baseActors.size();
+        return;
+    }
+
     for (unsigned int i = 0; i < newActorList->count; i++)
     {
         mwmp::BaseActor newActor = newActorList->baseActors.at(i);

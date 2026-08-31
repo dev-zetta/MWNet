@@ -892,6 +892,13 @@ logicHandler.LoadCellForPlayer = function(pid, cellDescription)
             " in " .. cellDescription .. " for latency reasons")
         LoadedCells[cellDescription]:SetAuthority(pid)
     end
+
+    local currentAuthority = LoadedCells[cellDescription]:GetAuthority()
+    if currentAuthority ~= nil and not LoadedCells[cellDescription]:HasFullActorList() and
+        not LoadedCells[cellDescription].isRequestingActorList then
+        tes3mp.LogAppend(enumerations.log.INFO, "- Requesting actor list from current authority")
+        LoadedCells[cellDescription]:RequestActorList(currentAuthority)
+    end
 end
 
 logicHandler.UnloadCell = function(cellDescription)

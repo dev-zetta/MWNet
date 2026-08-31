@@ -548,8 +548,10 @@ void ActorFunctions::AddActor() noexcept
     tempActor = emptyActor;
 }
 
-void ActorFunctions::SendActorList() noexcept
+void ActorFunctions::SendActorList()
 {
+    if (!mwmp::Networking::getPtr()->applyServerActorList(writeActorList))
+        throw std::runtime_error("SendActorList rejected a non-canonical actor roster");
     mwmp::ActorPacket *actorPacket = mwmp::Networking::get().getActorPacketController()->GetPacket(ID_ACTOR_LIST);
     actorPacket->setActorList(&writeActorList);
     actorPacket->Send(writeActorList.guid);

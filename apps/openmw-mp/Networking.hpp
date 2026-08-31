@@ -140,6 +140,9 @@ namespace  mwmp
         bool validateActorEquipment(Player& player, const BaseActorList& incoming);
         bool commitActorEquipment(Player& player, BaseActorList& actorList);
         bool applyServerActorEquipment(BaseActorList& actorList);
+        bool validateActorList(Player& player, const BaseActorList& incoming);
+        bool commitActorList(Player& player, BaseActorList& actorList);
+        bool applyServerActorList(BaseActorList& actorList);
         bool validateActorPositions(Player& player, const BaseActorList& incoming);
         bool commitActorPositions(Player& player, BaseActorList& actorList);
         bool validatePlayerCast(Player& player, const BasePlayer& incoming);

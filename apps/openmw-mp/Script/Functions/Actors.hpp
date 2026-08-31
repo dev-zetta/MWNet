@@ -923,7 +923,7 @@ public:
     *
     * \return void
     */
-    static void SendActorList() noexcept;
+    static void SendActorList();
 
     /**
     * \brief Send an ActorAuthority packet.

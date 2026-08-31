@@ -211,10 +211,6 @@ function BaseCell:AddVisitor(pid)
             self:RequestContainers(pid)
         end
 
-        if not self:HasFullActorList() and not self.isRequestingActorList then
-            tes3mp.LogAppend(enumerations.log.INFO, "- Requesting actor list")
-            self:RequestActorList(pid)
-        end
     end
 end
 

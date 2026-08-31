@@ -450,6 +450,33 @@ namespace
         return result;
     }
 
+    std::optional<mwmp::mechanics::ActorRosterAction> actorRosterAction(
+        unsigned char action)
+    {
+        switch (action)
+        {
+            case mwmp::BaseActorList::SET:
+                return mwmp::mechanics::ActorRosterAction::Set;
+            case mwmp::BaseActorList::ADD:
+                return mwmp::mechanics::ActorRosterAction::Add;
+            case mwmp::BaseActorList::REMOVE:
+                return mwmp::mechanics::ActorRosterAction::Remove;
+            default:
+                return std::nullopt;
+        }
+    }
+
+    std::vector<mwmp::mechanics::ActorRosterUpdate> actorRosterUpdates(
+        const mwmp::BaseActorList& actorList)
+    {
+        std::vector<mwmp::mechanics::ActorRosterUpdate> result;
+        const std::string cell = actorList.cell.getShortDescription();
+        result.reserve(actorList.baseActors.size());
+        for (const mwmp::BaseActor& actor : actorList.baseActors)
+            result.push_back({ { cell, actor.refNum, actor.mpNum }, actor.refId });
+        return result;
+    }
+
     struct ContainerOperations
     {
         mwmp::mechanics::InventoryDecision decision
@@ -1596,6 +1623,87 @@ bool Networking::applyServerActorEquipment(BaseActorList& actorList)
         return false;
     }
     serverCell->readActorList(ID_ACTOR_EQUIPMENT, &actorList);
+    return true;
+}
+
+bool Networking::validateActorList(Player& player, const BaseActorList& incoming)
+{
+    const auto action = actorRosterAction(incoming.action);
+    mechanics::ActorStateResult result{
+        mechanics::ActorStateDecision::InvalidRosterAction };
+    if (action && incoming.count == incoming.baseActors.size())
+    {
+        result = mActorStateLedger.previewRoster(*action,
+            incoming.cell.getShortDescription(), actorRosterUpdates(incoming));
+    }
+    if (result.applied())
+        return true;
+
+    const unsigned int violations = ++mActorStateViolations[player.guid.g];
+    LOG_MESSAGE_SIMPLE(TimedLog::LOG_WARN,
+        "Rejected actor roster from connection %llu for %s: %s (violation %u)",
+        static_cast<unsigned long long>(player.guid.g),
+        incoming.cell.getShortDescription().c_str(),
+        mechanics::describe(result.decision), violations);
+    if (violations >= 5)
+        disconnectTransport({ player.guid.g }, "repeated invalid actor roster changes");
+    return false;
+}
+
+bool Networking::commitActorList(Player& player, BaseActorList& actorList)
+{
+    const auto action = actorRosterAction(actorList.action);
+    Cell* serverCell = CellController::get()->getCell(&actorList.cell);
+    mechanics::ActorStateResult result{
+        mechanics::ActorStateDecision::InvalidRosterAction };
+    if (action && serverCell != nullptr
+        && *serverCell->getAuthority() == player.guid
+        && serverCell->getAuthorityLeaseId() == actorList.authorityLeaseId)
+    {
+        result = mActorStateLedger.applyRoster(*action,
+            actorList.cell.getShortDescription(), actorRosterUpdates(actorList));
+        if (result.applied())
+        {
+            serverCell->readActorList(ID_ACTOR_LIST, &actorList);
+            return true;
+        }
+    }
+
+    const unsigned int violations = ++mActorStateViolations[player.guid.g];
+    LOG_MESSAGE_SIMPLE(TimedLog::LOG_WARN,
+        "Rejected modified actor roster from connection %llu for %s: %s (violation %u)",
+        static_cast<unsigned long long>(player.guid.g),
+        actorList.cell.getShortDescription().c_str(),
+        mechanics::describe(result.decision), violations);
+    if (violations >= 5)
+        disconnectTransport({ player.guid.g }, "repeated invalid actor roster changes");
+    return false;
+}
+
+bool Networking::applyServerActorList(BaseActorList& actorList)
+{
+    actorList.count = static_cast<unsigned int>(actorList.baseActors.size());
+    if (actorList.action == BaseActorList::REQUEST)
+        return true;
+
+    const auto action = actorRosterAction(actorList.action);
+    Cell* serverCell = CellController::get()->getCell(&actorList.cell);
+    mechanics::ActorStateResult result{
+        mechanics::ActorStateDecision::InvalidRosterAction };
+    if (action && serverCell != nullptr)
+    {
+        result = mActorStateLedger.applyRoster(*action,
+            actorList.cell.getShortDescription(), actorRosterUpdates(actorList));
+    }
+    if (!result.applied())
+    {
+        LOG_MESSAGE_SIMPLE(TimedLog::LOG_ERROR,
+            "Rejected server-authored actor roster for %s: %s",
+            actorList.cell.getShortDescription().c_str(),
+            mechanics::describe(result.decision));
+        return false;
+    }
+    serverCell->readActorList(ID_ACTOR_LIST, &actorList);
     return true;
 }
 
