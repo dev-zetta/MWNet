@@ -6,6 +6,7 @@
 #include <cstddef>
 #include <cstdint>
 #include <optional>
+#include <string>
 #include <unordered_map>
 
 namespace mwmp::mechanics
@@ -20,6 +21,9 @@ namespace mwmp::mechanics
     {
         CombatantKind kind = CombatantKind::Player;
         std::uint64_t value = 0;
+        // Actor reference numbers are cell-local. Player identities leave this
+        // empty, while actor identities carry the canonical cell description.
+        std::string scope;
 
         bool operator==(const CombatantId&) const = default;
     };
@@ -111,7 +115,7 @@ namespace mwmp::mechanics
         std::size_t size() const noexcept;
 
     private:
-        static bool validId(CombatantId id) noexcept;
+        static bool validId(const CombatantId& id) noexcept;
         static bool validState(const CombatantState& state) noexcept;
         static bool validPosition(const Position3& position) noexcept;
         static double distance(const Position3& left, const Position3& right) noexcept;

@@ -70,6 +70,7 @@ This is the first hardening milestone for the major OpenMW 0.52 compatibility an
 * Make packet processor registration take ownership immediately and reject null or duplicate registrations without leaking processors
 * Validate player inventory transactionally, let Lua allow, deny or modify intents before canonical commit, and preserve `OnPlayerInventory` as the post-commit callback
 * Seed player health from the first valid stats snapshot, reconcile later client reports to canonical health, and make explicit server/Lua stat sends authoritative
+* Scope canonical actor combat identities to their cells so identical reference numbers cannot alias across cells
 
 0.8.1
 -----

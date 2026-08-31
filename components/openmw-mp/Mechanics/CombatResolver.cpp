@@ -9,7 +9,10 @@ namespace mwmp::mechanics
     std::size_t CombatantIdHash::operator()(const CombatantId& id) const noexcept
     {
         const std::size_t kind = static_cast<std::size_t>(id.kind);
-        return std::hash<std::uint64_t>{}(id.value) ^ (kind << 1);
+        std::size_t seed = std::hash<std::uint64_t>{}(id.value) ^ (kind << 1);
+        seed ^= std::hash<std::string>{}(id.scope) + 0x9e3779b9 + (seed << 6)
+            + (seed >> 2);
+        return seed;
     }
 
     CombatResolver::CombatResolver(std::size_t maximumCombatants)
@@ -144,9 +147,11 @@ namespace mwmp::mechanics
         return mCombatants.size();
     }
 
-    bool CombatResolver::validId(CombatantId id) noexcept
+    bool CombatResolver::validId(const CombatantId& id) noexcept
     {
-        return id.value != 0;
+        if (id.value == 0)
+            return false;
+        return id.kind != CombatantKind::Actor || !id.scope.empty();
     }
 
     bool CombatResolver::validState(const CombatantState& state) noexcept

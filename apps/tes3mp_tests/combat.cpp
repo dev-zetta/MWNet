@@ -42,8 +42,8 @@ namespace
     void testCanonicalHitAndDeath()
     {
         CombatResolver resolver;
-        const CombatantId attacker{ CombatantKind::Player, 7 };
-        const CombatantId target{ CombatantKind::Actor, 11 };
+        const CombatantId attacker{ CombatantKind::Player, 7, {} };
+        const CombatantId target{ CombatantKind::Actor, 11, "Balmora" };
         EXPECT(resolver.upsert(attacker, state(100, { 0, 0, 0 })));
         EXPECT(resolver.upsert(target, state(16, { 64, 0, 0 })));
 
@@ -62,8 +62,8 @@ namespace
     void testMissRangeAndSequence()
     {
         CombatResolver resolver;
-        const CombatantId attacker{ CombatantKind::Player, 1 };
-        const CombatantId target{ CombatantKind::Player, 2 };
+        const CombatantId attacker{ CombatantKind::Player, 1, {} };
+        const CombatantId target{ CombatantKind::Player, 2, {} };
         EXPECT(resolver.upsert(attacker, state(100, { 0, 0, 0 })));
         EXPECT(resolver.upsert(target, state(100, { 1000, 0, 0 })));
 
@@ -81,8 +81,8 @@ namespace
     void testInvalidDataAndCapacity()
     {
         CombatResolver resolver(1);
-        const CombatantId first{ CombatantKind::Player, 1 };
-        const CombatantId second{ CombatantKind::Actor, 2 };
+        const CombatantId first{ CombatantKind::Player, 1, {} };
+        const CombatantId second{ CombatantKind::Actor, 2, "Seyda Neen" };
         EXPECT(!resolver.upsert({}, state(10, {})));
         EXPECT(resolver.upsert(first, state(10, {})));
         EXPECT(!resolver.upsert(second, state(10, {})));
@@ -101,6 +101,21 @@ namespace
         EXPECT(resolver.erase(first));
         EXPECT(resolver.size() == 0);
     }
+
+    void testActorIdentityIsCellScoped()
+    {
+        CombatResolver resolver;
+        const CombatantId balmoraActor{ CombatantKind::Actor, 42, "Balmora" };
+        const CombatantId vivecActor{ CombatantKind::Actor, 42, "Vivec" };
+        const CombatantId unscopedActor{ CombatantKind::Actor, 42, {} };
+
+        EXPECT(resolver.upsert(balmoraActor, state(20, {})));
+        EXPECT(resolver.upsert(vivecActor, state(30, {})));
+        EXPECT(!resolver.upsert(unscopedActor, state(40, {})));
+        EXPECT(resolver.size() == 2);
+        EXPECT(resolver.find(balmoraActor)->health == 20);
+        EXPECT(resolver.find(vivecActor)->health == 30);
+    }
 }
 
 int runCombatTests()
@@ -108,5 +123,6 @@ int runCombatTests()
     testCanonicalHitAndDeath();
     testMissRangeAndSequence();
     testInvalidDataAndCapacity();
+    testActorIdentityIsCellScoped();
     return sFailures;
 }

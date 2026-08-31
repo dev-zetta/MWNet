@@ -453,7 +453,7 @@ namespace
 bool Networking::validatePlayerStats(Player& player, const BasePlayer& incoming)
 {
     bool valid = true;
-    const mechanics::CombatantId id{ mechanics::CombatantKind::Player, player.guid.g };
+    const mechanics::CombatantId id{ mechanics::CombatantKind::Player, player.guid.g, {} };
     const bool hasCanonicalState = mCombatResolver.find(id).has_value();
     bool includesHealth = incoming.exchangeFullInfo;
     if (incoming.exchangeFullInfo)
@@ -489,7 +489,7 @@ bool Networking::validatePlayerStats(Player& player, const BasePlayer& incoming)
 
 bool Networking::reconcilePlayerStats(Player& player)
 {
-    const mechanics::CombatantId id{ mechanics::CombatantKind::Player, player.guid.g };
+    const mechanics::CombatantId id{ mechanics::CombatantKind::Player, player.guid.g, {} };
     const auto existing = mCombatResolver.find(id);
     mechanics::CombatantState state = playerCombatState(player, existing, false);
     if (existing)
@@ -508,7 +508,7 @@ bool Networking::reconcilePlayerStats(Player& player)
 
 bool Networking::applyServerPlayerStats(Player& player)
 {
-    const mechanics::CombatantId id{ mechanics::CombatantKind::Player, player.guid.g };
+    const mechanics::CombatantId id{ mechanics::CombatantKind::Player, player.guid.g, {} };
     mechanics::CombatantState state = playerCombatState(
         player, mCombatResolver.find(id), true);
     if (!mCombatResolver.upsert(id, state))
@@ -837,7 +837,7 @@ void Networking::disconnectPlayer(RakNet::RakNetGUID guid)
     mLifecycleViolations.erase(guid.g);
     mInventoryLedger.erase({ mechanics::InventoryOwnerKind::Player, guid.g });
     mInventoryViolations.erase(guid.g);
-    mCombatResolver.erase({ mechanics::CombatantKind::Player, guid.g });
+    mCombatResolver.erase({ mechanics::CombatantKind::Player, guid.g, {} });
     mCombatViolations.erase(guid.g);
     Players::deletePlayer(guid);
 }
