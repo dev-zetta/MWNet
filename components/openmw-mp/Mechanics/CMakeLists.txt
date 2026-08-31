@@ -8,6 +8,7 @@ add_library(tes3mp-mechanics STATIC
     JusticeLedger.cpp
     MovementValidator.cpp
     ObjectStateLedger.cpp
+    PlayerProgressionLedger.cpp
     PlayerLifecycle.cpp
     ShapeshiftLedger.cpp
 )

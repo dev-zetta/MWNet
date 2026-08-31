@@ -4,6 +4,7 @@
 #include <string_view>
 
 int runProtocolTests();
+int runProgressionTests();
 int runActiveEffectTests();
 int runActorStateTests();
 int runAuthorityTests();
@@ -40,7 +41,7 @@ int main()
         + runAuthorityTests() + runCastTests() + runCombatTests()
         + runEquipmentTests() + runInventoryTests() + runJusticeTests() + runMovementTests()
         + runObjectStateTests() + runOwnershipTests()
-        + runLifecycleTests() + runPersistenceTests()
+        + runLifecycleTests() + runPersistenceTests() + runProgressionTests()
         + runSessionTests() + runShapeshiftTests() + runTransportTests();
 #if defined(TES3MP_HAS_GNS_TRANSPORT)
     failures += runAuthenticationTests();
