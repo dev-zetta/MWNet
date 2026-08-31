@@ -593,6 +593,15 @@ function OnActorAI(pid, cellDescription)
     eventHandler.OnActorAI(pid, cellDescription)
 end
 
+function OnActorAttackIntent(pid, cellDescription, actorIndex, isRanged, targetPid, refNum, mpNum, strength)
+    return eventHandler.OnActorAttackIntent(pid, cellDescription, actorIndex, isRanged,
+        targetPid, refNum, mpNum, strength)
+end
+
+function OnActorAttackIntentRejected(pid, cellDescription, actorIndex, reason)
+    eventHandler.OnActorAttackIntentRejected(pid, cellDescription, actorIndex, reason)
+end
+
 function OnActorDeath(pid, cellDescription)
     tes3mp.LogMessage(enumerations.log.INFO, "Called \"OnActorDeath\" for " .. logicHandler.GetChatName(pid) ..
         " and cell " .. cellDescription)

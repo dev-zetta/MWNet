@@ -111,6 +111,11 @@ namespace  mwmp
         bool validatePlayerAttack(Player& player, const BasePlayer& incoming);
         void sanitizePlayerAttack(Player& player) noexcept;
         bool resolvePlayerAttack(Player& player, std::string& rejectionReason);
+        bool validateActorAttacks(Player& player, const BaseActorList& incoming);
+        void sanitizeActorAttack(BaseActor& actor) noexcept;
+        bool resolveActorAttack(Player& player, BaseActorList& actorList,
+            std::size_t actorIndex, std::optional<BaseActor>& actorDeath,
+            std::string& rejectionReason);
         persistence::QueueDecision queuePersistenceWrite(
             std::filesystem::path path, std::string_view contents);
         void flushPersistence();

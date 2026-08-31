@@ -214,6 +214,8 @@ public:
             {"OnActorList",              Callback<unsigned short, const char*>()},
             {"OnActorEquipment",         Callback<unsigned short, const char*>()},
             {"OnActorAI",                Callback<unsigned short, const char*>()},
+            {"OnActorAttackIntent",      Callback<unsigned short, const char*, unsigned int, bool, unsigned short, unsigned int, unsigned int, double>()},
+            {"OnActorAttackIntentRejected", Callback<unsigned short, const char*, unsigned int, const char*>()},
             {"OnActorDeath",             Callback<unsigned short, const char*>()},
             {"OnActorSpellsActive",      Callback<unsigned short, const char*>()},
             {"OnActorCellChange",        Callback<unsigned short, const char*>()},

@@ -1399,6 +1399,31 @@ eventHandler.OnActorAI = function(pid, cellDescription)
     end
 end
 
+eventHandler.OnActorAttackIntent = function(pid, cellDescription, actorIndex, isRanged,
+    targetPid, refNum, mpNum, strength)
+
+    if Players[pid] == nil or not Players[pid]:IsLoggedIn() or
+        LoadedCells[cellDescription] == nil then
+        return false
+    end
+
+    tes3mp.ReadReceivedActorList()
+    local eventStatus = customEventHooks.triggerValidators("OnActorAttackIntent",
+        {pid, cellDescription, actorIndex, isRanged, targetPid, refNum, mpNum, strength})
+    if not eventStatus.validDefaultHandler then
+        customEventHooks.triggerHandlers("OnActorAttackIntent", eventStatus,
+            {pid, cellDescription, actorIndex, isRanged, targetPid, refNum, mpNum, strength})
+        return false
+    end
+    return true
+end
+
+eventHandler.OnActorAttackIntentRejected = function(pid, cellDescription, actorIndex, reason)
+    local eventStatus = customEventHooks.makeEventStatus(false, true)
+    customEventHooks.triggerHandlers("OnActorAttackIntentRejected", eventStatus,
+        {pid, cellDescription, actorIndex, reason})
+end
+
 eventHandler.OnActorDeath = function(pid, cellDescription)
 
     if Players[pid] ~= nil and Players[pid]:IsLoggedIn() then

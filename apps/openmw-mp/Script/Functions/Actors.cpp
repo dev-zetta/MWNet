@@ -169,6 +169,13 @@ double ActorFunctions::GetActorFatigueModified(unsigned int index) noexcept
     return readActorList->baseActors.at(index).creatureStats.mDynamic[2].mMod;
 }
 
+double ActorFunctions::GetActorAttackStrength(unsigned int index) noexcept
+{
+    if (readActorList == nullptr || index >= readActorList->baseActors.size())
+        return 0;
+    return readActorList->baseActors[index].attack.attackStrength;
+}
+
 const char *ActorFunctions::GetActorEquipmentItemRefId(unsigned int index, unsigned short slot) noexcept
 {
     return readActorList->baseActors.at(index).equipmentItems[slot].refId.c_str();
@@ -415,6 +422,14 @@ void ActorFunctions::SetActorFatigueCurrent(double value) noexcept
 void ActorFunctions::SetActorFatigueModified(double value) noexcept
 {
     tempActor.creatureStats.mDynamic[2].mMod = value;
+}
+
+void ActorFunctions::SetActorAttackStrength(unsigned int index, double value) noexcept
+{
+    if (readActorList == nullptr || index >= readActorList->baseActors.size())
+        return;
+    readActorList->baseActors[index].attack.attackStrength
+        = static_cast<float>(value);
 }
 
 void ActorFunctions::SetActorSound(const char* sound) noexcept

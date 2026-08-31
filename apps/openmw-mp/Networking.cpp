@@ -881,6 +881,242 @@ bool Networking::resolvePlayerAttack(Player& player, std::string& rejectionReaso
     return true;
 }
 
+bool Networking::validateActorAttacks(Player& player, const BaseActorList& incoming)
+{
+    bool valid = !incoming.cell.getShortDescription().empty()
+        && incoming.count == incoming.baseActors.size();
+    for (const BaseActor& actor : incoming.baseActors)
+    {
+        const Attack& attack = actor.attack;
+        valid = valid && (actor.refNum != 0 || actor.mpNum != 0)
+            && !(actor.refNum != 0 && actor.mpNum != 0)
+            && (attack.type == Attack::MELEE || attack.type == Attack::RANGED)
+            && attack.attackAnimation.size() <= 128
+            && attack.rangedWeaponId.size() <= 256
+            && attack.rangedAmmoId.size() <= 256;
+        if (attack.type == Attack::RANGED)
+        {
+            valid = valid && std::isfinite(attack.attackStrength)
+                && attack.attackStrength >= 0 && attack.attackStrength <= 1;
+            for (const float coordinate : attack.projectileOrigin.origin)
+                valid = valid && std::isfinite(coordinate);
+            for (const float coordinate : attack.projectileOrigin.orientation)
+                valid = valid && std::isfinite(coordinate);
+        }
+        if (!attack.pressed)
+        {
+            if (attack.target.isPlayer)
+                valid = valid && attack.target.guid.g != 0;
+            else
+                valid = valid && (attack.target.refNum != 0 || attack.target.mpNum != 0)
+                    && !(attack.target.refNum != 0 && attack.target.mpNum != 0);
+        }
+    }
+    if (valid)
+        return true;
+
+    const unsigned int violations = ++mCombatViolations[player.guid.g];
+    LOG_MESSAGE_SIMPLE(TimedLog::LOG_WARN,
+        "Rejected invalid actor attack list from connection %llu (violation %u)",
+        static_cast<unsigned long long>(player.guid.g), violations);
+    if (violations >= 5)
+        disconnectTransport({ player.guid.g }, "repeated invalid actor attack intents");
+    return false;
+}
+
+void Networking::sanitizeActorAttack(BaseActor& actor) noexcept
+{
+    actor.attack.success = false;
+    actor.attack.isHit = false;
+    actor.attack.damage = 0;
+    actor.attack.block = false;
+    actor.attack.knockdown = false;
+    actor.attack.applyWeaponEnchantment = false;
+    actor.attack.applyAmmoEnchantment = false;
+}
+
+bool Networking::resolveActorAttack(Player& player, BaseActorList& actorList,
+    std::size_t actorIndex, std::optional<BaseActor>& actorDeath,
+    std::string& rejectionReason)
+{
+    actorDeath.reset();
+    rejectionReason.clear();
+    if (actorIndex >= actorList.baseActors.size())
+    {
+        rejectionReason = "the actor attack index is invalid";
+        return false;
+    }
+
+    Cell* serverCell = CellController::get()->getCell(&actorList.cell);
+    if (serverCell == nullptr || *serverCell->getAuthority() != player.guid
+        || serverCell->getAuthorityLeaseId() != actorList.authorityLeaseId)
+    {
+        rejectionReason = "the actor authority lease is no longer valid";
+        return false;
+    }
+
+    BaseActor& submittedActor = actorList.baseActors[actorIndex];
+    BaseActor* attackerActor = serverCell->getActor(
+        submittedActor.refNum, submittedActor.mpNum);
+    if (attackerActor == nullptr)
+    {
+        rejectionReason = "the attacking actor is absent from canonical cell state";
+        return false;
+    }
+
+    const mechanics::CombatantId attackerId = actorCombatantId(
+        actorList.cell, *attackerActor);
+    auto attackerState = mCombatResolver.find(attackerId);
+    if (!attackerState && attackerActor->hasStatsDynamicData)
+    {
+        const mechanics::CombatantState initial = actorCombatState(
+            *attackerActor, attackerActor, std::nullopt, true);
+        if (mCombatResolver.upsert(attackerId, initial))
+            attackerState = initial;
+    }
+    if (!attackerState)
+    {
+        rejectionReason = "the attacking actor has no canonical combat state";
+        return false;
+    }
+    attackerState->position = { attackerActor->position.pos[0],
+        attackerActor->position.pos[1], attackerActor->position.pos[2] };
+    if (!mCombatResolver.upsert(attackerId, *attackerState))
+    {
+        rejectionReason = "the attacking actor canonical state is invalid";
+        return false;
+    }
+
+    mechanics::CombatantId targetId;
+    Player* targetPlayer = nullptr;
+    BaseActor* targetActor = nullptr;
+    if (submittedActor.attack.target.isPlayer)
+    {
+        targetPlayer = Players::getPlayer(submittedActor.attack.target.guid);
+        if (targetPlayer == nullptr
+            || !mAuthenticatedConnections.contains(targetPlayer->guid.g)
+            || targetPlayer->cell.getShortDescription()
+                != actorList.cell.getShortDescription())
+        {
+            rejectionReason = "the target player is unavailable or in another cell";
+            return false;
+        }
+        targetId = { mechanics::CombatantKind::Player, targetPlayer->guid.g, {} };
+        auto state = mCombatResolver.find(targetId);
+        if (!state)
+        {
+            rejectionReason = "the target player has no canonical combat state";
+            return false;
+        }
+        state->position = { targetPlayer->position.pos[0], targetPlayer->position.pos[1],
+            targetPlayer->position.pos[2] };
+        if (!mCombatResolver.upsert(targetId, *state))
+        {
+            rejectionReason = "the target player canonical state is invalid";
+            return false;
+        }
+    }
+    else
+    {
+        targetActor = serverCell->getActor(submittedActor.attack.target.refNum,
+            submittedActor.attack.target.mpNum);
+        if (targetActor == nullptr)
+        {
+            rejectionReason = "the target actor is absent from canonical cell state";
+            return false;
+        }
+        targetId = actorCombatantId(actorList.cell, *targetActor);
+        auto state = mCombatResolver.find(targetId);
+        if (!state && targetActor->hasStatsDynamicData)
+        {
+            const mechanics::CombatantState initial = actorCombatState(
+                *targetActor, targetActor, std::nullopt, true);
+            if (mCombatResolver.upsert(targetId, initial))
+                state = initial;
+        }
+        if (!state)
+        {
+            rejectionReason = "the target actor has no canonical combat state";
+            return false;
+        }
+        state->position = { targetActor->position.pos[0], targetActor->position.pos[1],
+            targetActor->position.pos[2] };
+        if (!mCombatResolver.upsert(targetId, *state))
+        {
+            rejectionReason = "the target actor canonical state is invalid";
+            return false;
+        }
+    }
+
+    const double strength = submittedActor.attack.type == Attack::RANGED
+        ? static_cast<double>(submittedActor.attack.attackStrength) : 1.0;
+    if (!std::isfinite(strength) || strength < 0 || strength > 1)
+    {
+        rejectionReason = "the script-modified actor attack strength is invalid";
+        return false;
+    }
+
+    const mechanics::AttackIntent intent{
+        attackerId, targetId, mCurrentApplicationSequence,
+        submittedActor.attack.type == Attack::RANGED
+            ? mechanics::AttackKind::Ranged : mechanics::AttackKind::Melee,
+        strength };
+    constexpr double randomScale = 1.0 / 4294967296.0;
+    const mechanics::CombatResult result = mCombatResolver.resolve(
+        intent, static_cast<double>(randombytes_random()) * randomScale);
+    if (!result.applied())
+    {
+        rejectionReason = mechanics::describe(result.decision);
+        return false;
+    }
+
+    submittedActor.attack.success
+        = result.decision == mechanics::CombatDecision::AppliedHit;
+    submittedActor.attack.isHit = submittedActor.attack.success;
+    submittedActor.attack.damage = static_cast<float>(result.damage);
+
+    const auto canonicalTarget = mCombatResolver.find(targetId);
+    if (!canonicalTarget)
+    {
+        rejectionReason = "the canonical target disappeared after combat resolution";
+        return false;
+    }
+
+    if (targetPlayer != nullptr)
+    {
+        applyCanonicalHealth(*targetPlayer, *canonicalTarget);
+        targetPlayer->exchangeFullInfo = false;
+        targetPlayer->statsDynamicIndexChanges.clear();
+        targetPlayer->statsDynamicIndexChanges.push_back(0);
+        PlayerPacket* statsPacket = playerPacketController->GetPacket(
+            ID_PLAYER_STATS_DYNAMIC);
+        statsPacket->setPlayer(targetPlayer);
+        statsPacket->Send(targetPlayer->guid);
+        targetPlayer->sendToLoaded(statsPacket);
+    }
+    else
+    {
+        applyCanonicalHealth(*targetActor, *canonicalTarget);
+        targetActor->hasStatsDynamicData = true;
+
+        BaseActorList statsList;
+        statsList.guid = player.guid;
+        statsList.cell = actorList.cell;
+        statsList.authorityLeaseId = serverCell->getAuthorityLeaseId();
+        statsList.baseActors.push_back(*targetActor);
+        statsList.count = 1;
+        ActorPacket* statsPacket = actorPacketController->GetPacket(
+            ID_ACTOR_STATS_DYNAMIC);
+        statsPacket->setActorList(&statsList);
+        statsPacket->Send(player.guid);
+        serverCell->sendToLoaded(statsPacket, &statsList);
+
+        if (result.targetDied)
+            actorDeath = *targetActor;
+    }
+    return true;
+}
+
 persistence::QueueDecision Networking::queuePersistenceWrite(
     std::filesystem::path path, std::string_view contents)
 {

@@ -34,6 +34,7 @@
     {"GetActorFatigueBase",                    ActorFunctions::GetActorFatigueBase},\
     {"GetActorFatigueCurrent",                 ActorFunctions::GetActorFatigueCurrent},\
     {"GetActorFatigueModified",                ActorFunctions::GetActorFatigueModified},\
+    {"GetActorAttackStrength",                 ActorFunctions::GetActorAttackStrength},\
     \
     {"GetActorEquipmentItemRefId",             ActorFunctions::GetActorEquipmentItemRefId},\
     {"GetActorEquipmentItemCount",             ActorFunctions::GetActorEquipmentItemCount},\
@@ -89,6 +90,7 @@
     {"SetActorFatigueBase",                    ActorFunctions::SetActorFatigueBase},\
     {"SetActorFatigueCurrent",                 ActorFunctions::SetActorFatigueCurrent},\
     {"SetActorFatigueModified",                ActorFunctions::SetActorFatigueModified},\
+    {"SetActorAttackStrength",                 ActorFunctions::SetActorAttackStrength},\
     \
     {"SetActorDeathState",                     ActorFunctions::SetActorDeathState},\
     {"SetActorDeathInstant",                   ActorFunctions::SetActorDeathInstant},\
@@ -340,6 +342,9 @@ public:
     * \return The modified fatigue.
     */
     static double GetActorFatigueModified(unsigned int index) noexcept;
+
+    /** Get the normalized strength of a pending actor attack intent. */
+    static double GetActorAttackStrength(unsigned int index) noexcept;
 
     /**
     * \brief Get the refId of the item in a certain slot of the equipment of the actor at a
@@ -755,6 +760,9 @@ public:
     * \return void
     */
     static void SetActorFatigueModified(double value) noexcept;
+
+    /** Modify the normalized strength of a pending actor attack intent. */
+    static void SetActorAttackStrength(unsigned int index, double value) noexcept;
 
     /**
     * \brief Set the sound of the temporary actor stored on the server.

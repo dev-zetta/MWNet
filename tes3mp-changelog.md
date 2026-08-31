@@ -73,6 +73,7 @@ This is the first hardening milestone for the major OpenMW 0.52 compatibility an
 * Scope canonical actor combat identities to their cells so identical reference numbers cannot alias across cells
 * Seed actor health from the first valid authority snapshot, reconcile later health reports, and make server/Lua actor-stat sends authoritative
 * Treat player attack packets as sanitized intents, resolve hit chance and damage against canonical server state, publish authoritative health/death results, and expose allow/deny/strength-modification Lua hooks
+* Treat authority-leased actor attacks as sanitized intents, reject client outcome claims, and resolve actor-to-player and actor-to-actor damage on the server with per-actor Lua policy hooks
 
 0.8.1
 -----
