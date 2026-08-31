@@ -358,6 +358,9 @@ void SpellFunctions::SendSpellbookChanges(unsigned short pid, bool sendToOtherPl
     Player *player;
     GET_PLAYER(pid, player, );
 
+    if (!mwmp::Networking::getPtr()->applyServerPlayerSpellbook(*player))
+        throw std::runtime_error("the server-authored spellbook change was rejected");
+
     mwmp::PlayerPacket *packet = mwmp::Networking::get().getPlayerPacketController()->GetPacket(ID_PLAYER_SPELLBOOK);
     packet->setPlayer(player);
 

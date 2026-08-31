@@ -11,6 +11,7 @@ add_library(tes3mp-mechanics STATIC
     PlayerProgressionLedger.cpp
     PlayerLifecycle.cpp
     ShapeshiftLedger.cpp
+    SpellbookLedger.cpp
     SpellResolver.cpp
 )
 

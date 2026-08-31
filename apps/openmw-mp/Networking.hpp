@@ -19,6 +19,7 @@
 #include <components/openmw-mp/Mechanics/ObjectStateLedger.hpp>
 #include <components/openmw-mp/Mechanics/PlayerProgressionLedger.hpp>
 #include <components/openmw-mp/Mechanics/ShapeshiftLedger.hpp>
+#include <components/openmw-mp/Mechanics/SpellbookLedger.hpp>
 #include <components/openmw-mp/Mechanics/SpellResolver.hpp>
 #include <components/openmw-mp/Metrics/ServerMetrics.hpp>
 #include <components/openmw-mp/Persistence/PersistenceService.hpp>
@@ -120,6 +121,9 @@ namespace  mwmp
         bool validatePlayerInventory(Player& player, const BasePlayer& incoming);
         bool commitPlayerInventory(Player& player);
         bool applyServerInventoryChanges(Player& player);
+        bool validatePlayerSpellbook(Player& player, const BasePlayer& incoming);
+        bool commitPlayerSpellbook(Player& player);
+        bool applyServerPlayerSpellbook(Player& player);
         bool validatePlayerEquipment(Player& player, const BasePlayer& incoming);
         bool commitPlayerEquipment(Player& player);
         bool applyServerPlayerEquipment(Player& player);
@@ -255,6 +259,7 @@ namespace  mwmp
         mechanics::ObjectStateLedger mObjectStateLedger;
         mechanics::PlayerProgressionLedger mProgressionLedger;
         mechanics::ShapeshiftLedger mShapeshiftLedger;
+        mechanics::SpellbookLedger mSpellbookLedger;
         mechanics::SpellResolver mSpellResolver;
         std::unordered_set<std::string> mConsumableMagicItems;
         std::unordered_set<std::uint64_t> mAuthenticatedConnections;
@@ -266,6 +271,7 @@ namespace  mwmp
         std::unordered_map<std::uint64_t, unsigned int> mActiveEffectViolations;
         std::unordered_map<std::uint64_t, unsigned int> mActorStateViolations;
         std::unordered_map<std::uint64_t, unsigned int> mCastViolations;
+        std::unordered_map<std::uint64_t, unsigned int> mSpellbookViolations;
         std::unordered_map<std::uint64_t, unsigned int> mJusticeViolations;
         std::unordered_map<std::uint64_t, unsigned int> mObjectViolations;
         std::unordered_map<std::uint64_t, std::int64_t> mPendingPlayerBounties;

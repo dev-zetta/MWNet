@@ -2,6 +2,7 @@
 #include "processors/ProcessorInitializer.hpp"
 
 #include <components/misc/stringops.hpp>
+#include <components/misc/strings/lower.hpp>
 #include <components/openmw-mp/NetworkMessages.hpp>
 #include <components/openmw-mp/TimedLog.hpp>
 #include <components/openmw-mp/Version.hpp>
@@ -85,6 +86,7 @@ Networking::Networking(transport::Protocol11Endpoint& endpoint,
     , mInventoryLedger(maximumConnections * 2U)
     , mProgressionLedger(maximumConnections)
     , mShapeshiftLedger(maximumConnections)
+    , mSpellbookLedger(maximumConnections)
     , mMaximumConnections(maximumConnections)
     , mPort(port)
     , mMovementMaximumSpeed(movementMaximumSpeed)
@@ -466,6 +468,33 @@ namespace
         return result;
     }
 
+    std::optional<mwmp::mechanics::SpellbookAction> spellbookAction(int action)
+    {
+        switch (action)
+        {
+            case mwmp::SpellbookChanges::SET:
+                return mwmp::mechanics::SpellbookAction::Set;
+            case mwmp::SpellbookChanges::ADD:
+                return mwmp::mechanics::SpellbookAction::Add;
+            case mwmp::SpellbookChanges::REMOVE:
+                return mwmp::mechanics::SpellbookAction::Remove;
+            default:
+                return std::nullopt;
+        }
+    }
+
+    std::vector<std::string> spellbookIds(const mwmp::SpellbookChanges& changes)
+    {
+        std::vector<std::string> result;
+        result.reserve(changes.spells.size());
+        for (const ESM::Spell& spell : changes.spells)
+        {
+            result.push_back(Misc::StringUtils::lowerCase(
+                spell.mId.getRefIdString()));
+        }
+        return result;
+    }
+
     std::vector<mwmp::mechanics::EquipmentChange> equipmentChanges(
         const mwmp::BasePlayer& player)
     {
@@ -829,6 +858,70 @@ bool Networking::applyServerInventoryChanges(Player& player)
                              : mechanics::describe(result.decision));
     }
     return result.applied() && equipmentResult.applied();
+}
+
+bool Networking::validatePlayerSpellbook(
+    Player& player, const BasePlayer& incoming)
+{
+    const auto action = spellbookAction(incoming.spellbookChanges.action);
+    mechanics::SpellbookResult result{
+        mechanics::SpellbookDecision::InvalidAction };
+    if (action)
+    {
+        result = mSpellbookLedger.preview(player.guid.value, *action,
+            spellbookIds(incoming.spellbookChanges));
+    }
+    if (result.applied())
+        return true;
+
+    const unsigned int violations = ++mSpellbookViolations[player.guid.value];
+    LOG_MESSAGE_SIMPLE(TimedLog::LOG_WARN,
+        "Rejected spellbook action from connection %llu: %s (violation %u)",
+        static_cast<unsigned long long>(player.guid.value),
+        mechanics::describe(result.decision), violations);
+    if (violations >= 5)
+        disconnectTransport({ player.guid.value }, "repeated invalid spellbook actions");
+    return false;
+}
+
+bool Networking::commitPlayerSpellbook(Player& player)
+{
+    const auto action = spellbookAction(player.spellbookChanges.action);
+    mechanics::SpellbookResult result{
+        mechanics::SpellbookDecision::InvalidAction };
+    if (action)
+    {
+        result = mSpellbookLedger.apply(player.guid.value, *action,
+            spellbookIds(player.spellbookChanges));
+    }
+    if (result.applied())
+        return true;
+
+    const unsigned int violations = ++mSpellbookViolations[player.guid.value];
+    LOG_MESSAGE_SIMPLE(TimedLog::LOG_WARN,
+        "Rejected modified spellbook intent from connection %llu: %s (violation %u)",
+        static_cast<unsigned long long>(player.guid.value),
+        mechanics::describe(result.decision), violations);
+    if (violations >= 5)
+        disconnectTransport({ player.guid.value }, "repeated invalid spellbook actions");
+    return false;
+}
+
+bool Networking::applyServerPlayerSpellbook(Player& player)
+{
+    const auto action = spellbookAction(player.spellbookChanges.action);
+    if (!action)
+        return false;
+    const mechanics::SpellbookResult result = mSpellbookLedger.apply(
+        player.guid.value, *action, spellbookIds(player.spellbookChanges));
+    if (!result.applied())
+    {
+        LOG_MESSAGE_SIMPLE(TimedLog::LOG_ERROR,
+            "Rejected server-authored spellbook action for connection %llu: %s",
+            static_cast<unsigned long long>(player.guid.value),
+            mechanics::describe(result.decision));
+    }
+    return result.applied();
 }
 
 bool Networking::validatePlayerEquipment(Player& player, const BasePlayer& incoming)
@@ -4310,6 +4403,8 @@ void Networking::disconnectPlayer(mwmp::transport::TransportConnectionId guid)
     mEquipmentLedger.erase(guid.value);
     mInventoryLedger.erase({ mechanics::InventoryOwnerKind::Player, guid.value });
     mInventoryViolations.erase(guid.value);
+    mSpellbookLedger.erase(guid.value);
+    mSpellbookViolations.erase(guid.value);
     mCombatResolver.erase({ mechanics::CombatantKind::Player, guid.value, {} });
     mCombatViolations.erase(guid.value);
     mActiveEffectLedger.erase({ mechanics::CombatantKind::Player, guid.value, {} });
