@@ -473,6 +473,14 @@ function OnPlayerLevel(pid)
     eventHandler.OnPlayerLevel(pid)
 end
 
+function OnPlayerLevelIntent(pid)
+    return eventHandler.OnPlayerLevelIntent(pid)
+end
+
+function OnPlayerLevelIntentRejected(pid)
+    eventHandler.OnPlayerLevelIntentRejected(pid)
+end
+
 function OnPlayerShapeshift(pid)
     tes3mp.LogMessage(enumerations.log.INFO, "Called \"OnPlayerShapeshift\" for " .. logicHandler.GetChatName(pid))
     eventHandler.OnPlayerShapeshift(pid)

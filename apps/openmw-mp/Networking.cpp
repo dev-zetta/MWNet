@@ -3037,6 +3037,101 @@ void Networking::cancelPlayerSkillIntent(Player& player) noexcept
         applyCanonicalSkills(player, *canonical);
 }
 
+bool Networking::validatePlayerLevel(Player& player, const BasePlayer& incoming)
+{
+    if (!mProgressionLedger.find(player.guid.g))
+    {
+        const mechanics::ProgressionResult seeded
+            = mProgressionLedger.set(player.guid.g, progressionState(player));
+        if (!seeded.applied())
+        {
+            LOG_MESSAGE_SIMPLE(TimedLog::LOG_ERROR,
+                "Failed to seed progression state for connection %llu: %s",
+                static_cast<unsigned long long>(player.guid.g),
+                mechanics::describe(seeded.decision));
+            return false;
+        }
+    }
+
+    const mechanics::ProgressionResult result = mProgressionLedger.previewLevel(
+        player.guid.g, incoming.creatureStats.mLevel,
+        incoming.npcStats.mLevelProgress);
+    if (result.applied())
+    {
+        mPendingPlayerLevels.insert(player.guid.g);
+        return true;
+    }
+
+    const unsigned int violations = ++mProgressionViolations[player.guid.g];
+    LOG_MESSAGE_SIMPLE(TimedLog::LOG_WARN,
+        "Rejected level intent from connection %llu: %s (violation %u)",
+        static_cast<unsigned long long>(player.guid.g),
+        mechanics::describe(result.decision), violations);
+    if (violations >= 5)
+        disconnectTransport({ player.guid.g }, "repeated invalid progression intents");
+    return false;
+}
+
+bool Networking::commitPlayerLevel(Player& player)
+{
+    if (mPendingPlayerLevels.erase(player.guid.g) == 0)
+        return false;
+    const mechanics::ProgressionResult result = mProgressionLedger.applyLevel(
+        player.guid.g, player.creatureStats.mLevel,
+        player.npcStats.mLevelProgress);
+    if (result.applied())
+    {
+        player.creatureStats.mLevel = result.state.level;
+        player.npcStats.mLevelProgress = result.state.levelProgress;
+        return true;
+    }
+
+    cancelPlayerLevelIntent(player);
+    const unsigned int violations = ++mProgressionViolations[player.guid.g];
+    LOG_MESSAGE_SIMPLE(TimedLog::LOG_WARN,
+        "Rejected modified level intent from connection %llu: %s (violation %u)",
+        static_cast<unsigned long long>(player.guid.g),
+        mechanics::describe(result.decision), violations);
+    if (violations >= 5)
+        disconnectTransport({ player.guid.g }, "repeated invalid progression intents");
+    return false;
+}
+
+bool Networking::applyServerPlayerLevel(Player& player)
+{
+    if (mPendingPlayerLevels.contains(player.guid.g))
+        return false;
+    mechanics::PlayerProgressionState state = mProgressionLedger.find(player.guid.g)
+        .value_or(progressionState(player));
+    state.level = player.creatureStats.mLevel;
+    state.levelProgress = player.npcStats.mLevelProgress;
+    const mechanics::ProgressionResult result
+        = mProgressionLedger.set(player.guid.g, std::move(state));
+    if (!result.applied())
+    {
+        LOG_MESSAGE_SIMPLE(TimedLog::LOG_ERROR,
+            "Rejected server-authored level for connection %llu: %s",
+            static_cast<unsigned long long>(player.guid.g),
+            mechanics::describe(result.decision));
+    }
+    return result.applied();
+}
+
+bool Networking::isPlayerLevelIntentPending(const Player& player) const noexcept
+{
+    return mPendingPlayerLevels.contains(player.guid.g);
+}
+
+void Networking::cancelPlayerLevelIntent(Player& player) noexcept
+{
+    mPendingPlayerLevels.erase(player.guid.g);
+    if (const auto canonical = mProgressionLedger.find(player.guid.g))
+    {
+        player.creatureStats.mLevel = canonical->level;
+        player.npcStats.mLevelProgress = canonical->levelProgress;
+    }
+}
+
 bool Networking::validatePlayerStats(Player& player, const BasePlayer& incoming)
 {
     bool valid = true;
@@ -4017,6 +4112,7 @@ void Networking::disconnectPlayer(RakNet::RakNetGUID guid)
     mProgressionViolations.erase(guid.g);
     mPendingPlayerAttributes.erase(guid.g);
     mPendingPlayerSkills.erase(guid.g);
+    mPendingPlayerLevels.erase(guid.g);
     mObjectViolations.erase(guid.g);
     mPendingObjectPlacements.erase(guid.g);
     mPendingObjectMutations.erase(guid.g);

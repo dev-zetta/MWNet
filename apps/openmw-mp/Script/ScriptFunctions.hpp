@@ -176,6 +176,8 @@ public:
             {"OnPlayerSkillIntent",      Callback<unsigned short>()},
             {"OnPlayerSkillIntentRejected", Callback<unsigned short>()},
             {"OnPlayerLevel",            Callback<unsigned short>()},
+            {"OnPlayerLevelIntent",      Callback<unsigned short>()},
+            {"OnPlayerLevelIntentRejected", Callback<unsigned short>()},
             {"OnPlayerBounty",           Callback<unsigned short>()},
             {"OnPlayerBountyIntent",     Callback<unsigned short>()},
             {"OnPlayerBountyIntentRejected", Callback<unsigned short, const char*>()},

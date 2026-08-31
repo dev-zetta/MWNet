@@ -11,6 +11,7 @@ local pendingPlayerBountyEvents = {}
 local pendingPlayerShapeshiftEvents = {}
 local pendingPlayerAttributeEvents = {}
 local pendingPlayerSkillEvents = {}
+local pendingPlayerLevelEvents = {}
 local pendingObjectPlaceEvents = {}
 local pendingObjectMutationEvents = {}
 local pendingContainerEvents = {}
@@ -1031,7 +1032,50 @@ eventHandler.OnPlayerSkillIntentRejected = function(pid)
 end
 
 eventHandler.OnPlayerLevel = function(pid)
-    eventHandler.OnGenericPlayerEvent(pid, "PlayerLevel")
+    local pendingEvent = pendingPlayerLevelEvents[pid]
+    pendingPlayerLevelEvents[pid] = nil
+    if pendingEvent == nil then
+        return
+    end
+
+    if Players[pid] ~= nil and Players[pid]:IsLoggedIn() then
+        Players[pid]:SaveDataByPacketType("PlayerLevel", pendingEvent.playerPacket)
+        customEventHooks.triggerHandlers("OnPlayerLevel", pendingEvent.eventStatus,
+            {pid, pendingEvent.playerPacket})
+    end
+end
+
+eventHandler.OnPlayerLevelIntent = function(pid)
+    pendingPlayerLevelEvents[pid] = nil
+    if Players[pid] == nil or not Players[pid]:IsLoggedIn() then
+        return false
+    end
+
+    local playerPacket = packetReader.GetPlayerPacketTables(pid, "PlayerLevel")
+    local eventStatus = customEventHooks.triggerValidators("OnPlayerLevel",
+        {pid, playerPacket})
+    if not eventStatus.validDefaultHandler then
+        customEventHooks.triggerHandlers("OnPlayerLevel", eventStatus,
+            {pid, playerPacket})
+        return false
+    end
+    pendingPlayerLevelEvents[pid] = {
+        eventStatus = eventStatus,
+        playerPacket = playerPacket
+    }
+    return true
+end
+
+eventHandler.OnPlayerLevelIntentRejected = function(pid)
+    local pendingEvent = pendingPlayerLevelEvents[pid]
+    pendingPlayerLevelEvents[pid] = nil
+    if pendingEvent == nil then
+        return
+    end
+    local eventStatus = customEventHooks.makeEventStatus(false,
+        pendingEvent.eventStatus.validCustomHandlers)
+    customEventHooks.triggerHandlers("OnPlayerLevel", eventStatus,
+        {pid, pendingEvent.playerPacket})
 end
 
 eventHandler.OnPlayerShapeshift = function(pid)

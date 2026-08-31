@@ -684,6 +684,12 @@ void StatsFunctions::SendLevel(unsigned short pid)
     Player *player;
     GET_PLAYER(pid, player, );
 
+    if (mwmp::Networking::getPtr()->isPlayerLevelIntentPending(*player))
+        throw std::runtime_error(
+            "a pending level intent cannot be sent before canonical commit");
+    if (!mwmp::Networking::getPtr()->applyServerPlayerLevel(*player))
+        throw std::runtime_error("the server-authored level was rejected");
+
     mwmp::PlayerPacket *packet = mwmp::Networking::get().getPlayerPacketController()->GetPacket(ID_PLAYER_LEVEL);
     packet->setPlayer(player);
     
