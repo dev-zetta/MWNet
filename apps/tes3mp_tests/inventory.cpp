@@ -1,0 +1,116 @@
+#include <components/openmw-mp/Mechanics/InventoryLedger.hpp>
+
+#include <iostream>
+#include <limits>
+#include <string>
+#include <vector>
+
+namespace
+{
+    using namespace mwmp::mechanics;
+
+    int sFailures = 0;
+
+    void expect(bool condition, const char* expression, int line)
+    {
+        if (condition)
+            return;
+        std::cerr << "inventory.cpp:" << line << ": expectation failed: "
+                  << expression << '\n';
+        ++sFailures;
+    }
+
+#define EXPECT(condition) expect((condition), #condition, __LINE__)
+
+    InventoryItem item(std::string refId, std::int64_t count)
+    {
+        InventoryItem result;
+        result.refId = std::move(refId);
+        result.count = count;
+        return result;
+    }
+
+    void testSetAddRemove()
+    {
+        InventoryLedger ledger;
+        const InventoryOwner player{ InventoryOwnerKind::Player, 7 };
+        EXPECT(ledger.apply(player, InventoryAction::Set,
+                   { item("iron_sword", 1), item("gold_001", 20) }).applied());
+        EXPECT(ledger.apply(player, InventoryAction::Add,
+                   { item("gold_001", 5), item("p_restore_health_s", 2) }).applied());
+        auto snapshot = ledger.snapshot(player);
+        EXPECT(snapshot.has_value());
+        EXPECT(snapshot->size() == 3);
+        EXPECT(snapshot->at(1).count == 25);
+
+        EXPECT(ledger.apply(player, InventoryAction::Remove,
+                   { item("gold_001", 10) }).applied());
+        snapshot = ledger.snapshot(player);
+        EXPECT(snapshot->at(1).count == 15);
+        EXPECT(ledger.apply(player, InventoryAction::Remove,
+                   { item("iron_sword", 1) }).applied());
+        EXPECT(ledger.snapshot(player)->size() == 2);
+    }
+
+    void testTransactionalFailure()
+    {
+        InventoryLedger ledger;
+        const InventoryOwner player{ InventoryOwnerKind::Player, 1 };
+        EXPECT(ledger.apply(player, InventoryAction::Set, { item("gold_001", 10) }).applied());
+        const InventoryResult result = ledger.apply(player, InventoryAction::Remove,
+            { item("gold_001", 5), item("missing", 1) });
+        EXPECT(result.decision == InventoryDecision::MissingItem);
+        EXPECT(ledger.snapshot(player)->at(0).count == 10);
+
+        InventoryItem invalid = item("bad", 1);
+        invalid.enchantmentCharge = std::numeric_limits<double>::quiet_NaN();
+        EXPECT(ledger.apply(player, InventoryAction::Add, { invalid }).decision
+            == InventoryDecision::InvalidItem);
+        EXPECT(ledger.snapshot(player)->size() == 1);
+    }
+
+    void testAtomicTransfer()
+    {
+        InventoryLedger ledger;
+        const InventoryOwner player{ InventoryOwnerKind::Player, 1 };
+        const InventoryOwner container{ InventoryOwnerKind::Container, 8 };
+        EXPECT(ledger.apply(container, InventoryAction::Set,
+                   { item("diamond", 2), item("gold_001", 50) }).applied());
+        EXPECT(ledger.apply(player, InventoryAction::Set, {}).applied());
+        EXPECT(ledger.transfer(container, player, { item("diamond", 1) }).applied());
+        EXPECT(ledger.snapshot(container)->at(0).count == 1);
+        EXPECT(ledger.snapshot(player)->at(0).count == 1);
+
+        EXPECT(ledger.transfer(container, player, { item("diamond", 2) }).decision
+            == InventoryDecision::InsufficientItems);
+        EXPECT(ledger.snapshot(container)->at(0).count == 1);
+        EXPECT(ledger.snapshot(player)->at(0).count == 1);
+    }
+
+    void testLimits()
+    {
+        InventoryLedger ledger(1);
+        const InventoryOwner first{ InventoryOwnerKind::Player, 1 };
+        const InventoryOwner second{ InventoryOwnerKind::Player, 2 };
+        EXPECT(ledger.apply({}, InventoryAction::Set, {}).decision
+            == InventoryDecision::InvalidOwner);
+        EXPECT(ledger.apply(first, InventoryAction::Set, {}).applied());
+        EXPECT(ledger.apply(second, InventoryAction::Set, {}).decision
+            == InventoryDecision::OwnerLimitReached);
+        EXPECT(ledger.apply(first, InventoryAction::Add,
+                   { item("overflow", InventoryLedger::MaximumStackCount) }).applied());
+        EXPECT(ledger.apply(first, InventoryAction::Add, { item("overflow", 1) }).decision
+            == InventoryDecision::CountOverflow);
+        EXPECT(std::string(describe(InventoryDecision::InsufficientItems))
+            == "the inventory does not contain the requested count");
+    }
+}
+
+int runInventoryTests()
+{
+    testSetAddRemove();
+    testTransactionalFailure();
+    testAtomicTransfer();
+    testLimits();
+    return sFailures;
+}
