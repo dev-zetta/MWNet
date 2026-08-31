@@ -1,6 +1,9 @@
 #include <components/openmw-mp/Persistence/AtomicFile.hpp>
+#include <components/openmw-mp/Persistence/PersistenceService.hpp>
 
 #include <array>
+#include <atomic>
+#include <condition_variable>
 #include <chrono>
 #include <cstddef>
 #include <filesystem>
@@ -9,6 +12,7 @@
 #include <span>
 #include <string>
 #include <string_view>
+#include <mutex>
 #include <vector>
 
 namespace
@@ -37,6 +41,61 @@ namespace
     {
         std::ifstream input(path, std::ios::binary);
         return { std::istreambuf_iterator<char>(input), std::istreambuf_iterator<char>() };
+    }
+
+    void testPersistenceService()
+    {
+        std::mutex mutex;
+        std::condition_variable condition;
+        bool firstStarted = false;
+        bool releaseFirst = false;
+        std::atomic_int completions = 0;
+        std::vector<std::pair<std::string, std::string>> writes;
+
+        PersistenceService service(1,
+            [&](const std::filesystem::path& path, std::span<const std::byte> contents,
+                const AtomicWriteOptions&, std::string&) {
+                const std::string value(reinterpret_cast<const char*>(contents.data()),
+                    contents.size());
+                if (path == "block")
+                {
+                    std::unique_lock lock(mutex);
+                    firstStarted = true;
+                    condition.notify_all();
+                    condition.wait(lock, [&] { return releaseFirst; });
+                }
+                std::lock_guard lock(mutex);
+                writes.emplace_back(path.generic_string(), value);
+                return true;
+            });
+
+        EXPECT(service.save("block", bytes("first")) == QueueDecision::Queued);
+        {
+            std::unique_lock lock(mutex);
+            condition.wait(lock, [&] { return firstStarted; });
+        }
+        EXPECT(service.save("record.json", bytes("old"), {},
+                   [&](const PersistenceResult&) { ++completions; }) == QueueDecision::Queued);
+        EXPECT(service.save("record.json", bytes("new"), {},
+                   [&](const PersistenceResult&) { ++completions; }) == QueueDecision::Coalesced);
+        EXPECT(service.save("other.json", bytes("full")) == QueueDecision::QueueFull);
+        EXPECT(service.pending() == 1);
+        {
+            std::lock_guard lock(mutex);
+            releaseFirst = true;
+        }
+        condition.notify_all();
+        service.flush();
+        EXPECT(writes.size() == 2);
+        EXPECT(writes.at(0).first == "block" && writes.at(0).second == "first");
+        EXPECT(writes.at(1).first == "record.json" && writes.at(1).second == "new");
+        EXPECT(completions == 2);
+
+        service.stop();
+        EXPECT(service.stopping());
+        EXPECT(service.save("late", bytes("value")) == QueueDecision::Stopping);
+        EXPECT(std::string(describe(QueueDecision::Coalesced))
+            == "the persistence write replaced an older pending write");
     }
 }
 
@@ -82,6 +141,8 @@ int runPersistenceTests()
     options.ownerOnly = true;
     EXPECT(writeFileAtomically(target, bytes("credential-record"), options, error));
     EXPECT(read(target) == "credential-record");
+
+    testPersistenceService();
 
     std::error_code cleanupError;
     std::filesystem::remove_all(directory, cleanupError);
