@@ -4,7 +4,7 @@ Protocol 11 changes the network and trust boundaries, not the safe TES3MP 0.8.1 
 
 | Surface | 0.8.1 compatibility | 1.0 behavior |
 | --- | --- | --- |
-| Actor, book, cell, class, chat, dialogue, faction, GUI, item, mechanics, miscellaneous, position, quest, record, shapeshift, settings, spell, stat, object and worldstate APIs | Names and signatures retained | Mutations require an authenticated player and the relevant player, actor or cell authority |
+| Actor, book, cell, class, chat, dialogue, faction, GUI, item, mechanics, miscellaneous, position, quest, record, shapeshift, settings, spell, stat, object and worldstate APIs | Names and signatures retained | Mutations require an authenticated player and the relevant player, actor or cell authority; invalid access raises a Lua error |
 | Timer and server utility APIs | Names and signatures retained | Exceptions are reported as Lua errors instead of terminating the server |
 | Deprecated aliases already present in 0.8.1 | Retained for 1.x | Supported with deprecation notices; removal is deferred to a later major version |
 | `OnPlayerConnect(pid)` | Retained | Runs only after native account authentication; it is no longer a pre-login mutation hook |
@@ -61,6 +61,16 @@ For a successful new or returning protocol 11 session, callbacks occur in this o
 8. `OnPlayerFinishLogin(pid)`
 
 Duplicate or out-of-order initialization is rejected. Gameplay mutation and relay APIs are unavailable before step 4. A script error at a native boundary is contained and returned to Lua; it does not grant authority or make a rejected operation valid.
+
+Native `*Intent` validation callbacks are fail-closed. They may inspect the
+received packet, use read-only APIs, log, notify or disconnect its sender, and
+use the explicitly supported intent modifiers. Inventory modifiers,
+`SetBounty` and `SetPlayerAttackStrength` are restricted to the initiating
+player; `SetActorAttackStrength` modifies only the selected received actor
+intent. Other setters, packet sends, store-copy operations, persistence writes
+and timer/public-function registration raise a descriptive Lua error until the
+validation callback returns. Post-commit legacy callbacks keep their normal
+0.8.1 API access.
 
 ## Migration guidance
 

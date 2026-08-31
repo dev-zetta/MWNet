@@ -9,6 +9,7 @@ add_executable(tes3mp-tests
     justice.cpp
     main.cpp
     lifecycle.cpp
+    lua_policy.cpp
     movement.cpp
     object_state.cpp
     ownership.cpp

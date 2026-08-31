@@ -6,6 +6,8 @@
 #include <Script/Script.hpp>
 #include <Script/Types.hpp>
 
+#include <components/openmw-mp/Script/LuaApiPolicy.hpp>
+
 std::set<std::string> LangLua::packagePath;
 std::set<std::string> LangLua::packageCPath;
 
@@ -27,6 +29,25 @@ namespace
         return luaL_error(lua, "TES3MP API error: %s", message);
     }
 
+    bool deniedDuringIntentValidation(std::string_view name) noexcept
+    {
+        return Script::IsIntentValidationCallback()
+            && !mwmp::script::isReadOnlyApi(name)
+            && !mwmp::script::isIntentModifierApi(name);
+    }
+
+    bool modifiesAnotherPlayer(lua_State* lua, std::string_view name) noexcept
+    {
+        if (!Script::IsIntentValidationCallback()
+            || !mwmp::script::intentModifierUsesPlayerId(name))
+        {
+            return false;
+        }
+        const auto intentPlayer = Script::GetIntentPlayer();
+        return !intentPlayer || !lua_isnumber(lua, 1)
+            || lua_tointeger(lua, 1) != *intentPlayer;
+    }
+
     template<int (*Function)(lua_State*)>
     int safeLuaFunction(lua_State* lua)
     {
@@ -34,6 +55,9 @@ namespace
         if (Script::IsPreAuthenticationCallback())
             return raiseLuaApiError(lua,
                 "this API is unavailable during OnTransportConnect");
+        if (deniedDuringIntentValidation("legacy utility"))
+            return raiseLuaApiError(lua,
+                "legacy utility APIs are unavailable while validating an intent");
         try
         {
             return Function(lua);
@@ -149,6 +173,22 @@ static typename std::enable_if<ScriptFunctions::functions[FunctionIndex].func.re
             ScriptFunctions::functions[FunctionIndex].name);
         return raiseLuaApiError(lua, error);
     }
+    if (deniedDuringIntentValidation(
+            ScriptFunctions::functions[FunctionIndex].name))
+    {
+        std::snprintf(error, sizeof(error),
+            "%s cannot mutate canonical state while validating an intent",
+            ScriptFunctions::functions[FunctionIndex].name);
+        return raiseLuaApiError(lua, error);
+    }
+    if (modifiesAnotherPlayer(lua,
+            ScriptFunctions::functions[FunctionIndex].name))
+    {
+        std::snprintf(error, sizeof(error),
+            "%s cannot modify another player while validating an intent",
+            ScriptFunctions::functions[FunctionIndex].name);
+        return raiseLuaApiError(lua, error);
+    }
     try
     {
         LuaFunctionDispatcher<ScriptFunctions::functions[FunctionIndex].func.numargs,
@@ -175,6 +215,22 @@ static typename std::enable_if<ScriptFunctions::functions[FunctionIndex].func.re
     {
         std::snprintf(error, sizeof(error),
             "%s is unavailable during OnTransportConnect",
+            ScriptFunctions::functions[FunctionIndex].name);
+        return raiseLuaApiError(lua, error);
+    }
+    if (deniedDuringIntentValidation(
+            ScriptFunctions::functions[FunctionIndex].name))
+    {
+        std::snprintf(error, sizeof(error),
+            "%s cannot mutate canonical state while validating an intent",
+            ScriptFunctions::functions[FunctionIndex].name);
+        return raiseLuaApiError(lua, error);
+    }
+    if (modifiesAnotherPlayer(lua,
+            ScriptFunctions::functions[FunctionIndex].name))
+    {
+        std::snprintf(error, sizeof(error),
+            "%s cannot modify another player while validating an intent",
             ScriptFunctions::functions[FunctionIndex].name);
         return raiseLuaApiError(lua, error);
     }

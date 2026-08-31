@@ -5,6 +5,7 @@
 #include <exception>
 #include <unordered_map>
 #include <memory>
+#include <optional>
 
 #include "Types.hpp"
 #include "SystemInterface.hpp"
@@ -13,6 +14,8 @@
 #include "Language.hpp"
 
 #include "Networking.hpp"
+
+#include <components/openmw-mp/Script/LuaApiPolicy.hpp>
 
 class Script : private ScriptFunctions
 {
@@ -47,7 +50,8 @@ private:
     class CallbackContext
     {
     public:
-        explicit CallbackContext(bool preAuthentication) noexcept;
+        CallbackContext(bool preAuthentication,
+            std::optional<unsigned short> intentPlayer) noexcept;
         ~CallbackContext();
 
         CallbackContext(const CallbackContext&) = delete;
@@ -55,9 +59,28 @@ private:
 
     private:
         bool mPreAuthentication = false;
+        bool mIntentValidation = false;
+        std::optional<unsigned short> mPreviousIntentPlayer;
     };
 
     static thread_local unsigned int sPreAuthenticationDepth;
+    static thread_local unsigned int sIntentValidationDepth;
+    static thread_local std::optional<unsigned short> sIntentPlayer;
+
+    static std::optional<unsigned short> CallbackPlayer() noexcept
+    {
+        return std::nullopt;
+    }
+
+    template<typename First, typename... Rest>
+    static std::optional<unsigned short> CallbackPlayer(
+        First&& first, Rest&&...) noexcept
+    {
+        if constexpr (std::is_convertible_v<std::remove_reference_t<First>,
+                          unsigned short>)
+            return static_cast<unsigned short>(first);
+        return std::nullopt;
+    }
 
     using ScriptList = std::vector<std::unique_ptr<Script>>;
     static ScriptList scripts;
@@ -78,6 +101,8 @@ public:
     static void SetModDir(const std::string &moddir);
     static const char* GetModDir();
     static bool IsPreAuthenticationCallback() noexcept;
+    static bool IsIntentValidationCallback() noexcept;
+    static std::optional<unsigned short> GetIntentPlayer() noexcept;
 
     static constexpr ScriptCallbackData const& CallBackData(const unsigned int I, const unsigned int N = 0) {
         return callbacks[N].index == I ? callbacks[N] : CallBackData(I, N + 1);
@@ -95,7 +120,8 @@ public:
         static_assert(data.callback.matches(TypeString<typename std::remove_reference<Args>::type...>::value),
                       "Wrong number or types of arguments");
 
-        CallbackContext context(I == CallbackIdentity("OnTransportConnect"));
+        CallbackContext context(I == CallbackIdentity("OnTransportConnect"),
+            std::nullopt);
         unsigned int count = 0;
 
         for (auto& script : scripts)
@@ -156,6 +182,8 @@ public:
         static_assert(data.callback.matches(TypeString<typename std::remove_reference<Args>::type...>::value),
             "Wrong number or types of arguments");
 
+        CallbackContext context(false, mwmp::script::isIntentCallback(data.name)
+                ? CallbackPlayer(args...) : std::nullopt);
         bool allowed = true;
         for (auto& script : scripts)
         {

@@ -9,23 +9,48 @@
 Script::ScriptList Script::scripts;
 std::string Script::moddir;
 thread_local unsigned int Script::sPreAuthenticationDepth = 0;
+thread_local unsigned int Script::sIntentValidationDepth = 0;
+thread_local std::optional<unsigned short> Script::sIntentPlayer;
 
-Script::CallbackContext::CallbackContext(bool preAuthentication) noexcept
+Script::CallbackContext::CallbackContext(
+    bool preAuthentication, std::optional<unsigned short> intentPlayer) noexcept
     : mPreAuthentication(preAuthentication)
+    , mIntentValidation(intentPlayer.has_value())
+    , mPreviousIntentPlayer(sIntentPlayer)
 {
     if (mPreAuthentication)
         ++sPreAuthenticationDepth;
+    if (mIntentValidation)
+    {
+        ++sIntentValidationDepth;
+        sIntentPlayer = intentPlayer;
+    }
 }
 
 Script::CallbackContext::~CallbackContext()
 {
     if (mPreAuthentication)
         --sPreAuthenticationDepth;
+    if (mIntentValidation)
+    {
+        --sIntentValidationDepth;
+        sIntentPlayer = mPreviousIntentPlayer;
+    }
 }
 
 bool Script::IsPreAuthenticationCallback() noexcept
 {
     return sPreAuthenticationDepth != 0;
+}
+
+bool Script::IsIntentValidationCallback() noexcept
+{
+    return sIntentValidationDepth != 0;
+}
+
+std::optional<unsigned short> Script::GetIntentPlayer() noexcept
+{
+    return sIntentPlayer;
 }
 
 Script::Script(const char *path)
