@@ -49,6 +49,14 @@ namespace mwmp::mechanics
         std::uint64_t sequence = 0;
     };
 
+    struct ActorCellChangeUpdate
+    {
+        ActorIdentity source;
+        std::string destinationCell;
+        ActorTransform transform;
+        std::uint64_t sequence = 0;
+    };
+
     enum class ActorRosterAction : std::uint8_t
     {
         Set,
@@ -77,6 +85,7 @@ namespace mwmp::mechanics
         InvalidRosterAction,
         InvalidRefId,
         UnknownActor,
+        DestinationOccupied,
         ActorLimitReached,
     };
 
@@ -117,6 +126,11 @@ namespace mwmp::mechanics
         ActorStateResult applyPositions(
             const std::vector<ActorPositionUpdate>& updates,
             double theoreticalMaximumSpeed, Clock::time_point now);
+        ActorStateResult previewCellChanges(
+            const std::vector<ActorCellChangeUpdate>& updates) const;
+        ActorStateResult applyCellChanges(
+            const std::vector<ActorCellChangeUpdate>& updates,
+            Clock::time_point now);
         ActorStateResult previewRoster(ActorRosterAction action,
             const std::string& cell,
             const std::vector<ActorRosterUpdate>& updates) const;
@@ -139,6 +153,8 @@ namespace mwmp::mechanics
         ActorStateResult validatePositions(
             const std::vector<ActorPositionUpdate>& updates,
             double theoreticalMaximumSpeed, Clock::time_point now) const;
+        ActorStateResult validateCellChanges(
+            const std::vector<ActorCellChangeUpdate>& updates) const;
         ActorStateResult validateRoster(ActorRosterAction action,
             const std::string& cell,
             const std::vector<ActorRosterUpdate>& updates) const;

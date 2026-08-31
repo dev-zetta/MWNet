@@ -176,6 +176,67 @@ namespace
         EXPECT(ledger.applyRoster(ActorRosterAction::Set, "Balmora", {}).applied());
         EXPECT(ledger.size() == 0);
     }
+
+    ActorCellChangeUpdate cellChange(const char* sourceCell,
+        const char* destinationCell, std::uint32_t refNum, double x,
+        std::uint64_t sequence)
+    {
+        ActorCellChangeUpdate update;
+        update.source = { sourceCell, refNum, 0 };
+        update.destinationCell = destinationCell;
+        update.transform.position.x = x;
+        update.sequence = sequence;
+        return update;
+    }
+
+    void testAtomicCellChanges()
+    {
+        const auto now = ActorStateLedger::Clock::time_point{};
+        ActorStateLedger ledger;
+        EXPECT(ledger.applyRoster(ActorRosterAction::Add, "Balmora",
+                   { rosterActor("Balmora", 1, "guard"),
+                       rosterActor("Balmora", 2, "rat"),
+                       rosterActor("Balmora", 3, "scrib") }).applied());
+        EXPECT(ledger.applyEquipment({ actor("Balmora", 1, 0, "iron_sword") })
+            .applied());
+
+        const auto guard = cellChange("Balmora", "Ald-ruhn", 1, 250, 4);
+        EXPECT(ledger.previewCellChanges({ guard }).applied());
+        EXPECT(ledger.contains({ "Balmora", 1, 0 }));
+        EXPECT(!ledger.contains({ "Ald-ruhn", 1, 0 }));
+        EXPECT(ledger.applyCellChanges({ guard }, now).applied());
+        EXPECT(!ledger.contains({ "Balmora", 1, 0 }));
+        EXPECT(ledger.contains({ "Ald-ruhn", 1, 0 }));
+        EXPECT(*ledger.refId({ "Ald-ruhn", 1, 0 }) == "guard");
+        EXPECT(ledger.equipment({ "Ald-ruhn", 1, 0 })->at(0).refId
+            == "iron_sword");
+        EXPECT(ledger.position({ "Ald-ruhn", 1, 0 })->position.x == 250);
+
+        EXPECT(ledger.previewCellChanges({}).decision
+            == ActorStateDecision::InvalidBatch);
+        EXPECT(ledger.previewCellChanges(
+                   { cellChange("Balmora", "Balmora", 2, 0, 5) }).decision
+            == ActorStateDecision::InvalidIdentity);
+        EXPECT(ledger.previewCellChanges(
+                   { cellChange("Balmora", "Vivec", 99, 0, 5) }).decision
+            == ActorStateDecision::UnknownActor);
+
+        EXPECT(ledger.applyRoster(ActorRosterAction::Add, "Ald-ruhn",
+                   { rosterActor("Ald-ruhn", 2, "rat") }).applied());
+        const auto rat = cellChange("Balmora", "Ald-ruhn", 2, 100, 5);
+        EXPECT(ledger.previewCellChanges({ rat }).decision
+            == ActorStateDecision::DestinationOccupied);
+        EXPECT(ledger.contains({ "Balmora", 2, 0 }));
+
+        ActorCellChangeUpdate invalid
+            = cellChange("Balmora", "Vivec", 3, 0, 5);
+        invalid.transform.rotation.z = std::numeric_limits<double>::infinity();
+        EXPECT(ledger.applyCellChanges(
+                   { cellChange("Balmora", "Seyda Neen", 2, 50, 5), invalid },
+                   now).decision == ActorStateDecision::InvalidPosition);
+        EXPECT(ledger.contains({ "Balmora", 2, 0 }));
+        EXPECT(!ledger.contains({ "Seyda Neen", 2, 0 }));
+    }
 }
 
 int runActorStateTests()
@@ -185,5 +246,6 @@ int runActorStateTests()
     testCleanup();
     testAtomicPositionUpdates();
     testAtomicRosterUpdates();
+    testAtomicCellChanges();
     return sFailures;
 }

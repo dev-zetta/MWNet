@@ -63,6 +63,51 @@ namespace mwmp::mechanics
         return { ActorStateDecision::Applied, mActors.size() };
     }
 
+    ActorStateResult ActorStateLedger::previewCellChanges(
+        const std::vector<ActorCellChangeUpdate>& updates) const
+    {
+        return validateCellChanges(updates);
+    }
+
+    ActorStateResult ActorStateLedger::applyCellChanges(
+        const std::vector<ActorCellChangeUpdate>& updates,
+        Clock::time_point now)
+    {
+        const ActorStateResult result = validateCellChanges(updates);
+        if (!result.applied())
+            return result;
+
+        std::vector<ActorIdentity> destinations;
+        destinations.reserve(updates.size());
+        for (const ActorCellChangeUpdate& update : updates)
+        {
+            destinations.push_back({ update.destinationCell,
+                update.source.refNum, update.source.mpNum });
+        }
+
+        mActors.reserve(mActors.size() + updates.size());
+        try
+        {
+            for (std::size_t index = 0; index < updates.size(); ++index)
+            {
+                ActorState state = mActors.at(updates[index].source);
+                state.movement = ActorMovementState{ updates[index].transform,
+                    updates[index].sequence, now };
+                mActors.emplace(destinations[index], std::move(state));
+            }
+        }
+        catch (...)
+        {
+            for (const ActorIdentity& destination : destinations)
+                mActors.erase(destination);
+            throw;
+        }
+
+        for (const ActorCellChangeUpdate& update : updates)
+            mActors.erase(update.source);
+        return { ActorStateDecision::Applied, mActors.size() };
+    }
+
     ActorStateResult ActorStateLedger::previewRoster(ActorRosterAction action,
         const std::string& cell,
         const std::vector<ActorRosterUpdate>& updates) const
@@ -300,6 +345,45 @@ namespace mwmp::mechanics
         return { ActorStateDecision::Applied, resultingSize };
     }
 
+    ActorStateResult ActorStateLedger::validateCellChanges(
+        const std::vector<ActorCellChangeUpdate>& updates) const
+    {
+        if (updates.empty() || updates.size() > MaximumChanges)
+            return { ActorStateDecision::InvalidBatch, mActors.size() };
+
+        std::unordered_set<ActorIdentity, ActorIdentityHash> sources;
+        std::unordered_set<ActorIdentity, ActorIdentityHash> destinations;
+        for (const ActorCellChangeUpdate& update : updates)
+        {
+            if (!validIdentity(update.source)
+                || update.destinationCell.empty()
+                || update.destinationCell.size() > MaximumCellBytes
+                || update.destinationCell == update.source.cell)
+            {
+                return { ActorStateDecision::InvalidIdentity, mActors.size() };
+            }
+            if (!sources.insert(update.source).second)
+                return { ActorStateDecision::DuplicateActor, mActors.size() };
+            if (!validTransform(update.transform))
+                return { ActorStateDecision::InvalidPosition, mActors.size() };
+            if (update.sequence == 0)
+                return { ActorStateDecision::InvalidSequence, mActors.size() };
+            if (!mActors.contains(update.source))
+                return { ActorStateDecision::UnknownActor, mActors.size() };
+        }
+
+        for (const ActorCellChangeUpdate& update : updates)
+        {
+            const ActorIdentity destination{ update.destinationCell,
+                update.source.refNum, update.source.mpNum };
+            if (!destinations.insert(destination).second)
+                return { ActorStateDecision::DuplicateActor, mActors.size() };
+            if (mActors.contains(destination))
+                return { ActorStateDecision::DestinationOccupied, mActors.size() };
+        }
+        return { ActorStateDecision::Applied, mActors.size() };
+    }
+
     bool ActorStateLedger::validIdentity(const ActorIdentity& identity) noexcept
     {
         return !identity.cell.empty() && identity.cell.size() <= MaximumCellBytes
@@ -380,6 +464,8 @@ namespace mwmp::mechanics
                 return "an actor record identifier is invalid";
             case ActorStateDecision::UnknownActor:
                 return "the actor is not present in canonical state";
+            case ActorStateDecision::DestinationOccupied:
+                return "the actor destination is already occupied";
             case ActorStateDecision::ActorLimitReached:
                 return "the canonical actor limit was reached";
         }
