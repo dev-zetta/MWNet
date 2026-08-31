@@ -1935,6 +1935,19 @@ eventHandler.OnActorSpellsActive = function(pid, cellDescription)
         end
     end
     if pendingEvent == nil then
+        if Players[pid] == nil or not Players[pid]:IsLoggedIn() or
+            LoadedCells[cellDescription] == nil then
+            return
+        end
+
+        tes3mp.ReadReceivedActorList()
+        local actors = packetReader.GetActorPacketTables(
+            "ActorSpellsActive").actors
+        LoadedCells[cellDescription]:SaveActorsByPacketType(
+            "ActorSpellsActive", actors)
+        local eventStatus = customEventHooks.makeEventStatus(true, true)
+        customEventHooks.triggerHandlers("OnActorSpellsActive", eventStatus,
+            {pid, cellDescription, actors})
         return
     end
 

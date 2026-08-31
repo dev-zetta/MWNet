@@ -3232,6 +3232,17 @@ bool Networking::resolvePlayerCast(Player& player, std::string& rejectionReason)
                 ID_ACTOR_SPELLS_ACTIVE);
             packet->setActorList(&list);
             targetCell->sendToLoaded(packet, &list);
+            baseActorList = list;
+            if (transport::TransportConnectionId* authorityId
+                = targetCell->getAuthority())
+            {
+                if (Player* authority = Players::getPlayer(*authorityId))
+                {
+                    Script::Call<Script::CallbackIdentity(
+                        "OnActorSpellsActive")>(authority->getId(),
+                        operation.owner.scope.c_str());
+                }
+            }
         }
     }
 
@@ -3822,6 +3833,17 @@ bool Networking::resolveActorCast(Player& player, BaseActorList& actorList,
                 ID_ACTOR_SPELLS_ACTIVE);
             packet->setActorList(&activeList);
             serverCell->sendToLoaded(packet, &activeList);
+            baseActorList = activeList;
+            if (transport::TransportConnectionId* authorityId
+                = serverCell->getAuthority())
+            {
+                if (Player* authority = Players::getPlayer(*authorityId))
+                {
+                    Script::Call<Script::CallbackIdentity(
+                        "OnActorSpellsActive")>(authority->getId(),
+                        operation.owner.scope.c_str());
+                }
+            }
         }
     }
 
@@ -5693,6 +5715,17 @@ void Networking::advanceActiveEffects(double elapsedSeconds)
                 ID_ACTOR_SPELLS_ACTIVE);
             packet->setActorList(&list);
             cell->sendToLoaded(packet, &list);
+            baseActorList = list;
+            if (transport::TransportConnectionId* authorityId
+                = cell->getAuthority())
+            {
+                if (Player* authority = Players::getPlayer(*authorityId))
+                {
+                    Script::Call<Script::CallbackIdentity(
+                        "OnActorSpellsActive")>(authority->getId(),
+                        change.tick.owner.scope.c_str());
+                }
+            }
         }
         if (change.died)
         {
