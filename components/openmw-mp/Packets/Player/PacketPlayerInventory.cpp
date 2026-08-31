@@ -12,14 +12,14 @@ void PacketPlayerInventory::Packet(bool send)
 {
     PlayerPacket::Packet(send);
 
-    RW(player->inventoryChanges.action, send);
+    Field(player->inventoryChanges.action);
 
     uint32_t count = 0;
 
     if (send)
         count = static_cast<uint32_t>(player->inventoryChanges.items.size());
 
-    if (!RWCount(count, send))
+    if (!CollectionSize(count))
         return;
 
     if (!send)
@@ -30,10 +30,10 @@ void PacketPlayerInventory::Packet(bool send)
 
     for (auto &&item : player->inventoryChanges.items)
     {
-        RW(item.refId, send, true);
-        RW(item.count, send);
-        RW(item.charge, send);
-        RW(item.enchantmentCharge, send);
-        RW(item.soul, send, true);
+        Field(item.refId, true);
+        Field(item.count);
+        Field(item.charge);
+        Field(item.enchantmentCharge);
+        Field(item.soul, true);
     }
 }

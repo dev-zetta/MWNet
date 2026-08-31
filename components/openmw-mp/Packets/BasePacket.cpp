@@ -60,11 +60,12 @@ void BasePacket::Read(std::span<const std::byte> payload)
     finishRead();
 }
 
-bool BasePacket::RW(mwmp::transport::TransportConnectionId& value, bool write, bool compress)
+bool BasePacket::Field(mwmp::transport::TransportConnectionId& value, bool compress)
 {
     (void)compress;
+    const bool write = isWriting();
     std::uint64_t decoded = value.value;
-    if (!RW(decoded, write))
+    if (!Field(decoded))
         return false;
     if (!write)
         value = mwmp::transport::TransportConnectionId(decoded);

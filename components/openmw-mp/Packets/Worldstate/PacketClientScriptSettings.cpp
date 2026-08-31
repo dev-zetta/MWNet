@@ -17,7 +17,7 @@ void PacketClientScriptSettings::Packet(bool send)
     if (send)
         clientScriptsCount = static_cast<uint32_t>(worldstate->synchronizedClientScriptIds.size());
 
-    if (!RWCount(clientScriptsCount, send))
+    if (!CollectionSize(clientScriptsCount))
         return;
 
     if (!send)
@@ -28,7 +28,7 @@ void PacketClientScriptSettings::Packet(bool send)
 
     for (auto &&clientScriptId : worldstate->synchronizedClientScriptIds)
     {
-        RW(clientScriptId, send, true);
+        Field(clientScriptId, true);
     }
 
     uint32_t clientGlobalsCount = 0;
@@ -36,7 +36,7 @@ void PacketClientScriptSettings::Packet(bool send)
     if (send)
         clientGlobalsCount = static_cast<uint32_t>(worldstate->synchronizedClientGlobalIds.size());
 
-    if (!RWCount(clientGlobalsCount, send))
+    if (!CollectionSize(clientGlobalsCount))
         return;
 
     if (!send)
@@ -47,6 +47,6 @@ void PacketClientScriptSettings::Packet(bool send)
 
     for (auto &&clientGlobalId : worldstate->synchronizedClientGlobalIds)
     {
-        RW(clientGlobalId, send, true);
+        Field(clientGlobalId, true);
     }
 }

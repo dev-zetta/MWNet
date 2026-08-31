@@ -13,9 +13,9 @@ void PacketActorEquipment::Actor(BaseActor &actor, bool send)
 {
     for (auto &&equipmentItem : actor.equipmentItems)
     {
-        RW(equipmentItem.refId, send);
-        RW(equipmentItem.count, send);
-        RW(equipmentItem.charge, send);
-        RW(equipmentItem.enchantmentCharge, send);
+        Field(equipmentItem.refId);
+        Field(equipmentItem.count);
+        Field(equipmentItem.charge);
+        Field(equipmentItem.enchantmentCharge);
     }
 }

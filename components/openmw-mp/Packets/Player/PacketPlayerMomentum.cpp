@@ -12,5 +12,5 @@ void PacketPlayerMomentum::Packet(bool send)
 {
     PlayerPacket::Packet(send);
     
-    RW(player->momentum.pos, send, true);
+    Field(player->momentum.pos, true);
 }

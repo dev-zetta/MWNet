@@ -20,26 +20,26 @@ void PacketObjectActivate::Packet(bool send)
         if (send)
             baseObject = objectList->baseObjects.at(i);
 
-        RW(baseObject.isPlayer, send);
+        Field(baseObject.isPlayer);
 
         if (baseObject.isPlayer)
-            RW(baseObject.guid, send);
+            Field(baseObject.guid);
         else
             Object(baseObject, send);
 
-        RW(baseObject.activatingActor.isPlayer, send);
+        Field(baseObject.activatingActor.isPlayer);
 
         if (baseObject.activatingActor.isPlayer)
         {
-            RW(baseObject.activatingActor.guid, send);
+            Field(baseObject.activatingActor.guid);
         }
         else
         {
-            RW(baseObject.activatingActor.refId, send, true);
-            RW(baseObject.activatingActor.refNum, send);
-            RW(baseObject.activatingActor.mpNum, send);
+            Field(baseObject.activatingActor.refId, true);
+            Field(baseObject.activatingActor.refNum);
+            Field(baseObject.activatingActor.mpNum);
 
-            RW(baseObject.activatingActor.name, send);
+            Field(baseObject.activatingActor.name);
         }
 
         if (!send)

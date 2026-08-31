@@ -10,6 +10,6 @@ PacketVideoPlay::PacketVideoPlay() : ObjectPacket()
 
 void PacketVideoPlay::Object(BaseObject &baseObject, bool send)
 {
-    RW(baseObject.videoFilename, send, true);
-    RW(baseObject.allowSkipping, send);
+    Field(baseObject.videoFilename, true);
+    Field(baseObject.allowSkipping);
 }

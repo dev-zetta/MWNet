@@ -12,19 +12,19 @@ void PacketGameSettings::Packet(bool send)
 {
     PlayerPacket::Packet(send);
 
-    RW(player->difficulty, send);
-    RW(player->consoleAllowed, send);
-    RW(player->bedRestAllowed, send);
-    RW(player->wildernessRestAllowed, send);
-    RW(player->waitAllowed, send);
-    RW(player->enforcedLogLevel, send);
-    RW(player->physicsFramerate, send);
+    Field(player->difficulty);
+    Field(player->consoleAllowed);
+    Field(player->bedRestAllowed);
+    Field(player->wildernessRestAllowed);
+    Field(player->waitAllowed);
+    Field(player->enforcedLogLevel);
+    Field(player->physicsFramerate);
 
     std::string mapIndex;
     std::string mapValue;
 
     uint32_t gameSettingCount = static_cast<uint32_t>(player->gameSettings.size());
-    if (!RWCount(gameSettingCount, send))
+    if (!CollectionSize(gameSettingCount))
         return;
 
     if (send)
@@ -33,8 +33,8 @@ void PacketGameSettings::Packet(bool send)
         {
             mapIndex = gameSetting.first;
             mapValue = gameSetting.second;
-            RW(mapIndex, send, false);
-            RW(mapValue, send, false);
+            Field(mapIndex, false);
+            Field(mapValue, false);
         }
     }
     else
@@ -42,14 +42,14 @@ void PacketGameSettings::Packet(bool send)
         player->gameSettings.clear();
         for (unsigned int n = 0; n < gameSettingCount; n++)
         {
-            RW(mapIndex, send, false);
-            RW(mapValue, send, false);
+            Field(mapIndex, false);
+            Field(mapValue, false);
             player->gameSettings[mapIndex] = mapValue;
         }
     }
 
     uint32_t vrSettingCount = static_cast<uint32_t>(player->vrSettings.size());
-    if (!RWCount(vrSettingCount, send))
+    if (!CollectionSize(vrSettingCount))
         return;
 
     if (send)
@@ -58,8 +58,8 @@ void PacketGameSettings::Packet(bool send)
         {
             mapIndex = vrSetting.first;
             mapValue = vrSetting.second;
-            RW(mapIndex, send, false);
-            RW(mapValue, send, false);
+            Field(mapIndex, false);
+            Field(mapValue, false);
         }
     }
     else
@@ -67,8 +67,8 @@ void PacketGameSettings::Packet(bool send)
         player->vrSettings.clear();
         for (unsigned int n = 0; n < vrSettingCount; n++)
         {
-            RW(mapIndex, send, false);
-            RW(mapValue, send, false);
+            Field(mapIndex, false);
+            Field(mapValue, false);
             player->vrSettings[mapIndex] = mapValue;
         }
     }

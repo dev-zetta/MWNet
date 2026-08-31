@@ -15,7 +15,7 @@ void mwmp::PacketPlayerAlly::Packet(bool send)
     if (send)
         count = static_cast<uint32_t>(player->alliedPlayers.size());
 
-    if (!RWCount(count, send))
+    if (!CollectionSize(count))
         return;
 
     if (!send)
@@ -26,6 +26,6 @@ void mwmp::PacketPlayerAlly::Packet(bool send)
 
     for (auto &&teamPlayerGuid : player->alliedPlayers)
     {
-        RW(teamPlayerGuid, send, true);
+        Field(teamPlayerGuid, true);
     }
 }

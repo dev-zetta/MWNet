@@ -17,7 +17,7 @@ void PacketPlayerBook::Packet(bool send)
     if (send)
         count = static_cast<uint32_t>(player->bookChanges.size());
 
-    if (!RWCount(count, send))
+    if (!CollectionSize(count))
         return;
 
     if (!send)
@@ -28,6 +28,6 @@ void PacketPlayerBook::Packet(bool send)
 
     for (auto &&book : player->bookChanges)
     {
-        RW(book.bookId, send, true);
+        Field(book.bookId, true);
     }
 }

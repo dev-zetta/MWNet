@@ -10,5 +10,5 @@ void mwmp::PacketPlayerSpeech::Packet(bool send)
 {
     PlayerPacket::Packet(send);
 
-    RW(player->sound, send);
+    Field(player->sound);
 }

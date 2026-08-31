@@ -11,13 +11,13 @@ void mwmp::PacketPlayerCellChange::Packet(bool send)
 {
     PlayerPacket::Packet(send);
 
-    RW(player->cell.mData, send, true);
-    RW(player->cell.mName, send, true);
+    Field(player->cell.mData, true);
+    Field(player->cell.mName, true);
 
-    RW(player->previousCellPosition.pos, send, true);
+    Field(player->previousCellPosition.pos, true);
 
-    RW(player->isChangingRegion, send);
+    Field(player->isChangingRegion);
 
     if (player->isChangingRegion)
-        RW(player->cell.mRegion, send, true);
+        Field(player->cell.mRegion, true);
 }

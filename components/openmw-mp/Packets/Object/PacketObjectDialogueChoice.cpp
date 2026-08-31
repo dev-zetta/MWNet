@@ -12,10 +12,10 @@ PacketObjectDialogueChoice::PacketObjectDialogueChoice() : ObjectPacket()
 void PacketObjectDialogueChoice::Object(BaseObject& baseObject, bool send)
 {
     ObjectPacket::Object(baseObject, send);
-    RW(baseObject.dialogueChoiceType, send);
+    Field(baseObject.dialogueChoiceType);
 
     if (baseObject.dialogueChoiceType == DialogueChoiceType::TOPIC)
-        RW(baseObject.topicId, send, true);
+        Field(baseObject.topicId, true);
 
-    RW(baseObject.guiId, send);
+    Field(baseObject.guiId);
 }

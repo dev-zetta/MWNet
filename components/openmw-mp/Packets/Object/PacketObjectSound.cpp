@@ -20,16 +20,16 @@ void PacketObjectSound::Packet(bool send)
         if (send)
             baseObject = objectList->baseObjects.at(i);
 
-        RW(baseObject.isPlayer, send);
+        Field(baseObject.isPlayer);
 
         if (baseObject.isPlayer)
-            RW(baseObject.guid, send);
+            Field(baseObject.guid);
         else
             Object(baseObject, send);
 
-        RW(baseObject.soundId, send, true);
-        RW(baseObject.volume, send);
-        RW(baseObject.pitch, send);
+        Field(baseObject.soundId, true);
+        Field(baseObject.volume);
+        Field(baseObject.pitch);
 
         if (!send)
             objectList->baseObjects.push_back(baseObject);

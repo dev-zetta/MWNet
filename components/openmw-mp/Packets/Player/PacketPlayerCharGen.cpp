@@ -12,7 +12,7 @@ void mwmp::PacketPlayerCharGen::Packet(bool send)
 
     BasePlayer::CharGenState decoded = player->charGenState;
     auto& target = send ? player->charGenState : decoded;
-    if (!RW(target.currentStage, send) || !RW(target.endStage, send) || !RW(target.isFinished, send))
+    if (!Field(target.currentStage) || !Field(target.endStage) || !Field(target.isFinished))
         return;
     if (!send)
         player->charGenState = decoded;

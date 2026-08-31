@@ -12,8 +12,8 @@ PacketObjectTrap::PacketObjectTrap() : ObjectPacket()
 void PacketObjectTrap::Object(BaseObject &baseObject, bool send)
 {
     ObjectPacket::Object(baseObject, send);
-    RW(baseObject.isDisarmed, send);
+    Field(baseObject.isDisarmed);
 
     if (!baseObject.isDisarmed)
-        RW(baseObject.position, send);
+        Field(baseObject.position);
 }

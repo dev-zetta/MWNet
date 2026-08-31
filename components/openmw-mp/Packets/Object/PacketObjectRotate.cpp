@@ -12,7 +12,7 @@ PacketObjectRotate::PacketObjectRotate() : ObjectPacket()
 void PacketObjectRotate::Object(BaseObject &baseObject, bool send)
 {
     ObjectPacket::Object(baseObject, send);
-    RW(baseObject.position.rot[0], send);
-    RW(baseObject.position.rot[1], send);
-    RW(baseObject.position.rot[2], send);
+    Field(baseObject.position.rot[0]);
+    Field(baseObject.position.rot[1]);
+    Field(baseObject.position.rot[2]);
 }

@@ -12,8 +12,8 @@ void PacketActorAuthority::Packet(bool send)
 {
     BasePacket::Packet(send);
 
-    RW(actorList->cell.mData, send, true);
-    RW(actorList->cell.mName, send, true);
-    RW(actorList->authorityLeaseId, send);
-    RW(actorList->authorityLeaseDurationMs, send);
+    Field(actorList->cell.mData, true);
+    Field(actorList->cell.mName, true);
+    Field(actorList->authorityLeaseId);
+    Field(actorList->authorityLeaseDurationMs);
 }

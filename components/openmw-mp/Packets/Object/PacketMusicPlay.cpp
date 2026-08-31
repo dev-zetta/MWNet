@@ -10,5 +10,5 @@ PacketMusicPlay::PacketMusicPlay() : ObjectPacket()
 
 void PacketMusicPlay::Object(BaseObject &baseObject, bool send)
 {
-    RW(baseObject.musicFilename, send);
+    Field(baseObject.musicFilename);
 }

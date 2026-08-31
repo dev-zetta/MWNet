@@ -10,8 +10,8 @@ void mwmp::PacketPlayerAnimPlay::Packet(bool send)
 {
     PlayerPacket::Packet(send);
 
-    RW(player->animation.groupname, send);
-    RW(player->animation.mode, send);
-    RW(player->animation.count, send);
-    RW(player->animation.persist, send);
+    Field(player->animation.groupname);
+    Field(player->animation.mode);
+    Field(player->animation.count);
+    Field(player->animation.persist);
 }

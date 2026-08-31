@@ -15,12 +15,12 @@ void PacketPlayerSkill::Packet(bool send)
 {
     PlayerPacket::Packet(send);
 
-    RW(player->exchangeFullInfo, send);
+    Field(player->exchangeFullInfo);
 
     if (player->exchangeFullInfo)
     {
         for (int skillIndex = 0; skillIndex < ESM::Skill::Length; ++skillIndex)
-            RW(player->npcStats.mSkills[ESM::Skill::indexToRefId(skillIndex)], send);
+            Field(player->npcStats.mSkills[ESM::Skill::indexToRefId(skillIndex)]);
     }
     else
     {
@@ -29,7 +29,7 @@ void PacketPlayerSkill::Packet(bool send)
         if (send)
             count = static_cast<uint32_t>(player->skillIndexChanges.size());
 
-        if (!RWCount(count, send, ESM::Skill::Length))
+        if (!CollectionSize(count, ESM::Skill::Length))
             return;
 
         if (!send)
@@ -40,13 +40,13 @@ void PacketPlayerSkill::Packet(bool send)
 
         for (auto &&skillId : player->skillIndexChanges)
         {
-            RW(skillId, send);
+            Field(skillId);
             if (skillId >= 27)
             {
                 packetValid = false;
                 return;
             }
-            RW(player->npcStats.mSkills[ESM::Skill::indexToRefId(skillId)], send);
+            Field(player->npcStats.mSkills[ESM::Skill::indexToRefId(skillId)]);
         }
     }
 }

@@ -17,7 +17,7 @@ void PacketPlayerCooldowns::Packet(bool send)
     if (send)
         count = static_cast<uint32_t>(player->cooldownChanges.size());
 
-    if (!RWCount(count, send))
+    if (!CollectionSize(count))
         return;
 
     if (!send)
@@ -28,8 +28,8 @@ void PacketPlayerCooldowns::Packet(bool send)
 
     for (auto &&spell : player->cooldownChanges)
     {
-        RW(spell.id, send, true);
-        RW(spell.startTimestampDay, send);
-        RW(spell.startTimestampHour, send);
+        Field(spell.id, true);
+        Field(spell.startTimestampDay);
+        Field(spell.startTimestampHour);
     }
 }

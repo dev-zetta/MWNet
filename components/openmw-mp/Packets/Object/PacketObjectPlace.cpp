@@ -12,12 +12,12 @@ PacketObjectPlace::PacketObjectPlace() : ObjectPacket()
 void PacketObjectPlace::Object(BaseObject &baseObject, bool send)
 {
     ObjectPacket::Object(baseObject, send);
-    RW(baseObject.count, send);
-    RW(baseObject.charge, send);
-    RW(baseObject.enchantmentCharge, send);
-    RW(baseObject.soul, send, true);
-    RW(baseObject.goldValue, send);
-    RW(baseObject.position, send);
-    RW(baseObject.droppedByPlayer, send);
-    RW(baseObject.hasContainer, send);
+    Field(baseObject.count);
+    Field(baseObject.charge);
+    Field(baseObject.enchantmentCharge);
+    Field(baseObject.soul, true);
+    Field(baseObject.goldValue);
+    Field(baseObject.position);
+    Field(baseObject.droppedByPlayer);
+    Field(baseObject.hasContainer);
 }

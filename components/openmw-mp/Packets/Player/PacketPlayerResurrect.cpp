@@ -13,5 +13,5 @@ void PacketPlayerResurrect::Packet(bool send)
 {
     PlayerPacket::Packet(send);
 
-    RW(player->resurrectType, send);
+    Field(player->resurrectType);
 }

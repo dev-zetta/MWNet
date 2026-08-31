@@ -15,7 +15,7 @@ void PacketRecordDynamic::Packet(bool send)
 {
     WorldstatePacket::Packet(send);
 
-    RW(worldstate->recordsType, send);
+    Field(worldstate->recordsType);
 
     if (send)
     {
@@ -79,7 +79,7 @@ void PacketRecordDynamic::Packet(bool send)
         }
     }
 
-    if (!RWCount(worldstate->recordsCount, send, maxRecords))
+    if (!CollectionSize(worldstate->recordsCount, maxRecords))
     {
         LOG_MESSAGE_SIMPLE(TimedLog::LOG_ERROR, "Processed invalid ID_RECORD_DYNAMIC packet with %i records, above the maximum of %i",
             worldstate->recordsCount, maxRecords);
@@ -147,22 +147,22 @@ void PacketRecordDynamic::Packet(bool send)
         {
             auto &&recordData = record.data;
 
-            RW(record.baseId, send, true);
-            RW(recordData.mId, send, true);
-            RW(recordData.mName, send, true);
-            RW(recordData.mData.mType, send);
-            RW(recordData.mData.mCost, send);
-            RW(recordData.mData.mFlags, send);
+            Field(record.baseId, true);
+            Field(recordData.mId, true);
+            Field(recordData.mName, true);
+            Field(recordData.mData.mType);
+            Field(recordData.mData.mCost);
+            Field(recordData.mData.mFlags);
             ProcessEffects(recordData.mEffects, send);
 
             if (!record.baseId.empty())
             {
                 auto &&overrides = record.baseOverrides;
-                RW(overrides.hasName, send);
-                RW(overrides.hasSubtype, send);
-                RW(overrides.hasCost, send);
-                RW(overrides.hasFlags, send);
-                RW(overrides.hasEffects, send);
+                Field(overrides.hasName);
+                Field(overrides.hasSubtype);
+                Field(overrides.hasCost);
+                Field(overrides.hasFlags);
+                Field(overrides.hasEffects);
             }
         }
     }
@@ -172,29 +172,29 @@ void PacketRecordDynamic::Packet(bool send)
         {
             auto &recordData = record.data;
 
-            RW(record.quantity, send);
-            RW(record.baseId, send, true);
-            RW(recordData.mId, send, true);
-            RW(recordData.mName, send, true);
-            RW(recordData.mModel, send, true);
-            RW(recordData.mIcon, send, true);
-            RW(recordData.mData.mWeight, send);
-            RW(recordData.mData.mValue, send);
-            RW(recordData.mData.mFlags, send);
-            RW(recordData.mScript, send, true);
+            Field(record.quantity);
+            Field(record.baseId, true);
+            Field(recordData.mId, true);
+            Field(recordData.mName, true);
+            Field(recordData.mModel, true);
+            Field(recordData.mIcon, true);
+            Field(recordData.mData.mWeight);
+            Field(recordData.mData.mValue);
+            Field(recordData.mData.mFlags);
+            Field(recordData.mScript, true);
             ProcessEffects(recordData.mEffects, send);
 
             if (!record.baseId.empty())
             {
                 auto &&overrides = record.baseOverrides;
-                RW(overrides.hasName, send);
-                RW(overrides.hasModel, send);
-                RW(overrides.hasIcon, send);
-                RW(overrides.hasWeight, send);
-                RW(overrides.hasValue, send);
-                RW(overrides.hasAutoCalc, send);
-                RW(overrides.hasScript, send);
-                RW(overrides.hasEffects, send);
+                Field(overrides.hasName);
+                Field(overrides.hasModel);
+                Field(overrides.hasIcon);
+                Field(overrides.hasWeight);
+                Field(overrides.hasValue);
+                Field(overrides.hasAutoCalc);
+                Field(overrides.hasScript);
+                Field(overrides.hasEffects);
             }
         }
     }
@@ -204,22 +204,22 @@ void PacketRecordDynamic::Packet(bool send)
         {
             auto &recordData = record.data;
 
-            RW(record.baseId, send, true);
-            RW(recordData.mId, send, true);
-            RW(recordData.mData.mType, send);
-            RW(recordData.mData.mCost, send);
-            RW(recordData.mData.mCharge, send);
-            RW(recordData.mData.mFlags, send);
+            Field(record.baseId, true);
+            Field(recordData.mId, true);
+            Field(recordData.mData.mType);
+            Field(recordData.mData.mCost);
+            Field(recordData.mData.mCharge);
+            Field(recordData.mData.mFlags);
             ProcessEffects(recordData.mEffects, send);
 
             if (!record.baseId.empty())
             {
                 auto &&overrides = record.baseOverrides;
-                RW(overrides.hasSubtype, send);
-                RW(overrides.hasCost, send);
-                RW(overrides.hasCharge, send);
-                RW(overrides.hasFlags, send);
-                RW(overrides.hasEffects, send);
+                Field(overrides.hasSubtype);
+                Field(overrides.hasCost);
+                Field(overrides.hasCharge);
+                Field(overrides.hasFlags);
+                Field(overrides.hasEffects);
             }
         }
     }
@@ -229,36 +229,36 @@ void PacketRecordDynamic::Packet(bool send)
         {
             auto &recordData = record.data;
 
-            RW(record.baseId, send, true);
-            RW(recordData.mId, send, true);
-            RW(recordData.mName, send, true);
-            RW(recordData.mModel, send, true);
-            RW(recordData.mIcon, send, true);
-            RW(recordData.mData.mType, send);
-            RW(recordData.mData.mWeight, send);
-            RW(recordData.mData.mValue, send);
-            RW(recordData.mData.mHealth, send);
-            RW(recordData.mData.mArmor, send);
-            RW(recordData.mData.mEnchant, send);
-            RW(recordData.mEnchant, send, true);
-            RW(recordData.mScript, send, true);
+            Field(record.baseId, true);
+            Field(recordData.mId, true);
+            Field(recordData.mName, true);
+            Field(recordData.mModel, true);
+            Field(recordData.mIcon, true);
+            Field(recordData.mData.mType);
+            Field(recordData.mData.mWeight);
+            Field(recordData.mData.mValue);
+            Field(recordData.mData.mHealth);
+            Field(recordData.mData.mArmor);
+            Field(recordData.mData.mEnchant);
+            Field(recordData.mEnchant, true);
+            Field(recordData.mScript, true);
             ProcessBodyParts(recordData.mParts, send);
 
             if (!record.baseId.empty())
             {
                 auto &&overrides = record.baseOverrides;
-                RW(overrides.hasName, send);
-                RW(overrides.hasModel, send);
-                RW(overrides.hasIcon, send);
-                RW(overrides.hasSubtype, send);
-                RW(overrides.hasWeight, send);
-                RW(overrides.hasValue, send);
-                RW(overrides.hasHealth, send);
-                RW(overrides.hasArmorRating, send);
-                RW(overrides.hasEnchantmentCharge, send);
-                RW(overrides.hasEnchantmentId, send);
-                RW(overrides.hasScript, send);
-                RW(overrides.hasBodyParts, send);
+                Field(overrides.hasName);
+                Field(overrides.hasModel);
+                Field(overrides.hasIcon);
+                Field(overrides.hasSubtype);
+                Field(overrides.hasWeight);
+                Field(overrides.hasValue);
+                Field(overrides.hasHealth);
+                Field(overrides.hasArmorRating);
+                Field(overrides.hasEnchantmentCharge);
+                Field(overrides.hasEnchantmentId);
+                Field(overrides.hasScript);
+                Field(overrides.hasBodyParts);
             }
         }
     }
@@ -268,34 +268,34 @@ void PacketRecordDynamic::Packet(bool send)
         {
             auto &recordData = record.data;
 
-            RW(record.baseId, send, true);
-            RW(recordData.mId, send, true);
-            RW(recordData.mName, send, true);
-            RW(recordData.mModel, send, true);
-            RW(recordData.mIcon, send, true);
-            RW(recordData.mText, send, true);
-            RW(recordData.mData.mWeight, send);
-            RW(recordData.mData.mValue, send);
-            RW(recordData.mData.mIsScroll, send);
-            RW(recordData.mData.mSkillId, send);
-            RW(recordData.mData.mEnchant, send);
-            RW(recordData.mEnchant, send, true);
-            RW(recordData.mScript, send, true);
+            Field(record.baseId, true);
+            Field(recordData.mId, true);
+            Field(recordData.mName, true);
+            Field(recordData.mModel, true);
+            Field(recordData.mIcon, true);
+            Field(recordData.mText, true);
+            Field(recordData.mData.mWeight);
+            Field(recordData.mData.mValue);
+            Field(recordData.mData.mIsScroll);
+            Field(recordData.mData.mSkillId);
+            Field(recordData.mData.mEnchant);
+            Field(recordData.mEnchant, true);
+            Field(recordData.mScript, true);
 
             if (!record.baseId.empty())
             {
                 auto &&overrides = record.baseOverrides;
-                RW(overrides.hasName, send);
-                RW(overrides.hasModel, send);
-                RW(overrides.hasIcon, send);
-                RW(overrides.hasText, send);
-                RW(overrides.hasWeight, send);
-                RW(overrides.hasValue, send);
-                RW(overrides.hasScrollState, send);
-                RW(overrides.hasSkillId, send);
-                RW(overrides.hasEnchantmentCharge, send);
-                RW(overrides.hasEnchantmentId, send);
-                RW(overrides.hasScript, send);
+                Field(overrides.hasName);
+                Field(overrides.hasModel);
+                Field(overrides.hasIcon);
+                Field(overrides.hasText);
+                Field(overrides.hasWeight);
+                Field(overrides.hasValue);
+                Field(overrides.hasScrollState);
+                Field(overrides.hasSkillId);
+                Field(overrides.hasEnchantmentCharge);
+                Field(overrides.hasEnchantmentId);
+                Field(overrides.hasScript);
             }
         }
     }
@@ -305,32 +305,32 @@ void PacketRecordDynamic::Packet(bool send)
         {
             auto &recordData = record.data;
 
-            RW(record.baseId, send, true);
-            RW(recordData.mId, send, true);
-            RW(recordData.mName, send, true);
-            RW(recordData.mModel, send, true);
-            RW(recordData.mIcon, send, true);
-            RW(recordData.mData.mType, send);
-            RW(recordData.mData.mWeight, send);
-            RW(recordData.mData.mValue, send);
-            RW(recordData.mData.mEnchant, send);
-            RW(recordData.mEnchant, send, true);
-            RW(recordData.mScript, send, true);
+            Field(record.baseId, true);
+            Field(recordData.mId, true);
+            Field(recordData.mName, true);
+            Field(recordData.mModel, true);
+            Field(recordData.mIcon, true);
+            Field(recordData.mData.mType);
+            Field(recordData.mData.mWeight);
+            Field(recordData.mData.mValue);
+            Field(recordData.mData.mEnchant);
+            Field(recordData.mEnchant, true);
+            Field(recordData.mScript, true);
             ProcessBodyParts(recordData.mParts, send);
 
             if (!record.baseId.empty())
             {
                 auto &&overrides = record.baseOverrides;
-                RW(overrides.hasName, send);
-                RW(overrides.hasModel, send);
-                RW(overrides.hasIcon, send);
-                RW(overrides.hasSubtype, send);
-                RW(overrides.hasWeight, send);
-                RW(overrides.hasValue, send);
-                RW(overrides.hasEnchantmentCharge, send);
-                RW(overrides.hasEnchantmentId, send);
-                RW(overrides.hasScript, send);
-                RW(overrides.hasBodyParts, send);
+                Field(overrides.hasName);
+                Field(overrides.hasModel);
+                Field(overrides.hasIcon);
+                Field(overrides.hasSubtype);
+                Field(overrides.hasWeight);
+                Field(overrides.hasValue);
+                Field(overrides.hasEnchantmentCharge);
+                Field(overrides.hasEnchantmentId);
+                Field(overrides.hasScript);
+                Field(overrides.hasBodyParts);
             }
         }
     }
@@ -340,26 +340,26 @@ void PacketRecordDynamic::Packet(bool send)
         {
             auto &recordData = record.data;
 
-            RW(record.baseId, send, true);
-            RW(recordData.mId, send, true);
-            RW(recordData.mName, send, true);
-            RW(recordData.mModel, send, true);
-            RW(recordData.mIcon, send, true);
-            RW(recordData.mData.mWeight, send);
-            RW(recordData.mData.mValue, send);
-            RW(recordData.mData.mFlags, send);
-            RW(recordData.mScript, send, true);
+            Field(record.baseId, true);
+            Field(recordData.mId, true);
+            Field(recordData.mName, true);
+            Field(recordData.mModel, true);
+            Field(recordData.mIcon, true);
+            Field(recordData.mData.mWeight);
+            Field(recordData.mData.mValue);
+            Field(recordData.mData.mFlags);
+            Field(recordData.mScript, true);
 
             if (!record.baseId.empty())
             {
                 auto &&overrides = record.baseOverrides;
-                RW(overrides.hasName, send);
-                RW(overrides.hasModel, send);
-                RW(overrides.hasIcon, send);
-                RW(overrides.hasWeight, send);
-                RW(overrides.hasValue, send);
-                RW(overrides.hasKeyState, send);
-                RW(overrides.hasScript, send);
+                Field(overrides.hasName);
+                Field(overrides.hasModel);
+                Field(overrides.hasIcon);
+                Field(overrides.hasWeight);
+                Field(overrides.hasValue);
+                Field(overrides.hasKeyState);
+                Field(overrides.hasScript);
             }
         }
     }
@@ -369,48 +369,48 @@ void PacketRecordDynamic::Packet(bool send)
         {
             auto &recordData = record.data;
 
-            RW(record.quantity, send);
-            RW(record.baseId, send, true);
-            RW(recordData.mId, send, true);
-            RW(recordData.mName, send, true);
-            RW(recordData.mModel, send, true);
-            RW(recordData.mIcon, send, true);
-            RW(recordData.mData.mType, send);
-            RW(recordData.mData.mWeight, send);
-            RW(recordData.mData.mValue, send);
-            RW(recordData.mData.mHealth, send);
-            RW(recordData.mData.mSpeed, send);
-            RW(recordData.mData.mReach, send);
-            RW(recordData.mData.mChop[0], send);
-            RW(recordData.mData.mChop[1], send);
-            RW(recordData.mData.mSlash[0], send);
-            RW(recordData.mData.mSlash[1], send);
-            RW(recordData.mData.mThrust[0], send);
-            RW(recordData.mData.mThrust[1], send);
-            RW(recordData.mData.mFlags, send);
-            RW(recordData.mData.mEnchant, send);
-            RW(recordData.mEnchant, send, true);
-            RW(recordData.mScript, send, true);
+            Field(record.quantity);
+            Field(record.baseId, true);
+            Field(recordData.mId, true);
+            Field(recordData.mName, true);
+            Field(recordData.mModel, true);
+            Field(recordData.mIcon, true);
+            Field(recordData.mData.mType);
+            Field(recordData.mData.mWeight);
+            Field(recordData.mData.mValue);
+            Field(recordData.mData.mHealth);
+            Field(recordData.mData.mSpeed);
+            Field(recordData.mData.mReach);
+            Field(recordData.mData.mChop[0]);
+            Field(recordData.mData.mChop[1]);
+            Field(recordData.mData.mSlash[0]);
+            Field(recordData.mData.mSlash[1]);
+            Field(recordData.mData.mThrust[0]);
+            Field(recordData.mData.mThrust[1]);
+            Field(recordData.mData.mFlags);
+            Field(recordData.mData.mEnchant);
+            Field(recordData.mEnchant, true);
+            Field(recordData.mScript, true);
 
             if (!record.baseId.empty())
             {
                 auto &&overrides = record.baseOverrides;
-                RW(overrides.hasName, send);
-                RW(overrides.hasModel, send);
-                RW(overrides.hasIcon, send);
-                RW(overrides.hasSubtype, send);
-                RW(overrides.hasWeight, send);
-                RW(overrides.hasValue, send);
-                RW(overrides.hasHealth, send);
-                RW(overrides.hasSpeed, send);
-                RW(overrides.hasReach, send);
-                RW(overrides.hasDamageChop, send);
-                RW(overrides.hasDamageSlash, send);
-                RW(overrides.hasDamageThrust, send);
-                RW(overrides.hasFlags, send);
-                RW(overrides.hasEnchantmentCharge, send);
-                RW(overrides.hasEnchantmentId, send);
-                RW(overrides.hasScript, send);
+                Field(overrides.hasName);
+                Field(overrides.hasModel);
+                Field(overrides.hasIcon);
+                Field(overrides.hasSubtype);
+                Field(overrides.hasWeight);
+                Field(overrides.hasValue);
+                Field(overrides.hasHealth);
+                Field(overrides.hasSpeed);
+                Field(overrides.hasReach);
+                Field(overrides.hasDamageChop);
+                Field(overrides.hasDamageSlash);
+                Field(overrides.hasDamageThrust);
+                Field(overrides.hasFlags);
+                Field(overrides.hasEnchantmentCharge);
+                Field(overrides.hasEnchantmentId);
+                Field(overrides.hasScript);
             }
         }
     }
@@ -420,18 +420,18 @@ void PacketRecordDynamic::Packet(bool send)
         {
             auto &recordData = record.data;
 
-            RW(record.baseId, send, true);
-            RW(recordData.mId, send, true);
-            RW(recordData.mName, send, true);
-            RW(recordData.mModel, send, true);
-            RW(recordData.mScript, send, true);
+            Field(record.baseId, true);
+            Field(recordData.mId, true);
+            Field(recordData.mName, true);
+            Field(recordData.mModel, true);
+            Field(recordData.mScript, true);
 
             if (!record.baseId.empty())
             {
                 auto &&overrides = record.baseOverrides;
-                RW(overrides.hasName, send);
-                RW(overrides.hasModel, send);
-                RW(overrides.hasScript, send);
+                Field(overrides.hasName);
+                Field(overrides.hasModel);
+                Field(overrides.hasScript);
             }
         }
     }
@@ -441,28 +441,28 @@ void PacketRecordDynamic::Packet(bool send)
         {
             auto &recordData = record.data;
 
-            RW(record.baseId, send, true);
-            RW(recordData.mId, send, true);
-            RW(recordData.mName, send, true);
-            RW(recordData.mModel, send, true);
-            RW(recordData.mIcon, send, true);
-            RW(recordData.mData.mType, send, true);
-            RW(recordData.mData.mWeight, send, true);
-            RW(recordData.mData.mValue, send, true);
-            RW(recordData.mData.mQuality, send, true);
-            RW(recordData.mScript, send, true);
+            Field(record.baseId, true);
+            Field(recordData.mId, true);
+            Field(recordData.mName, true);
+            Field(recordData.mModel, true);
+            Field(recordData.mIcon, true);
+            Field(recordData.mData.mType, true);
+            Field(recordData.mData.mWeight, true);
+            Field(recordData.mData.mValue, true);
+            Field(recordData.mData.mQuality, true);
+            Field(recordData.mScript, true);
 
             if (!record.baseId.empty())
             {
                 auto &&overrides = record.baseOverrides;
-                RW(overrides.hasName, send);
-                RW(overrides.hasModel, send);
-                RW(overrides.hasIcon, send);
-                RW(overrides.hasSubtype, send);
-                RW(overrides.hasWeight, send);
-                RW(overrides.hasValue, send);
-                RW(overrides.hasQuality, send);
-                RW(overrides.hasScript, send);
+                Field(overrides.hasName);
+                Field(overrides.hasModel);
+                Field(overrides.hasIcon);
+                Field(overrides.hasSubtype);
+                Field(overrides.hasWeight);
+                Field(overrides.hasValue);
+                Field(overrides.hasQuality);
+                Field(overrides.hasScript);
             }
         }
     }
@@ -472,24 +472,24 @@ void PacketRecordDynamic::Packet(bool send)
         {
             auto &recordData = record.data;
 
-            RW(record.baseId, send, true);
-            RW(recordData.mId, send, true);
-            RW(recordData.mModel, send, true);
-            RW(recordData.mRace, send, true);
-            RW(recordData.mData.mType, send);
-            RW(recordData.mData.mPart, send);
-            RW(recordData.mData.mVampire, send);
-            RW(recordData.mData.mFlags, send);
+            Field(record.baseId, true);
+            Field(recordData.mId, true);
+            Field(recordData.mModel, true);
+            Field(recordData.mRace, true);
+            Field(recordData.mData.mType);
+            Field(recordData.mData.mPart);
+            Field(recordData.mData.mVampire);
+            Field(recordData.mData.mFlags);
 
             if (!record.baseId.empty())
             {
                 auto &&overrides = record.baseOverrides;
-                RW(overrides.hasModel, send);
-                RW(overrides.hasRace, send);
-                RW(overrides.hasSubtype, send);
-                RW(overrides.hasBodyPartType, send);
-                RW(overrides.hasVampireState, send);
-                RW(overrides.hasFlags, send);
+                Field(overrides.hasModel);
+                Field(overrides.hasRace);
+                Field(overrides.hasSubtype);
+                Field(overrides.hasBodyPartType);
+                Field(overrides.hasVampireState);
+                Field(overrides.hasFlags);
             }
         }
     }
@@ -499,8 +499,8 @@ void PacketRecordDynamic::Packet(bool send)
         {
             auto &recordData = record.data;
 
-            RW(record.baseId, send, true);
-            RW(recordData.mName, send, true);
+            Field(record.baseId, true);
+            Field(recordData.mName, true);
         }
     }
     else if (worldstate->recordsType == mwmp::RECORD_TYPE::CONTAINER)
@@ -509,24 +509,24 @@ void PacketRecordDynamic::Packet(bool send)
         {
             auto &recordData = record.data;
 
-            RW(record.baseId, send, true);
-            RW(recordData.mId, send, true);
-            RW(recordData.mName, send, true);
-            RW(recordData.mModel, send, true);
-            RW(recordData.mWeight, send);
-            RW(recordData.mFlags, send);
-            RW(recordData.mScript, send, true);
+            Field(record.baseId, true);
+            Field(recordData.mId, true);
+            Field(recordData.mName, true);
+            Field(recordData.mModel, true);
+            Field(recordData.mWeight);
+            Field(recordData.mFlags);
+            Field(recordData.mScript, true);
             ProcessInventoryList(record.inventory, recordData.mInventory, send);
 
             if (!record.baseId.empty())
             {
                 auto &&overrides = record.baseOverrides;
-                RW(overrides.hasName, send);
-                RW(overrides.hasModel, send);
-                RW(overrides.hasWeight, send);
-                RW(overrides.hasFlags, send);
-                RW(overrides.hasScript, send);
-                RW(overrides.hasInventory, send);
+                Field(overrides.hasName);
+                Field(overrides.hasModel);
+                Field(overrides.hasWeight);
+                Field(overrides.hasFlags);
+                Field(overrides.hasScript);
+                Field(overrides.hasInventory);
             }
         }
     }
@@ -536,56 +536,56 @@ void PacketRecordDynamic::Packet(bool send)
         {
             auto &recordData = record.data;
 
-            RW(record.baseId, send, true);
-            RW(record.inventoryBaseId, send, true);
-            RW(recordData.mId, send, true);
-            RW(recordData.mName, send, true);
-            RW(recordData.mModel, send, true);
-            RW(recordData.mScale, send);
-            RW(recordData.mBloodType, send);
-            RW(recordData.mData.mType, send);
-            RW(recordData.mData.mLevel, send);
-            RW(recordData.mData.mHealth, send);
-            RW(recordData.mData.mMana, send);
-            RW(recordData.mData.mFatigue, send);
-            RW(recordData.mData.mSoul, send);
-            RW(recordData.mData.mAttack[0], send);
-            RW(recordData.mData.mAttack[1], send);
-            RW(recordData.mData.mAttack[2], send);
-            RW(recordData.mData.mAttack[3], send);
-            RW(recordData.mData.mAttack[4], send);
-            RW(recordData.mData.mAttack[5], send);
-            RW(recordData.mAiData.mFight, send);
-            RW(recordData.mAiData.mFlee, send);
-            RW(recordData.mAiData.mAlarm, send);
-            RW(recordData.mAiData.mServices, send);
-            RW(recordData.mFlags, send);
-            RW(recordData.mScript, send, true);
+            Field(record.baseId, true);
+            Field(record.inventoryBaseId, true);
+            Field(recordData.mId, true);
+            Field(recordData.mName, true);
+            Field(recordData.mModel, true);
+            Field(recordData.mScale);
+            Field(recordData.mBloodType);
+            Field(recordData.mData.mType);
+            Field(recordData.mData.mLevel);
+            Field(recordData.mData.mHealth);
+            Field(recordData.mData.mMana);
+            Field(recordData.mData.mFatigue);
+            Field(recordData.mData.mSoul);
+            Field(recordData.mData.mAttack[0]);
+            Field(recordData.mData.mAttack[1]);
+            Field(recordData.mData.mAttack[2]);
+            Field(recordData.mData.mAttack[3]);
+            Field(recordData.mData.mAttack[4]);
+            Field(recordData.mData.mAttack[5]);
+            Field(recordData.mAiData.mFight);
+            Field(recordData.mAiData.mFlee);
+            Field(recordData.mAiData.mAlarm);
+            Field(recordData.mAiData.mServices);
+            Field(recordData.mFlags);
+            Field(recordData.mScript, true);
             ProcessInventoryList(record.inventory, recordData.mInventory, send);
 
             if (!record.baseId.empty())
             {
                 auto &&overrides = record.baseOverrides;
-                RW(overrides.hasName, send);
-                RW(overrides.hasModel, send);
-                RW(overrides.hasScale, send);
-                RW(overrides.hasBloodType, send);
-                RW(overrides.hasSubtype, send);
-                RW(overrides.hasLevel, send);
-                RW(overrides.hasHealth, send);
-                RW(overrides.hasMagicka, send);
-                RW(overrides.hasFatigue, send);
-                RW(overrides.hasSoulValue, send);
-                RW(overrides.hasDamageChop, send);
-                RW(overrides.hasDamageSlash, send);
-                RW(overrides.hasDamageThrust, send);
-                RW(overrides.hasAiFight, send);
-                RW(overrides.hasAiFlee, send);
-                RW(overrides.hasAiAlarm, send);
-                RW(overrides.hasAiServices, send);
-                RW(overrides.hasFlags, send);
-                RW(overrides.hasScript, send);
-                RW(overrides.hasInventory, send);
+                Field(overrides.hasName);
+                Field(overrides.hasModel);
+                Field(overrides.hasScale);
+                Field(overrides.hasBloodType);
+                Field(overrides.hasSubtype);
+                Field(overrides.hasLevel);
+                Field(overrides.hasHealth);
+                Field(overrides.hasMagicka);
+                Field(overrides.hasFatigue);
+                Field(overrides.hasSoulValue);
+                Field(overrides.hasDamageChop);
+                Field(overrides.hasDamageSlash);
+                Field(overrides.hasDamageThrust);
+                Field(overrides.hasAiFight);
+                Field(overrides.hasAiFlee);
+                Field(overrides.hasAiAlarm);
+                Field(overrides.hasAiServices);
+                Field(overrides.hasFlags);
+                Field(overrides.hasScript);
+                Field(overrides.hasInventory);
             }
         }
     }
@@ -595,22 +595,22 @@ void PacketRecordDynamic::Packet(bool send)
         {
             auto &recordData = record.data;
 
-            RW(record.baseId, send, true);
-            RW(recordData.mId, send, true);
-            RW(recordData.mName, send, true);
-            RW(recordData.mModel, send, true);
-            RW(recordData.mOpenSound, send, true);
-            RW(recordData.mCloseSound, send, true);
-            RW(recordData.mScript, send, true);
+            Field(record.baseId, true);
+            Field(recordData.mId, true);
+            Field(recordData.mName, true);
+            Field(recordData.mModel, true);
+            Field(recordData.mOpenSound, true);
+            Field(recordData.mCloseSound, true);
+            Field(recordData.mScript, true);
 
             if (!record.baseId.empty())
             {
                 auto &&overrides = record.baseOverrides;
-                RW(overrides.hasName, send);
-                RW(overrides.hasModel, send);
-                RW(overrides.hasOpenSound, send);
-                RW(overrides.hasCloseSound, send);
-                RW(overrides.hasScript, send);
+                Field(overrides.hasName);
+                Field(overrides.hasModel);
+                Field(overrides.hasOpenSound);
+                Field(overrides.hasCloseSound);
+                Field(overrides.hasScript);
             }
         }
     }
@@ -620,21 +620,21 @@ void PacketRecordDynamic::Packet(bool send)
         {
             auto& recordData = record.data;
 
-            RW(record.baseId, send, true);
-            RW(recordData.mId, send, true);
-            RW(record.variable.variableType, send, true);
+            Field(record.baseId, true);
+            Field(recordData.mId, true);
+            Field(record.variable.variableType, true);
 
             short variableType = record.variable.variableType;
 
             if (variableType == mwmp::VARIABLE_TYPE::INT)
             {
-                RW(record.variable.intValue, send);
+                Field(record.variable.intValue);
                 recordData.mValue.setType(ESM::VarType::VT_Int);
                 recordData.mValue.setInteger(record.variable.intValue);
             }
             else if (variableType == mwmp::VARIABLE_TYPE::FLOAT)
             {
-                RW(record.variable.floatValue, send);
+                Field(record.variable.floatValue);
 
                 if (variableType == mwmp::VARIABLE_TYPE::FLOAT)
                     recordData.mValue.setType(ESM::VarType::VT_Float);
@@ -643,7 +643,7 @@ void PacketRecordDynamic::Packet(bool send)
             }
             else if (variableType == mwmp::VARIABLE_TYPE::STRING)
             {
-                RW(record.variable.stringValue, send, true);
+                Field(record.variable.stringValue, true);
                 recordData.mValue.setType(ESM::VarType::VT_String);
                 recordData.mValue.setString(record.variable.stringValue);
             }
@@ -655,28 +655,28 @@ void PacketRecordDynamic::Packet(bool send)
         {
             auto &recordData = record.data;
 
-            RW(record.baseId, send, true);
-            RW(recordData.mId, send, true);
-            RW(recordData.mName, send, true);
-            RW(recordData.mModel, send, true);
-            RW(recordData.mIcon, send, true);
-            RW(recordData.mData.mWeight, send);
-            RW(recordData.mData.mValue, send);
-            RW(recordData.mData.mEffectID, send);
-            RW(recordData.mData.mAttributes, send);
-            RW(recordData.mData.mSkills, send);
-            RW(recordData.mScript, send, true);
+            Field(record.baseId, true);
+            Field(recordData.mId, true);
+            Field(recordData.mName, true);
+            Field(recordData.mModel, true);
+            Field(recordData.mIcon, true);
+            Field(recordData.mData.mWeight);
+            Field(recordData.mData.mValue);
+            Field(recordData.mData.mEffectID);
+            Field(recordData.mData.mAttributes);
+            Field(recordData.mData.mSkills);
+            Field(recordData.mScript, true);
 
             if (!record.baseId.empty())
             {
                 auto &&overrides = record.baseOverrides;
-                RW(overrides.hasName, send);
-                RW(overrides.hasModel, send);
-                RW(overrides.hasIcon, send);
-                RW(overrides.hasWeight, send);
-                RW(overrides.hasValue, send);
-                RW(overrides.hasEffects, send);
-                RW(overrides.hasScript, send);
+                Field(overrides.hasName);
+                Field(overrides.hasModel);
+                Field(overrides.hasIcon);
+                Field(overrides.hasWeight);
+                Field(overrides.hasValue);
+                Field(overrides.hasEffects);
+                Field(overrides.hasScript);
             }
         }
     }
@@ -686,34 +686,34 @@ void PacketRecordDynamic::Packet(bool send)
         {
             auto &recordData = record.data;
 
-            RW(record.baseId, send, true);
-            RW(recordData.mId, send, true);
-            RW(recordData.mName, send, true);
-            RW(recordData.mModel, send, true);
-            RW(recordData.mIcon, send, true);
-            RW(recordData.mSound, send, true);
-            RW(recordData.mData.mWeight, send, true);
-            RW(recordData.mData.mValue, send, true);
-            RW(recordData.mData.mTime, send, true);
-            RW(recordData.mData.mRadius, send, true);
-            RW(recordData.mData.mColor, send, true);
-            RW(recordData.mData.mFlags, send, true);
-            RW(recordData.mScript, send, true);
+            Field(record.baseId, true);
+            Field(recordData.mId, true);
+            Field(recordData.mName, true);
+            Field(recordData.mModel, true);
+            Field(recordData.mIcon, true);
+            Field(recordData.mSound, true);
+            Field(recordData.mData.mWeight, true);
+            Field(recordData.mData.mValue, true);
+            Field(recordData.mData.mTime, true);
+            Field(recordData.mData.mRadius, true);
+            Field(recordData.mData.mColor, true);
+            Field(recordData.mData.mFlags, true);
+            Field(recordData.mScript, true);
 
             if (!record.baseId.empty())
             {
                 auto &&overrides = record.baseOverrides;
-                RW(overrides.hasName, send);
-                RW(overrides.hasModel, send);
-                RW(overrides.hasIcon, send);
-                RW(overrides.hasSound, send);
-                RW(overrides.hasWeight, send);
-                RW(overrides.hasValue, send);
-                RW(overrides.hasTime, send);
-                RW(overrides.hasRadius, send);
-                RW(overrides.hasColor, send);
-                RW(overrides.hasFlags, send);
-                RW(overrides.hasScript, send);
+                Field(overrides.hasName);
+                Field(overrides.hasModel);
+                Field(overrides.hasIcon);
+                Field(overrides.hasSound);
+                Field(overrides.hasWeight);
+                Field(overrides.hasValue);
+                Field(overrides.hasTime);
+                Field(overrides.hasRadius);
+                Field(overrides.hasColor);
+                Field(overrides.hasFlags);
+                Field(overrides.hasScript);
             }
         }
     }
@@ -723,28 +723,28 @@ void PacketRecordDynamic::Packet(bool send)
         {
             auto &recordData = record.data;
 
-            RW(record.baseId, send, true);
-            RW(recordData.mId, send, true);
-            RW(recordData.mName, send, true);
-            RW(recordData.mModel, send, true);
-            RW(recordData.mIcon, send, true);
-            RW(recordData.mData.mWeight, send, true);
-            RW(recordData.mData.mValue, send, true);
-            RW(recordData.mData.mQuality, send, true);
-            RW(recordData.mData.mUses, send, true);
-            RW(recordData.mScript, send, true);
+            Field(record.baseId, true);
+            Field(recordData.mId, true);
+            Field(recordData.mName, true);
+            Field(recordData.mModel, true);
+            Field(recordData.mIcon, true);
+            Field(recordData.mData.mWeight, true);
+            Field(recordData.mData.mValue, true);
+            Field(recordData.mData.mQuality, true);
+            Field(recordData.mData.mUses, true);
+            Field(recordData.mScript, true);
 
             if (!record.baseId.empty())
             {
                 auto &&overrides = record.baseOverrides;
-                RW(overrides.hasName, send);
-                RW(overrides.hasModel, send);
-                RW(overrides.hasIcon, send);
-                RW(overrides.hasWeight, send);
-                RW(overrides.hasValue, send);
-                RW(overrides.hasQuality, send);
-                RW(overrides.hasUses, send);
-                RW(overrides.hasScript, send);
+                Field(overrides.hasName);
+                Field(overrides.hasModel);
+                Field(overrides.hasIcon);
+                Field(overrides.hasWeight);
+                Field(overrides.hasValue);
+                Field(overrides.hasQuality);
+                Field(overrides.hasUses);
+                Field(overrides.hasScript);
             }
         }
     }
@@ -754,52 +754,52 @@ void PacketRecordDynamic::Packet(bool send)
         {
             auto &recordData = record.data;
 
-            RW(record.baseId, send, true);
-            RW(record.inventoryBaseId, send, true);
-            RW(recordData.mId, send, true);
-            RW(recordData.mName, send, true);
-            RW(recordData.mFlags, send);
-            RW(recordData.mRace, send, true);
-            RW(recordData.mModel, send, true);
-            RW(recordData.mHair, send, true);
-            RW(recordData.mHead, send, true);
-            RW(recordData.mClass, send, true);
-            RW(recordData.mFaction, send, true);
-            RW(recordData.mScript, send, true);
-            RW(recordData.mNpdt.mLevel, send);
-            RW(recordData.mNpdt.mHealth, send);
-            RW(recordData.mNpdt.mMana, send);
-            RW(recordData.mNpdt.mFatigue, send);
-            RW(recordData.mAiData.mFight, send);
-            RW(recordData.mAiData.mFlee, send);
-            RW(recordData.mAiData.mAlarm, send);
-            RW(recordData.mAiData.mServices, send);
+            Field(record.baseId, true);
+            Field(record.inventoryBaseId, true);
+            Field(recordData.mId, true);
+            Field(recordData.mName, true);
+            Field(recordData.mFlags);
+            Field(recordData.mRace, true);
+            Field(recordData.mModel, true);
+            Field(recordData.mHair, true);
+            Field(recordData.mHead, true);
+            Field(recordData.mClass, true);
+            Field(recordData.mFaction, true);
+            Field(recordData.mScript, true);
+            Field(recordData.mNpdt.mLevel);
+            Field(recordData.mNpdt.mHealth);
+            Field(recordData.mNpdt.mMana);
+            Field(recordData.mNpdt.mFatigue);
+            Field(recordData.mAiData.mFight);
+            Field(recordData.mAiData.mFlee);
+            Field(recordData.mAiData.mAlarm);
+            Field(recordData.mAiData.mServices);
 
-            RW(recordData.mNpdtType, send);
+            Field(recordData.mNpdtType);
             ProcessInventoryList(record.inventory, recordData.mInventory, send);
 
             if (!record.baseId.empty())
             {
                 auto &&overrides = record.baseOverrides;
-                RW(overrides.hasName, send);
-                RW(overrides.hasGender, send);
-                RW(overrides.hasFlags, send);
-                RW(overrides.hasRace, send);
-                RW(overrides.hasModel, send);
-                RW(overrides.hasHair, send);
-                RW(overrides.hasHead, send);
-                RW(overrides.hasFaction, send);
-                RW(overrides.hasScript, send);
-                RW(overrides.hasLevel, send);
-                RW(overrides.hasHealth, send);
-                RW(overrides.hasMagicka, send);
-                RW(overrides.hasFatigue, send);
-                RW(overrides.hasAiFight, send);
-                RW(overrides.hasAiFlee, send);
-                RW(overrides.hasAiAlarm, send);
-                RW(overrides.hasAiServices, send);
-                RW(overrides.hasAutoCalc, send);
-                RW(overrides.hasInventory, send);
+                Field(overrides.hasName);
+                Field(overrides.hasGender);
+                Field(overrides.hasFlags);
+                Field(overrides.hasRace);
+                Field(overrides.hasModel);
+                Field(overrides.hasHair);
+                Field(overrides.hasHead);
+                Field(overrides.hasFaction);
+                Field(overrides.hasScript);
+                Field(overrides.hasLevel);
+                Field(overrides.hasHealth);
+                Field(overrides.hasMagicka);
+                Field(overrides.hasFatigue);
+                Field(overrides.hasAiFight);
+                Field(overrides.hasAiFlee);
+                Field(overrides.hasAiAlarm);
+                Field(overrides.hasAiServices);
+                Field(overrides.hasAutoCalc);
+                Field(overrides.hasInventory);
             }
         }
     }
@@ -809,28 +809,28 @@ void PacketRecordDynamic::Packet(bool send)
         {
             auto &recordData = record.data;
 
-            RW(record.baseId, send, true);
-            RW(recordData.mId, send, true);
-            RW(recordData.mName, send, true);
-            RW(recordData.mModel, send, true);
-            RW(recordData.mIcon, send, true);
-            RW(recordData.mData.mWeight, send, true);
-            RW(recordData.mData.mValue, send, true);
-            RW(recordData.mData.mQuality, send, true);
-            RW(recordData.mData.mUses, send, true);
-            RW(recordData.mScript, send, true);
+            Field(record.baseId, true);
+            Field(recordData.mId, true);
+            Field(recordData.mName, true);
+            Field(recordData.mModel, true);
+            Field(recordData.mIcon, true);
+            Field(recordData.mData.mWeight, true);
+            Field(recordData.mData.mValue, true);
+            Field(recordData.mData.mQuality, true);
+            Field(recordData.mData.mUses, true);
+            Field(recordData.mScript, true);
 
             if (!record.baseId.empty())
             {
                 auto &&overrides = record.baseOverrides;
-                RW(overrides.hasName, send);
-                RW(overrides.hasModel, send);
-                RW(overrides.hasIcon, send);
-                RW(overrides.hasWeight, send);
-                RW(overrides.hasValue, send);
-                RW(overrides.hasQuality, send);
-                RW(overrides.hasUses, send);
-                RW(overrides.hasScript, send);
+                Field(overrides.hasName);
+                Field(overrides.hasModel);
+                Field(overrides.hasIcon);
+                Field(overrides.hasWeight);
+                Field(overrides.hasValue);
+                Field(overrides.hasQuality);
+                Field(overrides.hasUses);
+                Field(overrides.hasScript);
             }
         }
     }
@@ -840,28 +840,28 @@ void PacketRecordDynamic::Packet(bool send)
         {
             auto &recordData = record.data;
 
-            RW(record.baseId, send, true);
-            RW(recordData.mId, send, true);
-            RW(recordData.mName, send, true);
-            RW(recordData.mModel, send, true);
-            RW(recordData.mIcon, send, true);
-            RW(recordData.mData.mWeight, send, true);
-            RW(recordData.mData.mValue, send, true);
-            RW(recordData.mData.mQuality, send, true);
-            RW(recordData.mData.mUses, send, true);
-            RW(recordData.mScript, send, true);
+            Field(record.baseId, true);
+            Field(recordData.mId, true);
+            Field(recordData.mName, true);
+            Field(recordData.mModel, true);
+            Field(recordData.mIcon, true);
+            Field(recordData.mData.mWeight, true);
+            Field(recordData.mData.mValue, true);
+            Field(recordData.mData.mQuality, true);
+            Field(recordData.mData.mUses, true);
+            Field(recordData.mScript, true);
 
             if (!record.baseId.empty())
             {
                 auto &&overrides = record.baseOverrides;
-                RW(overrides.hasName, send);
-                RW(overrides.hasModel, send);
-                RW(overrides.hasIcon, send);
-                RW(overrides.hasWeight, send);
-                RW(overrides.hasValue, send);
-                RW(overrides.hasQuality, send);
-                RW(overrides.hasUses, send);
-                RW(overrides.hasScript, send);
+                Field(overrides.hasName);
+                Field(overrides.hasModel);
+                Field(overrides.hasIcon);
+                Field(overrides.hasWeight);
+                Field(overrides.hasValue);
+                Field(overrides.hasQuality);
+                Field(overrides.hasUses);
+                Field(overrides.hasScript);
             }
         }
     }
@@ -871,14 +871,14 @@ void PacketRecordDynamic::Packet(bool send)
         {
             auto &recordData = record.data;
 
-            RW(record.baseId, send, true);
-            RW(recordData.mId, send, true);
-            RW(recordData.mScriptText, send, true);
+            Field(record.baseId, true);
+            Field(recordData.mId, true);
+            Field(recordData.mScriptText, true);
 
             if (!record.baseId.empty())
             {
                 auto &&overrides = record.baseOverrides;
-                RW(overrides.hasScriptText, send);
+                Field(overrides.hasScriptText);
             }
         }
     }
@@ -888,14 +888,14 @@ void PacketRecordDynamic::Packet(bool send)
         {
             auto &recordData = record.data;
 
-            RW(record.baseId, send, true);
-            RW(recordData.mId, send, true);
-            RW(recordData.mModel, send, true);
+            Field(record.baseId, true);
+            Field(recordData.mId, true);
+            Field(recordData.mModel, true);
 
             if (!record.baseId.empty())
             {
                 auto &&overrides = record.baseOverrides;
-                RW(overrides.hasModel, send);
+                Field(overrides.hasModel);
             }
         }
     }
@@ -905,20 +905,20 @@ void PacketRecordDynamic::Packet(bool send)
         {
             auto& recordData = record.data;
 
-            RW(record.baseId, send, true);
-            RW(recordData.mId, send, true);
-            RW(recordData.mSound, send, true);
-            RW(recordData.mData.mVolume, send);
-            RW(recordData.mData.mMinRange, send);
-            RW(recordData.mData.mMaxRange, send);
+            Field(record.baseId, true);
+            Field(recordData.mId, true);
+            Field(recordData.mSound, true);
+            Field(recordData.mData.mVolume);
+            Field(recordData.mData.mMinRange);
+            Field(recordData.mData.mMaxRange);
 
             if (!record.baseId.empty())
             {
                 auto&& overrides = record.baseOverrides;
-                RW(overrides.hasSound, send);
-                RW(overrides.hasVolume, send);
-                RW(overrides.hasMinRange, send);
-                RW(overrides.hasMaxRange, send);
+                Field(overrides.hasSound);
+                Field(overrides.hasVolume);
+                Field(overrides.hasMinRange);
+                Field(overrides.hasMaxRange);
             }
         }
     }
@@ -931,7 +931,7 @@ void PacketRecordDynamic::ProcessEffects(ESM::EffectList &effectList, bool send)
     if (send)
         effectCount = static_cast<uint32_t>(effectList.mList.size());
 
-    if (!RWCount(effectCount, send, protocol::limits::spellEffects))
+    if (!CollectionSize(effectCount, protocol::limits::spellEffects))
         return;
 
     if (!send)
@@ -942,14 +942,14 @@ void PacketRecordDynamic::ProcessEffects(ESM::EffectList &effectList, bool send)
 
     for (auto &&effect : effectList.mList)
     {
-        RW(effect.mData.mEffectID, send);
-        RW(effect.mData.mAttribute, send);
-        RW(effect.mData.mSkill, send);
-        RW(effect.mData.mRange, send);
-        RW(effect.mData.mArea, send);
-        RW(effect.mData.mDuration, send);
-        RW(effect.mData.mMagnMax, send);
-        RW(effect.mData.mMagnMin, send);
+        Field(effect.mData.mEffectID);
+        Field(effect.mData.mAttribute);
+        Field(effect.mData.mSkill);
+        Field(effect.mData.mRange);
+        Field(effect.mData.mArea);
+        Field(effect.mData.mDuration);
+        Field(effect.mData.mMagnMax);
+        Field(effect.mData.mMagnMin);
     }
 }
 
@@ -960,7 +960,7 @@ void PacketRecordDynamic::ProcessBodyParts(ESM::PartReferenceList &partList, boo
     if (send)
         partCount = static_cast<uint32_t>(partList.mParts.size());
 
-    if (!RWCount(partCount, send, maxParts))
+    if (!CollectionSize(partCount, maxParts))
         return;
 
     if (!send)
@@ -971,9 +971,9 @@ void PacketRecordDynamic::ProcessBodyParts(ESM::PartReferenceList &partList, boo
 
     for (auto &&part : partList.mParts)
     {
-        RW(part.mPart, send);
-        RW(part.mMale, send, true);
-        RW(part.mFemale, send, true);
+        Field(part.mPart);
+        Field(part.mMale, true);
+        Field(part.mFemale, true);
     }
 }
 
@@ -986,7 +986,7 @@ void PacketRecordDynamic::ProcessInventoryList(std::vector<mwmp::Item> &inventor
     if (send)
         itemCount = static_cast<uint32_t>(inventory.size());
 
-    if (!RWCount(itemCount, send, maxItems))
+    if (!CollectionSize(itemCount, maxItems))
         return;
 
     if (!send)
@@ -998,8 +998,8 @@ void PacketRecordDynamic::ProcessInventoryList(std::vector<mwmp::Item> &inventor
 
     for (auto &&item : inventory)
     {
-        RW(item.refId, send, true);
-        RW(item.count, send, true);
+        Field(item.refId, true);
+        Field(item.count, true);
 
         if (!send)
         {

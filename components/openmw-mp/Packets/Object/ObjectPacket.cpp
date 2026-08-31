@@ -47,17 +47,17 @@ bool ObjectPacket::PacketHeader(bool send)
         return false;
     }
 
-    RW(objectList->packetOrigin, send);
+    Field(objectList->packetOrigin);
 
     if (objectList->packetOrigin == mwmp::CLIENT_SCRIPT_LOCAL || objectList->packetOrigin == mwmp::CLIENT_SCRIPT_GLOBAL)
-        RW(objectList->originClientScript, send, true);
+        Field(objectList->originClientScript, true);
 
     if (send)
         objectList->baseObjectCount = (unsigned int)(objectList->baseObjects.size());
     else
         objectList->baseObjects.clear();
 
-    if (!RWCount(objectList->baseObjectCount, send, protocol::limits::objectChanges))
+    if (!CollectionSize(objectList->baseObjectCount, protocol::limits::objectChanges))
     {
         objectList->isValid = false;
         return false;
@@ -65,8 +65,8 @@ bool ObjectPacket::PacketHeader(bool send)
 
     if (hasCellData)
     {
-        RW(objectList->cell.mData, send, true);
-        RW(objectList->cell.mName, send, true);
+        Field(objectList->cell.mData, true);
+        Field(objectList->cell.mName, true);
     }
 
     return true;
@@ -74,7 +74,7 @@ bool ObjectPacket::PacketHeader(bool send)
 
 void ObjectPacket::Object(BaseObject &baseObject, bool send)
 {
-    RW(baseObject.refId, send, true);
-    RW(baseObject.refNum, send);
-    RW(baseObject.mpNum, send);
+    Field(baseObject.refId, true);
+    Field(baseObject.refNum);
+    Field(baseObject.mpNum);
 }

@@ -12,6 +12,6 @@ PacketObjectAnimPlay::PacketObjectAnimPlay() : ObjectPacket()
 void PacketObjectAnimPlay::Object(BaseObject &baseObject, bool send)
 {
     ObjectPacket::Object(baseObject, send);
-    RW(baseObject.animGroup, send);
-    RW(baseObject.animMode, send);
+    Field(baseObject.animGroup);
+    Field(baseObject.animMode);
 }

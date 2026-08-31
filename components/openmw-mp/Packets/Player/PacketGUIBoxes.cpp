@@ -12,16 +12,16 @@ void PacketGUIBoxes::Packet(bool send)
 {
     PlayerPacket::Packet(send);
 
-    RW(player->guiMessageBox.id, send);
-    RW(player->guiMessageBox.type, send);
-    RW(player->guiMessageBox.label, send);
+    Field(player->guiMessageBox.id);
+    Field(player->guiMessageBox.type);
+    Field(player->guiMessageBox.label);
 
-    RW(player->guiMessageBox.data, send, true);
+    Field(player->guiMessageBox.data, true);
 
     if (player->guiMessageBox.type == BasePlayer::GUIMessageBox::CustomMessageBox)
-        RW(player->guiMessageBox.buttons, send);
+        Field(player->guiMessageBox.buttons);
     else if (player->guiMessageBox.type == BasePlayer::GUIMessageBox::InputDialog ||
         player->guiMessageBox.type == BasePlayer::GUIMessageBox::PasswordDialog)
-        RW(player->guiMessageBox.note, send);
+        Field(player->guiMessageBox.note);
 }
 

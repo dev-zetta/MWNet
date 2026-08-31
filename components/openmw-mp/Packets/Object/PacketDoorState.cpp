@@ -12,5 +12,5 @@ PacketDoorState::PacketDoorState() : ObjectPacket()
 void PacketDoorState::Object(BaseObject &baseObject, bool send)
 {
     ObjectPacket::Object(baseObject, send);
-    RW(baseObject.doorState, send);
+    Field(baseObject.doorState);
 }

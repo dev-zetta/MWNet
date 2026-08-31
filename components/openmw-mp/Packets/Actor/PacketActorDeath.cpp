@@ -11,22 +11,22 @@ PacketActorDeath::PacketActorDeath() : ActorPacket()
 
 void PacketActorDeath::Actor(BaseActor &actor, bool send)
 {
-    RW(actor.refId, send);
+    Field(actor.refId);
 
-    RW(actor.deathState, send);
-    RW(actor.isInstantDeath, send);
-    RW(actor.killer.isPlayer, send);
+    Field(actor.deathState);
+    Field(actor.isInstantDeath);
+    Field(actor.killer.isPlayer);
 
     if (actor.killer.isPlayer)
     {
-        RW(actor.killer.guid, send);
+        Field(actor.killer.guid);
     }
     else
     {
-        RW(actor.killer.refId, send, true);
-        RW(actor.killer.refNum, send);
-        RW(actor.killer.mpNum, send);
+        Field(actor.killer.refId, true);
+        Field(actor.killer.refNum);
+        Field(actor.killer.mpNum);
 
-        RW(actor.killer.name, send, true);
+        Field(actor.killer.name, true);
     }
 }

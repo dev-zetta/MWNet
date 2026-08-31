@@ -10,7 +10,7 @@ PacketScriptMemberShort::PacketScriptMemberShort() : ObjectPacket()
 
 void PacketScriptMemberShort::Object(BaseObject &baseObject, bool send)
 {
-    //RW(baseObject.refId, send);
-    //RW(baseObject.index, send);
-    //RW(baseObject.shortVal, send);
+    //Field(baseObject.refId);
+    //Field(baseObject.index);
+    //Field(baseObject.shortVal);
 }

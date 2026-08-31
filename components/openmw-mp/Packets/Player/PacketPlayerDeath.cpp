@@ -12,19 +12,19 @@ void PacketPlayerDeath::Packet(bool send)
 {
     PlayerPacket::Packet(send);
 
-    RW(player->deathState, send);
-    RW(player->killer.isPlayer, send);
+    Field(player->deathState);
+    Field(player->killer.isPlayer);
 
     if (player->killer.isPlayer)
     {
-        RW(player->killer.guid, send);
+        Field(player->killer.guid);
     }
     else
     {
-        RW(player->killer.refId, send, true);
-        RW(player->killer.refNum, send);
-        RW(player->killer.mpNum, send);
+        Field(player->killer.refId, true);
+        Field(player->killer.refNum);
+        Field(player->killer.mpNum);
 
-        RW(player->killer.name, send, true);
+        Field(player->killer.name, true);
     }
 }

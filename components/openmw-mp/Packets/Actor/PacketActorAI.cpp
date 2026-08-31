@@ -11,40 +11,40 @@ PacketActorAI::PacketActorAI() : ActorPacket()
 
 void PacketActorAI::Actor(BaseActor &actor, bool send)
 {
-    RW(actor.aiAction, send);
+    Field(actor.aiAction);
 
     if (actor.aiAction != mwmp::BaseActorList::CANCEL)
     {
         if (actor.aiAction == mwmp::BaseActorList::WANDER)
         {
-            RW(actor.aiDistance, send);
-            RW(actor.aiShouldRepeat, send);
+            Field(actor.aiDistance);
+            Field(actor.aiShouldRepeat);
         }
 
         if (actor.aiAction == mwmp::BaseActorList::ESCORT || actor.aiAction == mwmp::BaseActorList::WANDER)
-            RW(actor.aiDuration, send);
+            Field(actor.aiDuration);
 
         if (actor.aiAction == mwmp::BaseActorList::ESCORT || actor.aiAction == mwmp::BaseActorList::TRAVEL)
-            RW(actor.aiCoordinates, send);
+            Field(actor.aiCoordinates);
 
         if (actor.aiAction == mwmp::BaseActorList::ACTIVATE || actor.aiAction == mwmp::BaseActorList::COMBAT ||
             actor.aiAction == mwmp::BaseActorList::ESCORT || actor.aiAction == mwmp::BaseActorList::FOLLOW)
         {
-            RW(actor.hasAiTarget, send);
+            Field(actor.hasAiTarget);
 
             if (actor.hasAiTarget)
             {
-                RW(actor.aiTarget.isPlayer, send);
+                Field(actor.aiTarget.isPlayer);
 
                 if (actor.aiTarget.isPlayer)
                 {
-                    RW(actor.aiTarget.guid, send);
+                    Field(actor.aiTarget.guid);
                 }
                 else
                 {
-                    RW(actor.aiTarget.refId, send, true);
-                    RW(actor.aiTarget.refNum, send);
-                    RW(actor.aiTarget.mpNum, send);
+                    Field(actor.aiTarget.refId, true);
+                    Field(actor.aiTarget.refNum);
+                    Field(actor.aiTarget.mpNum);
                 }
             }
         }

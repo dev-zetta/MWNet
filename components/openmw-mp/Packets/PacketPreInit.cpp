@@ -19,7 +19,7 @@ void mwmp::PacketPreInit::Packet(bool send)
     }
 
     uint32_t numberOfChecksums = static_cast<std::uint32_t>(checksums->size());
-    if (!RWCount(numberOfChecksums, send, maxPlugins))
+    if (!CollectionSize(numberOfChecksums, maxPlugins))
         return;
 
     struct NAS
@@ -39,7 +39,7 @@ void mwmp::PacketPreInit::Packet(bool send)
             nas.strSize = checksumIt->first.size();
             nas.hashN = checksumIt++->second.size();
         }
-        if (!RW(nas.hashN, send) || !RW(nas.strSize, send))
+        if (!Field(nas.hashN) || !Field(nas.strSize))
             return;
 
         if (nas.strSize > pluginNameMaxLength)
@@ -63,7 +63,7 @@ void mwmp::PacketPreInit::Packet(bool send)
 
     for (auto &&checksum : target)
     {
-        if (!RW(checksum.first, send, false, numberOfHashesIt->strSize)
+        if (!Field(checksum.first, false, numberOfHashesIt->strSize)
             || checksum.first.size() != numberOfHashesIt->strSize)
         {
             invalidate(protocol::CodecError::InvalidValue);
@@ -73,7 +73,7 @@ void mwmp::PacketPreInit::Packet(bool send)
         checksum.second.resize(numberOfHashesIt->hashN);
         for (auto &&hash : checksum.second)
         {
-            if (!RW(hash, send))
+            if (!Field(hash))
                 return;
         }
         ++numberOfHashesIt;

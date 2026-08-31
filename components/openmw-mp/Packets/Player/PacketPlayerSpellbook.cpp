@@ -12,14 +12,14 @@ void PacketPlayerSpellbook::Packet(bool send)
 {
     PlayerPacket::Packet(send);
 
-    RW(player->spellbookChanges.action, send);
+    Field(player->spellbookChanges.action);
 
     uint32_t count = 0;
 
     if (send)
         count = static_cast<uint32_t>(player->spellbookChanges.spells.size());
 
-    if (!RWCount(count, send))
+    if (!CollectionSize(count))
         return;
 
     if (!send)
@@ -30,6 +30,6 @@ void PacketPlayerSpellbook::Packet(bool send)
 
     for (auto &&spell : player->spellbookChanges.spells)
     {
-        RW(spell.mId, send, true);
+        Field(spell.mId, true);
     }
 }

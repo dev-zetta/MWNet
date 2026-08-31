@@ -12,5 +12,5 @@ PacketObjectState::PacketObjectState() : ObjectPacket()
 void PacketObjectState::Object(BaseObject &baseObject, bool send)
 {
     ObjectPacket::Object(baseObject, send);
-    RW(baseObject.objectState, send);
+    Field(baseObject.objectState);
 }

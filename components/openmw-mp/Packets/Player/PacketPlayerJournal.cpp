@@ -17,7 +17,7 @@ void PacketPlayerJournal::Packet(bool send)
     if (send)
         count = static_cast<uint32_t>(player->journalChanges.size());
 
-    if (!RWCount(count, send))
+    if (!CollectionSize(count))
         return;
 
     if (!send)
@@ -28,21 +28,21 @@ void PacketPlayerJournal::Packet(bool send)
 
     for (auto &&journalItem : player->journalChanges)
     {
-        RW(journalItem.type, send);
-        RW(journalItem.quest, send, true);
-        RW(journalItem.index, send);
+        Field(journalItem.type);
+        Field(journalItem.quest, true);
+        Field(journalItem.index);
 
         if (journalItem.type == JournalItem::ENTRY)
         {
-            RW(journalItem.actorRefId, send, true);
+            Field(journalItem.actorRefId, true);
 
-            RW(journalItem.hasTimestamp, send);
+            Field(journalItem.hasTimestamp);
 
             if (journalItem.hasTimestamp)
             {
-                RW(journalItem.timestamp.daysPassed, send);
-                RW(journalItem.timestamp.month, send);
-                RW(journalItem.timestamp.day, send);
+                Field(journalItem.timestamp.daysPassed);
+                Field(journalItem.timestamp.month);
+                Field(journalItem.timestamp.day);
             }
         }
     }

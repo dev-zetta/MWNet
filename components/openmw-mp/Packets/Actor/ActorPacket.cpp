@@ -31,8 +31,8 @@ void ActorPacket::Packet(bool send)
         if (send)
             actor = actorList->baseActors.at(i);
 
-        RW(actor.refNum, send);
-        RW(actor.mpNum, send);
+        Field(actor.refNum);
+        Field(actor.mpNum);
 
         Actor(actor, send);
 
@@ -50,16 +50,16 @@ bool ActorPacket::PacketHeader(bool send)
         return false;
     }
 
-    RW(actorList->cell.mData, send, true);
-    RW(actorList->cell.mName, send, true);
-    RW(actorList->authorityLeaseId, send);
+    Field(actorList->cell.mData, true);
+    Field(actorList->cell.mName, true);
+    Field(actorList->authorityLeaseId);
 
     if (send)
         actorList->count = (unsigned int)(actorList->baseActors.size());
     else
         actorList->baseActors.clear();
 
-    if (!RWCount(actorList->count, send, protocol::limits::actorChanges))
+    if (!CollectionSize(actorList->count, protocol::limits::actorChanges))
     {
         actorList->isValid = false;
         return false;

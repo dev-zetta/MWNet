@@ -12,7 +12,7 @@ PacketActorStatsDynamic::PacketActorStatsDynamic() : ActorPacket()
 
 void PacketActorStatsDynamic::Actor(BaseActor &actor, bool send)
 {
-    RW(actor.creatureStats.mDynamic, send);
+    Field(actor.creatureStats.mDynamic);
 
     actor.hasStatsDynamicData = true;
 }

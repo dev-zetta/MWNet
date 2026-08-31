@@ -12,17 +12,17 @@ void PacketPlayerMiscellaneous::Packet(bool send)
 {
     PlayerPacket::Packet(send);
 
-    RW(player->miscellaneousChangeType, send);
+    Field(player->miscellaneousChangeType);
 
     if (player->miscellaneousChangeType == mwmp::MISCELLANEOUS_CHANGE_TYPE::MARK_LOCATION)
     {
-        RW(player->markCell.mData, send, true);
-        RW(player->markCell.mName, send, true);
+        Field(player->markCell.mData, true);
+        Field(player->markCell.mName, true);
 
-        RW(player->markPosition.pos, send);
-        RW(player->markPosition.rot[0], send);
-        RW(player->markPosition.rot[2], send);
+        Field(player->markPosition.pos);
+        Field(player->markPosition.rot[0]);
+        Field(player->markPosition.rot[2]);
     }
     else if (player->miscellaneousChangeType == mwmp::MISCELLANEOUS_CHANGE_TYPE::SELECTED_SPELL)
-        RW(player->selectedSpellId, send, true);
+        Field(player->selectedSpellId, true);
 }

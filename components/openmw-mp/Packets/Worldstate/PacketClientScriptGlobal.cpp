@@ -17,7 +17,7 @@ void PacketClientScriptGlobal::Packet(bool send)
     if (send)
         clientGlobalsCount = static_cast<uint32_t>(worldstate->clientGlobals.size());
 
-    if (!RWCount(clientGlobalsCount, send))
+    if (!CollectionSize(clientGlobalsCount))
         return;
 
     if (!send)
@@ -28,12 +28,12 @@ void PacketClientScriptGlobal::Packet(bool send)
 
     for (auto &&clientGlobal : worldstate->clientGlobals)
     {
-        RW(clientGlobal.id, send, true);
-        RW(clientGlobal.variableType, send);
+        Field(clientGlobal.id, true);
+        Field(clientGlobal.variableType);
 
         if (clientGlobal.variableType == mwmp::VARIABLE_TYPE::SHORT || clientGlobal.variableType == mwmp::VARIABLE_TYPE::LONG)
-            RW(clientGlobal.intValue, send);
+            Field(clientGlobal.intValue);
         else if (clientGlobal.variableType == mwmp::VARIABLE_TYPE::FLOAT)
-            RW(clientGlobal.floatValue, send);
+            Field(clientGlobal.floatValue);
     }
 }

@@ -11,42 +11,42 @@ PacketActorCast::PacketActorCast() : ActorPacket()
 
 void PacketActorCast::Actor(BaseActor &actor, bool send)
 {
-    RW(actor.cast.target.isPlayer, send);
+    Field(actor.cast.target.isPlayer);
 
     if (actor.cast.target.isPlayer)
     {
-        RW(actor.cast.target.guid, send);
+        Field(actor.cast.target.guid);
     }
     else
     {
-        RW(actor.cast.target.refId, send, true);
-        RW(actor.cast.target.refNum, send);
-        RW(actor.cast.target.mpNum, send);
+        Field(actor.cast.target.refId, true);
+        Field(actor.cast.target.refNum);
+        Field(actor.cast.target.mpNum);
     }
 
-    RW(actor.cast.type, send);
+    Field(actor.cast.type);
 
     if (actor.cast.type == mwmp::Cast::ITEM)
-        RW(actor.cast.itemId, send, true);
+        Field(actor.cast.itemId, true);
     else
     {
-        RW(actor.cast.pressed, send);
-        RW(actor.cast.success, send);
+        Field(actor.cast.pressed);
+        Field(actor.cast.success);
 
-        RW(actor.cast.instant, send);
-        RW(actor.cast.spellId, send, true);
+        Field(actor.cast.instant);
+        Field(actor.cast.spellId, true);
     }
 
-    RW(actor.cast.hasProjectile, send);
+    Field(actor.cast.hasProjectile);
 
     if (actor.cast.hasProjectile)
     {
-        RW(actor.cast.projectileOrigin.origin[0], send);
-        RW(actor.cast.projectileOrigin.origin[1], send);
-        RW(actor.cast.projectileOrigin.origin[2], send);
-        RW(actor.cast.projectileOrigin.orientation[0], send);
-        RW(actor.cast.projectileOrigin.orientation[1], send);
-        RW(actor.cast.projectileOrigin.orientation[2], send);
-        RW(actor.cast.projectileOrigin.orientation[3], send);
+        Field(actor.cast.projectileOrigin.origin[0]);
+        Field(actor.cast.projectileOrigin.origin[1]);
+        Field(actor.cast.projectileOrigin.origin[2]);
+        Field(actor.cast.projectileOrigin.orientation[0]);
+        Field(actor.cast.projectileOrigin.orientation[1]);
+        Field(actor.cast.projectileOrigin.orientation[2]);
+        Field(actor.cast.projectileOrigin.orientation[3]);
     }
 }

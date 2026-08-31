@@ -13,8 +13,8 @@ void PacketPlayerJail::Packet(bool send)
 {
     PlayerPacket::Packet(send);
 
-    RW(player->jailAction, send);
-    RW(player->jailSentenceId, send);
+    Field(player->jailAction);
+    Field(player->jailSentenceId);
     if (!isPacketValid())
         return;
 
@@ -26,9 +26,9 @@ void PacketPlayerJail::Packet(bool send)
         return;
     }
 
-    RW(player->jailDays, send);
-    RW(player->ignoreJailTeleportation, send);
-    RW(player->ignoreJailSkillIncreases, send);
-    RW(player->jailProgressText, send, true);
-    RW(player->jailEndText, send, true);
+    Field(player->jailDays);
+    Field(player->ignoreJailTeleportation);
+    Field(player->ignoreJailSkillIncreases);
+    Field(player->jailProgressText, true);
+    Field(player->jailEndText, true);
 }

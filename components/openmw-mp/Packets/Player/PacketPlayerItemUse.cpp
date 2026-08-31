@@ -12,12 +12,12 @@ void PacketPlayerItemUse::Packet(bool send)
 {
     PlayerPacket::Packet(send);
 
-    RW(player->usedItem.refId, send, true);
-    RW(player->usedItem.count, send);
-    RW(player->usedItem.charge, send);
-    RW(player->usedItem.enchantmentCharge, send);
-    RW(player->usedItem.soul, send, true);
+    Field(player->usedItem.refId, true);
+    Field(player->usedItem.count);
+    Field(player->usedItem.charge);
+    Field(player->usedItem.enchantmentCharge);
+    Field(player->usedItem.soul, true);
 
-    RW(player->usingItemMagic, send);
-    RW(player->itemUseDrawState, send);
+    Field(player->usingItemMagic);
+    Field(player->itemUseDrawState);
 }

@@ -13,11 +13,11 @@ void PacketPlayerStatsDynamic::Packet(bool send)
 {
     PlayerPacket::Packet(send);
 
-    RW(player->exchangeFullInfo, send);
+    Field(player->exchangeFullInfo);
 
     if (player->exchangeFullInfo)
     {
-        RW(player->creatureStats.mDynamic, send);
+        Field(player->creatureStats.mDynamic);
     }
     else
     {
@@ -26,7 +26,7 @@ void PacketPlayerStatsDynamic::Packet(bool send)
         if (send)
             count = static_cast<uint32_t>(player->statsDynamicIndexChanges.size());
 
-        if (!RWCount(count, send, 3))
+        if (!CollectionSize(count, 3))
             return;
 
         if (!send)
@@ -37,13 +37,13 @@ void PacketPlayerStatsDynamic::Packet(bool send)
 
         for (auto &&statsDynamicIndex : player->statsDynamicIndexChanges)
         {
-            RW(statsDynamicIndex, send);
+            Field(statsDynamicIndex);
             if (statsDynamicIndex >= 3)
             {
                 packetValid = false;
                 return;
             }
-            RW(player->creatureStats.mDynamic[statsDynamicIndex], send);
+            Field(player->creatureStats.mDynamic[statsDynamicIndex]);
         }
     }
 }

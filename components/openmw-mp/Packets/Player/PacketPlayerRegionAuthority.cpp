@@ -10,5 +10,5 @@ void mwmp::PacketWorldRegionAuthority::Packet(bool send)
 {
     PlayerPacket::Packet(send);
 
-    RW(player->authorityRegion, send, true);
+    Field(player->authorityRegion, true);
 }

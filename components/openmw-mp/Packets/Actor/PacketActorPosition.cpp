@@ -11,8 +11,8 @@ PacketActorPosition::PacketActorPosition() : ActorPacket()
 
 void PacketActorPosition::Actor(BaseActor &actor, bool send)
 {
-    RW(actor.position, send, true);
-    RW(actor.direction, send, true);
+    Field(actor.position, true);
+    Field(actor.direction, true);
 
     actor.hasPositionData = true;
 }

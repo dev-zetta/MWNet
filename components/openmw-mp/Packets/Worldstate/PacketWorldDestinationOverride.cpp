@@ -19,7 +19,7 @@ void PacketWorldDestinationOverride::Packet(bool send)
     if (send)
         destinationCount = static_cast<uint32_t>(worldstate->destinationOverrides.size());
 
-    if (!RWCount(destinationCount, send))
+    if (!CollectionSize(destinationCount))
         return;
 
     if (!send)
@@ -36,16 +36,16 @@ void PacketWorldDestinationOverride::Packet(bool send)
         {
             mapIndex = destinationOverride.first;
             mapValue = destinationOverride.second;
-            RW(mapIndex, send, false);
-            RW(mapValue, send, false);
+            Field(mapIndex, false);
+            Field(mapValue, false);
         }
     }
     else
     {
         for (unsigned int n = 0; n < destinationCount; n++)
         {
-            RW(mapIndex, send, false);
-            RW(mapValue, send, false);
+            Field(mapIndex, false);
+            Field(mapValue, false);
             worldstate->destinationOverrides[mapIndex] = mapValue;
         }
     }

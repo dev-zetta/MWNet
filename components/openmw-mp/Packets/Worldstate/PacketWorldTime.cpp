@@ -12,11 +12,11 @@ void PacketWorldTime::Packet(bool send)
 {
     WorldstatePacket::Packet(send);
 
-    RW(worldstate->time.hour, send);
-    RW(worldstate->time.day, send);
-    RW(worldstate->time.month, send);
-    RW(worldstate->time.year, send);
+    Field(worldstate->time.hour);
+    Field(worldstate->time.day);
+    Field(worldstate->time.month);
+    Field(worldstate->time.year);
 
-    RW(worldstate->time.daysPassed, send);
-    RW(worldstate->time.timeScale, send);
+    Field(worldstate->time.daysPassed);
+    Field(worldstate->time.timeScale);
 }

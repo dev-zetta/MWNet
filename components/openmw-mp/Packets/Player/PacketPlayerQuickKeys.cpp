@@ -17,7 +17,7 @@ void PacketPlayerQuickKeys::Packet(bool send)
     if (send)
         count = static_cast<uint32_t>(player->quickKeyChanges.size());
 
-    if (!RWCount(count, send))
+    if (!CollectionSize(count))
         return;
 
     if (!send)
@@ -28,10 +28,10 @@ void PacketPlayerQuickKeys::Packet(bool send)
 
     for (auto &&quickKey : player->quickKeyChanges)
     {
-        RW(quickKey.type, send);
-        RW(quickKey.slot, send);
+        Field(quickKey.type);
+        Field(quickKey.slot);
 
         if (quickKey.type != QuickKey::UNASSIGNED)
-            RW(quickKey.itemId, send);
+            Field(quickKey.itemId);
     }
 }

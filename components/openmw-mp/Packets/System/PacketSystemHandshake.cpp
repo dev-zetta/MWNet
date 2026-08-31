@@ -12,8 +12,8 @@ void PacketSystemHandshake::Packet(bool send)
 {
     SystemPacket::Packet(send);
 
-    if (!RW(system->playerName, send, true, maxNameLength) ||
-        !RW(system->serverPassword, send, true, maxPasswordLength))
+    if (!Field(system->playerName, true, maxNameLength) ||
+        !Field(system->serverPassword, true, maxPasswordLength))
     {
         packetValid = false;
         return;

@@ -12,7 +12,7 @@ PacketObjectMiscellaneous::PacketObjectMiscellaneous() : ObjectPacket()
 void PacketObjectMiscellaneous::Object(BaseObject &baseObject, bool send)
 {
     ObjectPacket::Object(baseObject, send);
-    RW(baseObject.goldPool, send);
-    RW(baseObject.lastGoldRestockHour, send);
-    RW(baseObject.lastGoldRestockDay, send);
+    Field(baseObject.goldPool);
+    Field(baseObject.lastGoldRestockHour);
+    Field(baseObject.lastGoldRestockDay);
 }

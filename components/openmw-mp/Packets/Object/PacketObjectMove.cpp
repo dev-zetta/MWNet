@@ -12,5 +12,5 @@ PacketObjectMove::PacketObjectMove() : ObjectPacket()
 void PacketObjectMove::Object(BaseObject &baseObject, bool send)
 {
     ObjectPacket::Object(baseObject, send);
-    RW(baseObject.position.pos, send);
+    Field(baseObject.position.pos);
 }

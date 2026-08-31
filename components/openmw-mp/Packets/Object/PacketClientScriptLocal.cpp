@@ -18,7 +18,7 @@ void PacketClientScriptLocal::Object(BaseObject &baseObject, bool send)
     if (send)
         clientLocalsCount = static_cast<uint32_t>(baseObject.clientLocals.size());
 
-    if (!RWCount(clientLocalsCount, send))
+    if (!CollectionSize(clientLocalsCount))
         return;
 
     if (!send)
@@ -29,12 +29,12 @@ void PacketClientScriptLocal::Object(BaseObject &baseObject, bool send)
 
     for (auto&& clientLocal : baseObject.clientLocals)
     {
-        RW(clientLocal.internalIndex, send);
-        RW(clientLocal.variableType, send);
+        Field(clientLocal.internalIndex);
+        Field(clientLocal.variableType);
 
         if (clientLocal.variableType == mwmp::VARIABLE_TYPE::SHORT || clientLocal.variableType == mwmp::VARIABLE_TYPE::LONG)
-            RW(clientLocal.intValue, send);
+            Field(clientLocal.intValue);
         else if (clientLocal.variableType == mwmp::VARIABLE_TYPE::FLOAT)
-            RW(clientLocal.floatValue, send);
+            Field(clientLocal.floatValue);
     }
 }

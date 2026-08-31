@@ -13,15 +13,15 @@ void PacketDoorDestination::Object(BaseObject &baseObject, bool send)
 {
     ObjectPacket::Object(baseObject, send);
 
-    RW(baseObject.teleportState, send);
+    Field(baseObject.teleportState);
 
     if (baseObject.teleportState)
     {
-        RW(baseObject.destinationCell.mData, send, true);
-        RW(baseObject.destinationCell.mName, send, true);
+        Field(baseObject.destinationCell.mData, true);
+        Field(baseObject.destinationCell.mName, true);
 
-        RW(baseObject.destinationPosition.pos, send, true);
-        RW(baseObject.destinationPosition.rot[0], send, true);
-        RW(baseObject.destinationPosition.rot[2], send, true);
+        Field(baseObject.destinationPosition.pos, true);
+        Field(baseObject.destinationPosition.rot[0], true);
+        Field(baseObject.destinationPosition.rot[2], true);
     }
 }

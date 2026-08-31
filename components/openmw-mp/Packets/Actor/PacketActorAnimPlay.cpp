@@ -12,8 +12,8 @@ PacketActorAnimPlay::PacketActorAnimPlay() : ActorPacket()
 void PacketActorAnimPlay::Actor(BaseActor &actor, bool send)
 {
 
-    RW(actor.animation.groupname, send);
-    RW(actor.animation.mode, send);
-    RW(actor.animation.count, send);
-    RW(actor.animation.persist, send);
+    Field(actor.animation.groupname);
+    Field(actor.animation.mode);
+    Field(actor.animation.count);
+    Field(actor.animation.persist);
 }

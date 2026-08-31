@@ -28,12 +28,12 @@ void mwmp::PacketPlayerClass::Packet(bool send)
 {
     PlayerPacket::Packet(send);
 
-    RW(player->charClass.mId, send);
+    Field(player->charClass.mId);
 
     if (player->charClass.mId.empty()) // custom class
     {
-        RW(player->charClass.mName, send, true);
-        RW(player->charClass.mDescription, send, true);
+        Field(player->charClass.mName, true);
+        Field(player->charClass.mDescription, true);
 
         LegacyClassData data{};
         if (send)
@@ -50,20 +50,20 @@ void mwmp::PacketPlayerClass::Packet(bool send)
 
         for (auto& attribute : data.mAttributes)
         {
-            if (!RW(attribute, send))
+            if (!Field(attribute))
                 return;
         }
-        if (!RW(data.mSpecialization, send))
+        if (!Field(data.mSpecialization))
             return;
         for (auto& skillPair : data.mSkills)
         {
             for (auto& skill : skillPair)
             {
-                if (!RW(skill, send))
+                if (!Field(skill))
                     return;
             }
         }
-        if (!RW(data.mIsPlayable, send) || !RW(data.mServices, send))
+        if (!Field(data.mIsPlayable) || !Field(data.mServices))
             return;
 
         if (!send)

@@ -16,7 +16,7 @@ void mwmp::PacketPlayerCellState::Packet(bool send)
     if (send)
         count = static_cast<uint32_t>(player->cellStateChanges.size());
 
-    if (!RWCount(count, send))
+    if (!CollectionSize(count))
         return;
 
     if (!send)
@@ -27,8 +27,8 @@ void mwmp::PacketPlayerCellState::Packet(bool send)
 
     for (auto &&cellState : player->cellStateChanges)
     {
-        RW(cellState.type, send);
-        RW(cellState.cell.mData, send, true);
-        RW(cellState.cell.mName, send, true);
+        Field(cellState.type);
+        Field(cellState.cell.mData, true);
+        Field(cellState.cell.mName, true);
     }
 }

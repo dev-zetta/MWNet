@@ -10,9 +10,9 @@ void mwmp::PacketPlayerAnimFlags::Packet(bool send)
 {
     PlayerPacket::Packet(send);
 
-    RW(player->movementFlags, send);
-    RW(player->drawState, send);
-    RW(player->isJumping, send);
-    RW(player->isFlying, send);
-    RW(player->hasTcl, send);
+    Field(player->movementFlags);
+    Field(player->drawState);
+    Field(player->isJumping);
+    Field(player->isFlying);
+    Field(player->hasTcl);
 }

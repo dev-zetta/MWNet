@@ -17,7 +17,7 @@ void PacketCellReset::Packet(bool send)
     if (send)
         cellCount = static_cast<uint32_t>(worldstate->cellsToReset.size());
 
-    if (!RWCount(cellCount, send))
+    if (!CollectionSize(cellCount))
         return;
 
     if (!send)
@@ -28,7 +28,7 @@ void PacketCellReset::Packet(bool send)
 
     for (auto &&cellToReset : worldstate->cellsToReset)
     {
-        RW(cellToReset.mData, send, true);
-        RW(cellToReset.mName, send, true);
+        Field(cellToReset.mData, true);
+        Field(cellToReset.mName, true);
     }
 }

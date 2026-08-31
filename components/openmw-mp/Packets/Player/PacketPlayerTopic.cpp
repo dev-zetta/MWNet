@@ -17,7 +17,7 @@ void PacketPlayerTopic::Packet(bool send)
     if (send)
         count = static_cast<uint32_t>(player->topicChanges.size());
 
-    if (!RWCount(count, send))
+    if (!CollectionSize(count))
         return;
 
     if (!send)
@@ -28,6 +28,6 @@ void PacketPlayerTopic::Packet(bool send)
 
     for (auto &&topic : player->topicChanges)
     {
-        RW(topic.topicId, send, true);
+        Field(topic.topicId, true);
     }
 }

@@ -11,7 +11,7 @@ PacketActorAnimFlags::PacketActorAnimFlags() : ActorPacket()
 
 void PacketActorAnimFlags::Actor(BaseActor &actor, bool send)
 {
-    RW(actor.movementFlags, send);
-    RW(actor.drawState, send);
-    RW(actor.isFlying, send);
+    Field(actor.movementFlags);
+    Field(actor.drawState);
+    Field(actor.isFlying);
 }

@@ -12,27 +12,27 @@ PacketObjectSpawn::PacketObjectSpawn() : ObjectPacket()
 void PacketObjectSpawn::Object(BaseObject &baseObject, bool send)
 {
     ObjectPacket::Object(baseObject, send);
-    RW(baseObject.position, send);
+    Field(baseObject.position);
 
-    RW(baseObject.isSummon, send);
+    Field(baseObject.isSummon);
 
     if (baseObject.isSummon)
     {
-        RW(baseObject.summonEffectId, send);
-        RW(baseObject.summonSpellId, send, true);
-        RW(baseObject.summonDuration, send);
+        Field(baseObject.summonEffectId);
+        Field(baseObject.summonSpellId, true);
+        Field(baseObject.summonDuration);
 
-        RW(baseObject.master.isPlayer, send);
+        Field(baseObject.master.isPlayer);
 
         if (baseObject.master.isPlayer)
         {
-            RW(baseObject.master.guid, send);
+            Field(baseObject.master.guid);
         }
         else
         {
-            RW(baseObject.master.refId, send, true);
-            RW(baseObject.master.refNum, send);
-            RW(baseObject.master.mpNum, send);
+            Field(baseObject.master.refId, true);
+            Field(baseObject.master.refNum);
+            Field(baseObject.master.mpNum);
         }
     }
 }

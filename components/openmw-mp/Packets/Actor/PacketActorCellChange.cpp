@@ -11,11 +11,11 @@ PacketActorCellChange::PacketActorCellChange() : ActorPacket()
 
 void PacketActorCellChange::Actor(BaseActor &actor, bool send)
 {
-    RW(actor.cell.mData, send, true);
-    RW(actor.cell.mName, send, true);
+    Field(actor.cell.mData, true);
+    Field(actor.cell.mName, true);
 
-    RW(actor.position, send, true);
-    RW(actor.direction, send, true);
+    Field(actor.position, true);
+    Field(actor.direction, true);
 
-    RW(actor.isFollowerCellChange, send);
+    Field(actor.isFollowerCellChange);
 }

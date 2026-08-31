@@ -12,14 +12,14 @@ void PacketPlayerFaction::Packet(bool send)
 {
     PlayerPacket::Packet(send);
 
-    RW(player->factionChanges.action, send);
+    Field(player->factionChanges.action);
 
     uint32_t count = 0;
 
     if (send)
         count = static_cast<uint32_t>(player->factionChanges.factions.size());
 
-    if (!RWCount(count, send))
+    if (!CollectionSize(count))
         return;
 
     if (!send)
@@ -30,15 +30,15 @@ void PacketPlayerFaction::Packet(bool send)
 
     for (auto &&faction : player->factionChanges.factions)
     {
-        RW(faction.factionId, send, true);
+        Field(faction.factionId, true);
 
         if (player->factionChanges.action == FactionChanges::RANK)
-            RW(faction.rank, send);
+            Field(faction.rank);
 
         if (player->factionChanges.action == FactionChanges::EXPULSION)
-            RW(faction.isExpelled, send);
+            Field(faction.isExpelled);
 
         if (player->factionChanges.action == FactionChanges::REPUTATION)
-            RW(faction.reputation, send);
+            Field(faction.reputation);
     }
 }

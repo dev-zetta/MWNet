@@ -12,5 +12,5 @@ void PacketPlayerBounty::Packet(bool send)
 {
     PlayerPacket::Packet(send);
 
-    RW(player->npcStats.mBounty, send);
+    Field(player->npcStats.mBounty);
 }

@@ -12,9 +12,9 @@ void PacketPlayerShapeshift::Packet(bool send)
 {
     PlayerPacket::Packet(send);
 
-    RW(player->scale, send);
-    RW(player->isWerewolf, send);
+    Field(player->scale);
+    Field(player->isWerewolf);
 
-    RW(player->displayCreatureName, send);
-    RW(player->creatureRefId, send, true);
+    Field(player->displayCreatureName);
+    Field(player->creatureRefId, true);
 }

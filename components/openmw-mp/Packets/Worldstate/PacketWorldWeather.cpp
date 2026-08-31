@@ -12,10 +12,10 @@ void PacketWorldWeather::Packet(bool send)
 {
     WorldstatePacket::Packet(send);
 
-    RW(worldstate->forceWeather, send);
-    RW(worldstate->weather.region, send, true);
-    RW(worldstate->weather.currentWeather, send);
-    RW(worldstate->weather.nextWeather, send);
-    RW(worldstate->weather.queuedWeather, send);
-    RW(worldstate->weather.transitionFactor, send);
+    Field(worldstate->forceWeather);
+    Field(worldstate->weather.region, true);
+    Field(worldstate->weather.currentWeather);
+    Field(worldstate->weather.nextWeather);
+    Field(worldstate->weather.queuedWeather);
+    Field(worldstate->weather.transitionFactor);
 }

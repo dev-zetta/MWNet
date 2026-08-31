@@ -20,35 +20,35 @@ void PacketObjectHit::Packet(bool send)
         if (send)
             baseObject = objectList->baseObjects.at(i);
 
-        RW(baseObject.isPlayer, send);
+        Field(baseObject.isPlayer);
 
         if (baseObject.isPlayer)
-            RW(baseObject.guid, send);
+            Field(baseObject.guid);
         else
             Object(baseObject, send);
 
-        RW(baseObject.hittingActor.isPlayer, send);
+        Field(baseObject.hittingActor.isPlayer);
 
         if (baseObject.hittingActor.isPlayer)
         {
-            RW(baseObject.hittingActor.guid, send);
+            Field(baseObject.hittingActor.guid);
         }
         else
         {
-            RW(baseObject.hittingActor.refId, send, true);
-            RW(baseObject.hittingActor.refNum, send);
-            RW(baseObject.hittingActor.mpNum, send);
+            Field(baseObject.hittingActor.refId, true);
+            Field(baseObject.hittingActor.refNum);
+            Field(baseObject.hittingActor.mpNum);
 
-            RW(baseObject.hittingActor.name, send);
+            Field(baseObject.hittingActor.name);
         }
 
-        RW(baseObject.hitAttack.success, send);
+        Field(baseObject.hitAttack.success);
 
         if (baseObject.hitAttack.success)
         {
-            RW(baseObject.hitAttack.damage, send);
-            RW(baseObject.hitAttack.block, send);
-            RW(baseObject.hitAttack.knockdown, send);
+            Field(baseObject.hitAttack.damage);
+            Field(baseObject.hitAttack.block);
+            Field(baseObject.hitAttack.knockdown);
         }
 
         if (!send)

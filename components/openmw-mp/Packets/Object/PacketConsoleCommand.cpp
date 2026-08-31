@@ -14,7 +14,7 @@ void PacketConsoleCommand::Packet(bool send)
     if (!PacketHeader(send))
         return;
 
-    if (!RW(objectList->consoleCommand, send, true, protocol::limits::commandBytes))
+    if (!Field(objectList->consoleCommand, true, protocol::limits::commandBytes))
         return;
 
     BaseObject baseObject;
@@ -23,10 +23,10 @@ void PacketConsoleCommand::Packet(bool send)
         if (send)
             baseObject = objectList->baseObjects.at(i);
 
-        RW(baseObject.isPlayer, send);
+        Field(baseObject.isPlayer);
 
         if (baseObject.isPlayer)
-            RW(baseObject.guid, send);
+            Field(baseObject.guid);
         else
             Object(baseObject, send);
 

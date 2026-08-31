@@ -11,5 +11,5 @@ PacketActorSpeech::PacketActorSpeech() : ActorPacket()
 
 void PacketActorSpeech::Actor(BaseActor &actor, bool send)
 {
-    RW(actor.sound, send);
+    Field(actor.sound);
 }

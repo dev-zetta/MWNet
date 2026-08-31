@@ -14,44 +14,44 @@ void PacketPlayerCast::Packet(bool send)
 {
     PlayerPacket::Packet(send);
 
-    RW(player->cast.target.isPlayer, send);
+    Field(player->cast.target.isPlayer);
 
     if (player->cast.target.isPlayer)
     {
-        RW(player->cast.target.guid, send);
+        Field(player->cast.target.guid);
     }
     else
     {
-        RW(player->cast.target.refId, send, true);
-        RW(player->cast.target.refNum, send);
-        RW(player->cast.target.mpNum, send);
+        Field(player->cast.target.refId, true);
+        Field(player->cast.target.refNum);
+        Field(player->cast.target.mpNum);
     }
 
-    RW(player->cast.type, send);
+    Field(player->cast.type);
 
     if (player->cast.type == mwmp::Cast::ITEM)
-        RW(player->cast.itemId, send, true);
+        Field(player->cast.itemId, true);
     else
     {
-        RW(player->cast.pressed, send);
-        RW(player->cast.success, send);
+        Field(player->cast.pressed);
+        Field(player->cast.success);
 
-        RW(player->cast.instant, send);
-        RW(player->cast.spellId, send, true);
+        Field(player->cast.instant);
+        Field(player->cast.spellId, true);
     }
 
-    RW(player->cast.hasProjectile, send);
+    Field(player->cast.hasProjectile);
 
     if (player->cast.hasProjectile)
     {
-        RW(player->cast.projectileOrigin.origin[0], send);
-        RW(player->cast.projectileOrigin.origin[1], send);
-        RW(player->cast.projectileOrigin.origin[2], send);
-        RW(player->cast.projectileOrigin.orientation[0], send);
-        RW(player->cast.projectileOrigin.orientation[1], send);
-        RW(player->cast.projectileOrigin.orientation[2], send);
-        RW(player->cast.projectileOrigin.orientation[3], send);
-        RW(player->position, send);
-        RW(player->direction, send);
+        Field(player->cast.projectileOrigin.origin[0]);
+        Field(player->cast.projectileOrigin.origin[1]);
+        Field(player->cast.projectileOrigin.origin[2]);
+        Field(player->cast.projectileOrigin.orientation[0]);
+        Field(player->cast.projectileOrigin.orientation[1]);
+        Field(player->cast.projectileOrigin.orientation[2]);
+        Field(player->cast.projectileOrigin.orientation[3]);
+        Field(player->position);
+        Field(player->direction);
     }
 }

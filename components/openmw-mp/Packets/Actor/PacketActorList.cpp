@@ -13,7 +13,7 @@ void PacketActorList::Packet(bool send)
     if (!ActorPacket::PacketHeader(send))
         return;
 
-    RW(actorList->action, send);
+    Field(actorList->action);
 
     BaseActor actor;
 
@@ -22,9 +22,9 @@ void PacketActorList::Packet(bool send)
         if (send)
             actor = actorList->baseActors.at(i);
 
-        RW(actor.refId, send);
-        RW(actor.refNum, send);
-        RW(actor.mpNum, send);
+        Field(actor.refId);
+        Field(actor.refNum);
+        Field(actor.mpNum);
 
         if (actor.refId.empty() || (actor.refNum != 0 && actor.mpNum != 0))
         {

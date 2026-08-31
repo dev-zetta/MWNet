@@ -17,7 +17,7 @@ void PacketWorldKillCount::Packet(bool send)
     if (send)
         killChangesCount = static_cast<uint32_t>(worldstate->killChanges.size());
 
-    if (!RWCount(killChangesCount, send))
+    if (!CollectionSize(killChangesCount))
         return;
 
     if (!send)
@@ -28,7 +28,7 @@ void PacketWorldKillCount::Packet(bool send)
 
     for (auto &&killChange : worldstate->killChanges)
     {
-        RW(killChange.refId, send, true);
-        RW(killChange.number, send);
+        Field(killChange.refId, true);
+        Field(killChange.number);
     }
 }

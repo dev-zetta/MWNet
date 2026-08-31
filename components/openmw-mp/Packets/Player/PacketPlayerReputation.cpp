@@ -12,5 +12,5 @@ void PacketPlayerReputation::Packet(bool send)
 {
     PlayerPacket::Packet(send);
 
-    RW(player->npcStats.mReputation, send);
+    Field(player->npcStats.mReputation);
 }

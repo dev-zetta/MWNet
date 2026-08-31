@@ -15,8 +15,8 @@ void PacketContainer::Packet(bool send)
     if (!PacketHeader(send))
         return;
 
-    RW(objectList->action, send);
-    RW(objectList->containerSubAction, send);
+    Field(objectList->action);
+    Field(objectList->containerSubAction);
 
     BaseObject baseObject;
     for (unsigned int i = 0; i < objectList->baseObjectCount; i++)
@@ -31,7 +31,7 @@ void PacketContainer::Packet(bool send)
 
         Object(baseObject, send);
 
-        if (!RWCount(baseObject.containerItemCount, send, protocol::limits::objectChanges)
+        if (!CollectionSize(baseObject.containerItemCount, protocol::limits::objectChanges)
             || baseObject.refId.empty() || (baseObject.refNum != 0 && baseObject.mpNum != 0))
         {
             objectList->isValid = false;
@@ -45,12 +45,12 @@ void PacketContainer::Packet(bool send)
             if (send)
                 containerItem = baseObject.containerItems.at(j);
 
-            RW(containerItem.refId, send, true);
-            RW(containerItem.count, send);
-            RW(containerItem.charge, send);
-            RW(containerItem.enchantmentCharge, send);
-            RW(containerItem.soul, send, true);
-            RW(containerItem.actionCount, send);
+            Field(containerItem.refId, true);
+            Field(containerItem.count);
+            Field(containerItem.charge);
+            Field(containerItem.enchantmentCharge);
+            Field(containerItem.soul, true);
+            Field(containerItem.actionCount);
 
             if (!send)
                 baseObject.containerItems.push_back(containerItem);

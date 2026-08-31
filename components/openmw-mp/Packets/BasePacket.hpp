@@ -63,12 +63,13 @@ namespace mwmp
         static constexpr bool unsupportedPacketType = false;
 
         template<class Value>
-        bool RW(Value& data, bool write, bool compress = false)
+        bool Field(Value& data, bool compress = false)
         {
             (void)compress;
             if (!packetValid)
                 return false;
 
+            const bool write = isWriting();
             using Type = std::remove_cv_t<Value>;
             if constexpr (std::is_same_v<Type, bool>)
             {
@@ -84,7 +85,7 @@ namespace mwmp
             {
                 using Underlying = std::underlying_type_t<Type>;
                 Underlying value = static_cast<Underlying>(data);
-                if (!RW(value, write))
+                if (!Field(value))
                     return false;
                 if (!write)
                     data = static_cast<Type>(value);
@@ -201,7 +202,7 @@ namespace mwmp
                 for (std::size_t index = 0; index < count; ++index)
                 {
                     Element& value = write ? data[index] : decoded[index];
-                    if (!RW(value, write))
+                    if (!Field(value))
                         return false;
                 }
                 if (!write)
@@ -217,14 +218,15 @@ namespace mwmp
         }
 
         template <class Value, std::size_t Count>
-        bool RW(std::array<Value, Count>& value, bool write, bool compress = false)
+        bool Field(std::array<Value, Count>& value, bool compress = false)
         {
             (void)compress;
+            const bool write = isWriting();
             std::array<Value, Count> decoded = value;
             auto& target = write ? value : decoded;
             for (auto& element : target)
             {
-                if (!RW(element, write))
+                if (!Field(element))
                     return false;
             }
             if (!write)
@@ -232,26 +234,28 @@ namespace mwmp
             return true;
         }
 
-        bool RW(mwmp::transport::TransportConnectionId& value, bool write, bool compress = false);
+        bool Field(mwmp::transport::TransportConnectionId& value, bool compress = false);
 
-        bool RW(ESM::Cell::DATAstruct& value, bool write, bool compress = false)
+        bool Field(ESM::Cell::DATAstruct& value, bool compress = false)
         {
             (void)compress;
+            const bool write = isWriting();
             ESM::Cell::DATAstruct decoded = value;
             auto& target = write ? value : decoded;
-            if (!RW(target.mFlags, write) || !RW(target.mX, write) || !RW(target.mY, write))
+            if (!Field(target.mFlags) || !Field(target.mX) || !Field(target.mY))
                 return false;
             if (!write)
                 value = decoded;
             return true;
         }
 
-        bool RW(ESM::Position& value, bool write, bool compress = false)
+        bool Field(ESM::Position& value, bool compress = false)
         {
             (void)compress;
+            const bool write = isWriting();
             ESM::Position decoded = value;
             auto& target = write ? value : decoded;
-            if (!RW(target.pos, write) || !RW(target.rot, write))
+            if (!Field(target.pos) || !Field(target.rot))
                 return false;
             if (!write)
                 value = decoded;
@@ -259,36 +263,39 @@ namespace mwmp
         }
 
         template <class Value>
-        bool RW(ESM::StatState<Value>& value, bool write, bool compress = false)
+        bool Field(ESM::StatState<Value>& value, bool compress = false)
         {
             (void)compress;
+            const bool write = isWriting();
             ESM::StatState<Value> decoded = value;
             auto& target = write ? value : decoded;
-            if (!RW(target.mBase, write) || !RW(target.mMod, write) || !RW(target.mCurrent, write)
-                || !RW(target.mDamage, write) || !RW(target.mProgress, write))
+            if (!Field(target.mBase) || !Field(target.mMod) || !Field(target.mCurrent)
+                || !Field(target.mDamage) || !Field(target.mProgress))
                 return false;
             if (!write)
                 value = decoded;
             return true;
         }
 
-        bool RW(ESM::FormId& value, bool write, bool compress = false)
+        bool Field(ESM::FormId& value, bool compress = false)
         {
             (void)compress;
+            const bool write = isWriting();
             ESM::FormId decoded = value;
             auto& target = write ? value : decoded;
-            if (!RW(target.mIndex, write) || !RW(target.mContentFile, write))
+            if (!Field(target.mIndex) || !Field(target.mContentFile))
                 return false;
             if (!write)
                 value = decoded;
             return true;
         }
 
-        bool RW(std::variant<ESM::RefId, ESM::FormId>& value, bool write, bool compress = false)
+        bool Field(std::variant<ESM::RefId, ESM::FormId>& value, bool compress = false)
         {
             (void)compress;
+            const bool write = isWriting();
             std::uint8_t alternative = write && std::holds_alternative<ESM::FormId>(value) ? 1U : 0U;
-            if (!RW(alternative, write))
+            if (!Field(alternative))
                 return false;
             if (alternative > 1U)
                 return invalidate(protocol::CodecError::InvalidValue);
@@ -297,14 +304,14 @@ namespace mwmp
             if (alternative == 0U)
             {
                 ESM::RefId refId = write ? std::get<ESM::RefId>(value) : ESM::RefId{};
-                if (!RW(refId, write))
+                if (!Field(refId))
                     return false;
                 decoded = std::move(refId);
             }
             else
             {
                 ESM::FormId formId = write ? std::get<ESM::FormId>(value) : ESM::FormId{};
-                if (!RW(formId, write))
+                if (!Field(formId))
                     return false;
                 decoded = formId;
             }
@@ -313,28 +320,29 @@ namespace mwmp
             return true;
         }
 
-        bool RWCount(std::uint32_t& count, bool write,
+        bool CollectionSize(std::uint32_t& count,
             std::uint32_t maximum = protocol::limits::defaultCollectionElements)
         {
             if (!packetValid)
                 return false;
 
+            const bool write = isWriting();
             if (write && count > maximum)
                 return invalidate(protocol::CodecError::LimitExceeded);
-            if (!RW(count, write))
+            if (!(write ? writeResult(mWriter && mWriter->writeCollectionCount(count, maximum))
+                        : readResult(mReader && mReader->readCollectionCount(count, maximum))))
                 return false;
-            if (count > maximum)
-                return invalidate(protocol::CodecError::LimitExceeded);
             return true;
         }
 
         const static uint32_t maxStrSize = protocol::limits::defaultStringBytes;
 
-        bool RW(std::string &str, bool write, bool compress = false, std::string::size_type maxSize = maxStrSize)
+        bool Field(std::string &str, bool compress = false, std::string::size_type maxSize = maxStrSize)
         {
             if (!packetValid)
                 return false;
 
+            const bool write = isWriting();
             if (write)
             {
                 if (str.size() > maxSize || !protocol::isValidUtf8(std::as_bytes(std::span(str))))
@@ -351,33 +359,35 @@ namespace mwmp
             return true;
         }
 
-        bool RW(ESM::RefId &refId, bool write, bool compress = false)
+        bool Field(ESM::RefId &refId, bool compress = false)
         {
+            const bool write = isWriting();
             if (write)
             {
                 std::string str = refId.getRefIdString();
-                return RW(str, write, compress);
+                return Field(str, compress);
             }
             else
             {
                 std::string str;
-                bool res = RW(str, write, compress);
+                bool res = Field(str, compress);
                 if (res)
                     refId = ESM::RefId::stringRefId(str);
                 return res;
             }
         }
 
-        bool RW(ESM::Path& path, bool write, bool compress = false)
+        bool Field(ESM::Path& path, bool compress = false)
         {
+            const bool write = isWriting();
             if (write)
             {
                 std::string value = path.getOriginal();
-                return RW(value, write, compress);
+                return Field(value, compress);
             }
 
             std::string value;
-            const bool result = RW(value, write, compress);
+            const bool result = Field(value, compress);
             if (result)
                 path = std::move(value);
             return result;
@@ -396,6 +406,7 @@ namespace mwmp
         bool readResult(bool result);
         bool finishRead();
         bool prepareWrite();
+        bool isWriting() const noexcept { return mWriter.has_value(); }
         std::size_t unreadPayloadBytes() const noexcept;
         std::span<const std::byte> writePayload() const noexcept;
         uint32_t dispatchRequest(mwmp::transport::TransportConnectionId targetGuid);

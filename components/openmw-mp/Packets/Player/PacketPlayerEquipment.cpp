@@ -13,7 +13,7 @@ void PacketPlayerEquipment::Packet(bool send)
 {
     PlayerPacket::Packet(send);
 
-    RW(player->exchangeFullInfo, send);
+    Field(player->exchangeFullInfo);
 
     if (player->exchangeFullInfo)
     {
@@ -28,7 +28,7 @@ void PacketPlayerEquipment::Packet(bool send)
         if (send)
             count = static_cast<uint32_t>(player->equipmentIndexChanges.size());
 
-        if (!RWCount(count, send, 19))
+        if (!CollectionSize(count, 19))
             return;
 
         if (!send)
@@ -39,7 +39,7 @@ void PacketPlayerEquipment::Packet(bool send)
 
         for (auto &&equipmentIndex : player->equipmentIndexChanges)
         {
-            RW(equipmentIndex, send);
+            Field(equipmentIndex);
             if (!packetValid || equipmentIndex < 0 || equipmentIndex >= 19)
             {
                 invalidate(protocol::CodecError::InvalidValue);
@@ -52,8 +52,8 @@ void PacketPlayerEquipment::Packet(bool send)
 
 void PacketPlayerEquipment::ExchangeItemInformation(Item &item, bool send)
 {
-    RW(item.refId, send, true);
-    RW(item.count, send);
-    RW(item.charge, send);
-    RW(item.enchantmentCharge, send);
+    Field(item.refId, true);
+    Field(item.count);
+    Field(item.charge);
+    Field(item.enchantmentCharge);
 }

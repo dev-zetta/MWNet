@@ -12,5 +12,5 @@ PacketObjectLock::PacketObjectLock() : ObjectPacket()
 void PacketObjectLock::Object(BaseObject &baseObject, bool send)
 {
     ObjectPacket::Object(baseObject, send);
-    RW(baseObject.lockLevel, send);
+    Field(baseObject.lockLevel);
 }

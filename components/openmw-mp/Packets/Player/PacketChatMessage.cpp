@@ -10,5 +10,5 @@ void mwmp::PacketChatMessage::Packet(bool send)
 {
     PlayerPacket::Packet(send);
 
-    RW(player->chatMessage, send, false, protocol::limits::chatMessageBytes);
+    Field(player->chatMessage, false, protocol::limits::chatMessageBytes);
 }

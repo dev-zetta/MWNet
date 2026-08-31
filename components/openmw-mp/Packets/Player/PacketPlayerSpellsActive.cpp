@@ -12,14 +12,14 @@ void PacketPlayerSpellsActive::Packet(bool send)
 {
     PlayerPacket::Packet(send);
 
-    RW(player->spellsActiveChanges.action, send);
+    Field(player->spellsActiveChanges.action);
 
     uint32_t count = 0;
 
     if (send)
         count = static_cast<uint32_t>(player->spellsActiveChanges.activeSpells.size());
 
-    if (!RWCount(count, send))
+    if (!CollectionSize(count))
         return;
 
     if (!send)
@@ -30,23 +30,23 @@ void PacketPlayerSpellsActive::Packet(bool send)
 
     for (auto&& activeSpell : player->spellsActiveChanges.activeSpells)
     {
-        RW(activeSpell.id, send, true);
-        RW(activeSpell.isStackingSpell, send);
-        RW(activeSpell.timestampDay, send);
-        RW(activeSpell.timestampHour, send);
-        RW(activeSpell.params.mDisplayName, send, true);
+        Field(activeSpell.id, true);
+        Field(activeSpell.isStackingSpell);
+        Field(activeSpell.timestampDay);
+        Field(activeSpell.timestampHour);
+        Field(activeSpell.params.mDisplayName, true);
 
-        RW(activeSpell.caster.isPlayer, send);
+        Field(activeSpell.caster.isPlayer);
 
         if (activeSpell.caster.isPlayer)
         {
-            RW(activeSpell.caster.guid, send);
+            Field(activeSpell.caster.guid);
         }
         else
         {
-            RW(activeSpell.caster.refId, send, true);
-            RW(activeSpell.caster.refNum, send);
-            RW(activeSpell.caster.mpNum, send);
+            Field(activeSpell.caster.refId, true);
+            Field(activeSpell.caster.refNum);
+            Field(activeSpell.caster.mpNum);
         }
 
         uint32_t effectCount = 0;
@@ -54,7 +54,7 @@ void PacketPlayerSpellsActive::Packet(bool send)
         if (send)
             effectCount = static_cast<uint32_t>(activeSpell.params.mEffects.size());
 
-        if (!RWCount(effectCount, send, protocol::limits::spellEffects))
+        if (!CollectionSize(effectCount, protocol::limits::spellEffects))
             return;
 
         if (!send)
@@ -65,11 +65,11 @@ void PacketPlayerSpellsActive::Packet(bool send)
 
         for (auto&& effect : activeSpell.params.mEffects)
         {
-            RW(effect.mEffectId, send);
-            RW(effect.mArg, send);
-            RW(effect.mMagnitude, send);
-            RW(effect.mDuration, send);
-            RW(effect.mTimeLeft, send);
+            Field(effect.mEffectId);
+            Field(effect.mArg);
+            Field(effect.mMagnitude);
+            Field(effect.mDuration);
+            Field(effect.mTimeLeft);
         }
     }
 }

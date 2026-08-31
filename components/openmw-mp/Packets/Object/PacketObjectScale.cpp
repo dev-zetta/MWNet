@@ -12,5 +12,5 @@ PacketObjectScale::PacketObjectScale() : ObjectPacket()
 void PacketObjectScale::Object(BaseObject &baseObject, bool send)
 {
     ObjectPacket::Object(baseObject, send);
-    RW(baseObject.scale, send);
+    Field(baseObject.scale);
 }

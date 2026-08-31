@@ -12,17 +12,17 @@ void PacketWorldCollisionOverride::Packet(bool send)
 {
     WorldstatePacket::Packet(send);
 
-    RW(worldstate->hasPlayerCollision, send);
-    RW(worldstate->hasActorCollision, send);
-    RW(worldstate->hasPlacedObjectCollision, send);
-    RW(worldstate->useActorCollisionForPlacedObjects, send);
+    Field(worldstate->hasPlayerCollision);
+    Field(worldstate->hasActorCollision);
+    Field(worldstate->hasPlacedObjectCollision);
+    Field(worldstate->useActorCollisionForPlacedObjects);
 
     uint32_t enforcedCollisionCount = 0;
 
     if (send)
         enforcedCollisionCount = static_cast<uint32_t>(worldstate->enforcedCollisionRefIds.size());
 
-    if (!RWCount(enforcedCollisionCount, send))
+    if (!CollectionSize(enforcedCollisionCount))
         return;
 
     if (!send)
@@ -33,6 +33,6 @@ void PacketWorldCollisionOverride::Packet(bool send)
 
     for (auto &&enforcedCollisionRefId : worldstate->enforcedCollisionRefIds)
     {
-        RW(enforcedCollisionRefId, send, true);
+        Field(enforcedCollisionRefId, true);
     }
 }

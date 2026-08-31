@@ -18,7 +18,7 @@ void PacketWorldMap::Packet(bool send)
     if (send)
         changesCount = static_cast<uint32_t>(worldstate->mapTiles.size());
 
-    if (!RWCount(changesCount, send))
+    if (!CollectionSize(changesCount))
         return;
 
     if (!send)
@@ -29,15 +29,15 @@ void PacketWorldMap::Packet(bool send)
 
     for (auto &&mapTile : worldstate->mapTiles)
     {
-        RW(mapTile.x, send);
-        RW(mapTile.y, send);
+        Field(mapTile.x);
+        Field(mapTile.y);
 
         uint32_t imageDataSize = 0;
 
         if (send)
             imageDataSize = static_cast<uint32_t>(mapTile.imageData.size());
 
-        if (!RWCount(imageDataSize, send, protocol::limits::mapTileImageBytes))
+        if (!CollectionSize(imageDataSize, protocol::limits::mapTileImageBytes))
         {
             LOG_MESSAGE_SIMPLE(TimedLog::LOG_ERROR, "Processed invalid ID_WORLD_MAP packet where tile %i, %i had an imageDataSize of %i",
                 mapTile.x, mapTile.y, imageDataSize);
@@ -53,7 +53,7 @@ void PacketWorldMap::Packet(bool send)
 
         for (auto &&imageChar : mapTile.imageData)
         {
-            RW(imageChar, send);
+            Field(imageChar);
         }
     }
 }

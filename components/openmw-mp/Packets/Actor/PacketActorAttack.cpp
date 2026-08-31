@@ -11,57 +11,57 @@ PacketActorAttack::PacketActorAttack() : ActorPacket()
 
 void PacketActorAttack::Actor(BaseActor &actor, bool send)
 {
-    RW(actor.attack.target.isPlayer, send);
+    Field(actor.attack.target.isPlayer);
 
     if (actor.attack.target.isPlayer)
     {
-        RW(actor.attack.target.guid, send);
+        Field(actor.attack.target.guid);
     }
     else
     {
-        RW(actor.attack.target.refId, send, true);
-        RW(actor.attack.target.refNum, send);
-        RW(actor.attack.target.mpNum, send);
+        Field(actor.attack.target.refId, true);
+        Field(actor.attack.target.refNum);
+        Field(actor.attack.target.mpNum);
     }
 
-    RW(actor.attack.type, send);
+    Field(actor.attack.type);
 
-    RW(actor.attack.pressed, send);
-    RW(actor.attack.success, send);
+    Field(actor.attack.pressed);
+    Field(actor.attack.success);
 
-    RW(actor.attack.isHit, send);
+    Field(actor.attack.isHit);
 
     if (actor.attack.type == mwmp::Attack::MELEE)
     {
-        RW(actor.attack.attackAnimation, send, true);
+        Field(actor.attack.attackAnimation, true);
     }
     else if (actor.attack.type == mwmp::Attack::RANGED)
     {
-        RW(actor.attack.attackStrength, send);
-        RW(actor.attack.rangedWeaponId, send, true);
-        RW(actor.attack.rangedAmmoId, send, true);
+        Field(actor.attack.attackStrength);
+        Field(actor.attack.rangedWeaponId, true);
+        Field(actor.attack.rangedAmmoId, true);
 
-        RW(actor.attack.projectileOrigin.origin[0], send);
-        RW(actor.attack.projectileOrigin.origin[1], send);
-        RW(actor.attack.projectileOrigin.origin[2], send);
-        RW(actor.attack.projectileOrigin.orientation[0], send);
-        RW(actor.attack.projectileOrigin.orientation[1], send);
-        RW(actor.attack.projectileOrigin.orientation[2], send);
-        RW(actor.attack.projectileOrigin.orientation[3], send);
+        Field(actor.attack.projectileOrigin.origin[0]);
+        Field(actor.attack.projectileOrigin.origin[1]);
+        Field(actor.attack.projectileOrigin.origin[2]);
+        Field(actor.attack.projectileOrigin.orientation[0]);
+        Field(actor.attack.projectileOrigin.orientation[1]);
+        Field(actor.attack.projectileOrigin.orientation[2]);
+        Field(actor.attack.projectileOrigin.orientation[3]);
     }
 
     if (actor.attack.isHit)
     {
-        RW(actor.attack.damage, send);
-        RW(actor.attack.block, send);
-        RW(actor.attack.knockdown, send);
-        RW(actor.attack.applyWeaponEnchantment, send);
+        Field(actor.attack.damage);
+        Field(actor.attack.block);
+        Field(actor.attack.knockdown);
+        Field(actor.attack.applyWeaponEnchantment);
 
         if (actor.attack.type == mwmp::Attack::RANGED)
-            RW(actor.attack.applyAmmoEnchantment, send);
+            Field(actor.attack.applyAmmoEnchantment);
 
-        RW(actor.attack.hitPosition.pos[0], send);
-        RW(actor.attack.hitPosition.pos[1], send);
-        RW(actor.attack.hitPosition.pos[2], send);
+        Field(actor.attack.hitPosition.pos[0]);
+        Field(actor.attack.hitPosition.pos[1]);
+        Field(actor.attack.hitPosition.pos[2]);
     }
 }

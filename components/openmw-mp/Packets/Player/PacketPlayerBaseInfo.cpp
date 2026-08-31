@@ -12,15 +12,15 @@ void PacketPlayerBaseInfo::Packet(bool send)
 {
     PlayerPacket::Packet(send);
 
-    RW(player->npc.mName, send, true);
-    RW(player->npc.mModel, send, true);
-    RW(player->npc.mRace, send, true);
-    RW(player->npc.mHair, send, true);
-    RW(player->npc.mHead, send, true);
+    Field(player->npc.mName, true);
+    Field(player->npc.mModel, true);
+    Field(player->npc.mRace, true);
+    Field(player->npc.mHair, true);
+    Field(player->npc.mHead, true);
 
-    RW(player->npc.mFlags, send);
+    Field(player->npc.mFlags);
 
-    RW(player->birthsign, send, true);
+    Field(player->birthsign, true);
 
-    RW(player->resetStats, send);
+    Field(player->resetStats);
 }

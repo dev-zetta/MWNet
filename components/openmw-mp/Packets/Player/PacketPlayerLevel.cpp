@@ -12,7 +12,7 @@ void PacketPlayerLevel::Packet(bool send)
 {
     PlayerPacket::Packet(send);
 
-    RW(player->creatureStats.mLevel, send);
+    Field(player->creatureStats.mLevel);
 
-    RW(player->npcStats.mLevelProgress, send);
+    Field(player->npcStats.mLevelProgress);
 }
