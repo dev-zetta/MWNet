@@ -2,7 +2,9 @@
 #include <components/openmw-mp/Protocol/DecodeTransaction.hpp>
 #include <components/openmw-mp/Protocol/PacketCodec.hpp>
 #include <components/openmw-mp/Protocol/RateLimits.hpp>
+#include <components/openmw-mp/Protocol/MessageType.hpp>
 
+#include <algorithm>
 #include <array>
 #include <chrono>
 #include <cstddef>
@@ -145,6 +147,58 @@ namespace
         EXPECT(limited.storage().empty());
     }
 
+    void testLengthFieldsAndDeclaredLimits()
+    {
+        static_assert(limits::normalMessageBytes == 1024U * 1024U);
+        static_assert(limits::bulkChunkBytes == 256U * 1024U);
+        static_assert(limits::bulkTransferBytes == 64U * 1024U * 1024U);
+        static_assert(limits::accountNameBytes == 64);
+        static_assert(limits::playerNameBytes == 64);
+        static_assert(limits::chatMessageBytes == 512);
+        static_assert(limits::commandBytes == 4U * 1024U);
+        static_assert(limits::defaultStringBytes == 4U * 1024U);
+        static_assert(limits::defaultCollectionElements == 4096);
+        static_assert(limits::actorChanges == 3000);
+        static_assert(limits::objectChanges == 3000);
+        static_assert(limits::spellEffects == 256);
+        static_assert(limits::mapTileImageBytes == 1800);
+
+        // 0xffffffff is how a protocol-10 signed -1 length would appear when
+        // interpreted as protocol 11's required unsigned fixed-width field.
+        const std::array negativeLength{
+            std::byte{ 0xff }, std::byte{ 0xff },
+            std::byte{ 0xff }, std::byte{ 0xff } };
+        std::string text = "unchanged";
+        PacketReader stringReader(negativeLength);
+        EXPECT(!stringReader.readString(text));
+        EXPECT(stringReader.error() == CodecError::LimitExceeded);
+        EXPECT(text == "unchanged");
+
+        std::uint32_t count = 7;
+        PacketReader collectionReader(negativeLength);
+        EXPECT(!collectionReader.readCollectionCount(count));
+        EXPECT(collectionReader.error() == CodecError::LimitExceeded);
+        EXPECT(count == 7);
+
+        const std::array truncatedString{
+            std::byte{ 5 }, std::byte{ 0 }, std::byte{ 0 }, std::byte{ 0 },
+            std::byte{ 'x' } };
+        PacketReader truncatedReader(truncatedString);
+        EXPECT(!truncatedReader.readString(text));
+        EXPECT(truncatedReader.error() == CodecError::Truncated);
+        EXPECT(text == "unchanged");
+
+        PacketWriter collectionWriter;
+        EXPECT(!collectionWriter.writeCollectionCount(
+            limits::defaultCollectionElements + 1));
+        EXPECT(collectionWriter.error() == CodecError::LimitExceeded);
+
+        PacketWriter allocationGuard(3);
+        EXPECT(!allocationGuard.writeU32(1));
+        EXPECT(allocationGuard.error() == CodecError::LimitExceeded);
+        EXPECT(allocationGuard.storage().empty());
+    }
+
     void testEnvelopeRoundTripAndTruncation()
     {
         const ProtocolEnvelope expected{ 42, 0x123456789abcdef0ULL, 91, envelopeFlagUnreliable };
@@ -201,6 +255,31 @@ namespace
         EXPECT(error == CodecError::LimitExceeded);
     }
 
+    void testEveryMessageTypeRoundTrip()
+    {
+        const std::vector<std::byte> originalPayload{
+            std::byte{ 1 }, std::byte{ 2 }, std::byte{ 3 } };
+        std::size_t covered = 0;
+        for (const MessageType type : allMessageTypes())
+        {
+            const ProtocolEnvelope expected{
+                static_cast<std::uint16_t>(type),
+                0x123456789abcdef0ULL,
+                static_cast<std::uint64_t>(++covered),
+                0 };
+            std::vector<std::byte> encoded;
+            CodecError error = CodecError::InvalidValue;
+            EXPECT(encodeMessage(expected, originalPayload, encoded, error));
+            ProtocolEnvelope decoded;
+            std::span<const std::byte> payload;
+            EXPECT(static_cast<bool>(decodeMessage(encoded, decoded, payload)));
+            EXPECT(decoded == expected);
+            EXPECT(std::ranges::equal(payload, originalPayload));
+        }
+        EXPECT(covered == allMessageTypes().size());
+        EXPECT(covered == 43);
+    }
+
     void testRateLimits()
     {
         using Clock = TokenBucket::Clock;
@@ -244,8 +323,10 @@ int runProtocolTests()
     testReadFailureIsStickyAndNonMutating();
     testDecodeTransaction();
     testStrings();
+    testLengthFieldsAndDeclaredLimits();
     testEnvelopeRoundTripAndTruncation();
     testEnvelopeLimits();
+    testEveryMessageTypeRoundTrip();
     testRateLimits();
     testListenAddressPolicy();
     return sFailures;

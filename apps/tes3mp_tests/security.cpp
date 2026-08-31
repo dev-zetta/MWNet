@@ -68,6 +68,12 @@ int runSecurityTests()
     EXPECT(encodeClientHello(client.hello(), encodedHello));
     ClientHello decodedHello;
     EXPECT(decodeClientHello(encodedHello, decodedHello));
+    for (std::size_t size = 0; size < encodedHello.size(); ++size)
+    {
+        ClientHello truncated = decodedHello;
+        EXPECT(!decodeClientHello(std::span(encodedHello).first(size), truncated));
+        EXPECT(truncated.ephemeralPublicKey == decodedHello.ephemeralPublicKey);
+    }
     encodedHello.push_back(std::byte{ 0 });
     EXPECT(!decodeClientHello(encodedHello, decodedHello));
 
@@ -75,6 +81,15 @@ int runSecurityTests()
     EXPECT(encodeServerHello(response, encodedResponse));
     ServerHello decodedResponse;
     EXPECT(decodeServerHello(encodedResponse, decodedResponse));
+    for (std::size_t size = 0; size < encodedResponse.size(); ++size)
+    {
+        ServerHello truncated = decodedResponse;
+        EXPECT(!decodeServerHello(std::span(encodedResponse).first(size), truncated));
+        EXPECT(truncated.identityPublicKey == decodedResponse.identityPublicKey);
+        EXPECT(truncated.signature == decodedResponse.signature);
+    }
+    encodedResponse.push_back(std::byte{ 0 });
+    EXPECT(!decodeServerHello(encodedResponse, decodedResponse));
 
     std::vector<std::byte> encrypted;
     EXPECT(clientSession.seal(bytes("authenticated payload"), encrypted, securityError));

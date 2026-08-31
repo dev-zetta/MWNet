@@ -200,6 +200,49 @@ namespace
         EXPECT(route.lane == MessageLane::Player);
     }
 
+    void testEveryApplicationPacketRoundTrip()
+    {
+        constexpr TransportConnectionId connection{ 29 };
+        const std::vector<std::byte> body{
+            std::byte{ 0xa5 }, std::byte{ 0x5a }, std::byte{ 0x11 } };
+        std::size_t routes = 0;
+        for (std::uint16_t value = protocol::firstApplicationPacketId;
+             value <= protocol::lastApplicationPacketId; ++value)
+        {
+            const auto id = static_cast<protocol::ApplicationPacketId>(value);
+            for (const auto flow : { ApplicationPacketFlow::ClientToServer,
+                     ApplicationPacketFlow::ServerToClient })
+            {
+                ApplicationPacketRoute route;
+                if (!applicationPacketRoute(id, flow, route))
+                    continue;
+                ++routes;
+                TransportMessage encoded;
+                protocol::CodecError error = protocol::CodecError::InvalidValue;
+                EXPECT(encodeApplicationPacket(id, flow, connection, 83, 7,
+                    body, encoded, error));
+                ApplicationPacket decoded;
+                EXPECT(static_cast<bool>(decodeApplicationPacket(encoded, flow, decoded)));
+                EXPECT(decoded.id == id);
+                EXPECT(decoded.subject == 83);
+                EXPECT(decoded.sequence == 7);
+                EXPECT(decoded.payload == body);
+
+                for (std::size_t size = 0; size < sizeof(std::uint16_t); ++size)
+                {
+                    TransportMessage truncated = encoded;
+                    truncated.payload.resize(size);
+                    ApplicationPacket unchanged;
+                    unchanged.subject = 99;
+                    EXPECT(!decodeApplicationPacket(truncated, flow, unchanged));
+                    EXPECT(unchanged.subject == 99);
+                }
+            }
+        }
+        EXPECT(routes == 2U * (protocol::lastApplicationPacketId
+            - protocol::firstApplicationPacketId));
+    }
+
     class RecordingTransport final : public ITransport
     {
     public:
@@ -342,6 +385,7 @@ int runTransportTests()
     testSnapshotSequences();
     testTransportCodec();
     testApplicationPacketBridge();
+    testEveryApplicationPacketRoundTrip();
     testApplicationPacketDispatcher();
     testApplicationPacketReceiver();
     return sFailures;
