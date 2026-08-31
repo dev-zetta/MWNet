@@ -22,7 +22,7 @@ namespace mwmp
         static bool ApplyCanonicalMutation(Player& player,
             const BaseObjectList& objectList, const char* packetType);
 
-        static bool Process(RakNet::Packet &packet, BaseObjectList &objectList);
+        static bool Process(mwmp::transport::ApplicationPacketFrame &packet, BaseObjectList &objectList);
     };
 }
 

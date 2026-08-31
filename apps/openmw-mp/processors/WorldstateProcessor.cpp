@@ -11,13 +11,13 @@ void WorldstateProcessor::Do(WorldstatePacket &packet, Player &player, BaseWorld
     packet.Send(true);
 }
 
-bool WorldstateProcessor::Process(RakNet::Packet &packet, BaseWorldstate &worldstate)
+bool WorldstateProcessor::Process(mwmp::transport::ApplicationPacketFrame &packet, BaseWorldstate &worldstate)
 {
     for (auto &processor : processors)
     {
         if (processor.first == packet.data[0])
         {
-            Player *player = Players::getPlayer(packet.guid);
+            Player *player = Players::getPlayer(RakNet::RakNetGUID(packet.sender.value));
             if (player == nullptr)
                 return true;
             WorldstatePacket *myPacket = Networking::get().getWorldstatePacketController()->GetPacket(packet.data[0]);
@@ -25,7 +25,7 @@ bool WorldstateProcessor::Process(RakNet::Packet &packet, BaseWorldstate &worlds
             if (!processor.second->avoidReading)
             {
                 BaseWorldstate decoded = worldstate;
-                decoded.guid = packet.guid;
+                decoded.guid = RakNet::RakNetGUID(packet.sender.value);
                 decoded.isValid = true;
                 myPacket->setWorldstate(&decoded);
                 myPacket->Read();
@@ -40,7 +40,7 @@ bool WorldstateProcessor::Process(RakNet::Packet &packet, BaseWorldstate &worlds
             }
             else
             {
-                worldstate.guid = packet.guid;
+                worldstate.guid = RakNet::RakNetGUID(packet.sender.value);
                 worldstate.isValid = true;
             }
 

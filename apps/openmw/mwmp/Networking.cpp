@@ -251,10 +251,10 @@ void Networking::update()
         std::vector<unsigned char> data = std::move(pendingPackets.front());
         pendingPackets.pop_front();
         pendingPacketBytes -= data.size();
-        RakNet::Packet fake{};
+        mwmp::transport::ApplicationPacketFrame fake{};
         fake.data = data.data();
         fake.length = (unsigned int)data.size();
-        fake.guid = RakNet::RakNetGUID(serverConnection.value);
+        fake.sender = serverConnection;
         receiveMessage(&fake);
     }
 
@@ -638,10 +638,10 @@ void Networking::processTransportEvent(transport::TransportEvent event)
             }
             else
             {
-                RakNet::Packet packet{};
+                mwmp::transport::ApplicationPacketFrame packet{};
                 packet.data = frame.data();
                 packet.length = static_cast<unsigned int>(frame.size());
-                packet.guid = RakNet::RakNetGUID(serverConnection.value);
+                packet.sender = serverConnection;
                 receiveMessage(&packet);
             }
             break;
@@ -649,7 +649,7 @@ void Networking::processTransportEvent(transport::TransportEvent event)
     }
 }
 
-void Networking::receiveMessage(RakNet::Packet *packet)
+void Networking::receiveMessage(mwmp::transport::ApplicationPacketFrame *packet)
 {
     if (packet->length < BasePacket::headerSize()
         || packet->length > protocol::limits::normalMessageBytes + BasePacket::headerSize())

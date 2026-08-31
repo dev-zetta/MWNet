@@ -14,7 +14,7 @@ namespace mwmp
     public:
         virtual void Do(SystemPacket &packet, BaseSystem *system) = 0;
 
-        static bool Process(RakNet::Packet &packet);
+        static bool Process(mwmp::transport::ApplicationPacketFrame &packet);
 
         virtual ~SystemProcessor();
     };

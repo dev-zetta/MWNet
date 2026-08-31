@@ -12,7 +12,7 @@ ActorProcessor::~ActorProcessor()
 
 }
 
-bool ActorProcessor::Process(RakNet::Packet &packet, ActorList &actorList)
+bool ActorProcessor::Process(mwmp::transport::ApplicationPacketFrame &packet, ActorList &actorList)
 {
     if (packet.length < BasePacket::headerSize())
         return false;

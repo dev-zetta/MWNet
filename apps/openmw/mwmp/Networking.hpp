@@ -96,7 +96,7 @@ namespace mwmp
         ObjectList objectList;
         Worldstate worldstate;
 
-        void receiveMessage(RakNet::Packet *packet);
+        void receiveMessage(mwmp::transport::ApplicationPacketFrame *packet);
         void processTransportEvent(transport::TransportEvent event);
         bool preInit(std::vector<std::string>& content, Files::Collections& collections);
         bool authenticate(ClientConnectionOptions& options);

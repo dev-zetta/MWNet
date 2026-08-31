@@ -17,6 +17,7 @@
 #include <components/esm3/loadcell.hpp>
 #include <components/esm3/statstate.hpp>
 #include <components/openmw-mp/Protocol/PacketCodec.hpp>
+#include <components/openmw-mp/Transport/ApplicationPacketFrame.hpp>
 
 namespace mwmp::transport
 {

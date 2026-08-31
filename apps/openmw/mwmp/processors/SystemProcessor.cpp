@@ -12,7 +12,7 @@ SystemProcessor::~SystemProcessor()
 
 }
 
-bool SystemProcessor::Process(RakNet::Packet &packet)
+bool SystemProcessor::Process(mwmp::transport::ApplicationPacketFrame &packet)
 {
     if (packet.length < BasePacket::headerSize())
         return false;

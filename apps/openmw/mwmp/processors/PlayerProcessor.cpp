@@ -12,7 +12,7 @@ PlayerProcessor::~PlayerProcessor()
 
 }
 
-bool PlayerProcessor::Process(RakNet::Packet &packet)
+bool PlayerProcessor::Process(mwmp::transport::ApplicationPacketFrame &packet)
 {
     if (packet.length < BasePacket::headerSize())
         return false;

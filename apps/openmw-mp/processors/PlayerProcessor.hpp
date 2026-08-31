@@ -16,7 +16,7 @@ namespace mwmp
         virtual void Do(PlayerPacket &packet, Player &player) = 0;
         virtual bool Validate(Player&, const BasePlayer&) { return true; }
 
-        static bool Process(RakNet::Packet &packet);
+        static bool Process(mwmp::transport::ApplicationPacketFrame &packet);
     };
 }
 

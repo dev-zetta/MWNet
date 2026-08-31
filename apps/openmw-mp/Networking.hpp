@@ -57,12 +57,12 @@ namespace  mwmp
         void unbanAddress(const char *ipAddress);
         std::string getPeerAddress(RakNet::RakNetGUID guid) const;
 
-        void processSystemPacket(RakNet::Packet *packet);
-        void processPlayerPacket(RakNet::Packet *packet);
-        void processActorPacket(RakNet::Packet *packet);
-        void processObjectPacket(RakNet::Packet *packet);
-        void processWorldstatePacket(RakNet::Packet *packet);
-        void update(RakNet::Packet *packet, RakNet::BitStream &bsIn);
+        void processSystemPacket(mwmp::transport::ApplicationPacketFrame *packet);
+        void processPlayerPacket(mwmp::transport::ApplicationPacketFrame *packet);
+        void processActorPacket(mwmp::transport::ApplicationPacketFrame *packet);
+        void processObjectPacket(mwmp::transport::ApplicationPacketFrame *packet);
+        void processWorldstatePacket(mwmp::transport::ApplicationPacketFrame *packet);
+        void update(mwmp::transport::ApplicationPacketFrame *packet, RakNet::BitStream &bsIn);
 
         unsigned short numberOfConnections() const;
         unsigned int maxConnections() const;
@@ -217,7 +217,7 @@ namespace  mwmp
 
         PacketPreInit::PluginContainer &getSamples();
     private:
-        bool preInit(RakNet::Packet *packet, RakNet::BitStream &bsIn);
+        bool preInit(mwmp::transport::ApplicationPacketFrame *packet, RakNet::BitStream &bsIn);
         void processTransportEvent(transport::TransportEvent event);
         void processApplicationMessage(transport::TransportMessage message);
         void processAuthenticationMessage(transport::TransportMessage message);

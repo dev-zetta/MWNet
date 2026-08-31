@@ -13,7 +13,7 @@ namespace mwmp
     public:
         virtual void Do(WorldstatePacket &packet, Worldstate &worldstate) = 0;
 
-        static bool Process(RakNet::Packet &packet, Worldstate &worldstate);
+        static bool Process(mwmp::transport::ApplicationPacketFrame &packet, Worldstate &worldstate);
 
         virtual ~WorldstateProcessor();
     };

@@ -44,13 +44,13 @@ bool ObjectProcessor::ApplyCanonicalMutation(Player& player,
     return false;
 }
 
-bool ObjectProcessor::Process(RakNet::Packet &packet, BaseObjectList &objectList)
+bool ObjectProcessor::Process(mwmp::transport::ApplicationPacketFrame &packet, BaseObjectList &objectList)
 {
     for (auto &processor : processors)
     {
         if (processor.first == packet.data[0])
         {
-            Player *player = Players::getPlayer(packet.guid);
+            Player *player = Players::getPlayer(RakNet::RakNetGUID(packet.sender.value));
             if (player == nullptr)
                 return true;
             ObjectPacket *myPacket = Networking::get().getObjectPacketController()->GetPacket(packet.data[0]);
@@ -58,7 +58,7 @@ bool ObjectProcessor::Process(RakNet::Packet &packet, BaseObjectList &objectList
             if (!processor.second->avoidReading)
             {
                 BaseObjectList decoded;
-                decoded.guid = packet.guid;
+                decoded.guid = RakNet::RakNetGUID(packet.sender.value);
                 decoded.isValid = true;
                 myPacket->setObjectList(&decoded);
                 myPacket->Read();
@@ -75,7 +75,7 @@ bool ObjectProcessor::Process(RakNet::Packet &packet, BaseObjectList &objectList
             {
                 objectList.cell.blank();
                 objectList.baseObjects.clear();
-                objectList.guid = packet.guid;
+                objectList.guid = RakNet::RakNetGUID(packet.sender.value);
                 objectList.isValid = true;
             }
 

@@ -16,7 +16,7 @@ namespace mwmp
     public:
         virtual void Do(PlayerPacket &packet, BasePlayer *player) = 0;
 
-        static bool Process(RakNet::Packet &packet);
+        static bool Process(mwmp::transport::ApplicationPacketFrame &packet);
 
         virtual ~PlayerProcessor();
     };

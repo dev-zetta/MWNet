@@ -3995,9 +3995,9 @@ bool Networking::isPassworded() const
     return mAuthentication.requiresAccessPassword();
 }
 
-void Networking::processSystemPacket(RakNet::Packet *packet)
+void Networking::processSystemPacket(mwmp::transport::ApplicationPacketFrame *packet)
 {
-    Player *player = Players::getPlayer(packet->guid);
+    Player *player = Players::getPlayer(RakNet::RakNetGUID(packet->sender.value));
     if (player == nullptr)
         return;
     LOG_MESSAGE_SIMPLE(TimedLog::LOG_WARN,
@@ -4006,18 +4006,21 @@ void Networking::processSystemPacket(RakNet::Packet *packet)
     kickPlayer(player->guid);
 }
 
-void Networking::processPlayerPacket(RakNet::Packet *packet)
+void Networking::processPlayerPacket(mwmp::transport::ApplicationPacketFrame *packet)
 {
-    Player *player = Players::getPlayer(packet->guid);
+    Player *player = Players::getPlayer(RakNet::RakNetGUID(packet->sender.value));
     if (player == nullptr)
         return;
+    const std::string peerAddress
+        = mEndpoint.peerAddress(packet->sender).value_or(std::string{ "unknown" });
 
     PlayerPacket *myPacket = playerPacketController->GetPacket(packet->data[0]);
 
     if (!player->isHandshaked())
     {
         player->incrementHandshakeAttempts();
-        LOG_MESSAGE_SIMPLE(TimedLog::LOG_WARN, "Have not completed handshake with client at %s", packet->systemAddress.ToString());
+        LOG_MESSAGE_SIMPLE(TimedLog::LOG_WARN,
+            "Have not completed handshake with client at %s", peerAddress.c_str());
         LOG_APPEND(TimedLog::LOG_WARN, "- Attempts so far: %i", player->getHandshakeAttempts());
 
         if (player->getHandshakeAttempts() > 20)
@@ -4034,13 +4037,13 @@ void Networking::processPlayerPacket(RakNet::Packet *packet)
     {
         LOG_MESSAGE_SIMPLE(TimedLog::LOG_INFO, "Received ID_PLAYER_BASEINFO about %s", player->npc.mName.c_str());
 
-        BasePlayer validation(packet->guid);
+        BasePlayer validation(RakNet::RakNetGUID(packet->sender.value));
         myPacket->setPlayer(&validation);
         myPacket->Read();
         if (!myPacket->isPacketValid())
         {
             LOG_MESSAGE_SIMPLE(TimedLog::LOG_ERROR, "Invalid ID_PLAYER_BASEINFO packet from client at %s",
-                packet->systemAddress.ToString());
+                peerAddress.c_str());
             kickPlayer(player->guid);
             return;
         }
@@ -4059,7 +4062,7 @@ void Networking::processPlayerPacket(RakNet::Packet *packet)
     else if (player->getLoadState() == Player::LOADED)
     {
         player->setLoadState(Player::POSTLOADED);
-        newPlayer(packet->guid);
+        newPlayer(RakNet::RakNetGUID(packet->sender.value));
         return;
     }
 
@@ -4069,9 +4072,9 @@ void Networking::processPlayerPacket(RakNet::Packet *packet)
 
 }
 
-void Networking::processActorPacket(RakNet::Packet *packet)
+void Networking::processActorPacket(mwmp::transport::ApplicationPacketFrame *packet)
 {
-    Player *player = Players::getPlayer(packet->guid);
+    Player *player = Players::getPlayer(RakNet::RakNetGUID(packet->sender.value));
     if (player == nullptr)
         return;
 
@@ -4083,9 +4086,9 @@ void Networking::processActorPacket(RakNet::Packet *packet)
 
 }
 
-void Networking::processObjectPacket(RakNet::Packet *packet)
+void Networking::processObjectPacket(mwmp::transport::ApplicationPacketFrame *packet)
 {
-    Player *player = Players::getPlayer(packet->guid);
+    Player *player = Players::getPlayer(RakNet::RakNetGUID(packet->sender.value));
     if (player == nullptr)
         return;
 
@@ -4097,9 +4100,9 @@ void Networking::processObjectPacket(RakNet::Packet *packet)
 
 }
 
-void Networking::processWorldstatePacket(RakNet::Packet *packet)
+void Networking::processWorldstatePacket(mwmp::transport::ApplicationPacketFrame *packet)
 {
-    Player *player = Players::getPlayer(packet->guid);
+    Player *player = Players::getPlayer(RakNet::RakNetGUID(packet->sender.value));
     if (player == nullptr)
         return;
 
@@ -4111,19 +4114,19 @@ void Networking::processWorldstatePacket(RakNet::Packet *packet)
 
 }
 
-bool Networking::preInit(RakNet::Packet *packet, RakNet::BitStream &bsIn)
+bool Networking::preInit(mwmp::transport::ApplicationPacketFrame *packet, RakNet::BitStream &bsIn)
 {
     if (packet->data[0] != ID_GAME_PREINIT)
     {
         LOG_MESSAGE_SIMPLE(TimedLog::LOG_WARN,
             "Connection %llu sent the wrong first application packet",
-            static_cast<unsigned long long>(packet->guid.g));
-        mEndpoint.disconnect({ packet->guid.g });
+            static_cast<unsigned long long>(packet->sender.value));
+        mEndpoint.disconnect({ packet->sender.value });
         return false;
     }
 
     LOG_MESSAGE_SIMPLE(TimedLog::LOG_INFO, "Received content manifest from connection %llu",
-        static_cast<unsigned long long>(packet->guid.g));
+        static_cast<unsigned long long>(packet->sender.value));
     PacketPreInit::PluginContainer dataFiles;
 
     PacketPreInit packetPreInit;
@@ -4134,7 +4137,7 @@ bool Networking::preInit(RakNet::Packet *packet, RakNet::BitStream &bsIn)
     if (!packetPreInit.isPacketValid() || dataFiles.empty())
     {
         LOG_APPEND(TimedLog::LOG_ERROR, "- Packet was invalid");
-        mEndpoint.disconnect({ packet->guid.g });
+        mEndpoint.disconnect({ packet->sender.value });
         return false;
     }
 
@@ -4163,29 +4166,29 @@ bool Networking::preInit(RakNet::Packet *packet, RakNet::BitStream &bsIn)
     }
     RakNet::BitStream bs;
     packetPreInit.SetSendStream(&bs);
-    packetPreInit.setGUID(packet->guid);
+    packetPreInit.setGUID(RakNet::RakNetGUID(packet->sender.value));
 
     // If the loop above was broken, then the client's data files do not match the server's
     if (dataFileEnforcementState && dataFile != dataFiles.end())
     {
         LOG_APPEND(TimedLog::LOG_INFO, "- Client was not allowed to connect due to incompatible data files");
         packetPreInit.setChecksums(&samples);
-        packetPreInit.Send(packet->guid);
-        mEndpoint.disconnect({ packet->guid.g });
+        packetPreInit.Send(RakNet::RakNetGUID(packet->sender.value));
+        mEndpoint.disconnect({ packet->sender.value });
     }
     else
     {
         LOG_APPEND(TimedLog::LOG_INFO, "- Client was allowed to connect");
         PacketPreInit::PluginContainer tmp;
         packetPreInit.setChecksums(&tmp);
-        packetPreInit.Send(packet->guid);
+        packetPreInit.Send(RakNet::RakNetGUID(packet->sender.value));
         return true;
     }
 
     return false;
 }
 
-void Networking::update(RakNet::Packet *packet, RakNet::BitStream &bsIn)
+void Networking::update(mwmp::transport::ApplicationPacketFrame *packet, RakNet::BitStream &bsIn)
 {
     if (systemPacketController->ContainsPacket(packet->data[0]))
     {
@@ -4534,10 +4537,10 @@ void Networking::processApplicationMessage(transport::TransportMessage message)
         return;
     }
 
-    RakNet::Packet packet{};
+    mwmp::transport::ApplicationPacketFrame packet{};
     packet.data = frame.data();
     packet.length = static_cast<unsigned int>(frame.size());
-    packet.guid = RakNet::RakNetGUID(message.connection.value);
+    packet.sender = message.connection;
     RakNet::BitStream stream(&packet.data[1], packet.length - 1, false);
     stream.IgnoreBytes(static_cast<unsigned int>(RakNet::RakNetGUID::size()));
 
@@ -4556,7 +4559,7 @@ void Networking::processApplicationMessage(transport::TransportMessage message)
     if (application.id == protocol::ApplicationPacketId::Loaded
         && state == session::State::AccountAuthenticated)
     {
-        Player* player = Players::getPlayer(packet.guid);
+        Player* player = Players::getPlayer(RakNet::RakNetGUID(packet.sender.value));
         if (player == nullptr)
         {
             disconnectTransport(message.connection, "spawn requested without a player slot");
@@ -4564,7 +4567,7 @@ void Networking::processApplicationMessage(transport::TransportMessage message)
         }
         PlayerPacket* response = playerPacketController->GetPacket(ID_LOADED);
         response->setPlayer(player);
-        if (response->Send(packet.guid) == 0)
+        if (response->Send(RakNet::RakNetGUID(packet.sender.value)) == 0)
         {
             disconnectTransport(message.connection, "failed to send spawn result");
             return;

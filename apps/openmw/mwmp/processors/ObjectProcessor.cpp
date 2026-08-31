@@ -13,7 +13,7 @@ ObjectProcessor::~ObjectProcessor()
 
 }
 
-bool ObjectProcessor::Process(RakNet::Packet &packet, ObjectList &objectList)
+bool ObjectProcessor::Process(mwmp::transport::ApplicationPacketFrame &packet, ObjectList &objectList)
 {
     if (packet.length < BasePacket::headerSize())
         return false;

@@ -13,7 +13,7 @@ WorldstateProcessor::~WorldstateProcessor()
 
 }
 
-bool WorldstateProcessor::Process(RakNet::Packet &packet, Worldstate &worldstate)
+bool WorldstateProcessor::Process(mwmp::transport::ApplicationPacketFrame &packet, Worldstate &worldstate)
 {
     if (packet.length < BasePacket::headerSize())
         return false;

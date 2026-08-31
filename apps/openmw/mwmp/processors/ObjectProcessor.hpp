@@ -16,7 +16,7 @@ namespace mwmp
     public:
         virtual void Do(ObjectPacket &packet, ObjectList &objectList) = 0;
 
-        static bool Process(RakNet::Packet &packet, ObjectList &objectList);
+        static bool Process(mwmp::transport::ApplicationPacketFrame &packet, ObjectList &objectList);
 
         virtual ~ObjectProcessor();
     };
