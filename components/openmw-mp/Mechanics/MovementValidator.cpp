@@ -43,7 +43,9 @@ namespace mwmp::mechanics
         {
             const Transition& transition = transitionIt->second;
             if (now <= transition.expiresAt && sample.cell == transition.cell
-                && distance(sample.position, transition.position) <= transition.tolerance)
+                && (!transition.position
+                    || distance(sample.position, *transition.position)
+                        <= transition.tolerance))
             {
                 stateIt->second = { sample, now };
                 mTransitions.erase(transitionIt);
@@ -67,6 +69,60 @@ namespace mwmp::mechanics
         return { MovementDecision::Accepted, travelled, allowed };
     }
 
+    MovementValidationResult MovementValidator::previewCellTransition(
+        std::uint64_t connection, std::string_view destinationCell,
+        Position3 previousPosition, double tolerance) const
+    {
+        if (connection == 0)
+            return { MovementDecision::InvalidConnection };
+        if (!validCell(destinationCell) || !validPosition(previousPosition)
+            || !std::isfinite(tolerance) || tolerance < 0)
+        {
+            return { MovementDecision::InvalidTransition };
+        }
+
+        const auto state = mStates.find(connection);
+        if (state == mStates.end())
+        {
+            if (mStates.size() >= mMaximumConnections)
+                return { MovementDecision::CapacityReached };
+            return { MovementDecision::AcceptedInitial };
+        }
+        if (destinationCell == state->second.sample.cell)
+            return { MovementDecision::InvalidTransition };
+
+        const double travelled
+            = distance(state->second.sample.position, previousPosition);
+        if (travelled > tolerance)
+            return { MovementDecision::SpeedExceeded, travelled, tolerance };
+        return { MovementDecision::AcceptedTransition, travelled, tolerance };
+    }
+
+    MovementValidationResult MovementValidator::acceptCellTransition(
+        std::uint64_t connection, std::string destinationCell,
+        Position3 previousPosition, double tolerance, Clock::time_point now,
+        std::chrono::milliseconds lifetime)
+    {
+        const MovementValidationResult result = previewCellTransition(connection,
+            destinationCell, previousPosition, tolerance);
+        if (!result.accepted() || lifetime <= lifetime.zero())
+            return result.accepted()
+                ? MovementValidationResult{ MovementDecision::InvalidTransition }
+                : result;
+
+        const auto existing = mTransitions.find(connection);
+        if (existing != mTransitions.end() && now <= existing->second.expiresAt
+            && existing->second.cell == destinationCell
+            && existing->second.position)
+        {
+            return result;
+        }
+        mTransitions.insert_or_assign(connection,
+            Transition{ std::move(destinationCell), std::nullopt, 0,
+                now + lifetime });
+        return result;
+    }
+
     bool MovementValidator::authorizeTransition(std::uint64_t connection, std::string cell,
         Position3 position, double tolerance, Clock::time_point now,
         std::chrono::milliseconds lifetime)
@@ -77,7 +133,8 @@ namespace mwmp::mechanics
         if (!mStates.contains(connection) && mStates.size() >= mMaximumConnections)
             return false;
         mTransitions.insert_or_assign(connection,
-            Transition{ std::move(cell), position, tolerance, now + lifetime });
+            Transition{ std::move(cell), std::optional<Position3>{ position },
+                tolerance, now + lifetime });
         return true;
     }
 
@@ -151,6 +208,8 @@ namespace mwmp::mechanics
                 return "the theoretical speed is invalid";
             case MovementDecision::SpeedExceeded:
                 return "the movement exceeds the theoretical speed bound";
+            case MovementDecision::InvalidTransition:
+                return "the cell transition intent is invalid";
             case MovementDecision::TransitionNotAuthorized:
                 return "the cell transition was not authorized";
             case MovementDecision::CapacityReached:

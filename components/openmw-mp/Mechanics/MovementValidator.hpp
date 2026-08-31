@@ -36,6 +36,7 @@ namespace mwmp::mechanics
         InvalidCoordinate,
         InvalidSpeed,
         SpeedExceeded,
+        InvalidTransition,
         TransitionNotAuthorized,
         CapacityReached,
     };
@@ -70,6 +71,13 @@ namespace mwmp::mechanics
         MovementValidationResult validate(std::uint64_t connection,
             const MovementSample& sample, double theoreticalMaximumSpeed,
             Clock::time_point now);
+        MovementValidationResult previewCellTransition(std::uint64_t connection,
+            std::string_view destinationCell, Position3 previousPosition,
+            double tolerance) const;
+        MovementValidationResult acceptCellTransition(std::uint64_t connection,
+            std::string destinationCell, Position3 previousPosition,
+            double tolerance, Clock::time_point now,
+            std::chrono::milliseconds lifetime = TransitionLifetime);
 
         bool authorizeTransition(std::uint64_t connection, std::string cell,
             Position3 position, double tolerance, Clock::time_point now,
@@ -91,7 +99,7 @@ namespace mwmp::mechanics
         struct Transition
         {
             std::string cell;
-            Position3 position;
+            std::optional<Position3> position;
             double tolerance = 0;
             Clock::time_point expiresAt;
         };

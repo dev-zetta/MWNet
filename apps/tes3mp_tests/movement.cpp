@@ -76,6 +76,36 @@ namespace
             == MovementDecision::TransitionNotAuthorized);
     }
 
+    void testCellTransitionIntentsAreStaged()
+    {
+        MovementValidator validator;
+        const auto start = MovementValidator::Clock::time_point{};
+        EXPECT(validator.validate(1, { { 10, 20, 30 }, "Balmora", 1 }, 100,
+                   start).accepted());
+        EXPECT(validator.previewCellTransition(1, "Vivec", { 200, 20, 30 }, 64)
+                   .decision == MovementDecision::SpeedExceeded);
+        EXPECT(validator.validate(1, { {}, "Vivec", 2 }, 100, start + 1s)
+                   .decision == MovementDecision::TransitionNotAuthorized);
+
+        EXPECT(validator.previewCellTransition(1, "Vivec", { 11, 20, 30 }, 64)
+                   .decision == MovementDecision::AcceptedTransition);
+        EXPECT(validator.acceptCellTransition(1, "Vivec", { 11, 20, 30 }, 64,
+                   start + 1s).accepted());
+        EXPECT(validator.validate(1, { { 5000, 6000, 7000 }, "Vivec", 3 }, 100,
+                   start + 1s).decision == MovementDecision::AcceptedTransition);
+        EXPECT(validator.previewCellTransition(1, "Vivec", { 5000, 6000, 7000 }, 64)
+                   .decision == MovementDecision::InvalidTransition);
+
+        EXPECT(validator.authorizeTransition(1, "Seyda Neen", { 1, 2, 3 }, 4,
+            start + 2s));
+        EXPECT(validator.acceptCellTransition(1, "Seyda Neen",
+                   { 5000, 6000, 7000 }, 64, start + 2s).accepted());
+        EXPECT(validator.validate(1, { { 100, 2, 3 }, "Seyda Neen", 4 }, 100,
+                   start + 2s).decision == MovementDecision::TransitionNotAuthorized);
+        EXPECT(validator.validate(1, { { 4, 2, 3 }, "Seyda Neen", 5 }, 100,
+                   start + 2s).decision == MovementDecision::AcceptedTransition);
+    }
+
     void testInvalidInputCapacityAndCleanup()
     {
         MovementValidator validator(1);
@@ -104,6 +134,7 @@ int runMovementTests()
 {
     testSpeedBoundAndSequences();
     testTransitionsAreExplicitAndSingleUse();
+    testCellTransitionIntentsAreStaged();
     testInvalidInputCapacityAndCleanup();
     return sFailures;
 }
