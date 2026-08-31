@@ -18,6 +18,16 @@ using namespace mwmp;
 BaseWorldstate *WorldstateFunctions::readWorldstate;
 BaseWorldstate WorldstateFunctions::writeWorldstate;
 
+BaseWorldstate& WorldstateFunctions::RequireReadWorldstate()
+{
+    if (readWorldstate == nullptr)
+    {
+        throw std::runtime_error(
+            "no worldstate is selected; call ReadReceivedWorldstate first");
+    }
+    return *readWorldstate;
+}
+
 void WorldstateFunctions::ReadReceivedWorldstate()
 {
     readWorldstate = mwmp::Networking::getPtr()->getReceivedWorldstate();
@@ -25,7 +35,7 @@ void WorldstateFunctions::ReadReceivedWorldstate()
 
 void WorldstateFunctions::CopyReceivedWorldstateToStore()
 {
-    writeWorldstate = *readWorldstate;
+    writeWorldstate = RequireReadWorldstate();
 }
 
 void WorldstateFunctions::ClearKillChanges()
@@ -45,82 +55,82 @@ void WorldstateFunctions::ClearClientGlobals()
 
 unsigned int WorldstateFunctions::GetKillChangesSize()
 {
-    return readWorldstate->killChanges.size();
+    return RequireReadWorldstate().killChanges.size();
 }
 
 unsigned int WorldstateFunctions::GetMapChangesSize()
 {
-    return readWorldstate->mapTiles.size();
+    return RequireReadWorldstate().mapTiles.size();
 }
 
 unsigned int WorldstateFunctions::GetClientGlobalsSize()
 {
-    return readWorldstate->clientGlobals.size();
+    return RequireReadWorldstate().clientGlobals.size();
 }
 
 const char *WorldstateFunctions::GetKillRefId(unsigned int index)
 {
-    return readWorldstate->killChanges.at(index).refId.c_str();
+    return RequireReadWorldstate().killChanges.at(index).refId.c_str();
 }
 
 int WorldstateFunctions::GetKillNumber(unsigned int index)
 {
-    return readWorldstate->killChanges.at(index).number;
+    return RequireReadWorldstate().killChanges.at(index).number;
 }
 
 const char *WorldstateFunctions::GetWeatherRegion()
 {
-    return readWorldstate->weather.region.c_str();
+    return RequireReadWorldstate().weather.region.c_str();
 }
 
 int WorldstateFunctions::GetWeatherCurrent()
 {
-    return readWorldstate->weather.currentWeather;
+    return RequireReadWorldstate().weather.currentWeather;
 }
 
 int WorldstateFunctions::GetWeatherNext()
 {
-    return readWorldstate->weather.nextWeather;
+    return RequireReadWorldstate().weather.nextWeather;
 }
 
 int WorldstateFunctions::GetWeatherQueued()
 {
-    return readWorldstate->weather.queuedWeather;
+    return RequireReadWorldstate().weather.queuedWeather;
 }
 
 double WorldstateFunctions::GetWeatherTransitionFactor()
 {
-    return readWorldstate->weather.transitionFactor;
+    return RequireReadWorldstate().weather.transitionFactor;
 }
 
 int WorldstateFunctions::GetMapTileCellX(unsigned int index)
 {
-    return readWorldstate->mapTiles.at(index).x;
+    return RequireReadWorldstate().mapTiles.at(index).x;
 }
 
 int WorldstateFunctions::GetMapTileCellY(unsigned int index)
 {
-    return readWorldstate->mapTiles.at(index).y;
+    return RequireReadWorldstate().mapTiles.at(index).y;
 }
 
 const char *WorldstateFunctions::GetClientGlobalId(unsigned int index)
 {
-    return readWorldstate->clientGlobals.at(index).id.c_str();
+    return RequireReadWorldstate().clientGlobals.at(index).id.c_str();
 }
 
 unsigned short WorldstateFunctions::GetClientGlobalVariableType(unsigned int index)
 {
-    return readWorldstate->clientGlobals.at(index).variableType;
+    return RequireReadWorldstate().clientGlobals.at(index).variableType;
 }
 
 int WorldstateFunctions::GetClientGlobalIntValue(unsigned int index)
 {
-    return readWorldstate->clientGlobals.at(index).intValue;
+    return RequireReadWorldstate().clientGlobals.at(index).intValue;
 }
 
 double WorldstateFunctions::GetClientGlobalFloatValue(unsigned int index)
 {
-    return readWorldstate->clientGlobals.at(index).floatValue;
+    return RequireReadWorldstate().clientGlobals.at(index).floatValue;
 }
 
 void WorldstateFunctions::SetAuthorityRegion(const char* authorityRegion)
@@ -290,12 +300,13 @@ void WorldstateFunctions::ClearDestinationOverrides()
 
 void WorldstateFunctions::SaveMapTileImageFile(unsigned int index, const char *filePath)
 {
-    if (readWorldstate == nullptr || index >= readWorldstate->mapTiles.size())
+    BaseWorldstate& worldstate = RequireReadWorldstate();
+    if (index >= worldstate.mapTiles.size())
         throw std::out_of_range("map tile index is outside the received worldstate");
     if (filePath == nullptr || *filePath == '\0')
         throw std::invalid_argument("map tile output path is empty");
 
-    const std::vector<char>& imageData = readWorldstate->mapTiles.at(index).imageData;
+    const std::vector<char>& imageData = worldstate.mapTiles.at(index).imageData;
     if (imageData.size() > static_cast<std::size_t>(mwmp::maxImageDataSize))
         throw std::length_error("map tile image exceeds the 1,800-byte limit");
 

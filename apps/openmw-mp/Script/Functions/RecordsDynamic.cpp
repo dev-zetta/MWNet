@@ -51,11 +51,11 @@ const ESM::EffectList& GetRecordEffects(unsigned int recordIndex)
     unsigned short recordsType = RecordsDynamicFunctions::GetRecordType();
 
     if (recordsType == mwmp::RECORD_TYPE::SPELL)
-        return WorldstateFunctions::readWorldstate->spellRecords.at(recordIndex).data.mEffects;
+        return WorldstateFunctions::RequireReadWorldstate().spellRecords.at(recordIndex).data.mEffects;
     else if (recordsType == mwmp::RECORD_TYPE::POTION)
-        return WorldstateFunctions::readWorldstate->potionRecords.at(recordIndex).data.mEffects;
+        return WorldstateFunctions::RequireReadWorldstate().potionRecords.at(recordIndex).data.mEffects;
     else if (recordsType == mwmp::RECORD_TYPE::ENCHANTMENT)
-        return WorldstateFunctions::readWorldstate->enchantmentRecords.at(recordIndex).data.mEffects;
+        return WorldstateFunctions::RequireReadWorldstate().enchantmentRecords.at(recordIndex).data.mEffects;
 
     return emptyEffectList;
 }
@@ -91,12 +91,12 @@ void RecordsDynamicFunctions::ClearRecords()
 
 unsigned short RecordsDynamicFunctions::GetRecordType()
 {
-    return WorldstateFunctions::readWorldstate->recordsType;
+    return WorldstateFunctions::RequireReadWorldstate().recordsType;
 }
 
 unsigned int RecordsDynamicFunctions::GetRecordCount()
 {
-    return WorldstateFunctions::readWorldstate->recordsCount;
+    return WorldstateFunctions::RequireReadWorldstate().recordsCount;
 }
 
 unsigned int RecordsDynamicFunctions::GetRecordEffectCount(unsigned int recordIndex)
@@ -109,9 +109,9 @@ int RecordsDynamicFunctions::GetRecordSubtype(unsigned int index)
     unsigned short readRecordsType = RecordsDynamicFunctions::GetRecordType();
 
     if (readRecordsType == mwmp::RECORD_TYPE::SPELL)
-        return WorldstateFunctions::readWorldstate->spellRecords.at(index).data.mData.mType;
+        return WorldstateFunctions::RequireReadWorldstate().spellRecords.at(index).data.mData.mType;
     else if (readRecordsType == mwmp::RECORD_TYPE::ENCHANTMENT)
-        return WorldstateFunctions::readWorldstate->enchantmentRecords.at(index).data.mData.mType;
+        return WorldstateFunctions::RequireReadWorldstate().enchantmentRecords.at(index).data.mData.mType;
 
     return -1;
 }
@@ -121,11 +121,11 @@ const char *RecordsDynamicFunctions::GetRecordId(unsigned int index)
     unsigned short readRecordsType = RecordsDynamicFunctions::GetRecordType();
 
     if (readRecordsType == mwmp::RECORD_TYPE::SPELL)
-        return WorldstateFunctions::readWorldstate->spellRecords.at(index).data.mId.getRefIdString().c_str();
+        return WorldstateFunctions::RequireReadWorldstate().spellRecords.at(index).data.mId.getRefIdString().c_str();
     else if (readRecordsType == mwmp::RECORD_TYPE::POTION)
-        return WorldstateFunctions::readWorldstate->potionRecords.at(index).data.mId.getRefIdString().c_str();
+        return WorldstateFunctions::RequireReadWorldstate().potionRecords.at(index).data.mId.getRefIdString().c_str();
     else if (readRecordsType == mwmp::RECORD_TYPE::ENCHANTMENT)
-        return WorldstateFunctions::readWorldstate->enchantmentRecords.at(index).data.mId.getRefIdString().c_str();
+        return WorldstateFunctions::RequireReadWorldstate().enchantmentRecords.at(index).data.mId.getRefIdString().c_str();
 
     return "invalid";
 }
@@ -135,19 +135,19 @@ const char *RecordsDynamicFunctions::GetRecordBaseId(unsigned int index)
     unsigned short readRecordsType = RecordsDynamicFunctions::GetRecordType();
 
     if (readRecordsType == mwmp::RECORD_TYPE::SPELL)
-        return WorldstateFunctions::readWorldstate->spellRecords.at(index).baseId.c_str();
+        return WorldstateFunctions::RequireReadWorldstate().spellRecords.at(index).baseId.c_str();
     else if (readRecordsType == mwmp::RECORD_TYPE::POTION)
-        return WorldstateFunctions::readWorldstate->potionRecords.at(index).baseId.c_str();
+        return WorldstateFunctions::RequireReadWorldstate().potionRecords.at(index).baseId.c_str();
     else if (readRecordsType == mwmp::RECORD_TYPE::ENCHANTMENT)
-        return WorldstateFunctions::readWorldstate->enchantmentRecords.at(index).baseId.c_str();
+        return WorldstateFunctions::RequireReadWorldstate().enchantmentRecords.at(index).baseId.c_str();
     else if (readRecordsType == mwmp::RECORD_TYPE::ARMOR)
-        return WorldstateFunctions::readWorldstate->armorRecords.at(index).baseId.c_str();
+        return WorldstateFunctions::RequireReadWorldstate().armorRecords.at(index).baseId.c_str();
     else if (readRecordsType == mwmp::RECORD_TYPE::BOOK)
-        return WorldstateFunctions::readWorldstate->bookRecords.at(index).baseId.c_str();
+        return WorldstateFunctions::RequireReadWorldstate().bookRecords.at(index).baseId.c_str();
     else if (readRecordsType == mwmp::RECORD_TYPE::CLOTHING)
-        return WorldstateFunctions::readWorldstate->clothingRecords.at(index).baseId.c_str();
+        return WorldstateFunctions::RequireReadWorldstate().clothingRecords.at(index).baseId.c_str();
     else if (readRecordsType == mwmp::RECORD_TYPE::WEAPON)
-        return WorldstateFunctions::readWorldstate->weaponRecords.at(index).baseId.c_str();
+        return WorldstateFunctions::RequireReadWorldstate().weaponRecords.at(index).baseId.c_str();
 
     return "invalid";
 }
@@ -157,17 +157,17 @@ const char *RecordsDynamicFunctions::GetRecordName(unsigned int index)
     unsigned short readRecordsType = RecordsDynamicFunctions::GetRecordType();
 
     if (readRecordsType == mwmp::RECORD_TYPE::SPELL)
-        return WorldstateFunctions::readWorldstate->spellRecords.at(index).data.mName.c_str();
+        return WorldstateFunctions::RequireReadWorldstate().spellRecords.at(index).data.mName.c_str();
     else if (readRecordsType == mwmp::RECORD_TYPE::POTION)
-        return WorldstateFunctions::readWorldstate->potionRecords.at(index).data.mName.c_str();
+        return WorldstateFunctions::RequireReadWorldstate().potionRecords.at(index).data.mName.c_str();
     else if (readRecordsType == mwmp::RECORD_TYPE::ARMOR)
-        return WorldstateFunctions::readWorldstate->armorRecords.at(index).data.mName.c_str();
+        return WorldstateFunctions::RequireReadWorldstate().armorRecords.at(index).data.mName.c_str();
     else if (readRecordsType == mwmp::RECORD_TYPE::BOOK)
-        return WorldstateFunctions::readWorldstate->bookRecords.at(index).data.mName.c_str();
+        return WorldstateFunctions::RequireReadWorldstate().bookRecords.at(index).data.mName.c_str();
     else if (readRecordsType == mwmp::RECORD_TYPE::CLOTHING)
-        return WorldstateFunctions::readWorldstate->clothingRecords.at(index).data.mName.c_str();
+        return WorldstateFunctions::RequireReadWorldstate().clothingRecords.at(index).data.mName.c_str();
     else if (readRecordsType == mwmp::RECORD_TYPE::WEAPON)
-        return WorldstateFunctions::readWorldstate->weaponRecords.at(index).data.mName.c_str();
+        return WorldstateFunctions::RequireReadWorldstate().weaponRecords.at(index).data.mName.c_str();
 
     return "invalid";
 }
@@ -177,7 +177,7 @@ const char *RecordsDynamicFunctions::GetRecordModel(unsigned int index)
     unsigned short readRecordsType = RecordsDynamicFunctions::GetRecordType();
 
     if (readRecordsType == mwmp::RECORD_TYPE::POTION)
-        return WorldstateFunctions::readWorldstate->potionRecords.at(index).data.mModel.getOriginal().c_str();
+        return WorldstateFunctions::RequireReadWorldstate().potionRecords.at(index).data.mModel.getOriginal().c_str();
 
     return "invalid";
 }
@@ -187,7 +187,7 @@ const char *RecordsDynamicFunctions::GetRecordIcon(unsigned int index)
     unsigned short readRecordsType = RecordsDynamicFunctions::GetRecordType();
 
     if (readRecordsType == mwmp::RECORD_TYPE::POTION)
-        return WorldstateFunctions::readWorldstate->potionRecords.at(index).data.mIcon.getOriginal().c_str();
+        return WorldstateFunctions::RequireReadWorldstate().potionRecords.at(index).data.mIcon.getOriginal().c_str();
 
     return "invalid";
 }
@@ -197,7 +197,7 @@ const char *RecordsDynamicFunctions::GetRecordScript(unsigned int index)
     unsigned short readRecordsType = RecordsDynamicFunctions::GetRecordType();
 
     if (readRecordsType == mwmp::RECORD_TYPE::POTION)
-        return WorldstateFunctions::readWorldstate->potionRecords.at(index).data.mScript.getRefIdString().c_str();
+        return WorldstateFunctions::RequireReadWorldstate().potionRecords.at(index).data.mScript.getRefIdString().c_str();
 
     return "invalid";
 }
@@ -207,13 +207,13 @@ const char *RecordsDynamicFunctions::GetRecordEnchantmentId(unsigned int index)
     unsigned short readRecordsType = RecordsDynamicFunctions::GetRecordType();
 
     if (readRecordsType == mwmp::RECORD_TYPE::ARMOR)
-        return WorldstateFunctions::readWorldstate->armorRecords.at(index).data.mEnchant.getRefIdString().c_str();
+        return WorldstateFunctions::RequireReadWorldstate().armorRecords.at(index).data.mEnchant.getRefIdString().c_str();
     else if (readRecordsType == mwmp::RECORD_TYPE::BOOK)
-        return WorldstateFunctions::readWorldstate->bookRecords.at(index).data.mEnchant.getRefIdString().c_str();
+        return WorldstateFunctions::RequireReadWorldstate().bookRecords.at(index).data.mEnchant.getRefIdString().c_str();
     else if (readRecordsType == mwmp::RECORD_TYPE::CLOTHING)
-        return WorldstateFunctions::readWorldstate->clothingRecords.at(index).data.mEnchant.getRefIdString().c_str();
+        return WorldstateFunctions::RequireReadWorldstate().clothingRecords.at(index).data.mEnchant.getRefIdString().c_str();
     else if (readRecordsType == mwmp::RECORD_TYPE::WEAPON)
-        return WorldstateFunctions::readWorldstate->weaponRecords.at(index).data.mEnchant.getRefIdString().c_str();
+        return WorldstateFunctions::RequireReadWorldstate().weaponRecords.at(index).data.mEnchant.getRefIdString().c_str();
 
     return "invalid";
 }
@@ -223,13 +223,13 @@ int RecordsDynamicFunctions::GetRecordEnchantmentCharge(unsigned int index)
     unsigned short readRecordsType = RecordsDynamicFunctions::GetRecordType();
 
     if (readRecordsType == mwmp::RECORD_TYPE::ARMOR)
-        return WorldstateFunctions::readWorldstate->armorRecords.at(index).data.mData.mEnchant;
+        return WorldstateFunctions::RequireReadWorldstate().armorRecords.at(index).data.mData.mEnchant;
     else if (readRecordsType == mwmp::RECORD_TYPE::BOOK)
-        return WorldstateFunctions::readWorldstate->bookRecords.at(index).data.mData.mEnchant;
+        return WorldstateFunctions::RequireReadWorldstate().bookRecords.at(index).data.mData.mEnchant;
     else if (readRecordsType == mwmp::RECORD_TYPE::CLOTHING)
-        return WorldstateFunctions::readWorldstate->clothingRecords.at(index).data.mData.mEnchant;
+        return WorldstateFunctions::RequireReadWorldstate().clothingRecords.at(index).data.mData.mEnchant;
     else if (readRecordsType == mwmp::RECORD_TYPE::WEAPON)
-        return WorldstateFunctions::readWorldstate->weaponRecords.at(index).data.mData.mEnchant;
+        return WorldstateFunctions::RequireReadWorldstate().weaponRecords.at(index).data.mData.mEnchant;
 
     return -1;
 }
@@ -239,7 +239,7 @@ int RecordsDynamicFunctions::GetRecordAutoCalc(unsigned int index)
     unsigned short readRecordsType = RecordsDynamicFunctions::GetRecordType();
 
     if (readRecordsType == mwmp::RECORD_TYPE::POTION)
-        return WorldstateFunctions::readWorldstate->potionRecords.at(index).data.mData.mFlags;
+        return WorldstateFunctions::RequireReadWorldstate().potionRecords.at(index).data.mData.mFlags;
 
     return -1;
 }
@@ -249,7 +249,7 @@ int RecordsDynamicFunctions::GetRecordCharge(unsigned int index)
     unsigned short readRecordsType = RecordsDynamicFunctions::GetRecordType();
 
     if (readRecordsType == mwmp::RECORD_TYPE::ENCHANTMENT)
-        return WorldstateFunctions::readWorldstate->enchantmentRecords.at(index).data.mData.mCharge;
+        return WorldstateFunctions::RequireReadWorldstate().enchantmentRecords.at(index).data.mData.mCharge;
 
     return -1;
 }
@@ -259,9 +259,9 @@ int RecordsDynamicFunctions::GetRecordCost(unsigned int index)
     unsigned short readRecordsType = RecordsDynamicFunctions::GetRecordType();
 
     if (readRecordsType == mwmp::RECORD_TYPE::SPELL)
-        return WorldstateFunctions::readWorldstate->spellRecords.at(index).data.mData.mCost;
+        return WorldstateFunctions::RequireReadWorldstate().spellRecords.at(index).data.mData.mCost;
     else if (readRecordsType == mwmp::RECORD_TYPE::ENCHANTMENT)
-        return WorldstateFunctions::readWorldstate->enchantmentRecords.at(index).data.mData.mCost;
+        return WorldstateFunctions::RequireReadWorldstate().enchantmentRecords.at(index).data.mData.mCost;
 
     return -1;
 }
@@ -271,9 +271,9 @@ int RecordsDynamicFunctions::GetRecordFlags(unsigned int index)
     unsigned short readRecordsType = RecordsDynamicFunctions::GetRecordType();
 
     if (readRecordsType == mwmp::RECORD_TYPE::SPELL)
-        return WorldstateFunctions::readWorldstate->spellRecords.at(index).data.mData.mFlags;
+        return WorldstateFunctions::RequireReadWorldstate().spellRecords.at(index).data.mData.mFlags;
     else if (readRecordsType == mwmp::RECORD_TYPE::ENCHANTMENT)
-        return WorldstateFunctions::readWorldstate->enchantmentRecords.at(index).data.mData.mFlags;
+        return WorldstateFunctions::RequireReadWorldstate().enchantmentRecords.at(index).data.mData.mFlags;
 
     return -1;
 }
@@ -283,7 +283,7 @@ int RecordsDynamicFunctions::GetRecordValue(unsigned int index)
     unsigned short readRecordsType = RecordsDynamicFunctions::GetRecordType();
 
     if (readRecordsType == mwmp::RECORD_TYPE::POTION)
-        return WorldstateFunctions::readWorldstate->potionRecords.at(index).data.mData.mValue;
+        return WorldstateFunctions::RequireReadWorldstate().potionRecords.at(index).data.mData.mValue;
 
     return -1;
 }
@@ -293,7 +293,7 @@ double RecordsDynamicFunctions::GetRecordWeight(unsigned int index)
     unsigned short readRecordsType = RecordsDynamicFunctions::GetRecordType();
 
     if (readRecordsType == mwmp::RECORD_TYPE::POTION)
-        return WorldstateFunctions::readWorldstate->potionRecords.at(index).data.mData.mWeight;
+        return WorldstateFunctions::RequireReadWorldstate().potionRecords.at(index).data.mData.mWeight;
 
     return -1;
 }
@@ -303,9 +303,9 @@ unsigned int RecordsDynamicFunctions::GetRecordQuantity(unsigned int index)
     unsigned short readRecordsType = RecordsDynamicFunctions::GetRecordType();
 
     if (readRecordsType == mwmp::RECORD_TYPE::POTION)
-        return WorldstateFunctions::readWorldstate->potionRecords.at(index).quantity;
+        return WorldstateFunctions::RequireReadWorldstate().potionRecords.at(index).quantity;
     else if (readRecordsType == mwmp::RECORD_TYPE::WEAPON)
-        return WorldstateFunctions::readWorldstate->weaponRecords.at(index).quantity;
+        return WorldstateFunctions::RequireReadWorldstate().weaponRecords.at(index).quantity;
 
     return 1;
 }

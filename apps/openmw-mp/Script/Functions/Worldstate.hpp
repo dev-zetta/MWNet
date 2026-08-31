@@ -94,6 +94,8 @@ public:
     static mwmp::BaseWorldstate *readWorldstate;
     static mwmp::BaseWorldstate writeWorldstate;
 
+    static mwmp::BaseWorldstate& RequireReadWorldstate();
+
     /**
     * \brief Use the last worldstate received by the server as the one being read.
     *
