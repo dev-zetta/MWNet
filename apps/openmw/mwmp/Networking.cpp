@@ -688,27 +688,27 @@ void Networking::receiveMessage(RakNet::Packet *packet)
     }
 }
 
-SystemPacket *Networking::getSystemPacket(RakNet::MessageID id)
+SystemPacket *Networking::getSystemPacket(std::uint16_t id)
 {
     return systemPacketController.GetPacket(id);
 }
 
-PlayerPacket *Networking::getPlayerPacket(RakNet::MessageID id)
+PlayerPacket *Networking::getPlayerPacket(std::uint16_t id)
 {
     return playerPacketController.GetPacket(id);
 }
 
-ActorPacket *Networking::getActorPacket(RakNet::MessageID id)
+ActorPacket *Networking::getActorPacket(std::uint16_t id)
 {
     return actorPacketController.GetPacket(id);
 }
 
-ObjectPacket *Networking::getObjectPacket(RakNet::MessageID id)
+ObjectPacket *Networking::getObjectPacket(std::uint16_t id)
 {
     return objectPacketController.GetPacket(id);
 }
 
-WorldstatePacket *Networking::getWorldstatePacket(RakNet::MessageID id)
+WorldstatePacket *Networking::getWorldstatePacket(std::uint16_t id)
 {
     return worldstatePacketController.GetPacket(id);
 }

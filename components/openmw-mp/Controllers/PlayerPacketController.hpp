@@ -3,6 +3,7 @@
 
 
 #include "../Packets/Player/PlayerPacket.hpp"
+#include <cstdint>
 #include <unordered_map>
 #include <memory>
 
@@ -13,11 +14,11 @@ namespace mwmp
     {
     public:
         PlayerPacketController();
-        PlayerPacket *GetPacket(RakNet::MessageID id);
+        PlayerPacket *GetPacket(std::uint16_t id);
         void SetStream(RakNet::BitStream *inStream, RakNet::BitStream *outStream);
         void SetApplicationPacketDispatcher(transport::ApplicationPacketDispatcher* dispatcher);
 
-        bool ContainsPacket(RakNet::MessageID id);
+        bool ContainsPacket(std::uint16_t id);
 
         typedef std::unordered_map<unsigned char, std::unique_ptr<PlayerPacket> > packets_t;
     private:

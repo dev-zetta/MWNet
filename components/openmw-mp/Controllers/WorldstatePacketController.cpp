@@ -36,7 +36,7 @@ mwmp::WorldstatePacketController::WorldstatePacketController()
 }
 
 
-mwmp::WorldstatePacket *mwmp::WorldstatePacketController::GetPacket(RakNet::MessageID id)
+mwmp::WorldstatePacket *mwmp::WorldstatePacketController::GetPacket(std::uint16_t id)
 {
     const auto packet = packets.find(static_cast<unsigned char>(id));
     return packet == packets.end() ? nullptr : packet->second.get();
@@ -55,7 +55,7 @@ void mwmp::WorldstatePacketController::SetApplicationPacketDispatcher(
         packet.second->SetApplicationPacketDispatcher(dispatcher);
 }
 
-bool mwmp::WorldstatePacketController::ContainsPacket(RakNet::MessageID id)
+bool mwmp::WorldstatePacketController::ContainsPacket(std::uint16_t id)
 {
     return packets.find(static_cast<unsigned char>(id)) != packets.end();
 }

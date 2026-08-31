@@ -101,7 +101,7 @@ mwmp::PlayerPacketController::PlayerPacketController()
 }
 
 
-mwmp::PlayerPacket *mwmp::PlayerPacketController::GetPacket(RakNet::MessageID id)
+mwmp::PlayerPacket *mwmp::PlayerPacketController::GetPacket(std::uint16_t id)
 {
     const auto packet = packets.find(static_cast<unsigned char>(id));
     return packet == packets.end() ? nullptr : packet->second.get();
@@ -120,7 +120,7 @@ void mwmp::PlayerPacketController::SetApplicationPacketDispatcher(
         packet.second->SetApplicationPacketDispatcher(dispatcher);
 }
 
-bool mwmp::PlayerPacketController::ContainsPacket(RakNet::MessageID id)
+bool mwmp::PlayerPacketController::ContainsPacket(std::uint16_t id)
 {
     return packets.find(static_cast<unsigned char>(id)) != packets.end();
 }

@@ -1,14 +1,12 @@
 #ifndef OPENMW_NETWORKMESSAGES_HPP
 #define OPENMW_NETWORKMESSAGES_HPP
 
-#include <MessageIdentifiers.h>
-
 #include <components/openmw-mp/Protocol/ApplicationPacketId.hpp>
 
-enum GameMessages
+enum GameMessages : std::uint16_t
 {
-    _ID_UNUSED = ID_USER_PACKET_ENUM+1,
-    ID_USER_MYID,
+    ID_USER_MYID = static_cast<std::uint16_t>(
+        mwmp::protocol::ApplicationPacketId::UserMyId),
     ID_USER_DISCONNECTED,
     ID_CHAT_MESSAGE,
 
@@ -114,8 +112,7 @@ enum GameMessages
     ID_PLAYER_ALLY,
     ID_WORLD_DESTINATION_OVERRIDE,
     ID_ACTOR_SPELLS_ACTIVE,
-    ID_PLAYER_COOLDOWNS,
-    ID_PLACEHOLDER
+    ID_PLAYER_COOLDOWNS
 };
 
 static_assert(ID_USER_MYID

@@ -2,6 +2,7 @@
 #define OPENMW_NETWORKING_HPP
 
 #include <BitStream.h>
+#include <cstdint>
 #include <deque>
 #include <filesystem>
 #include <memory>
@@ -57,11 +58,11 @@ namespace mwmp
             ClientConnectionOptions options);
         void update();
 
-        SystemPacket *getSystemPacket(RakNet::MessageID id);
-        PlayerPacket *getPlayerPacket(RakNet::MessageID id);
-        ActorPacket *getActorPacket(RakNet::MessageID id);
-        ObjectPacket *getObjectPacket(RakNet::MessageID id);
-        WorldstatePacket *getWorldstatePacket(RakNet::MessageID id);
+        SystemPacket *getSystemPacket(std::uint16_t id);
+        PlayerPacket *getPlayerPacket(std::uint16_t id);
+        ActorPacket *getActorPacket(std::uint16_t id);
+        ObjectPacket *getObjectPacket(std::uint16_t id);
+        WorldstatePacket *getWorldstatePacket(std::uint16_t id);
 
         RakNet::SystemAddress serverAddress()
         {
