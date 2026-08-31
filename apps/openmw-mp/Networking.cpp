@@ -1660,10 +1660,13 @@ bool Networking::commitActorList(Player& player, BaseActorList& actorList)
         && *serverCell->getAuthority() == player.guid
         && serverCell->getAuthorityLeaseId() == actorList.authorityLeaseId)
     {
+        const std::vector<mechanics::ActorIdentity> previousActors
+            = mActorStateLedger.identities(actorList.cell.getShortDescription());
         result = mActorStateLedger.applyRoster(*action,
             actorList.cell.getShortDescription(), actorRosterUpdates(actorList));
         if (result.applied())
         {
+            eraseRemovedActorState(previousActors);
             serverCell->readActorList(ID_ACTOR_LIST, &actorList);
             return true;
         }
@@ -1692,8 +1695,12 @@ bool Networking::applyServerActorList(BaseActorList& actorList)
         mechanics::ActorStateDecision::InvalidRosterAction };
     if (action && serverCell != nullptr)
     {
+        const std::vector<mechanics::ActorIdentity> previousActors
+            = mActorStateLedger.identities(actorList.cell.getShortDescription());
         result = mActorStateLedger.applyRoster(*action,
             actorList.cell.getShortDescription(), actorRosterUpdates(actorList));
+        if (result.applied())
+            eraseRemovedActorState(previousActors);
     }
     if (!result.applied())
     {
@@ -1705,6 +1712,24 @@ bool Networking::applyServerActorList(BaseActorList& actorList)
     }
     serverCell->readActorList(ID_ACTOR_LIST, &actorList);
     return true;
+}
+
+void Networking::eraseRemovedActorState(
+    const std::vector<mechanics::ActorIdentity>& previousActors)
+{
+    for (const mechanics::ActorIdentity& actor : previousActors)
+    {
+        if (mActorStateLedger.contains(actor))
+            continue;
+        const mechanics::CombatantId id{
+            mechanics::CombatantKind::Actor,
+            (static_cast<std::uint64_t>(actor.refNum) << 32)
+                | static_cast<std::uint64_t>(actor.mpNum),
+            actor.cell
+        };
+        mCombatResolver.erase(id);
+        mActiveEffectLedger.erase(id);
+    }
 }
 
 bool Networking::validateActorPositions(Player& player,

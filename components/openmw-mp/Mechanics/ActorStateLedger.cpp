@@ -133,6 +133,23 @@ namespace mwmp::mechanics
         return found->second.refId;
     }
 
+    bool ActorStateLedger::contains(const ActorIdentity& identity) const noexcept
+    {
+        return mActors.contains(identity);
+    }
+
+    std::vector<ActorIdentity> ActorStateLedger::identities(
+        const std::string& cell) const
+    {
+        std::vector<ActorIdentity> result;
+        for (const auto& actor : mActors)
+        {
+            if (actor.first.cell == cell)
+                result.push_back(actor.first);
+        }
+        return result;
+    }
+
     std::size_t ActorStateLedger::eraseCell(const std::string& cell) noexcept
     {
         std::size_t erased = 0;

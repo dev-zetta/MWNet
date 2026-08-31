@@ -127,6 +127,8 @@ namespace mwmp::mechanics
             const ActorIdentity& identity) const;
         std::optional<ActorTransform> position(const ActorIdentity& identity) const;
         std::optional<std::string> refId(const ActorIdentity& identity) const;
+        bool contains(const ActorIdentity& identity) const noexcept;
+        std::vector<ActorIdentity> identities(const std::string& cell) const;
         std::size_t eraseCell(const std::string& cell) noexcept;
         void clear() noexcept;
         std::size_t size() const noexcept;

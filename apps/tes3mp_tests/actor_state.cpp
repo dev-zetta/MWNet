@@ -147,6 +147,8 @@ namespace
         EXPECT(ledger.size() == 0);
         EXPECT(ledger.applyRoster(ActorRosterAction::Set, "Balmora", initial)
             .applied());
+        EXPECT(ledger.contains({ "Balmora", 1, 0 }));
+        EXPECT(ledger.identities("Balmora").size() == 2);
         EXPECT(*ledger.refId({ "Balmora", 1, 0 }) == "guard");
         EXPECT(ledger.previewRoster(ActorRosterAction::Add, "Balmora",
                    { rosterActor("Balmora", 3, "scrib") }).decision

@@ -191,6 +191,8 @@ namespace  mwmp
         void processTransportEvent(transport::TransportEvent event);
         void processApplicationMessage(transport::TransportMessage message);
         void processAuthenticationMessage(transport::TransportMessage message);
+        void eraseRemovedActorState(
+            const std::vector<mechanics::ActorIdentity>& previousActors);
         bool sendAuthenticationResponse(transport::TransportConnectionId connection,
             const security::AuthenticationResponse& response);
         void disconnectTransport(transport::TransportConnectionId connection,
