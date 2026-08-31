@@ -678,7 +678,7 @@ eventHandler.OnPlayerDisconnect = function(pid)
 
     -- If this player has disconnected before properly logging in, remove their pid
     -- from the table tracking IP addresses
-    if tes3mp.GetIP(pid) == "UNASSIGNED_SYSTEM_ADDRESS" then
+    if tes3mp.GetIP(pid) == "" then
         for ipAddress, pids in pairs(pidsByIpAddress) do
             if tableHelper.containsValue(pids, pid) then
                 tableHelper.removeValue(pids, pid)

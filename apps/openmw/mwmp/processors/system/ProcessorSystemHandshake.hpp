@@ -20,7 +20,7 @@ namespace mwmp
         void Do(SystemPacket &packet, BaseSystem *system) override
         {
             packet.setSystem(Main::get().getLocalSystem());
-            packet.Send(serverAddr);
+            packet.Send(false);
         }
     };
 }

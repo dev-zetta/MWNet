@@ -254,7 +254,6 @@ void Networking::update()
         RakNet::Packet fake{};
         fake.data = data.data();
         fake.length = (unsigned int)data.size();
-        fake.systemAddress = serverAddr;
         fake.guid = RakNet::RakNetGUID(serverConnection.value);
         receiveMessage(&fake);
     }
@@ -277,10 +276,6 @@ void Networking::connect(const std::string& ip, unsigned short port,
     pendingPackets.clear();
     pendingPacketBytes = 0;
     receiver.clear();
-    serverAddr.SetBinaryAddress(ip.c_str());
-    serverAddr.SetPortHostOrder(port);
-    BaseClientPacketProcessor::SetServerAddr(serverAddr);
-
     transport::ConnectOptions connectOptions;
     connectOptions.host = ip;
     connectOptions.port = port;
@@ -381,7 +376,7 @@ bool Networking::preInit(std::vector<std::string>& content, Files::Collections& 
     packetPreInit.setGUID(RakNet::RakNetGUID(serverConnection.value));
     packetPreInit.SetSendStream(&bs);
     packetPreInit.SetApplicationPacketDispatcher(dispatcher.get());
-    if (packetPreInit.Send(serverAddr) == 0)
+    if (packetPreInit.Send(false) == 0)
         return failConnection("Failed to send the content manifest.");
 
     PacketPreInit::PluginContainer checksumsResponse;
@@ -646,7 +641,6 @@ void Networking::processTransportEvent(transport::TransportEvent event)
                 RakNet::Packet packet{};
                 packet.data = frame.data();
                 packet.length = static_cast<unsigned int>(frame.size());
-                packet.systemAddress = serverAddr;
                 packet.guid = RakNet::RakNetGUID(serverConnection.value);
                 receiveMessage(&packet);
             }

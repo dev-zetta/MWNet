@@ -24,7 +24,7 @@ namespace mwmp
                 if (isRequest())
                 {
                     LOG_APPEND(TimedLog::LOG_INFO, "- Requesting info");
-                    packet.Send(serverAddr);
+                    packet.Send(false);
                 }
                 else
                 {

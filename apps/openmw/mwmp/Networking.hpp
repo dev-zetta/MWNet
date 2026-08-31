@@ -64,11 +64,6 @@ namespace mwmp
         ObjectPacket *getObjectPacket(std::uint16_t id);
         WorldstatePacket *getWorldstatePacket(std::uint16_t id);
 
-        RakNet::SystemAddress serverAddress()
-        {
-            return serverAddr;
-        }
-
         bool isConnected();
         void disconnect();
         void setLastError(const std::string& msg) { lastError = msg; }
@@ -85,7 +80,6 @@ namespace mwmp
         std::string lastError;
         std::deque<std::vector<unsigned char>> pendingPackets;
         std::size_t pendingPacketBytes = 0;
-        RakNet::SystemAddress serverAddr;
         RakNet::BitStream bsOut;
         std::unique_ptr<transport::Protocol11Endpoint> endpoint;
         std::unique_ptr<transport::ApplicationPacketDispatcher> dispatcher;

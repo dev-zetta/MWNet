@@ -10,11 +10,6 @@ namespace mwmp
     class BaseClientPacketProcessor
     {
     public:
-        static void SetServerAddr(RakNet::SystemAddress addr)
-        {
-            serverAddr = addr;
-        }
-
     protected:
         inline bool isRequest()
         {
@@ -30,8 +25,6 @@ namespace mwmp
 
     protected:
         static RakNet::RakNetGUID guid, myGuid;
-        static RakNet::SystemAddress serverAddr;
-
         static bool request;
     };
 }
