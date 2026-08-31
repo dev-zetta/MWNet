@@ -8,6 +8,7 @@
 #include <components/openmw-mp/Controllers/WorldstatePacketController.hpp>
 #include <components/openmw-mp/Packets/PacketPreInit.hpp>
 #include <components/openmw-mp/Security/ServerAuthenticationService.hpp>
+#include <components/openmw-mp/Session/AuthorityLease.hpp>
 #include <components/openmw-mp/Transport/ApplicationPacketDispatcher.hpp>
 #include <components/openmw-mp/Transport/ApplicationPacketReceiver.hpp>
 #include <components/openmw-mp/Transport/Protocol11Endpoint.hpp>
@@ -15,8 +16,10 @@
 
 #include <filesystem>
 #include <memory>
+#include <optional>
 #include <string>
 #include <string_view>
+#include <unordered_map>
 #include <unordered_set>
 
 namespace  mwmp
@@ -79,6 +82,12 @@ namespace  mwmp
         bool setServerPasswordHash(std::string passwordHash, std::string& error);
         bool isPassworded() const;
 
+        std::optional<session::AuthorityLease> assignActorAuthority(
+            const ESM::Cell& cell, RakNet::RakNetGUID owner);
+        bool validateActorAuthority(const BaseActorList& actorList);
+        bool releaseActorAuthority(const ESM::Cell& cell, RakNet::RakNetGUID owner,
+            std::uint64_t leaseId);
+
         static const Networking &get();
         static Networking *getPtr();
 
@@ -103,7 +112,9 @@ namespace  mwmp
         transport::ApplicationPacketDispatcher mDispatcher;
         transport::ApplicationPacketReceiver mReceiver;
         security::ServerAuthenticationService mAuthentication;
+        session::AuthorityLeaseManager mAuthorityLeases;
         std::unordered_set<std::uint64_t> mAuthenticatedConnections;
+        std::unordered_map<std::uint64_t, unsigned int> mAuthorityViolations;
         std::unordered_set<std::string> mBannedAddresses;
         unsigned int mMaximumConnections;
         unsigned short mPort;

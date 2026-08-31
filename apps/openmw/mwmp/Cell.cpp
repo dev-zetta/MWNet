@@ -45,7 +45,10 @@ void Cell::updateLocal(bool forceUpdate)
     ActorList *actorList = mwmp::Main::get().getNetworking()->getActorList();
     actorList->reset();
 
-    actorList->cell = store->getCell()->getEsm3();
+    // The client can become the provisional local authority before the server's
+    // lease grant arrives. Do not emit unleased actor state during that window.
+    if (!actorList->setCell(store->getCell()->getEsm3()))
+        return;
 
     for (auto it = localActors.begin(); it != localActors.end();)
     {
@@ -639,9 +642,15 @@ bool Cell::hasLocalAuthority()
     return authorityGuid == Main::get().getLocalPlayer()->guid;
 }
 
-void Cell::setAuthority(const RakNet::RakNetGUID& guid)
+void Cell::setAuthority(const RakNet::RakNetGUID& guid, std::uint64_t leaseId)
 {
     authorityGuid = guid;
+    authorityLeaseId = leaseId;
+}
+
+std::uint64_t Cell::getAuthorityLeaseId() const
+{
+    return authorityLeaseId;
 }
 
 MWWorld::CellStore *Cell::getCellStore()

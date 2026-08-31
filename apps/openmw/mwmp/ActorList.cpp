@@ -2,6 +2,7 @@
 #include "Main.hpp"
 #include "Networking.hpp"
 #include "LocalPlayer.hpp"
+#include "CellController.hpp"
 #include "MechanicsHelper.hpp"
 
 #include "../mwworld/class.hpp"
@@ -28,6 +29,8 @@ Networking *ActorList::getNetworking()
 void ActorList::reset()
 {
     cell.blank();
+    authorityLeaseId = 0;
+    authorityLeaseDurationMs = 0;
     baseActors.clear();
     positionActors.clear();
     animFlagsActors.clear();
@@ -41,6 +44,19 @@ void ActorList::reset()
     castActors.clear();
     cellChangeActors.clear();
     guid = mwmp::Main::get().getNetworking()->getLocalPlayer()->guid;
+}
+
+bool ActorList::setCell(const ESM::Cell& newCell)
+{
+    cell = newCell;
+    authorityLeaseId = 0;
+    CellController* controller = Main::get().getCellController();
+    if (controller->isInitializedCell(newCell))
+    {
+        if (Cell* multiplayerCell = controller->getCell(newCell))
+            authorityLeaseId = multiplayerCell->getAuthorityLeaseId();
+    }
+    return authorityLeaseId != 0;
 }
 
 void ActorList::addActor(BaseActor baseActor)
@@ -250,7 +266,8 @@ void ActorList::sendCellChangeActors()
 void ActorList::sendActorsInCell(MWWorld::CellStore* cellStore)
 {
     reset();
-    cell = cellStore->getCell()->getEsm3();
+    if (!setCell(cellStore->getCell()->getEsm3()))
+        return;
     action = BaseActorList::SET;
 
     for (auto &ref : cellStore->getNpcs()->mList)

@@ -3,6 +3,7 @@
 #include <components/openmw-mp/NetworkMessages.hpp>
 
 #include <iostream>
+#include "Networking.hpp"
 #include "Player.hpp"
 #include "Script/Script.hpp"
 
@@ -53,6 +54,13 @@ void Cell::removePlayer(Player *player, bool cleanPlayer)
     {
         if (*it == player)
         {
+            if (authorityGuid == player->guid && authorityLeaseId != 0)
+            {
+                if (mwmp::Networking* networking = mwmp::Networking::getPtr())
+                    networking->releaseActorAuthority(cell, authorityGuid, authorityLeaseId);
+                clearAuthority();
+            }
+
             if (cleanPlayer)
             {
                 auto it2 = find(player->cells.begin(), player->cells.end(), this);
@@ -166,9 +174,21 @@ RakNet::RakNetGUID *Cell::getAuthority()
     return &authorityGuid;
 }
 
-void Cell::setAuthority(const RakNet::RakNetGUID& guid)
+void Cell::setAuthority(const RakNet::RakNetGUID& guid, std::uint64_t leaseId)
 {
     authorityGuid = guid;
+    authorityLeaseId = leaseId;
+}
+
+void Cell::clearAuthority()
+{
+    authorityGuid = RakNet::UNASSIGNED_CRABNET_GUID;
+    authorityLeaseId = 0;
+}
+
+std::uint64_t Cell::getAuthorityLeaseId() const
+{
+    return authorityLeaseId;
 }
 
 mwmp::BaseActorList *Cell::getActorList()

@@ -58,6 +58,7 @@ bool ActorPacket::PacketHeader(RakNet::BitStream *newBitstream, bool send)
 
     RW(actorList->cell.mData, send, true);
     RW(actorList->cell.mName, send, true);
+    RW(actorList->authorityLeaseId, send);
 
     if (send)
         actorList->count = (unsigned int)(actorList->baseActors.size());

@@ -17,7 +17,7 @@ namespace mwmp
 
         virtual void Do(ActorPacket &packet, Player &player, BaseActorList &actorList);
 
-        static bool Process(RakNet::Packet &packet, BaseActorList &actorList) noexcept;
+        static bool Process(RakNet::Packet &packet, BaseActorList &actorList);
     };
 }
 

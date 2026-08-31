@@ -281,7 +281,8 @@ void LocalActor::updateAttackOrCast()
 void LocalActor::sendEquipment()
 {
     ActorList actorList;
-    actorList.cell = cell;
+    if (!actorList.setCell(cell))
+        return;
     actorList.addActor(*this);
     Main::get().getNetworking()->getActorPacket(ID_ACTOR_EQUIPMENT)->setActorList(&actorList);
     Main::get().getNetworking()->getActorPacket(ID_ACTOR_EQUIPMENT)->Send();
@@ -308,7 +309,8 @@ void LocalActor::sendSpellsActiveAddition(const std::string id, bool isStackingS
     spellsActiveChanges.action = mwmp::SpellsActiveChanges::ADD;
 
     ActorList actorList;
-    actorList.cell = cell;
+    if (!actorList.setCell(cell))
+        return;
     actorList.addActor(*this);
     Main::get().getNetworking()->getActorPacket(ID_ACTOR_SPELLS_ACTIVE)->setActorList(&actorList);
     Main::get().getNetworking()->getActorPacket(ID_ACTOR_SPELLS_ACTIVE)->Send();
@@ -332,7 +334,8 @@ void LocalActor::sendSpellsActiveRemoval(const std::string id, bool isStackingSp
     spellsActiveChanges.action = mwmp::SpellsActiveChanges::REMOVE;
 
     ActorList actorList;
-    actorList.cell = cell;
+    if (!actorList.setCell(cell))
+        return;
     actorList.addActor(*this);
     Main::get().getNetworking()->getActorPacket(ID_ACTOR_SPELLS_ACTIVE)->setActorList(&actorList);
     Main::get().getNetworking()->getActorPacket(ID_ACTOR_SPELLS_ACTIVE)->Send();
@@ -349,7 +352,8 @@ void LocalActor::sendDeath(char newDeathState)
         refId.c_str(), refNum, mpNum, cell.getShortDescription().c_str(), deathState);
 
     ActorList actorList;
-    actorList.cell = cell;
+    if (!actorList.setCell(cell))
+        return;
     actorList.addActor(*this);
     Main::get().getNetworking()->getActorPacket(ID_ACTOR_DEATH)->setActorList(&actorList);
     Main::get().getNetworking()->getActorPacket(ID_ACTOR_DEATH)->Send();

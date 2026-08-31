@@ -38,8 +38,12 @@ namespace
         EXPECT(leases.validate("Balmora", 7, granted.lease->leaseId + 1, now + 4s)
             == LeaseValidation::WrongLease);
 
-        EXPECT(leases.renew("Balmora", 7, granted.lease->leaseId, now + 2s)
+        EXPECT(leases.validateAndRenew("Balmora", 7, granted.lease->leaseId, now + 1s)
             == LeaseValidation::Valid);
+        EXPECT(leases.find("Balmora")->expiresAt == now + 5s);
+        EXPECT(leases.validateAndRenew("Balmora", 7, granted.lease->leaseId, now + 2s)
+            == LeaseValidation::Valid);
+        EXPECT(leases.find("Balmora")->expiresAt == now + 7s);
         EXPECT(leases.validate("Balmora", 7, granted.lease->leaseId, now + 6s)
             == LeaseValidation::Valid);
         EXPECT(leases.validate("Balmora", 7, granted.lease->leaseId, now + 7s)
@@ -98,6 +102,8 @@ namespace
         EXPECT(leases.grant("Caldera", 1, now).decision == LeaseGrantDecision::Granted);
         EXPECT(leases.grant("Pelagiad", 2, now).decision == LeaseGrantDecision::CapacityReached);
         EXPECT(leases.renew("missing", 1, 1, now) == LeaseValidation::NotFound);
+        EXPECT(std::string(describe(LeaseValidation::WrongLease))
+            == "the lease identifier does not match");
     }
 }
 

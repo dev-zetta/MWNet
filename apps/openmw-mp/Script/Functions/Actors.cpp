@@ -8,6 +8,8 @@
 
 #include <components/esm3/creaturestats.hpp>
 
+#include <chrono>
+
 #include "Actors.hpp"
 
 using namespace mwmp;
@@ -40,6 +42,8 @@ void ActorFunctions::ReadCellActorList(const char* cellDescription) noexcept
 void ActorFunctions::ClearActorList() noexcept
 {
     writeActorList.cell.blank();
+    writeActorList.authorityLeaseId = 0;
+    writeActorList.authorityLeaseDurationMs = 0;
     writeActorList.baseActors.clear();
 }
 
@@ -538,7 +542,22 @@ void ActorFunctions::SendActorAuthority() noexcept
 
     if (serverCell != nullptr)
     {
-        serverCell->setAuthority(writeActorList.guid);
+        const auto lease = mwmp::Networking::getPtr()->assignActorAuthority(
+            writeActorList.cell, writeActorList.guid);
+        if (!lease)
+        {
+            LOG_MESSAGE_SIMPLE(TimedLog::LOG_ERROR,
+                "Could not assign actor authority for %s to connection %llu",
+                writeActorList.cell.getShortDescription().c_str(),
+                static_cast<unsigned long long>(writeActorList.guid.g));
+            return;
+        }
+
+        writeActorList.authorityLeaseId = lease->leaseId;
+        writeActorList.authorityLeaseDurationMs = static_cast<std::uint32_t>(
+            std::chrono::duration_cast<std::chrono::milliseconds>(
+                mwmp::session::AuthorityLeaseManager::LeaseDuration).count());
+        serverCell->setAuthority(writeActorList.guid, lease->leaseId);
 
         mwmp::ActorPacket *actorPacket = mwmp::Networking::get().getActorPacketController()->GetPacket(ID_ACTOR_AUTHORITY);
         actorPacket->setActorList(&writeActorList);

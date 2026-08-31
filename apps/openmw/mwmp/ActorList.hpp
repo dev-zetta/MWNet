@@ -18,6 +18,7 @@ namespace mwmp
         virtual ~ActorList();
 
         void reset();
+        bool setCell(const ESM::Cell& cell);
         void addActor(BaseActor baseActor);
 
         void addPositionActor(BaseActor baseActor);

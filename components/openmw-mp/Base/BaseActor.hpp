@@ -7,6 +7,8 @@
 
 #include <RakNetTypes.h>
 
+#include <cstdint>
+
 namespace mwmp
 {
     class BaseActor
@@ -83,6 +85,9 @@ namespace mwmp
         };
 
         RakNet::RakNetGUID guid{};
+
+        std::uint64_t authorityLeaseId = 0;
+        std::uint32_t authorityLeaseDurationMs = 0;
 
         std::vector<BaseActor> baseActors;
 

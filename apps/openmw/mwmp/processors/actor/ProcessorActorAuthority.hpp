@@ -32,7 +32,7 @@ namespace mwmp
                     LOG_MESSAGE_SIMPLE(TimedLog::LOG_WARN, "ProcessorActorAuthority: getCell returned nullptr for %s", actorList.cell.getShortDescription().c_str());
                     return;
                 }
-                cell->setAuthority(guid);
+                cell->setAuthority(guid, actorList.authorityLeaseId);
 
                 if (isLocal())
                 {

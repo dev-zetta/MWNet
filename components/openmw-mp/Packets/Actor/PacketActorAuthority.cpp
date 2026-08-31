@@ -14,4 +14,6 @@ void PacketActorAuthority::Packet(RakNet::BitStream *newBitstream, bool send)
 
     RW(actorList->cell.mData, send, true);
     RW(actorList->cell.mName, send, true);
+    RW(actorList->authorityLeaseId, send);
+    RW(actorList->authorityLeaseDurationMs, send);
 }

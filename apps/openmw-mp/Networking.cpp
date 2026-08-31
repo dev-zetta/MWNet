@@ -109,6 +109,55 @@ bool Networking::setServerPassword(std::string_view password, std::string& error
     return setServerPasswordHash(std::move(encoded), error);
 }
 
+std::optional<session::AuthorityLease> Networking::assignActorAuthority(
+    const ESM::Cell& cell, RakNet::RakNetGUID owner)
+{
+    if (!mAuthenticatedConnections.contains(owner.g))
+        return std::nullopt;
+
+    const std::string cellDescription = cell.getShortDescription();
+    const auto now = session::AuthorityLeaseManager::Clock::now();
+    if (const auto current = mAuthorityLeases.find(cellDescription); current)
+    {
+        if (current->owner == owner.g
+            && mAuthorityLeases.renew(current->cell, current->owner, current->leaseId, now)
+                == session::LeaseValidation::Valid)
+            return mAuthorityLeases.find(cellDescription);
+        mAuthorityLeases.release(current->cell, current->owner, current->leaseId);
+    }
+
+    const session::LeaseGrantResult result = mAuthorityLeases.grant(
+        cellDescription, owner.g, now);
+    if (!result.lease || (result.decision != session::LeaseGrantDecision::Granted
+            && result.decision != session::LeaseGrantDecision::Existing))
+        return std::nullopt;
+    return result.lease;
+}
+
+bool Networking::validateActorAuthority(const BaseActorList& actorList)
+{
+    const auto validation = mAuthorityLeases.validateAndRenew(
+        actorList.cell.getShortDescription(), actorList.guid.g, actorList.authorityLeaseId,
+        session::AuthorityLeaseManager::Clock::now());
+    if (validation == session::LeaseValidation::Valid)
+        return true;
+
+    const unsigned int violations = ++mAuthorityViolations[actorList.guid.g];
+    LOG_MESSAGE_SIMPLE(TimedLog::LOG_WARN,
+        "Rejected actor simulation update from connection %llu for cell %s: %s (violation %u)",
+        static_cast<unsigned long long>(actorList.guid.g),
+        actorList.cell.getShortDescription().c_str(), session::describe(validation), violations);
+    if (violations >= 5)
+        disconnectTransport({ actorList.guid.g }, "repeated invalid actor authority leases");
+    return false;
+}
+
+bool Networking::releaseActorAuthority(const ESM::Cell& cell, RakNet::RakNetGUID owner,
+    std::uint64_t leaseId)
+{
+    return mAuthorityLeases.release(cell.getShortDescription(), owner.g, leaseId);
+}
+
 bool Networking::isPassworded() const
 {
     return mAuthentication.requiresAccessPassword();
@@ -393,6 +442,8 @@ void Networking::disconnectPlayer(RakNet::RakNetGUID guid)
         playerPacketController->GetPacket(ID_USER_DISCONNECTED)->setPlayer(player);
         playerPacketController->GetPacket(ID_USER_DISCONNECTED)->Send(true);
     }
+    mAuthorityLeases.releaseOwner(guid.g);
+    mAuthorityViolations.erase(guid.g);
     Players::deletePlayer(guid);
 }
 

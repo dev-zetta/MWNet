@@ -1,6 +1,8 @@
 #ifndef OPENMW_MPCELL_HPP
 #define OPENMW_MPCELL_HPP
 
+#include <cstdint>
+
 #include "ActorList.hpp"
 #include "LocalActor.hpp"
 #include "DedicatedActor.hpp"
@@ -45,7 +47,8 @@ namespace mwmp
         virtual DedicatedActor *getDedicatedActor(std::string actorIndex);
 
         bool hasLocalAuthority();
-        void setAuthority(const RakNet::RakNetGUID& guid);
+        void setAuthority(const RakNet::RakNetGUID& guid, std::uint64_t leaseId = 0);
+        std::uint64_t getAuthorityLeaseId() const;
 
         MWWorld::CellStore* getCellStore();
         std::string getShortDescription();
@@ -54,7 +57,8 @@ namespace mwmp
 
     private:
         MWWorld::CellStore* store;
-        RakNet::RakNetGUID authorityGuid;
+        RakNet::RakNetGUID authorityGuid{};
+        std::uint64_t authorityLeaseId = 0;
 
         std::map<std::string, LocalActor *> localActors;
         std::map<std::string, DedicatedActor *> dedicatedActors;

@@ -1,6 +1,7 @@
 #ifndef OPENMW_SERVERCELL_HPP
 #define OPENMW_SERVERCELL_HPP
 
+#include <cstdint>
 #include <deque>
 #include <string>
 #include <components/esm/records.hpp>
@@ -32,7 +33,9 @@ public:
     void removeActors(const mwmp::BaseActorList *newActorList);
 
     RakNet::RakNetGUID *getAuthority();
-    void setAuthority(const RakNet::RakNetGUID& guid);
+    void setAuthority(const RakNet::RakNetGUID& guid, std::uint64_t leaseId);
+    void clearAuthority();
+    std::uint64_t getAuthorityLeaseId() const;
     mwmp::BaseActorList *getActorList();
 
     TPlayers getPlayers() const;
@@ -46,7 +49,8 @@ private:
     TPlayers players;
     ESM::Cell cell;
 
-    RakNet::RakNetGUID authorityGuid;
+    RakNet::RakNetGUID authorityGuid{};
+    std::uint64_t authorityLeaseId = 0;
     mwmp::BaseActorList cellActorList;
 };
 

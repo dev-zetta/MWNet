@@ -61,6 +61,8 @@ namespace mwmp::session
         LeaseGrantResult grant(std::string cell, std::uint64_t owner, Clock::time_point now);
         LeaseValidation renew(std::string_view cell, std::uint64_t owner,
             std::uint64_t leaseId, Clock::time_point now);
+        LeaseValidation validateAndRenew(std::string_view cell, std::uint64_t owner,
+            std::uint64_t leaseId, Clock::time_point now);
         LeaseValidation validate(std::string_view cell, std::uint64_t owner,
             std::uint64_t leaseId, Clock::time_point now) const;
 
@@ -79,6 +81,8 @@ namespace mwmp::session
         std::uint64_t mNextLeaseId = 1;
         std::unordered_map<std::string, AuthorityLease> mLeases;
     };
+
+    const char* describe(LeaseValidation validation) noexcept;
 }
 
 #endif

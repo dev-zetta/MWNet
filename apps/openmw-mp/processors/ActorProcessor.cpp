@@ -11,7 +11,7 @@ void ActorProcessor::Do(ActorPacket &packet, Player &player, BaseActorList &acto
     packet.Send(true);
 }
 
-bool ActorProcessor::Process(RakNet::Packet &packet, BaseActorList &actorList) noexcept
+bool ActorProcessor::Process(RakNet::Packet &packet, BaseActorList &actorList)
 {
     for (auto &processor : processors)
     {
@@ -43,6 +43,9 @@ bool ActorProcessor::Process(RakNet::Packet &packet, BaseActorList &actorList) n
                 actorList.guid = packet.guid;
                 actorList.isValid = true;
             }
+
+            if (!Networking::getPtr()->validateActorAuthority(actorList))
+                return true;
 
             myPacket->setActorList(&actorList);
             processor.second->Do(*myPacket, *player, actorList);

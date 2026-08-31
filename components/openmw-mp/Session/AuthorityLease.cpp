@@ -80,6 +80,20 @@ namespace mwmp::session
         return LeaseValidation::Valid;
     }
 
+    LeaseValidation AuthorityLeaseManager::validateAndRenew(std::string_view cell,
+        std::uint64_t owner, std::uint64_t leaseId, Clock::time_point now)
+    {
+        const LeaseValidation validation = validate(cell, owner, leaseId, now);
+        if (validation != LeaseValidation::Valid)
+            return validation;
+
+        const auto existing = mLeases.find(std::string(cell));
+        if (existing != mLeases.end()
+            && now + (LeaseDuration - RenewalInterval) >= existing->second.expiresAt)
+            existing->second.expiresAt = now + LeaseDuration;
+        return LeaseValidation::Valid;
+    }
+
     bool AuthorityLeaseManager::release(
         std::string_view cell, std::uint64_t owner, std::uint64_t leaseId)
     {
@@ -136,5 +150,23 @@ namespace mwmp::session
             if (!alreadyActive)
                 return candidate;
         }
+    }
+
+    const char* describe(LeaseValidation validation) noexcept
+    {
+        switch (validation)
+        {
+            case LeaseValidation::Valid:
+                return "valid";
+            case LeaseValidation::NotFound:
+                return "no lease exists for the cell";
+            case LeaseValidation::Expired:
+                return "the lease has expired";
+            case LeaseValidation::WrongOwner:
+                return "the connection does not own the lease";
+            case LeaseValidation::WrongLease:
+                return "the lease identifier does not match";
+        }
+        return "unknown lease validation result";
     }
 }
