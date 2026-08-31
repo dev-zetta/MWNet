@@ -285,6 +285,8 @@ namespace mwmp
 
         mwmp::Item usedItem;
         bool usingItemMagic = false;
+        bool itemUseServerResolved = false;
+        std::string itemUseSoundId;
         char itemUseDrawState = 0;
     };
 }

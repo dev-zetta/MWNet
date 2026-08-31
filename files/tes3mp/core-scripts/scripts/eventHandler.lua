@@ -1678,12 +1678,13 @@ eventHandler.OnPlayerItemUse = function(pid)
     if Players[pid] ~= nil and Players[pid]:IsLoggedIn() then
         local itemRefId = tes3mp.GetUsedItemRefId(pid)
         local eventStatus = customEventHooks.triggerValidators("OnPlayerItemUse", {pid, itemRefId})
+        local serverResolved = tes3mp.IsUsedItemServerResolved(pid)
         
-        if eventStatus.validDefaultHandler then
+        if eventStatus.validDefaultHandler or serverResolved then
             tes3mp.LogMessage(enumerations.log.INFO, logicHandler.GetChatName(pid) .. " used inventory item " .. itemRefId)
 
-            -- Unilateral use of items is disabled on clients, so we need to send
-            -- this packet back to the player before they can use the item
+            -- Server-resolved consumables are presentation-only on the client.
+            -- Other item uses retain the 0.8.1 approval behavior.
             tes3mp.SendItemUse(pid)
         end
         customEventHooks.triggerHandlers("OnPlayerItemUse", eventStatus, {pid, itemRefId})

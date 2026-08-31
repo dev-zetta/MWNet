@@ -128,6 +128,8 @@ namespace  mwmp
         bool validatePlayerInventory(Player& player, const BasePlayer& incoming);
         bool isPlayerInventoryAcknowledgement(const Player& player);
         bool validatePlayerItemUse(Player& player, const BasePlayer& incoming);
+        bool isDirectConsumableMagicItem(std::string_view itemId) const noexcept;
+        bool resolvePlayerItemUse(Player& player, std::string& rejectionReason);
         bool commitPlayerInventory(Player& player);
         bool applyServerInventoryChanges(Player& player);
         bool validatePlayerSpellbook(Player& player, const BasePlayer& incoming);
@@ -171,7 +173,8 @@ namespace  mwmp
         bool commitActorCellChanges(Player& player, BaseActorList& actorList);
         bool validatePlayerCast(Player& player, const BasePlayer& incoming);
         void sanitizePlayerCast(Player& player) noexcept;
-        bool resolvePlayerCast(Player& player, std::string& rejectionReason);
+        bool resolvePlayerCast(Player& player, std::string& rejectionReason,
+            const mechanics::InventoryItem* requestedItem = nullptr);
         bool validateActorCasts(Player& player, const BaseActorList& incoming);
         void sanitizeActorCast(BaseActor& actor) noexcept;
         bool resolveActorCast(Player& player, BaseActorList& actorList,

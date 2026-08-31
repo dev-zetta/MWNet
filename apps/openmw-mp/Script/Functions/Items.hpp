@@ -35,6 +35,7 @@
     {"GetUsedItemCharge",                     ItemFunctions::GetUsedItemCharge},\
     {"GetUsedItemEnchantmentCharge",          ItemFunctions::GetUsedItemEnchantmentCharge},\
     {"GetUsedItemSoul",                       ItemFunctions::GetUsedItemSoul},\
+    {"IsUsedItemServerResolved",              ItemFunctions::IsUsedItemServerResolved},\
     \
     {"SendEquipment",                         ItemFunctions::SendEquipment},\
     {"SendInventoryChanges",                  ItemFunctions::SendInventoryChanges},\
@@ -281,6 +282,14 @@ public:
     * \return The soul.
     */
     static const char *GetUsedItemSoul(unsigned short pid);
+
+    /**
+    * \brief Check whether the server has already applied the last item use.
+    *
+    * \param pid The player ID.
+    * \return Whether canonical state was committed before OnPlayerItemUse.
+    */
+    static bool IsUsedItemServerResolved(unsigned short pid);
 
     /**
     * \brief Send a PlayerEquipment packet with a player's equipment.

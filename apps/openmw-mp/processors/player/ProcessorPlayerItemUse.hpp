@@ -32,6 +32,15 @@ namespace mwmp
                     "OnPlayerItemUseIntentRejected")>(player.getId(), reason);
                 return;
             }
+            std::string rejectionReason;
+            if (!Networking::getPtr()->resolvePlayerItemUse(
+                    player, rejectionReason))
+            {
+                Script::Call<Script::CallbackIdentity(
+                    "OnPlayerItemUseIntentRejected")>(
+                        player.getId(), rejectionReason.c_str());
+                return;
+            }
             Script::Call<Script::CallbackIdentity("OnPlayerItemUse")>(player.getId());
         }
     };

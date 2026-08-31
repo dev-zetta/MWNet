@@ -883,6 +883,40 @@ bool Networking::validatePlayerItemUse(Player& player, const BasePlayer& incomin
     return false;
 }
 
+bool Networking::isDirectConsumableMagicItem(std::string_view itemId) const noexcept
+{
+    return mDirectConsumableMagicItems.contains(
+        Misc::StringUtils::lowerCase(itemId));
+}
+
+bool Networking::resolvePlayerItemUse(Player& player, std::string& rejectionReason)
+{
+    player.itemUseServerResolved = false;
+    player.itemUseSoundId.clear();
+    if (!isDirectConsumableMagicItem(player.usedItem.refId))
+        return true;
+
+    const mechanics::InventoryItem requestedItem{
+        player.usedItem.refId, player.usedItem.soul, player.usedItem.charge,
+        player.usedItem.enchantmentCharge, player.usedItem.count };
+    const Cast previousCast = player.cast;
+    player.cast = {};
+    player.cast.type = Cast::ITEM;
+    player.cast.itemId = player.usedItem.refId;
+    const bool resolved = resolvePlayerCast(
+        player, rejectionReason, &requestedItem);
+    player.cast = previousCast;
+    if (!resolved)
+        return false;
+
+    const auto definition = mSpellResolver.findDefinition(
+        Misc::StringUtils::lowerCase(player.usedItem.refId));
+    player.itemUseServerResolved = true;
+    player.itemUseSoundId = definition && definition->ingredient
+        ? "Swallow" : "Drink";
+    return true;
+}
+
 bool Networking::commitPlayerInventory(Player& player)
 {
     const auto action = inventoryAction(player.inventoryChanges.action);
@@ -2883,7 +2917,8 @@ void Networking::sanitizePlayerCast(Player& player) noexcept
     player.cast.isHit = false;
 }
 
-bool Networking::resolvePlayerCast(Player& player, std::string& rejectionReason)
+bool Networking::resolvePlayerCast(Player& player, std::string& rejectionReason,
+    const mechanics::InventoryItem* requestedItem)
 {
     rejectionReason.clear();
     mechanics::CastIntent presentationIntent;
@@ -3061,9 +3096,11 @@ bool Networking::resolvePlayerCast(Player& player, std::string& rejectionReason)
         }
         const bool consumable = mConsumableMagicItems.contains(sourceId);
         const auto selected = std::ranges::max_element(*inventory, {},
-            [sourceId, consumable, &definition](
+            [sourceId, consumable, &definition, requestedItem](
                 const mechanics::InventoryItem& item) {
                 if (Misc::StringUtils::lowerCase(item.refId) != sourceId)
+                    return -1.0;
+                if (requestedItem != nullptr && !item.sameStack(*requestedItem))
                     return -1.0;
                 if (consumable)
                     return 0.0;
@@ -3071,7 +3108,9 @@ bool Networking::resolvePlayerCast(Player& player, std::string& rejectionReason)
                     ? definition->itemMaximumCharge : item.enchantmentCharge;
             });
         if (selected == inventory->end()
-            || Misc::StringUtils::lowerCase(selected->refId) != sourceId)
+            || Misc::StringUtils::lowerCase(selected->refId) != sourceId
+            || (requestedItem != nullptr
+                && !selected->sameStack(*requestedItem)))
         {
             rejectionReason = "the magic item is not in the canonical inventory";
             return false;
@@ -3296,6 +3335,8 @@ bool Networking::resolvePlayerCast(Player& player, std::string& rejectionReason)
         packet->setPlayer(&player);
         packet->Send(player.guid);
         player.sendToLoaded(packet);
+        Script::Call<Script::CallbackIdentity("OnPlayerInventory")>(
+            player.getId());
         if (itemMutation->add)
         {
             player.inventoryChanges.action = InventoryChanges::ADD;
@@ -3303,6 +3344,8 @@ bool Networking::resolvePlayerCast(Player& player, std::string& rejectionReason)
                 wireInventoryItem(itemMutation->after, 1) };
             packet->Send(player.guid);
             player.sendToLoaded(packet);
+            Script::Call<Script::CallbackIdentity("OnPlayerInventory")>(
+                player.getId());
         }
     }
     if (equipmentChange)

@@ -33,6 +33,22 @@ namespace mwmp
                     player->usedItem.enchantmentCharge, player->usedItem.soul.c_str());
 
                 MWWorld::Ptr playerPtr = MWBase::Environment::get().getWorld()->getPlayerPtr();
+                if (player->itemUseServerResolved)
+                {
+                    if (!player->itemUseSoundId.empty())
+                    {
+                        MWBase::Environment::get().getWindowManager()->playSound(
+                            ESM::RefId::stringRefId(player->itemUseSoundId));
+                    }
+                    if (player->itemUseDrawState
+                        != static_cast<int>(MWMechanics::DrawState::Nothing))
+                    {
+                        playerPtr.getClass().getNpcStats(playerPtr).setDrawState(
+                            static_cast<MWMechanics::DrawState>(
+                                player->itemUseDrawState));
+                    }
+                    return;
+                }
                 MWWorld::InventoryStore &inventoryStore = playerPtr.getClass().getInventoryStore(playerPtr);
 
                 MWWorld::Ptr itemPtr = MechanicsHelper::getItemPtrFromStore(player->usedItem, inventoryStore);

@@ -236,6 +236,14 @@ const char *ItemFunctions::GetUsedItemSoul(unsigned short pid)
     return player->usedItem.soul.c_str();
 }
 
+bool ItemFunctions::IsUsedItemServerResolved(unsigned short pid)
+{
+    Player *player;
+    GET_PLAYER(pid, player, false);
+
+    return player->itemUseServerResolved;
+}
+
 void ItemFunctions::SendEquipment(unsigned short pid)
 {
     Player *player;

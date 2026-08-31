@@ -19,5 +19,7 @@ void PacketPlayerItemUse::Packet(bool send)
     Field(player->usedItem.soul, true);
 
     Field(player->usingItemMagic);
+    Field(player->itemUseServerResolved);
+    Field(player->itemUseSoundId, true);
     Field(player->itemUseDrawState);
 }

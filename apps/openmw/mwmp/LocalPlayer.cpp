@@ -1926,6 +1926,8 @@ void LocalPlayer::sendItemUse(const MWWorld::Ptr& itemPtr, bool itemMagicState, 
     usedItem.soul = itemPtr.getCellRef().getSoul().getRefIdString();
 
     usingItemMagic = itemMagicState;
+    itemUseServerResolved = false;
+    itemUseSoundId.clear();
     itemUseDrawState = currentDrawState;
 
     getNetworking()->getPlayerPacket(ID_PLAYER_ITEM_USE)->setPlayer(this);
