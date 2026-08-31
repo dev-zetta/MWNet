@@ -156,6 +156,14 @@ double StatsFunctions::GetHealthCurrent(unsigned short pid) noexcept
     return player->creatureStats.mDynamic[0].mCurrent;
 }
 
+double StatsFunctions::GetPlayerAttackStrength(unsigned short pid) noexcept
+{
+    Player *player;
+    GET_PLAYER(pid, player, 0.0);
+
+    return player->attack.attackStrength;
+}
+
 double StatsFunctions::GetMagickaBase(unsigned short pid) noexcept
 {
     Player *player;
@@ -405,6 +413,14 @@ void StatsFunctions::SetHealthCurrent(unsigned short pid, double value) noexcept
 
     if (!Utils::vectorContains(player->statsDynamicIndexChanges, 0))
         player->statsDynamicIndexChanges.push_back(0);
+}
+
+void StatsFunctions::SetPlayerAttackStrength(unsigned short pid, double value) noexcept
+{
+    Player *player;
+    GET_PLAYER(pid, player, );
+
+    player->attack.attackStrength = static_cast<float>(value);
 }
 
 void StatsFunctions::SetMagickaBase(unsigned short pid, double value) noexcept

@@ -174,6 +174,8 @@ public:
             {"OnPlayerInventoryIntent",  Callback<unsigned short>()},
             {"OnPlayerInventoryIntentRejected", Callback<unsigned short>()},
             {"OnPlayerInventory",        Callback<unsigned short>()},
+            {"OnPlayerAttackIntent",     Callback<unsigned short, bool, unsigned short, unsigned int, unsigned int, double>()},
+            {"OnPlayerAttackIntentRejected", Callback<unsigned short, const char*>()},
             {"OnPlayerJournal",          Callback<unsigned short>()},
             {"OnPlayerFaction",          Callback<unsigned short>()},
             {"OnPlayerShapeshift",       Callback<unsigned short>()},

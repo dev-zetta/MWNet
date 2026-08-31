@@ -22,6 +22,7 @@
     \
     {"GetHealthBase",           StatsFunctions::GetHealthBase},\
     {"GetHealthCurrent",        StatsFunctions::GetHealthCurrent},\
+    {"GetPlayerAttackStrength", StatsFunctions::GetPlayerAttackStrength},\
     \
     {"GetMagickaBase",          StatsFunctions::GetMagickaBase},\
     {"GetMagickaCurrent",       StatsFunctions::GetMagickaCurrent},\
@@ -55,6 +56,7 @@
     \
     {"SetHealthBase",           StatsFunctions::SetHealthBase},\
     {"SetHealthCurrent",        StatsFunctions::SetHealthCurrent},\
+    {"SetPlayerAttackStrength", StatsFunctions::SetPlayerAttackStrength},\
     {"SetMagickaBase",          StatsFunctions::SetMagickaBase},\
     {"SetMagickaCurrent",       StatsFunctions::SetMagickaCurrent},\
     {"SetFatigueBase",          StatsFunctions::SetFatigueBase},\
@@ -230,6 +232,9 @@ public:
     * \return The current health.
     */
     static double GetHealthCurrent(unsigned short pid) noexcept;
+
+    /** Get the normalized strength of the player's pending attack intent. */
+    static double GetPlayerAttackStrength(unsigned short pid) noexcept;
 
     /**
     * \brief Get the base magicka of the player.
@@ -459,6 +464,9 @@ public:
     * \return void
     */
     static void SetHealthCurrent(unsigned short pid, double value) noexcept;
+
+    /** Modify the normalized strength of the player's pending attack intent. */
+    static void SetPlayerAttackStrength(unsigned short pid, double value) noexcept;
 
     /**
     * \brief Set the base magicka of a player.

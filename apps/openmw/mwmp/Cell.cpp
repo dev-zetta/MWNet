@@ -2,6 +2,7 @@
 #include <components/openmw-mp/TimedLog.hpp>
 
 #include "../mwbase/environment.hpp"
+#include "../mwbase/mechanicsmanager.hpp"
 
 #include "../mwworld/class.hpp"
 #include "../mwworld/livecellref.hpp"
@@ -206,13 +207,30 @@ void Cell::readStatsDynamic(ActorList& actorList)
 {
     initializeDedicatedActors(actorList);
 
-    if (dedicatedActors.empty()) return;
+    if (dedicatedActors.empty() && localActors.empty()) return;
 
     for (const auto &baseActor : actorList.baseActors)
     {
         std::string mapIndex = Main::get().getCellController()->generateMapIndex(baseActor);
 
-        if (dedicatedActors.count(mapIndex) > 0)
+        if (localActors.count(mapIndex) > 0)
+        {
+            LocalActor *actor = getLocalActor(mapIndex);
+            actor->creatureStats = baseActor.creatureStats;
+            actor->hasStatsDynamicData = true;
+
+            MWWorld::Ptr ptr = actor->getPtr();
+            MWMechanics::CreatureStats& stats = ptr.getClass().getCreatureStats(ptr);
+            if (actor->creatureStats.mDynamic[0].mCurrent > 0)
+                MWBase::Environment::get().getMechanicsManager()->resurrect(ptr);
+            for (int index = 0; index < 3; ++index)
+            {
+                MWMechanics::DynamicStat<float> value;
+                value.readState(actor->creatureStats.mDynamic[index]);
+                stats.setDynamic(index, value);
+            }
+        }
+        else if (dedicatedActors.count(mapIndex) > 0)
         {
             DedicatedActor *actor = getDedicatedActor(mapIndex);
             actor->creatureStats = baseActor.creatureStats;
@@ -230,25 +248,37 @@ void Cell::readStatsDynamic(ActorList& actorList)
             }
         }
     }
+
+    if (hasLocalAuthority())
+        uninitializeDedicatedActors(actorList);
 }
 
 void Cell::readDeath(ActorList& actorList)
 {
     initializeDedicatedActors(actorList);
 
-    if (dedicatedActors.empty()) return;
+    if (dedicatedActors.empty() && localActors.empty()) return;
 
     for (const auto &baseActor : actorList.baseActors)
     {
         std::string mapIndex = Main::get().getCellController()->generateMapIndex(baseActor);
 
-        if (dedicatedActors.count(mapIndex) > 0)
+        LocalActor* localActor = localActors.count(mapIndex) > 0
+            ? getLocalActor(mapIndex) : nullptr;
+        DedicatedActor* dedicatedActor = dedicatedActors.count(mapIndex) > 0
+            ? getDedicatedActor(mapIndex) : nullptr;
+        if (localActor != nullptr || dedicatedActor != nullptr)
         {
-            DedicatedActor *actor = getDedicatedActor(mapIndex);
+            BaseActor *actor = localActor != nullptr
+                ? static_cast<BaseActor*>(localActor)
+                : static_cast<BaseActor*>(dedicatedActor);
             actor->creatureStats.mDead = true;
             actor->creatureStats.mDynamic[0].mCurrent = 0;
 
-            Main::get().getCellController()->setQueuedDeathState(actor->getPtr(), baseActor.deathState);
+            MWWorld::Ptr actorPtr = localActor != nullptr
+                ? localActor->getPtr() : dedicatedActor->getPtr();
+
+            Main::get().getCellController()->setQueuedDeathState(actorPtr, baseActor.deathState);
 
             LOG_MESSAGE_SIMPLE(TimedLog::LOG_INFO, "Received ID_ACTOR_DEATH about %s %i-%i in cell %s\n- deathState: %d\n-isInstantDeath: %s",
                 actor->refId.c_str(), actor->refNum, actor->mpNum, getShortDescription().c_str(),
@@ -256,11 +286,14 @@ void Cell::readDeath(ActorList& actorList)
 
             if (baseActor.isInstantDeath)
             {
-                actor->getPtr().getClass().getCreatureStats(actor->getPtr()).setDeathAnimationFinished(true);
-                MWBase::Environment::get().getWorld()->enableActorCollision(actor->getPtr(), false);
+                actorPtr.getClass().getCreatureStats(actorPtr).setDeathAnimationFinished(true);
+                MWBase::Environment::get().getWorld()->enableActorCollision(actorPtr, false);
             }
         }
     }
+
+    if (hasLocalAuthority())
+        uninitializeDedicatedActors(actorList);
 }
 
 void Cell::readEquipment(ActorList& actorList)

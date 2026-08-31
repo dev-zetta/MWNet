@@ -14,6 +14,9 @@ Protocol 11 changes the network and trust boundaries, not the safe TES3MP 0.8.1 
 | `OnPlayerMovementViolation(pid, reason, actualDistance, allowedDistance, violationCount)` | New | Observes rejected movement and may apply script policy; it cannot make the rejected snapshot canonical |
 | `OnPlayerInventoryIntent(pid)` | New | Runs before canonical inventory commit; `false` denies, while `true` or `nil` allows native validation |
 | `OnPlayerInventoryIntentRejected(pid)` | New | Optional cleanup notification when a script-modified inventory intent fails canonical validation |
+| `OnPlayerAttackIntent(pid, isRanged, targetPid, refNum, mpNum, strength)` | New | Runs before server combat resolution; `false` denies, while `true` or `nil` allows the sanitized intent |
+| `OnPlayerAttackIntentRejected(pid, reason)` | New | Reports script denial or native validation failure without applying a client-claimed outcome |
+| `GetPlayerAttackStrength(pid)` / `SetPlayerAttackStrength(pid, strength)` | New | Lets an attack-intent validator inspect or modify normalized strength; native validation runs again before resolution |
 | `WriteFileAtomically(path, contents)` | New | Synchronous atomic write below the configured server data directory |
 | `QueueFileWrite(path, contents)` | New | Bounded, coalesced atomic write below the configured server data directory |
 | `FlushPersistence()` | New | Waits for queued persistence writes to finish |
@@ -39,6 +42,7 @@ Duplicate or out-of-order initialization is rejected. Gameplay mutation and rela
 - Keep account-dependent setup in `OnPlayerConnect`, which now has an authenticated identity.
 - Use `OnPlayerAuthenticated` when a script needs the canonical account name or whether registration just occurred.
 - Use `OnPlayerInventoryIntent` to allow or deny an inventory request before commit. Existing inventory-change setters may propose a modified intent, which is validated again. `OnPlayerInventory` keeps its 0.8.1 signature and now runs after canonical commit.
+- Use `OnPlayerAttackIntent` to inspect or deny a sanitized combat request. `SetPlayerAttackStrength` may modify its normalized strength; the server validates the result, rolls hit chance, computes damage and publishes canonical health.
 - Treat incoming gameplay callbacks as requests. Validators may deny an intent, but only a native canonical result may change protected server state.
 - Do not rely on an old callback being able to mutate another player or an actor outside the caller's authority lease.
 

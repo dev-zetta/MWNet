@@ -13,6 +13,8 @@
 #include <components/openmw-mp/Session/SessionState.hpp>
 #include <components/openmw-mp/Transport/LegacyPacketFrame.hpp>
 
+#include <sodium.h>
+
 #include <iostream>
 #include <algorithm>
 #include <cmath>
@@ -238,6 +240,20 @@ void Networking::resetPlayerMovement(std::uint64_t connection) noexcept
 
 bool Networking::acceptPlayerDeath(Player& player)
 {
+    const mechanics::CombatantId combatant{
+        mechanics::CombatantKind::Player, player.guid.g, {} };
+    const auto combatState = mCombatResolver.find(combatant);
+    if (!combatState || combatState->alive || combatState->health > 0)
+    {
+        const unsigned int violations = ++mLifecycleViolations[player.guid.g];
+        LOG_MESSAGE_SIMPLE(TimedLog::LOG_WARN,
+            "Rejected non-canonical death intent from connection %llu (violation %u)",
+            static_cast<unsigned long long>(player.guid.g), violations);
+        if (violations >= 5)
+            disconnectTransport({ player.guid.g }, "repeated non-canonical death intents");
+        return false;
+    }
+
     const mechanics::PlayerLifeTransition transition
         = mPlayerLifecycle.reportDeath(player.guid.g);
     if (transition.applied())
@@ -655,6 +671,213 @@ bool Networking::applyServerActorStats(BaseActorList& actorList)
         applyCanonicalHealth(actor, state);
     }
     serverCell->readActorList(ID_ACTOR_STATS_DYNAMIC, &actorList);
+    return true;
+}
+
+bool Networking::validatePlayerAttack(Player& player, const BasePlayer& incoming)
+{
+    const Attack& attack = incoming.attack;
+    bool valid = attack.type == Attack::MELEE || attack.type == Attack::RANGED;
+    valid = valid && attack.attackAnimation.size() <= 128
+        && attack.rangedWeaponId.size() <= 256 && attack.rangedAmmoId.size() <= 256;
+
+    if (attack.type == Attack::RANGED)
+    {
+        valid = valid && std::isfinite(attack.attackStrength)
+            && attack.attackStrength >= 0 && attack.attackStrength <= 1;
+        for (const float coordinate : attack.projectileOrigin.origin)
+            valid = valid && std::isfinite(coordinate);
+        for (const float coordinate : attack.projectileOrigin.orientation)
+            valid = valid && std::isfinite(coordinate);
+    }
+
+    if (!attack.pressed)
+    {
+        if (attack.target.isPlayer)
+            valid = valid && attack.target.guid.g != 0 && attack.target.guid != player.guid;
+        else
+            valid = valid && (attack.target.refNum != 0 || attack.target.mpNum != 0)
+                && !(attack.target.refNum != 0 && attack.target.mpNum != 0);
+    }
+    if (valid)
+        return true;
+
+    const unsigned int violations = ++mCombatViolations[player.guid.g];
+    LOG_MESSAGE_SIMPLE(TimedLog::LOG_WARN,
+        "Rejected invalid attack intent from connection %llu (violation %u)",
+        static_cast<unsigned long long>(player.guid.g), violations);
+    if (violations >= 5)
+        disconnectTransport({ player.guid.g }, "repeated invalid attack intents");
+    return false;
+}
+
+void Networking::sanitizePlayerAttack(Player& player) noexcept
+{
+    player.attack.success = false;
+    player.attack.isHit = false;
+    player.attack.damage = 0;
+    player.attack.block = false;
+    player.attack.knockdown = false;
+    player.attack.applyWeaponEnchantment = false;
+    player.attack.applyAmmoEnchantment = false;
+}
+
+bool Networking::resolvePlayerAttack(Player& player, std::string& rejectionReason)
+{
+    rejectionReason.clear();
+    const mechanics::CombatantId attackerId{
+        mechanics::CombatantKind::Player, player.guid.g, {} };
+    auto attackerState = mCombatResolver.find(attackerId);
+    if (!attackerState)
+    {
+        rejectionReason = "the attacker has no canonical combat state";
+        return false;
+    }
+    attackerState->position = { player.position.pos[0], player.position.pos[1],
+        player.position.pos[2] };
+    if (!mCombatResolver.upsert(attackerId, *attackerState))
+    {
+        rejectionReason = "the attacker canonical state is invalid";
+        return false;
+    }
+
+    mechanics::CombatantId targetId;
+    Player* targetPlayer = nullptr;
+    Cell* targetCell = nullptr;
+    BaseActor* targetActor = nullptr;
+    if (player.attack.target.isPlayer)
+    {
+        targetPlayer = Players::getPlayer(player.attack.target.guid);
+        if (targetPlayer == nullptr
+            || !mAuthenticatedConnections.contains(targetPlayer->guid.g)
+            || targetPlayer->cell.getShortDescription() != player.cell.getShortDescription())
+        {
+            rejectionReason = "the target player is unavailable or in another cell";
+            return false;
+        }
+        targetId = { mechanics::CombatantKind::Player, targetPlayer->guid.g, {} };
+        auto state = mCombatResolver.find(targetId);
+        if (!state)
+        {
+            rejectionReason = "the target player has no canonical combat state";
+            return false;
+        }
+        state->position = { targetPlayer->position.pos[0], targetPlayer->position.pos[1],
+            targetPlayer->position.pos[2] };
+        if (!mCombatResolver.upsert(targetId, *state))
+        {
+            rejectionReason = "the target player canonical state is invalid";
+            return false;
+        }
+    }
+    else
+    {
+        targetCell = CellController::get()->getCell(&player.cell);
+        if (targetCell != nullptr)
+            targetActor = targetCell->getActor(
+                player.attack.target.refNum, player.attack.target.mpNum);
+        if (targetActor == nullptr)
+        {
+            rejectionReason = "the target actor is absent from canonical cell state";
+            return false;
+        }
+        targetId = actorCombatantId(player.cell, *targetActor);
+        auto state = mCombatResolver.find(targetId);
+        if (!state && targetActor->hasStatsDynamicData)
+        {
+            const mechanics::CombatantState initial = actorCombatState(
+                *targetActor, targetActor, std::nullopt, true);
+            if (mCombatResolver.upsert(targetId, initial))
+                state = initial;
+        }
+        if (!state)
+        {
+            rejectionReason = "the target actor has no canonical combat state";
+            return false;
+        }
+        state->position = { targetActor->position.pos[0], targetActor->position.pos[1],
+            targetActor->position.pos[2] };
+        if (!mCombatResolver.upsert(targetId, *state))
+        {
+            rejectionReason = "the target actor canonical state is invalid";
+            return false;
+        }
+    }
+
+    const double strength = player.attack.type == Attack::RANGED
+        ? static_cast<double>(player.attack.attackStrength) : 1.0;
+    if (!std::isfinite(strength) || strength < 0 || strength > 1)
+    {
+        rejectionReason = "the script-modified attack strength is invalid";
+        return false;
+    }
+
+    const mechanics::AttackIntent intent{
+        attackerId, targetId, mCurrentApplicationSequence,
+        player.attack.type == Attack::RANGED
+            ? mechanics::AttackKind::Ranged : mechanics::AttackKind::Melee,
+        strength };
+    constexpr double randomScale = 1.0 / 4294967296.0;
+    const mechanics::CombatResult result = mCombatResolver.resolve(
+        intent, static_cast<double>(randombytes_random()) * randomScale);
+    if (!result.applied())
+    {
+        rejectionReason = mechanics::describe(result.decision);
+        return false;
+    }
+
+    player.attack.success = result.decision == mechanics::CombatDecision::AppliedHit;
+    player.attack.isHit = player.attack.success;
+    player.attack.damage = static_cast<float>(result.damage);
+
+    const auto canonicalTarget = mCombatResolver.find(targetId);
+    if (!canonicalTarget)
+    {
+        rejectionReason = "the canonical target disappeared after combat resolution";
+        return false;
+    }
+
+    if (targetPlayer != nullptr)
+    {
+        applyCanonicalHealth(*targetPlayer, *canonicalTarget);
+        targetPlayer->exchangeFullInfo = false;
+        targetPlayer->statsDynamicIndexChanges.clear();
+        targetPlayer->statsDynamicIndexChanges.push_back(0);
+        PlayerPacket* statsPacket = playerPacketController->GetPacket(ID_PLAYER_STATS_DYNAMIC);
+        statsPacket->setPlayer(targetPlayer);
+        statsPacket->Send(targetPlayer->guid);
+        targetPlayer->sendToLoaded(statsPacket);
+    }
+    else
+    {
+        applyCanonicalHealth(*targetActor, *canonicalTarget);
+        targetActor->hasStatsDynamicData = true;
+
+        BaseActorList statsList;
+        statsList.guid = player.guid;
+        statsList.cell = player.cell;
+        statsList.authorityLeaseId = targetCell->getAuthorityLeaseId();
+        statsList.baseActors.push_back(*targetActor);
+        statsList.count = 1;
+        ActorPacket* statsPacket = actorPacketController->GetPacket(ID_ACTOR_STATS_DYNAMIC);
+        statsPacket->setActorList(&statsList);
+        statsPacket->Send(player.guid);
+        targetCell->sendToLoaded(statsPacket, &statsList);
+
+        if (result.targetDied)
+        {
+            BaseActorList deathList = statsList;
+            deathList.baseActors.front().killer.isPlayer = true;
+            deathList.baseActors.front().killer.guid = player.guid;
+            ActorPacket* deathPacket = actorPacketController->GetPacket(ID_ACTOR_DEATH);
+            deathPacket->setActorList(&deathList);
+            deathPacket->Send(player.guid);
+            targetCell->sendToLoaded(deathPacket, &deathList);
+            baseActorList = deathList;
+            Script::Call<Script::CallbackIdentity("OnActorDeath")>(
+                player.getId(), player.cell.getShortDescription().c_str());
+        }
+    }
     return true;
 }
 

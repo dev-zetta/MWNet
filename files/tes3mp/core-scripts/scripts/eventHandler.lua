@@ -981,6 +981,27 @@ eventHandler.OnPlayerInventoryIntentRejected = function(pid)
         {pid, pendingEvent.playerPacket})
 end
 
+eventHandler.OnPlayerAttackIntent = function(pid, isRanged, targetPid, refNum, mpNum, strength)
+    if Players[pid] == nil or not Players[pid]:IsLoggedIn() then
+        return false
+    end
+
+    local eventStatus = customEventHooks.triggerValidators("OnPlayerAttackIntent",
+        {pid, isRanged, targetPid, refNum, mpNum, strength})
+    if not eventStatus.validDefaultHandler then
+        customEventHooks.triggerHandlers("OnPlayerAttackIntent", eventStatus,
+            {pid, isRanged, targetPid, refNum, mpNum, strength})
+        return false
+    end
+    return true
+end
+
+eventHandler.OnPlayerAttackIntentRejected = function(pid, reason)
+    local eventStatus = customEventHooks.makeEventStatus(false, true)
+    customEventHooks.triggerHandlers("OnPlayerAttackIntentRejected", eventStatus,
+        {pid, reason})
+end
+
 eventHandler.OnPlayerSpellbook = function(pid)
     eventHandler.OnGenericPlayerEvent(pid, "PlayerSpellbook")
 end
