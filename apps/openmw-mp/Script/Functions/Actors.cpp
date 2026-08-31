@@ -587,8 +587,11 @@ void ActorFunctions::SendActorPosition(bool sendToOtherVisitors, bool skipAttach
     }
 }
 
-void ActorFunctions::SendActorStatsDynamic(bool sendToOtherVisitors, bool skipAttachedPlayer) noexcept
+void ActorFunctions::SendActorStatsDynamic(bool sendToOtherVisitors, bool skipAttachedPlayer)
 {
+    if (!mwmp::Networking::getPtr()->applyServerActorStats(writeActorList))
+        return;
+
     mwmp::ActorPacket *actorPacket = mwmp::Networking::get().getActorPacketController()->GetPacket(ID_ACTOR_STATS_DYNAMIC);
     actorPacket->setActorList(&writeActorList);
 

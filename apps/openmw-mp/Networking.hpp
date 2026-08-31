@@ -105,6 +105,9 @@ namespace  mwmp
         bool validatePlayerStats(Player& player, const BasePlayer& incoming);
         bool reconcilePlayerStats(Player& player);
         bool applyServerPlayerStats(Player& player);
+        bool validateActorStats(Player& player, const BaseActorList& incoming);
+        bool reconcileActorStats(Player& player, BaseActorList& incoming);
+        bool applyServerActorStats(BaseActorList& actorList);
         persistence::QueueDecision queuePersistenceWrite(
             std::filesystem::path path, std::string_view contents);
         void flushPersistence();

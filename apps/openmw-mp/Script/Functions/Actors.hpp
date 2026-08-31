@@ -951,7 +951,7 @@ public:
     *
     * \return void
     */
-    static void SendActorStatsDynamic(bool sendToOtherVisitors, bool skipAttachedPlayer) noexcept;
+    static void SendActorStatsDynamic(bool sendToOtherVisitors, bool skipAttachedPlayer);
 
     /**
     * \brief Send an ActorEquipment packet.

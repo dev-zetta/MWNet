@@ -448,6 +448,62 @@ namespace
         health.mProgress = 0;
         player.creatureStats.mDead = !state.alive;
     }
+
+    std::uint64_t actorReferenceValue(const mwmp::BaseActor& actor) noexcept
+    {
+        return (static_cast<std::uint64_t>(actor.refNum) << 32)
+            | static_cast<std::uint64_t>(actor.mpNum);
+    }
+
+    mwmp::mechanics::CombatantId actorCombatantId(
+        const ESM::Cell& cell, const mwmp::BaseActor& actor)
+    {
+        return { mwmp::mechanics::CombatantKind::Actor,
+            actorReferenceValue(actor), cell.getShortDescription() };
+    }
+
+    mwmp::mechanics::CombatantState actorCombatState(const mwmp::BaseActor& actor,
+        const mwmp::BaseActor* cachedActor,
+        const std::optional<mwmp::mechanics::CombatantState>& existing,
+        bool replaceHealth)
+    {
+        mwmp::mechanics::CombatantState state = existing.value_or(
+            mwmp::mechanics::CombatantState{});
+        const auto& health = actor.creatureStats.mDynamic[0];
+        if (!existing || replaceHealth)
+        {
+            state.health = std::clamp(static_cast<double>(health.mCurrent),
+                0.0, maximumCanonicalStat);
+            state.maximumHealth = dynamicMaximum(health);
+            state.alive = state.health > 0;
+        }
+        else
+            state.maximumHealth = std::max(state.maximumHealth, state.health);
+        state.fatigueRatio = fatigueRatio(actor.creatureStats.mDynamic[2]);
+        state.accuracy = 0.70;
+        state.evasion = 0.10;
+        state.armorRating = 0;
+        state.minimumDamage = 1;
+        state.maximumDamage = 12;
+        state.meleeReach = 192;
+        state.projectileReach = 8192;
+        const ESM::Position& position = cachedActor != nullptr
+            ? cachedActor->position : actor.position;
+        state.position = { position.pos[0], position.pos[1], position.pos[2] };
+        return state;
+    }
+
+    void applyCanonicalHealth(mwmp::BaseActor& actor,
+        const mwmp::mechanics::CombatantState& state) noexcept
+    {
+        auto& health = actor.creatureStats.mDynamic[0];
+        health.mBase = static_cast<float>(state.maximumHealth);
+        health.mMod = static_cast<float>(state.maximumHealth);
+        health.mCurrent = static_cast<float>(state.health);
+        health.mDamage = 0;
+        health.mProgress = 0;
+        actor.creatureStats.mDead = !state.alive;
+    }
 }
 
 bool Networking::validatePlayerStats(Player& player, const BasePlayer& incoming)
@@ -519,6 +575,86 @@ bool Networking::applyServerPlayerStats(Player& player)
         return false;
     }
     applyCanonicalHealth(player, state);
+    return true;
+}
+
+bool Networking::validateActorStats(Player& player, const BaseActorList& incoming)
+{
+    bool valid = !incoming.cell.getShortDescription().empty();
+    for (const BaseActor& actor : incoming.baseActors)
+    {
+        valid = valid && actorReferenceValue(actor) != 0;
+        for (std::size_t index = 0; valid && index < 3; ++index)
+            valid = validDynamicStat(actor.creatureStats.mDynamic[index], index == 0);
+        if (!valid)
+            break;
+    }
+    if (valid)
+        return true;
+
+    const unsigned int violations = ++mCombatViolations[player.guid.g];
+    LOG_MESSAGE_SIMPLE(TimedLog::LOG_WARN,
+        "Rejected invalid actor stats from connection %llu (violation %u)",
+        static_cast<unsigned long long>(player.guid.g), violations);
+    if (violations >= 5)
+        disconnectTransport({ player.guid.g }, "repeated invalid actor stats");
+    return false;
+}
+
+bool Networking::reconcileActorStats(Player& player, BaseActorList& incoming)
+{
+    Cell* serverCell = CellController::get()->getCell(&incoming.cell);
+    if (serverCell == nullptr)
+        return false;
+
+    for (BaseActor& actor : incoming.baseActors)
+    {
+        const mechanics::CombatantId id = actorCombatantId(incoming.cell, actor);
+        const auto existing = mCombatResolver.find(id);
+        const BaseActor* cachedActor = serverCell->getActor(actor.refNum, actor.mpNum);
+        mechanics::CombatantState state = actorCombatState(
+            actor, cachedActor, existing, false);
+        if (existing)
+            applyCanonicalHealth(actor, state);
+        if (!mCombatResolver.upsert(id, state))
+        {
+            const unsigned int violations = ++mCombatViolations[player.guid.g];
+            LOG_MESSAGE_SIMPLE(TimedLog::LOG_WARN,
+                "Failed to reconcile canonical actor stats from connection %llu (violation %u)",
+                static_cast<unsigned long long>(player.guid.g), violations);
+            if (violations >= 5)
+                disconnectTransport({ player.guid.g }, "repeated invalid canonical actor stats");
+            return false;
+        }
+    }
+    return true;
+}
+
+bool Networking::applyServerActorStats(BaseActorList& actorList)
+{
+    Cell* serverCell = CellController::get()->getCell(&actorList.cell);
+    if (serverCell == nullptr || actorList.cell.getShortDescription().empty())
+        return false;
+
+    for (BaseActor& actor : actorList.baseActors)
+    {
+        if (actorReferenceValue(actor) == 0)
+            return false;
+        for (std::size_t index = 0; index < 3; ++index)
+        {
+            if (!validDynamicStat(actor.creatureStats.mDynamic[index], index == 0))
+                return false;
+        }
+
+        const mechanics::CombatantId id = actorCombatantId(actorList.cell, actor);
+        const BaseActor* cachedActor = serverCell->getActor(actor.refNum, actor.mpNum);
+        mechanics::CombatantState state = actorCombatState(
+            actor, cachedActor, mCombatResolver.find(id), true);
+        if (!mCombatResolver.upsert(id, state))
+            return false;
+        applyCanonicalHealth(actor, state);
+    }
+    serverCell->readActorList(ID_ACTOR_STATS_DYNAMIC, &actorList);
     return true;
 }
 
