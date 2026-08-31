@@ -685,6 +685,14 @@ function OnActorAI(pid, cellDescription)
     eventHandler.OnActorAI(pid, cellDescription)
 end
 
+function OnActorAIIntent(pid, cellDescription)
+    return eventHandler.OnActorAIIntent(pid, cellDescription)
+end
+
+function OnActorAIIntentRejected(pid, cellDescription, reason)
+    eventHandler.OnActorAIIntentRejected(pid, cellDescription, reason)
+end
+
 function OnActorAttackIntent(pid, cellDescription, actorIndex, isRanged, targetPid, refNum, mpNum, strength)
     return eventHandler.OnActorAttackIntent(pid, cellDescription, actorIndex, isRanged,
         targetPid, refNum, mpNum, strength)

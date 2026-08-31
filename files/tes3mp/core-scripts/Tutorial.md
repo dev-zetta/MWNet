@@ -111,6 +111,8 @@ Most of the events are the same as `eventHandler.lua` functions, with some extra
 * OnCellDeletion(cellDescription)
 * OnActorList(pid, cellDescription)
 * OnActorEquipment(pid, cellDescription)
+* OnActorAIIntent(pid, cellDescription)
+* OnActorAIIntentRejected(pid, cellDescription, reason)
 * OnActorAI(pid, cellDescription)
 * OnActorDeath(pid, cellDescription)
 * OnActorCellChange(pid, cellDescription)
@@ -173,4 +175,3 @@ There are also some events not present in `eventHandler` before:
     Only has a handler trigger and no default behaviour to cancel.
     
     Is triggered after a player has finished login it, whether it was by making a new character (`OnPlayerEndCharGen`) or by logging in (`OnPlayerFinishLogin`)
-

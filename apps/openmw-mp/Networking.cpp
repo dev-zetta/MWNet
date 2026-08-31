@@ -554,6 +554,44 @@ namespace
         return result;
     }
 
+    std::vector<mwmp::mechanics::ActorAiUpdate> actorAiUpdates(
+        const mwmp::BaseActorList& actorList)
+    {
+        std::vector<mwmp::mechanics::ActorAiUpdate> result;
+        const std::string cell = actorList.cell.getShortDescription();
+        result.reserve(actorList.baseActors.size());
+        for (const mwmp::BaseActor& actor : actorList.baseActors)
+        {
+            mwmp::mechanics::ActorAiUpdate update;
+            update.identity = { cell, actor.refNum, actor.mpNum };
+            update.state.action
+                = static_cast<mwmp::mechanics::ActorAiAction>(actor.aiAction);
+            update.state.coordinates = { actor.aiCoordinates.pos[0],
+                actor.aiCoordinates.pos[1], actor.aiCoordinates.pos[2] };
+            update.state.distance = actor.aiDistance;
+            update.state.duration = actor.aiDuration;
+            update.state.repeat = actor.aiShouldRepeat;
+            if (actor.hasAiTarget)
+            {
+                mwmp::mechanics::ActorAiTarget target;
+                if (actor.aiTarget.isPlayer)
+                {
+                    target.kind = mwmp::mechanics::ActorAiTargetKind::Player;
+                    target.player = actor.aiTarget.guid.g;
+                }
+                else
+                {
+                    target.kind = mwmp::mechanics::ActorAiTargetKind::Reference;
+                    target.reference = { cell, actor.aiTarget.refNum,
+                        actor.aiTarget.mpNum };
+                }
+                update.state.target = std::move(target);
+            }
+            result.push_back(std::move(update));
+        }
+        return result;
+    }
+
     std::vector<mwmp::mechanics::CombatantRelocation> actorRelocations(
         const std::vector<mwmp::mechanics::ActorCellChangeUpdate>& changes)
     {
@@ -1752,6 +1790,157 @@ bool Networking::applyServerActorEquipment(BaseActorList& actorList)
     }
     serverCell->readActorList(ID_ACTOR_EQUIPMENT, &actorList);
     return true;
+}
+
+bool Networking::validActorAiTargets(const BaseActorList& actorList) const
+{
+    const std::string cell = actorList.cell.getShortDescription();
+    for (const BaseActor& actor : actorList.baseActors)
+    {
+        if (!actor.hasAiTarget)
+            continue;
+
+        if (actor.aiTarget.isPlayer)
+        {
+            const Player* target = Players::getPlayer(actor.aiTarget.guid);
+            if (target == nullptr
+                || !mAuthenticatedConnections.contains(actor.aiTarget.guid.g)
+                || target->cell.getShortDescription() != cell)
+            {
+                return false;
+            }
+            continue;
+        }
+
+        // Activate may legitimately name a static non-actor reference that the
+        // headless server has never materialized. Combat, escort and follow
+        // targets, however, must be actors in the canonical cell roster.
+        if (actor.aiAction != BaseActorList::ACTIVATE
+            && !mActorStateLedger.contains({ cell, actor.aiTarget.refNum,
+                actor.aiTarget.mpNum }))
+        {
+            return false;
+        }
+    }
+    return true;
+}
+
+bool Networking::validateActorAi(Player& player, const BaseActorList& incoming)
+{
+    Cell* serverCell = CellController::get()->getCell(&incoming.cell);
+    bool actorsExist = incoming.count == incoming.baseActors.size()
+        && serverCell != nullptr
+        && *serverCell->getAuthority() == player.guid
+        && serverCell->getAuthorityLeaseId() == incoming.authorityLeaseId;
+    for (const BaseActor& actor : incoming.baseActors)
+    {
+        actorsExist = actorsExist && serverCell != nullptr
+            && serverCell->containsActor(actor.refNum, actor.mpNum);
+    }
+
+    mechanics::ActorStateResult result{
+        mechanics::ActorStateDecision::InvalidIdentity };
+    if (actorsExist)
+    {
+        if (validActorAiTargets(incoming))
+            result = mActorStateLedger.previewAi(actorAiUpdates(incoming));
+        else
+            result.decision = mechanics::ActorStateDecision::InvalidAiTarget;
+    }
+    if (result.applied())
+        return true;
+
+    const unsigned int violations = ++mActorStateViolations[player.guid.g];
+    LOG_MESSAGE_SIMPLE(TimedLog::LOG_WARN,
+        "Rejected actor AI intent from connection %llu for %s: %s (violation %u)",
+        static_cast<unsigned long long>(player.guid.g),
+        incoming.cell.getShortDescription().c_str(),
+        actorsExist ? mechanics::describe(result.decision)
+                    : "the actor is absent or its authority lease is stale",
+        violations);
+    if (violations >= 5)
+        disconnectTransport({ player.guid.g }, "repeated invalid actor AI intents");
+    return false;
+}
+
+bool Networking::commitActorAi(Player& player, BaseActorList& actorList)
+{
+    Cell* serverCell = CellController::get()->getCell(&actorList.cell);
+    mechanics::ActorStateResult result{
+        mechanics::ActorStateDecision::InvalidIdentity };
+    if (actorList.count == actorList.baseActors.size()
+        && serverCell != nullptr
+        && *serverCell->getAuthority() == player.guid
+        && serverCell->getAuthorityLeaseId() == actorList.authorityLeaseId
+        && validActorAiTargets(actorList))
+    {
+        std::vector<mechanics::ActorAiUpdate> updates = actorAiUpdates(actorList);
+        // Reserve the pending relay record before changing canonical state.
+        // This makes allocation failure fail closed instead of committing a
+        // package that the post-commit callback cannot identify.
+        mAcceptedActorAiIntents.insert_or_assign(player.guid.g, updates);
+        try
+        {
+            result = mActorStateLedger.applyAi(updates);
+        }
+        catch (...)
+        {
+            mAcceptedActorAiIntents.erase(player.guid.g);
+            throw;
+        }
+        if (result.applied())
+        {
+            serverCell->readActorList(ID_ACTOR_AI, &actorList);
+            mRelayedActorAiIntents.erase(player.guid.g);
+            return true;
+        }
+        mAcceptedActorAiIntents.erase(player.guid.g);
+    }
+
+    const unsigned int violations = ++mActorStateViolations[player.guid.g];
+    LOG_MESSAGE_SIMPLE(TimedLog::LOG_WARN,
+        "Rejected modified actor AI intent from connection %llu for %s: %s (violation %u)",
+        static_cast<unsigned long long>(player.guid.g),
+        actorList.cell.getShortDescription().c_str(),
+        mechanics::describe(result.decision), violations);
+    if (violations >= 5)
+        disconnectTransport({ player.guid.g }, "repeated invalid actor AI intents");
+    return false;
+}
+
+bool Networking::applyServerActorAi(BaseActorList& actorList)
+{
+    actorList.count = static_cast<unsigned int>(actorList.baseActors.size());
+    Cell* serverCell = CellController::get()->getCell(&actorList.cell);
+    mechanics::ActorStateResult result{
+        mechanics::ActorStateDecision::InvalidIdentity };
+    std::vector<mechanics::ActorAiUpdate> updates = actorAiUpdates(actorList);
+    const auto accepted = mAcceptedActorAiIntents.find(actorList.guid.g);
+    if (accepted != mAcceptedActorAiIntents.end()
+        && accepted->second == updates)
+    {
+        mRelayedActorAiIntents.insert(actorList.guid.g);
+        return true;
+    }
+
+    if (serverCell != nullptr && validActorAiTargets(actorList))
+        result = mActorStateLedger.applyAi(updates);
+    if (!result.applied())
+    {
+        LOG_MESSAGE_SIMPLE(TimedLog::LOG_ERROR,
+            "Rejected server-authored actor AI for %s: %s",
+            actorList.cell.getShortDescription().c_str(),
+            mechanics::describe(result.decision));
+        return false;
+    }
+    serverCell->readActorList(ID_ACTOR_AI, &actorList);
+    return true;
+}
+
+bool Networking::finishActorAiIntent(Player& player) noexcept
+{
+    mAcceptedActorAiIntents.erase(player.guid.g);
+    return mRelayedActorAiIntents.erase(player.guid.g) != 0;
 }
 
 bool Networking::validateActorList(Player& player, const BaseActorList& incoming)
@@ -4120,6 +4309,8 @@ void Networking::disconnectPlayer(RakNet::RakNetGUID guid)
     mRelayedPlayerActiveEffectIntents.erase(guid.g);
     mAcceptedActorActiveEffectIntents.erase(guid.g);
     mRelayedActorActiveEffectIntents.erase(guid.g);
+    mAcceptedActorAiIntents.erase(guid.g);
+    mRelayedActorAiIntents.erase(guid.g);
     Players::deletePlayer(guid);
 }
 

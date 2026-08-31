@@ -245,6 +245,8 @@ public:
             {"OnActorEquipmentIntent",   Callback<unsigned short, const char*>()},
             {"OnActorEquipmentIntentRejected", Callback<unsigned short, const char*>()},
             {"OnActorEquipment",         Callback<unsigned short, const char*>()},
+            {"OnActorAIIntent",          Callback<unsigned short, const char*>()},
+            {"OnActorAIIntentRejected",  Callback<unsigned short, const char*, const char*>()},
             {"OnActorAI",                Callback<unsigned short, const char*>()},
             {"OnActorAttackIntent",      Callback<unsigned short, const char*, unsigned int, bool, unsigned short, unsigned int, unsigned int, double>()},
             {"OnActorAttackIntentRejected", Callback<unsigned short, const char*, unsigned int, const char*>()},

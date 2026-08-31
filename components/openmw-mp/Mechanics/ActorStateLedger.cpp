@@ -120,8 +120,18 @@ namespace mwmp::mechanics
         const ActorStateResult result = validateAi(updates);
         if (!result.applied())
             return result;
+
+        // Complete every potentially allocating copy before changing canonical
+        // state so allocation failure cannot leave a partially applied batch.
+        std::vector<ActorAiState> prepared;
+        prepared.reserve(updates.size());
         for (const ActorAiUpdate& update : updates)
-            mActors.find(update.identity)->second.ai = update.state;
+            prepared.push_back(update.state);
+        for (std::size_t index = 0; index < updates.size(); ++index)
+        {
+            mActors.find(updates[index].identity)->second.ai
+                = std::move(prepared[index]);
+        }
         return { ActorStateDecision::Applied, mActors.size() };
     }
 

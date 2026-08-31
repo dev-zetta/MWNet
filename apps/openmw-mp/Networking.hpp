@@ -145,6 +145,10 @@ namespace  mwmp
         bool validateActorEquipment(Player& player, const BaseActorList& incoming);
         bool commitActorEquipment(Player& player, BaseActorList& actorList);
         bool applyServerActorEquipment(BaseActorList& actorList);
+        bool validateActorAi(Player& player, const BaseActorList& incoming);
+        bool commitActorAi(Player& player, BaseActorList& actorList);
+        bool applyServerActorAi(BaseActorList& actorList);
+        bool finishActorAiIntent(Player& player) noexcept;
         bool validateActorList(Player& player, const BaseActorList& incoming);
         bool commitActorList(Player& player, BaseActorList& actorList);
         bool applyServerActorList(BaseActorList& actorList);
@@ -220,6 +224,7 @@ namespace  mwmp
         void processAuthenticationMessage(transport::TransportMessage message);
         void eraseRemovedActorState(
             const std::vector<mechanics::ActorIdentity>& previousActors);
+        bool validActorAiTargets(const BaseActorList& actorList) const;
         bool sendAuthenticationResponse(transport::TransportConnectionId connection,
             const security::AuthenticationResponse& response);
         void disconnectTransport(transport::TransportConnectionId connection,
@@ -283,6 +288,9 @@ namespace  mwmp
         std::unordered_map<std::uint64_t,
             std::vector<mechanics::ActiveEffectOperation>> mAcceptedActorActiveEffectIntents;
         std::unordered_set<std::uint64_t> mRelayedActorActiveEffectIntents;
+        std::unordered_map<std::uint64_t,
+            std::vector<mechanics::ActorAiUpdate>> mAcceptedActorAiIntents;
+        std::unordered_set<std::uint64_t> mRelayedActorAiIntents;
         std::unordered_set<std::string> mBannedAddresses;
         unsigned int mMaximumConnections;
         unsigned short mPort;

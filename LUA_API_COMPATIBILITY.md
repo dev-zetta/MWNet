@@ -15,6 +15,8 @@ Protocol 11 changes the network and trust boundaries, not the safe TES3MP 0.8.1 
 | `OnActorMovementViolation(pid, cellDescription, reason, actualDistance, allowedDistance, violationCount)` | New | Observes rejected authority-owned actor movement; it cannot make the rejected snapshot canonical |
 | `OnActorListIntent(pid, cellDescription)` | New | Runs legacy actor-list validators before the atomic canonical roster commit |
 | `OnActorListIntentRejected(pid, cellDescription)` | New | Reports an actor roster that changed or failed after script validation |
+| `OnActorAIIntent(pid, cellDescription)` | New | Runs legacy actor-AI validators before an authority-checked canonical AI-package commit |
+| `OnActorAIIntentRejected(pid, cellDescription, reason)` | New | Reports an actor-AI package that changed or failed after script validation |
 | `OnPlayerInventoryIntent(pid)` | New | Runs before canonical inventory commit; `false` denies, while `true` or `nil` allows native validation |
 | `OnPlayerInventoryIntentRejected(pid)` | New | Optional cleanup notification when a script-modified inventory intent fails canonical validation |
 | `OnPlayerBountyIntent(pid)` | New | Runs legacy bounty validators before an increase-only canonical bounty commit; server scripts may override through `SetBounty` |

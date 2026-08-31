@@ -99,6 +99,8 @@ namespace mwmp::mechanics
     {
         ActorIdentity identity;
         ActorAiState state;
+
+        bool operator==(const ActorAiUpdate&) const = default;
     };
 
     enum class ActorRosterAction : std::uint8_t

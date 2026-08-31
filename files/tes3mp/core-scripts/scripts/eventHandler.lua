@@ -7,6 +7,7 @@ local pendingActorSpellsActiveEvents = {}
 local pendingActorEquipmentEvents = {}
 local pendingActorListEvents = {}
 local pendingActorCellChangeEvents = {}
+local pendingActorAiEvents = {}
 local pendingPlayerBountyEvents = {}
 local pendingPlayerShapeshiftEvents = {}
 local pendingPlayerAttributeEvents = {}
@@ -1974,28 +1975,81 @@ eventHandler.OnActorSpellsActiveIntentRejected = function(pid, cellDescription, 
 end
 
 eventHandler.OnActorAI = function(pid, cellDescription)
-    if Players[pid] ~= nil and Players[pid]:IsLoggedIn() then
-        if LoadedCells[cellDescription] ~= nil then
-            local eventStatus = customEventHooks.triggerValidators("OnActorAI", {pid, cellDescription})
-            if eventStatus.validDefaultHandler then
-                tes3mp.ReadReceivedActorList()
-                tes3mp.CopyReceivedActorListToStore()
-
-                -- Actor AI packages are currently enabled unilaterally on the client
-                -- that has sent them, so we only need to send them to other players,
-                -- and can skip the original sender
-                -- i.e. sendToOtherVisitors is true and skipAttachedPlayer is true
-                tes3mp.SendActorAI(true, true)
-            end
-            customEventHooks.triggerHandlers("OnActorAI", eventStatus, {pid, cellDescription})
-            
-        else
-            tes3mp.LogMessage(enumerations.log.WARN, "Undefined behavior: " .. logicHandler.GetChatName(pid) ..
-                " sent ActorAI for unloaded " .. cellDescription)
+    local pendingByCell = pendingActorAiEvents[pid]
+    local pendingEvent = nil
+    if pendingByCell ~= nil then
+        pendingEvent = pendingByCell[cellDescription]
+        pendingByCell[cellDescription] = nil
+        if next(pendingByCell) == nil then
+            pendingActorAiEvents[pid] = nil
         end
-    else
-        tes3mp.Kick(pid)
     end
+    if pendingEvent == nil then
+        return
+    end
+
+    if Players[pid] ~= nil and Players[pid]:IsLoggedIn() and
+        LoadedCells[cellDescription] ~= nil then
+        tes3mp.ReadReceivedActorList()
+        tes3mp.CopyReceivedActorListToStore()
+
+        -- The canonical commit has already accepted this package. Relay it to
+        -- the other visitors while retaining the legacy OnActorAI boundary.
+        tes3mp.SendActorAI(true, true)
+        customEventHooks.triggerHandlers("OnActorAI", pendingEvent,
+            {pid, cellDescription})
+    end
+end
+
+eventHandler.OnActorAIIntent = function(pid, cellDescription)
+    if pendingActorAiEvents[pid] == nil then
+        pendingActorAiEvents[pid] = {}
+    end
+    pendingActorAiEvents[pid][cellDescription] = nil
+
+    if Players[pid] == nil or not Players[pid]:IsLoggedIn() or
+        LoadedCells[cellDescription] == nil then
+        if next(pendingActorAiEvents[pid]) == nil then
+            pendingActorAiEvents[pid] = nil
+        end
+        return false
+    end
+
+    local eventStatus = customEventHooks.triggerValidators("OnActorAI",
+        {pid, cellDescription})
+    if not eventStatus.validDefaultHandler then
+        customEventHooks.triggerHandlers("OnActorAI", eventStatus,
+            {pid, cellDescription})
+        if next(pendingActorAiEvents[pid]) == nil then
+            pendingActorAiEvents[pid] = nil
+        end
+        return false
+    end
+
+    pendingActorAiEvents[pid][cellDescription] = eventStatus
+    return true
+end
+
+eventHandler.OnActorAIIntentRejected = function(pid, cellDescription, reason)
+    local pendingByCell = pendingActorAiEvents[pid]
+    if pendingByCell == nil then
+        return
+    end
+    local pendingEvent = pendingByCell[cellDescription]
+    pendingByCell[cellDescription] = nil
+    if next(pendingByCell) == nil then
+        pendingActorAiEvents[pid] = nil
+    end
+    if pendingEvent == nil then
+        return
+    end
+
+    tes3mp.LogAppend(enumerations.log.WARN,
+        "- Rejected ActorAI after script validation: " .. reason)
+    local eventStatus = customEventHooks.makeEventStatus(false,
+        pendingEvent.validCustomHandlers)
+    customEventHooks.triggerHandlers("OnActorAI", eventStatus,
+        {pid, cellDescription})
 end
 
 eventHandler.OnActorAttackIntent = function(pid, cellDescription, actorIndex, isRanged,

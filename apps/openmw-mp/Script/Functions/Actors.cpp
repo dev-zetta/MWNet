@@ -729,6 +729,9 @@ void ActorFunctions::SendActorDeath(bool sendToOtherVisitors, bool skipAttachedP
 
 void ActorFunctions::SendActorAI(bool sendToOtherVisitors, bool skipAttachedPlayer)
 {
+    if (!mwmp::Networking::getPtr()->applyServerActorAi(writeActorList))
+        throw std::runtime_error("the server-authored actor AI was rejected");
+
     mwmp::ActorPacket *actorPacket = mwmp::Networking::get().getActorPacketController()->GetPacket(ID_ACTOR_AI);
     actorPacket->setActorList(&writeActorList);
 

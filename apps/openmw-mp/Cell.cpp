@@ -161,6 +161,16 @@ void Cell::readActorList(unsigned char packetID, const mwmp::BaseActorList *newA
                 for (std::size_t slot = 0; slot < 19; ++slot)
                     cellActor->equipmentItems[slot] = newActor.equipmentItems[slot];
                 break;
+
+            case ID_ACTOR_AI:
+                cellActor->aiAction = newActor.aiAction;
+                cellActor->hasAiTarget = newActor.hasAiTarget;
+                cellActor->aiTarget = newActor.aiTarget;
+                cellActor->aiCoordinates = newActor.aiCoordinates;
+                cellActor->aiDistance = newActor.aiDistance;
+                cellActor->aiDuration = newActor.aiDuration;
+                cellActor->aiShouldRepeat = newActor.aiShouldRepeat;
+                break;
             }
         }
         else
