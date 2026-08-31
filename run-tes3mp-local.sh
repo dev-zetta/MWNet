@@ -215,12 +215,8 @@ if [[ ! -f "$CLIENT_CONFIG/tes3mp-client.cfg" ]]; then
             '[General]' \
             'destinationAddress = 127.0.0.1' \
             'port = 25565' \
-            'password =' \
+            'accountName =' \
             'logLevel = 0' \
-            '' \
-            '[Master]' \
-            'address = master.tes3mp.com' \
-            'port = 25561' \
             '' \
             '[Chat]' \
             'keySay = Y' \

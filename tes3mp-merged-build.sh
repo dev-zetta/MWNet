@@ -239,7 +239,6 @@ if [ $INSTALL == true ] || [ $REBUILD == true ]; then
     CMAKE_PARAMS="$CMAKE_PARAMS \
       -DBUILD_OPENMW_MP=ON \
       -DBUILD_OPENCS=OFF \
-      -DBUILD_BROWSER=OFF \
       -DBUILD_BSATOOL=OFF \
       -DBUILD_ESMTOOL=OFF \
       -DBUILD_ESSIMPORTER=OFF \
@@ -253,7 +252,6 @@ if [ $INSTALL == true ] || [ $REBUILD == true ]; then
     CMAKE_PARAMS="$CMAKE_PARAMS \
       -DBUILD_OPENMW=ON \
       -DBUILD_OPENMW_MP=ON \
-      -DBUILD_BROWSER=ON \
       -DBUILD_LAUNCHER=ON"
   fi
   
@@ -280,7 +278,6 @@ if [ $INSTALL == true ] || [ $REBUILD == true ]; then
   echo -e "\nAvailable executables:"
   [ -f "$BUILD_DIR/tes3mp" ] && echo -e "  - tes3mp (client)"
   [ -f "$BUILD_DIR/tes3mp-server" ] && echo -e "  - tes3mp-server"
-  [ -f "$BUILD_DIR/tes3mp-browser" ] && echo -e "  - tes3mp-browser"
   [ -f "$BUILD_DIR/openmw-launcher" ] && echo -e "  - openmw-launcher"
   [ -f "$BUILD_DIR/openmw-cs" ] && echo -e "  - openmw-cs (Construction Set)"
   

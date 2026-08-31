@@ -594,7 +594,7 @@ void Launcher::MainDialog::play()
 
     // Launch the game detached
 
-    if (mGameInvoker->startProcess(QLatin1String("tes3mp-browser"), true))
+    if (mGameInvoker->startProcess(QLatin1String("tes3mp"), true))
         return qApp->quit();
 }
 

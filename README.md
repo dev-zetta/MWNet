@@ -3,7 +3,7 @@ TES3MP
 
 TES3MP is an open-source multiplayer fork of [OpenMW](https://gitlab.com/OpenMW/openmw), the open-world RPG engine that supports playing Morrowind by Bethesda Softworks. You need to own Morrowind to play it.
 
-Stock OpenMW 0.52 is a single-player engine. TES3MP adds a dedicated server, a multiplayer client, an in-game server browser, synchronized gameplay systems, and a server-side Lua API.
+Stock OpenMW 0.52 is a single-player engine. TES3MP adds a dedicated server, a multiplayer client, encrypted direct connections, synchronized gameplay systems, and a server-side Lua API.
 
 * TES3MP version: 1.0.0-alpha.1
 * OpenMW base version: 0.52.0
@@ -22,9 +22,9 @@ The underlying OpenMW engine supports completing the main quests in Morrowind, T
 The major changes since TES3MP 0.8.1 include:
 
 * the OpenMW 0.52 engine, rendering, input, Lua, navigation, and content-format improvements;
-* a C++20 and Qt 6 migration of the TES3MP client, server browser, and dedicated server;
-* an in-game server-browser flow and a convenience client launcher;
-* a vendored CrabNet networking dependency for reproducible builds;
+* a C++20 and Qt 6 migration of the TES3MP client and dedicated server;
+* in-game direct connect and a convenience client launcher;
+* an encrypted GameNetworkingSockets transport with trust-on-first-use server identities;
 * a sol2-based server Lua binding layer and bundled 0.8.1 CoreScripts brought forward for 1.0.0;
 * extensive startup, cell, actor, object, dialogue, death, and NPC AI crash fixes;
 * corrected multiplayer melee and hand-to-hand damage propagation;

@@ -76,17 +76,11 @@ if [[ ! -f "$SERVER_CONFIG" ]]; then
             'maximumPlayers = 8' \
             'hostname = TES3MP local test' \
             'logLevel = 0' \
-            'password =' \
+            'passwordHash =' \
             '' \
             '[Plugins]' \
             "home = $SERVER_ROOT" \
-            'plugins = serverCore.lua' \
-            '' \
-            '[MasterServer]' \
-            'enabled = false' \
-            'address = master.tes3mp.com' \
-            'port = 25561' \
-            'rate = 10000'
+            'plugins = serverCore.lua'
     } > "$SERVER_CONFIG"
 fi
 

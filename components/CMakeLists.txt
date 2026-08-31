@@ -458,10 +458,6 @@ add_component_dir (openmw-mp/Controllers
         SystemPacketController PlayerPacketController ActorPacketController ObjectPacketController WorldstatePacketController
         )
 
-add_component_dir(openmw-mp/Master
-        MasterData PacketMasterQuery PacketMasterUpdate PacketMasterAnnounce BaseMasterPacket ProxyMasterPacket
-        )
-
 add_component_dir (openmw-mp/Packets
         BasePacket PacketPreInit
         )

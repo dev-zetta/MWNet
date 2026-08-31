@@ -196,10 +196,8 @@ cmake .. \
   -DCMAKE_CXX_STANDARD=20 \
   -DBUILD_OPENMW=ON \
   -DBUILD_OPENMW_MP=ON \
-  -DBUILD_BROWSER=ON \
   -DBUILD_LAUNCHER=ON \
   -DBUILD_OPENCS=ON \
-  -DBUILD_MASTER=OFF \
   -DRakNet_INCLUDES=/home/gmax/dev/TES3MP/dependencies/crabnet/include \
   -DRakNet_LIBRARY_DEBUG=/home/gmax/dev/TES3MP/dependencies/crabnet/build/lib/libRakNetLibStatic.a \
   -DRakNet_LIBRARY_RELEASE=/home/gmax/dev/TES3MP/dependencies/crabnet/build/lib/libRakNetLibStatic.a
@@ -213,8 +211,6 @@ cmake .. \
 |--------|---------|-------------|
 | `BUILD_OPENMW` | ON | Build the main TES3MP client |
 | `BUILD_OPENMW_MP` | ON | Build TES3MP server (154 multiplayer files) |
-| `BUILD_BROWSER` | ON | Build server browser (22 files) |
-| `BUILD_MASTER` | OFF | Build master server (9 files) |
 | `BUILD_LAUNCHER` | ON | Build game launcher |
 | `BUILD_OPENCS` | ON | Build OpenMW Construction Set |
 | `BUILD_WIZARD` | ON | Build installation wizard |
@@ -260,7 +256,6 @@ After successful compilation, executables will be located in:
 build/
 ├── tes3mp              # Main TES3MP client executable
 ├── tes3mp-server       # TES3MP multiplayer server
-├── tes3mp-browser      # Server browser
 ├── openmw-launcher     # Game launcher
 ├── openmw-cs           # Construction Set
 └── ... (other tools)
@@ -282,13 +277,6 @@ cd build
 ```bash
 cd build
 ./tes3mp-server
-```
-
-### Server Browser
-
-```bash
-cd build
-./tes3mp-browser
 ```
 
 ---
@@ -349,9 +337,8 @@ This build includes:
 
 **From the TES3MP multiplayer lineage:**
 - Multiplayer core (apps/openmw/mwmp/ - 154 files)
-- Server browser (apps/browser/ - 22 files)
-- Master server (apps/master/ - 9 files)
-- CrabNet networking integration
+- In-game direct connect with saved trust fingerprints
+- Encrypted GameNetworkingSockets transport
 - 144 files with multiplayer additions marked
 
 The original OpenMW 0.50 integration resolved 237 merge conflicts while preserving TES3MP's multiplayer features; the codebase was subsequently advanced to OpenMW 0.52.

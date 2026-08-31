@@ -39,7 +39,6 @@ After the build completes, executables will be in:
 ```
 build/tes3mp              # Client
 build/tes3mp-server       # Server
-build/tes3mp-browser      # Browser
 ```
 
 ## Advanced Usage
@@ -58,8 +57,7 @@ docker run --rm \
 Modify `docker-build.sh` to set:
 ```bash
 -DBUILD_OPENMW=OFF \
--DBUILD_LAUNCHER=OFF \
--DBUILD_BROWSER=OFF
+-DBUILD_LAUNCHER=OFF
 ```
 
 ### Interactive Build (for debugging)
@@ -80,13 +78,12 @@ Then inside the container:
 
 The Docker build process:
 
-1. **CrabNet** (if not already built)
-   - Location: `dependencies/crabnet/build/`
-   - Library: `libRakNetLibStatic.a`
+1. **GameNetworkingSockets** (if not already available)
+   - Resolved with `find_package`, or fetched at the pinned revision when enabled
 
 2. **TES3MP Merged Branch**
    - Location: `build/`
-   - Executables: `tes3mp`, `tes3mp-server`, `tes3mp-browser`
+   - Executables: `tes3mp`, `tes3mp-server`
 
 ## Advantages of Docker Build
 

@@ -146,18 +146,17 @@ After successful build, you'll have:
 **In `build/` directory:**
 - `tes3mp` - Main game client
 - `tes3mp-server` - Multiplayer server
-- `tes3mp-browser` - Server browser
 - `openmw-launcher` - Game launcher (if not server-only)
 - `openmw-cs` - Construction Set (if built)
 
 **In `dependencies/` directory:**
-- `crabnet/` - CrabNet (RakNet fork) networking library
+- GameNetworkingSockets and libsodium are resolved as TES3MP dependencies.
 
 ## Next Steps
 
 1. **Configure the client**: Copy Morrowind data files to the appropriate location
 2. **Configure the server**: Edit server configuration files
-3. **Join or host**: Use the browser to find servers or host your own
+3. **Join or host**: Use the in-game direct-connect screen or host your own server
 
 ## Getting Help
 
