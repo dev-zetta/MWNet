@@ -685,6 +685,36 @@ void Networking::cancelObjectPlace(Player& player) noexcept
     mPendingObjectPlacements.erase(player.guid.g);
 }
 
+bool Networking::seedServerObjectState(const BaseObjectList& objectList)
+{
+    const std::string cellDescription = objectList.cell.getShortDescription();
+    std::vector<mechanics::ObjectMutation> mutations;
+    if (cellDescription.empty()
+        || objectList.baseObjects.size() > mechanics::ObjectStateLedger::MaximumMutations)
+    {
+        return false;
+    }
+
+    mutations.reserve(objectList.baseObjects.size());
+    for (const BaseObject& object : objectList.baseObjects)
+    {
+        mechanics::ObjectState state = canonicalPlacedObject(
+            object, cellDescription, 0, object.mpNum);
+        if (mObjectStateLedger.find(state.identity))
+            continue;
+        mutations.push_back({ mechanics::ObjectMutationKind::Seed, std::move(state) });
+    }
+
+    const mechanics::ObjectResult result = mObjectStateLedger.applyBatch(mutations);
+    if (!result.applied())
+    {
+        LOG_MESSAGE_SIMPLE(TimedLog::LOG_ERROR,
+            "Failed to seed canonical object state for %s: %s",
+            cellDescription.c_str(), mechanics::describe(result.decision));
+    }
+    return result.applied();
+}
+
 namespace
 {
     std::optional<mwmp::mechanics::ActiveEffectAction> activeEffectAction(int action)

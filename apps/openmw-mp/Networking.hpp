@@ -115,6 +115,7 @@ namespace  mwmp
         bool prepareObjectPlace(Player& player, BaseObjectList& objectList);
         bool commitObjectPlace(Player& player);
         void cancelObjectPlace(Player& player) noexcept;
+        bool seedServerObjectState(const BaseObjectList& objectList);
         bool validatePlayerActiveEffects(Player& player, const BasePlayer& incoming);
         bool commitPlayerActiveEffects(Player& player);
         bool applyServerPlayerActiveEffects(Player& player);

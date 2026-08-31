@@ -49,6 +49,11 @@ bool ObjectFunctions::SeedContainerInventory()
     return mwmp::Networking::getPtr()->seedServerContainerInventory(writeObjectList);
 }
 
+bool ObjectFunctions::SeedObjectState()
+{
+    return mwmp::Networking::getPtr()->seedServerObjectState(writeObjectList);
+}
+
 unsigned int ObjectFunctions::GetObjectListSize() noexcept
 {
     return readObjectList->baseObjectCount;

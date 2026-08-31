@@ -1255,7 +1255,12 @@ function BaseCell:LoadObjectsPlaced(pid, objectData, uniqueIndexArray, forEveryo
             -- If we're about to exceed the maximum number of objects in a single packet,
             -- start a new packet
             if objectCount >= 3000 then
-                tes3mp.SendObjectPlace()    
+                if tes3mp.SeedObjectState() then
+                    tes3mp.SendObjectPlace()
+                else
+                    tes3mp.LogAppend(enumerations.log.ERROR,
+                        "- Refused to send invalid persisted object state for " .. self.description)
+                end
                 tes3mp.ClearObjectList()
                 tes3mp.SetObjectListPid(pid)
                 tes3mp.SetObjectListCell(self.description)
@@ -1265,6 +1270,11 @@ function BaseCell:LoadObjectsPlaced(pid, objectData, uniqueIndexArray, forEveryo
     end
 
     if objectCount > 0 then
+        if not tes3mp.SeedObjectState() then
+            tes3mp.LogAppend(enumerations.log.ERROR,
+                "- Refused to send invalid persisted object state for " .. self.description)
+            return
+        end
         tes3mp.SendObjectPlace(forEveryone)
         -- The object rotation isn't set correctly via ObjectPlace in clients without a certain hotfix,
         -- so set it separately here

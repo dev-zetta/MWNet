@@ -9,6 +9,7 @@
     \
     {"CopyReceivedObjectListToStore",         ObjectFunctions::CopyReceivedObjectListToStore},\
     {"SeedContainerInventory",                ObjectFunctions::SeedContainerInventory},\
+    {"SeedObjectState",                       ObjectFunctions::SeedObjectState},\
     \
     {"GetObjectListSize",                     ObjectFunctions::GetObjectListSize},\
     {"GetObjectListOrigin",                   ObjectFunctions::GetObjectListOrigin},\
@@ -229,6 +230,14 @@ public:
     * \return Whether the complete object list passed canonical validation and was applied.
     */
     static bool SeedContainerInventory();
+
+    /**
+    * \brief Seed missing canonical object state from the object list currently
+    *        stored by the server.
+    *
+    * \return Whether the complete object list passed canonical validation.
+    */
+    static bool SeedObjectState();
 
     /**
     * \brief Get the number of indexes in the read object list.
