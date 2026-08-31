@@ -4,8 +4,5 @@
 #define TES3MP_VERSION "1.0.0-alpha.1"
 #define TES3MP_PROTO_VERSION 11
 
-#define TES3MP_DEFAULT_PASSW "blankpassword"
-#define TES3MP_MASTERSERVER_PASSW "12345"
-
 
 #endif //OPENMW_VERSION_HPP

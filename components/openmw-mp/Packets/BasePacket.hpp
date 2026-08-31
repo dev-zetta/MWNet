@@ -336,7 +336,7 @@ namespace mwmp
             return true;
         }
 
-        const static uint32_t maxStrSize = protocol::limits::defaultStringBytes;
+        static inline constexpr uint32_t maxStrSize = protocol::limits::defaultStringBytes;
 
         bool Field(std::string &str, bool compress = false, std::string::size_type maxSize = maxStrSize)
         {

@@ -331,7 +331,7 @@ namespace mwmp
         BaseOverrides baseOverrides;
     };
 
-    static const int maxImageDataSize = 1800;
+    static inline constexpr int maxImageDataSize = 1800;
 
     struct MapTile
     {

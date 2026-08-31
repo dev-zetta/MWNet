@@ -12,6 +12,7 @@ This is the first hardening milestone for the major OpenMW 0.52 compatibility an
 * Replace the legacy bidirectional packet `RW` API with direction-safe field and collection operations backed exclusively by the active protocol-11 `PacketReader` or `PacketWriter`
 * Harden the packet boundary during the protocol-11 cutover with initialized state, checked collection and string limits, whole-model transactional decoding, exact pre-initialization sizing, malformed-message rejection and decode gates before gameplay or Lua processing
 * Stop logging attempted server passwords and prevent partially encoded or oversized packets from being sent
+* Replace the C varargs logger with typed formatting, bounded control-character escaping for string fields, thread-safe output and regression coverage against format-string injection
 * Introduce the transport-neutral connection, message, delivery-mode and lane API with bounded event queues, 64-bit snapshot sequences and stale-update rejection
 * Pin GameNetworkingSockets v1.5.1 for full TES3MP builds and make libsodium a required identity, authentication and secret-handling dependency
 * Add an owned GameNetworkingSockets backend with bounded queues, five traffic lanes, protocol-11 framing, connection/read deadlines, per-peer rate enforcement and loopback integration coverage

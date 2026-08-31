@@ -285,8 +285,15 @@ int main(int argc, char *argv[])
 
     std::vector<std::string> plugins(Utils::split(mgr.getString("plugins", "Plugins"), ','));
 
-    std::string versionInfo = Utils::getVersionInfo("TES3MP dedicated server", TES3MP_VERSION, commitHash, TES3MP_PROTO_VERSION);
-    LOG_MESSAGE_SIMPLE(TimedLog::LOG_INFO, "%s", versionInfo.c_str());
+    LOG_MESSAGE_SIMPLE(TimedLog::LOG_INFO, "TES3MP dedicated server %s (%s %s)",
+        TES3MP_VERSION, Utils::getOperatingSystemType().c_str(),
+        Utils::getArchitectureType().c_str());
+    LOG_APPEND(TimedLog::LOG_INFO, "Protocol version: %i (protocol 11 only)",
+        TES3MP_PROTO_VERSION);
+    const std::string buildCommit = commitHash.empty() ? "unavailable" : commitHash.substr(0, 10);
+    LOG_APPEND(TimedLog::LOG_INFO, "Build commit: %s", buildCommit);
+    LOG_APPEND(TimedLog::LOG_INFO,
+        "------------------------------------------------------------");
     
     Script::SetModDir(dataDirectory);
 

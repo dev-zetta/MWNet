@@ -8,8 +8,8 @@ namespace mwmp
     class PacketPlayerSkill : public PlayerPacket
     {
     public:
-        const static int SkillCount = 27;
-        const static int AttributeCount = 8;
+        static inline constexpr int SkillCount = 27;
+        static inline constexpr int AttributeCount = 8;
         PacketPlayerSkill();
 
         virtual void Packet(bool send);

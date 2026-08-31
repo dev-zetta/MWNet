@@ -210,8 +210,9 @@ std::string Utils::getVersionInfo(std::string appName, std::string version, std:
     std::stringstream stream;
 
     stream << appName << " " << version << " (" << getOperatingSystemType() << " " << getArchitectureType() << ")" << std::endl;
-    stream << "Protocol version: " << protocol << std::endl;
-    stream << "Oldest compatible commit hash: " << commitHash.substr(0, 10) << std::endl;
+    stream << "Protocol version: " << protocol << " (protocol 11 only)" << std::endl;
+    stream << "Build commit: "
+           << (commitHash.empty() ? "unavailable" : commitHash.substr(0, 10)) << std::endl;
     stream << "------------------------------------------------------------" << std::endl;
 
     return stream.str();

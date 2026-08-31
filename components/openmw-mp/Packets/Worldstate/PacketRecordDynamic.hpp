@@ -18,10 +18,10 @@ namespace mwmp
         void ProcessInventoryList(std::vector<mwmp::Item> &inventory, ESM::InventoryList &inventoryList, bool send);
 
     protected:
-        static const int maxRecords = 3000;
-        static const int maxEffects = 100;
-        static const int maxParts = 7;
-        static const int maxItems = 1000;
+        static inline constexpr int maxRecords = 3000;
+        static inline constexpr int maxEffects = 100;
+        static inline constexpr int maxParts = 7;
+        static inline constexpr int maxItems = 1000;
     };
 }
 

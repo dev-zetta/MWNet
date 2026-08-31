@@ -13,7 +13,7 @@ namespace mwmp
         virtual void Packet(bool send);
 
     protected:
-        static const int maxEffects = 20;
+        static inline constexpr int maxEffects = 20;
     };
 }
 

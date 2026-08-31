@@ -12,8 +12,8 @@ namespace mwmp
 
         virtual void Packet(bool send);
 
-        const static uint32_t maxNameLength = protocol::limits::playerNameBytes;
-        const static uint32_t maxPasswordLength = protocol::limits::passwordBytes;
+        static inline constexpr uint32_t maxNameLength = protocol::limits::playerNameBytes;
+        static inline constexpr uint32_t maxPasswordLength = protocol::limits::passwordBytes;
     };
 }
 

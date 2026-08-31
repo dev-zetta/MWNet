@@ -1,33 +1,33 @@
-#include <cstdarg>
-#include <iostream>
-#include <cstring>
-#include <ctime>
+#include <algorithm>
+#include <array>
 #include <cstdio>
+#include <ctime>
+#include <iomanip>
+#include <iostream>
+#include <memory>
+#include <mutex>
 #include <sstream>
-#include <vector>
-#include <boost/lexical_cast.hpp>
+
 #include "TimedLog.hpp"
 
-TimedLog *TimedLog::sTimedLog = nullptr;
+std::unique_ptr<TimedLog> TimedLog::sTimedLog;
 
-TimedLog::TimedLog(int logLevel) : logLevel(logLevel)
+TimedLog::TimedLog(int minimumLevel)
+    : mLogLevel(minimumLevel)
 {
 
 }
 
 void TimedLog::Create(int logLevel)
 {
-    if (sTimedLog != nullptr)
+    if (sTimedLog)
         return;
-    sTimedLog = new TimedLog(logLevel);
+    sTimedLog.reset(new TimedLog(logLevel));
 }
 
 void TimedLog::Delete()
 {
-    if (sTimedLog == nullptr)
-        return;
-    delete sTimedLog;
-    sTimedLog = nullptr;
+    sTimedLog.reset();
 }
 
 const TimedLog &TimedLog::Get()
@@ -37,80 +37,116 @@ const TimedLog &TimedLog::Get()
 
 int TimedLog::GetLevel()
 {
-    return sTimedLog->logLevel;
+    return sTimedLog->mLogLevel.load(std::memory_order_relaxed);
 }
 
 void TimedLog::SetLevel(int level)
 {
-    sTimedLog->logLevel = level;
+    sTimedLog->mLogLevel.store(level, std::memory_order_relaxed);
 }
 
-const char* getTime()
+namespace
 {
-    time_t t = time(0);
-    struct tm *tm = localtime(&t);
-    static char result[20];
-    sprintf(result, "%.4d-%.2d-%.2d %.2d:%.2d:%.2d",
-            1900 + tm->tm_year, tm->tm_mon + 1, tm->tm_mday,
-            tm->tm_hour, tm->tm_min, tm->tm_sec);
-    return result;
+    std::string getTime()
+    {
+        const std::time_t time = std::time(nullptr);
+        std::tm local{};
+#ifdef _WIN32
+        localtime_s(&local, &time);
+#else
+        localtime_r(&time, &local);
+#endif
+        std::array<char, 20> result{};
+        std::strftime(result.data(), result.size(), "%Y-%m-%d %H:%M:%S", &local);
+        return result.data();
+    }
 }
 
-void TimedLog::print(int level, bool hasPrefix, const char *file, int line, const char *message, ...) const
+std::string TimedLog::escapeField(std::string_view value)
 {
-    if (level < logLevel) return;
-    std::stringstream sstr;
+    constexpr std::size_t maximumFieldBytes = 4096;
+    std::ostringstream escaped;
+    const std::size_t length = std::min(value.size(), maximumFieldBytes);
+    for (std::size_t index = 0; index < length; ++index)
+    {
+        const unsigned char character = static_cast<unsigned char>(value[index]);
+        switch (character)
+        {
+            case '\n':
+                escaped << "\\n";
+                break;
+            case '\r':
+                escaped << "\\r";
+                break;
+            case '\t':
+                escaped << "\\t";
+                break;
+            default:
+                if (character < 0x20 || character == 0x7f)
+                {
+                    escaped << "\\x" << std::hex << std::uppercase << std::setw(2)
+                            << std::setfill('0') << static_cast<unsigned int>(character)
+                            << std::dec;
+                }
+                else
+                    escaped << static_cast<char>(character);
+        }
+    }
+    if (value.size() > maximumFieldBytes)
+        escaped << "...";
+    return escaped.str();
+}
+
+void TimedLog::printFormatted(int level, bool hasPrefix, const char* file, int line,
+    std::string_view message) const
+{
+    std::lock_guard lock(mMutex);
+    std::ostringstream output;
 
     if (hasPrefix)
     {
+        output << "[" << getTime() << "] ";
 
-        sstr << "[" << getTime() << "] ";
-
-        if (file != 0 && line != 0)
+        if (file != nullptr && line != 0)
         {
-            sstr << "[" << file << ":";
-            sstr << line << "] ";
+            output << "[" << file << ":" << line << "] ";
         }
 
-        sstr << "[";
+        output << "[";
         switch (level)
         {
-        case LOG_WARN:
-            sstr << "WARN";
-            break;
-        case LOG_ERROR:
-            sstr << "ERR";
-            break;
-        case LOG_FATAL:
-            sstr << "FATAL";
-            break;
-        default:
-            sstr << "INFO";
+            case LOG_WARN:
+                output << "WARN";
+                break;
+            case LOG_ERROR:
+                output << "ERR";
+                break;
+            case LOG_FATAL:
+                output << "FATAL";
+                break;
+            default:
+                output << "INFO";
         }
-        sstr << "]: ";
-
+        output << "]: ";
     }
 
-    sstr << message;
-    char back = *sstr.str().rbegin();
-    if (back != '\n')
-        sstr << '\n';
-    va_list args;
-    va_start(args, message);
-    std::vector<char> buf((unsigned long) (vsnprintf(nullptr, 0, sstr.str().c_str(), args) + 1));
-    va_end(args);
-    va_start(args, message);
-    vsnprintf(buf.data(), buf.size(), sstr.str().c_str(), args);
-    va_end(args);
-    std::cout << buf.data() << std::flush;
+    output << message;
+    if (message.empty() || message.back() != '\n')
+        output << '\n';
+    std::cout << output.str() << std::flush;
 }
 
 std::string TimedLog::getFilenameTimestamp()
 {
-    time_t rawtime = time(0);
-    struct tm *timeinfo = localtime(&rawtime);
-    char buffer[25];
-    strftime(buffer, 25, "%Y-%m-%d-%H_%M_%S", timeinfo);
+    const std::time_t rawtime = std::time(nullptr);
+    std::tm timeinfo{};
+#ifdef _WIN32
+    localtime_s(&timeinfo, &rawtime);
+#else
+    localtime_r(&rawtime, &timeinfo);
+#endif
+    char buffer[25]{};
+    std::strftime(buffer, sizeof(buffer), "%Y-%m-%d-%H_%M_%S", &timeinfo);
     std::string timestamp(buffer);
     return timestamp;
 }

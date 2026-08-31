@@ -8,7 +8,7 @@ namespace mwmp
     class PacketPlayerAttribute : public PlayerPacket
     {
     public:
-        const static int AttributeCount = 8;
+        static inline constexpr int AttributeCount = 8;
         PacketPlayerAttribute();
 
         virtual void Packet(bool send);

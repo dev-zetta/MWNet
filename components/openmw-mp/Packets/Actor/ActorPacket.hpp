@@ -28,7 +28,7 @@ namespace mwmp
         virtual void Actor(BaseActor &actor, bool send);
         BaseActorList *actorList = nullptr;
         protocol::DecodeTransaction<BaseActorList> mDecodeTransaction;
-        static const int maxActors = 3000;
+        static inline constexpr int maxActors = 3000;
     };
 }
 

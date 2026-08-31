@@ -17,7 +17,9 @@ add_executable(tes3mp-tests
     progression.cpp
     session.cpp
     shapeshift.cpp
+    timed_log.cpp
     transport.cpp
+    ../../components/openmw-mp/TimedLog.cpp
 )
 
 target_include_directories(tes3mp-tests PRIVATE ${CMAKE_SOURCE_DIR})

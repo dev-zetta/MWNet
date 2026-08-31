@@ -29,7 +29,7 @@ namespace mwmp
         bool PacketHeader(bool send);
         BaseObjectList *objectList = nullptr;
         protocol::DecodeTransaction<BaseObjectList> mDecodeTransaction;
-        static const int maxObjects = 3000;
+        static inline constexpr int maxObjects = 3000;
         bool hasCellData = false;
     };
 }
