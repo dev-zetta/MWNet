@@ -1196,6 +1196,8 @@ function BaseCell:LoadActorPackets(pid, objectData, uniqueIndexArray)
 
     self:LoadContainers(pid, objectData, tableHelper.getValueOverlap(uniqueIndexArray, packets.container))
 
+    self:LoadActorList(pid, objectData,
+        tableHelper.getValueOverlap(uniqueIndexArray, packets.actorList))
     self:LoadActorPositions(pid, objectData, tableHelper.getValueOverlap(uniqueIndexArray, packets.position))
     self:LoadActorDeath(pid, objectData, tableHelper.getValueOverlap(uniqueIndexArray, packets.statsDynamic))
     self:LoadActorStatsDynamic(pid, objectData, tableHelper.getValueOverlap(uniqueIndexArray, packets.statsDynamic))
@@ -1609,6 +1611,7 @@ function BaseCell:LoadActorList(pid, objectData, uniqueIndexArray)
 
         if self:ContainsObject(uniqueIndex) then
             tes3mp.SetActorRefId(objectData[uniqueIndex].refId)
+            tes3mp.AddActor()
 
             actorCount = actorCount + 1
         else
@@ -2128,6 +2131,7 @@ function BaseCell:LoadInitialCellData(pid)
 
     self:LoadContainers(pid, objectData, packets.container)
 
+    self:LoadActorList(pid, objectData, packets.actorList)
     self:LoadActorCellChanges(pid, objectData)
     self:LoadActorDeath(pid, objectData, packets.death)
     self:LoadActorEquipment(pid, objectData, packets.equipment)
