@@ -98,7 +98,7 @@ namespace
     {
         InventoryLedger ledger;
         const InventoryOwner player{ InventoryOwnerKind::Player, 1 };
-        const InventoryOwner container{ InventoryOwnerKind::Container, 8 };
+        const InventoryOwner container{ InventoryOwnerKind::Container, 8, "Balmora" };
         EXPECT(ledger.apply(container, InventoryAction::Set,
                    { item("diamond", 2), item("gold_001", 50) }).applied());
         EXPECT(ledger.apply(player, InventoryAction::Set, {}).applied());
@@ -129,6 +129,26 @@ namespace
         EXPECT(std::string(describe(InventoryDecision::InsufficientItems))
             == "the inventory does not contain the requested count");
     }
+
+    void testContainerOwnersAreCellScoped()
+    {
+        InventoryLedger ledger;
+        const InventoryOwner balmora{ InventoryOwnerKind::Container, 8, "Balmora" };
+        const InventoryOwner aldRuhn{ InventoryOwnerKind::Container, 8, "Ald-ruhn" };
+
+        EXPECT(ledger.apply(balmora, InventoryAction::Set,
+                   { item("gold_001", 10) }).applied());
+        EXPECT(ledger.apply(aldRuhn, InventoryAction::Set,
+                   { item("gold_001", 25) }).applied());
+        EXPECT(ledger.snapshot(balmora)->front().count == 10);
+        EXPECT(ledger.snapshot(aldRuhn)->front().count == 25);
+        EXPECT(ledger.size() == 2);
+
+        EXPECT(ledger.apply({ InventoryOwnerKind::Container, 8 },
+                   InventoryAction::Set, {}).decision == InventoryDecision::InvalidOwner);
+        EXPECT(ledger.apply({ InventoryOwnerKind::Player, 7, "Balmora" },
+                   InventoryAction::Set, {}).decision == InventoryDecision::InvalidOwner);
+    }
 }
 
 int runInventoryTests()
@@ -138,5 +158,6 @@ int runInventoryTests()
     testPreviewDoesNotMutate();
     testAtomicTransfer();
     testLimits();
+    testContainerOwnersAreCellScoped();
     return sFailures;
 }

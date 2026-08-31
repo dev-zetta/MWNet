@@ -76,6 +76,7 @@ This is the first hardening milestone for the major OpenMW 0.52 compatibility an
 * Treat authority-leased actor attacks as sanitized intents, reject client outcome claims, and resolve actor-to-player and actor-to-actor damage on the server with per-actor Lua policy hooks
 * Publish player death directly from canonical combat resolution and treat the victim client's follow-up death packet as an idempotent acknowledgement
 * Reject actor death outcomes submitted by authority clients while silently ignoring acknowledgements of an already canonical server death
+* Scope canonical container inventory identities to their cells so identical reference numbers cannot alias across the world
 
 0.8.1
 -----

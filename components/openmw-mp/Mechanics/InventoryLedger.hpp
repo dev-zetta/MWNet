@@ -6,6 +6,7 @@
 #include <optional>
 #include <string>
 #include <unordered_map>
+#include <utility>
 #include <vector>
 
 namespace mwmp::mechanics
@@ -18,8 +19,18 @@ namespace mwmp::mechanics
 
     struct InventoryOwner
     {
+        InventoryOwner() = default;
+        InventoryOwner(InventoryOwnerKind ownerKind, std::uint64_t ownerValue,
+            std::string ownerScope = {})
+            : kind(ownerKind)
+            , value(ownerValue)
+            , scope(std::move(ownerScope))
+        {
+        }
+
         InventoryOwnerKind kind = InventoryOwnerKind::Player;
         std::uint64_t value = 0;
+        std::string scope;
 
         bool operator==(const InventoryOwner&) const = default;
     };

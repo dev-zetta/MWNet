@@ -9,8 +9,11 @@ namespace mwmp::mechanics
 {
     std::size_t InventoryOwnerHash::operator()(const InventoryOwner& owner) const noexcept
     {
-        return std::hash<std::uint64_t>{}(owner.value)
+        std::size_t seed = std::hash<std::uint64_t>{}(owner.value)
             ^ (static_cast<std::size_t>(owner.kind) << 1);
+        seed ^= std::hash<std::string>{}(owner.scope) + 0x9e3779b9 + (seed << 6)
+            + (seed >> 2);
+        return seed;
     }
 
     bool InventoryItem::sameStack(const InventoryItem& other) const noexcept
@@ -113,7 +116,11 @@ namespace mwmp::mechanics
 
     bool InventoryLedger::validOwner(InventoryOwner owner) noexcept
     {
-        return owner.value != 0;
+        if (owner.value == 0)
+            return false;
+        if (owner.kind == InventoryOwnerKind::Player)
+            return owner.scope.empty();
+        return !owner.scope.empty();
     }
 
     bool InventoryLedger::validItem(const InventoryItem& item) noexcept
