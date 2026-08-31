@@ -1778,7 +1778,7 @@ eventHandler.OnGenericObjectEvent = function(pid, cellDescription, packetType)
 end
 
 eventHandler.OnObjectActivate = function(pid, cellDescription)
-    eventHandler.OnGenericObjectEvent(pid, cellDescription, "ObjectActivate")
+    eventHandler.OnObjectMutationCommitted(pid, cellDescription, "ObjectActivate")
 end
 
 eventHandler.OnObjectHit = function(pid, cellDescription)

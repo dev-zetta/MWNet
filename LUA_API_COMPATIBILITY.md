@@ -21,7 +21,7 @@ Protocol 11 changes the network and trust boundaries, not the safe TES3MP 0.8.1 
 | `OnContainerIntentRejected(pid, cellDescription, reason)` | New | Reports an intent that passed script policy but failed canonical validation at commit |
 | `OnObjectPlaceIntent(pid, cellDescription)` | New | Runs legacy `OnObjectPlace` validators after server IDs are assigned but before the transactional canonical placement commit |
 | `OnObjectPlaceIntentRejected(pid, cellDescription, reason)` | New | Reports a placement that passed script policy but failed canonical commit |
-| `OnObjectMutationIntent(pid, cellDescription, packetType)` | New | Runs the matching legacy object validators before canonical state, move, rotate, scale, lock or delete commit |
+| `OnObjectMutationIntent(pid, cellDescription, packetType)` | New | Runs the matching legacy object validators before canonical activation, state, move, rotate, scale, lock or delete commit |
 | `OnObjectMutationIntentRejected(pid, cellDescription, packetType, reason)` | New | Reports a script-approved object mutation that failed canonical commit |
 | `OnObjectMutationCommitted(pid, cellDescription, packetType)` | New | Internal CoreScripts post-commit boundary used for move and rotate handlers |
 | `OnPlayerAttackIntent(pid, isRanged, targetPid, refNum, mpNum, strength)` | New | Runs before server combat resolution; `false` denies, while `true` or `nil` allows the sanitized intent |
@@ -69,7 +69,7 @@ Duplicate or out-of-order initialization is rejected. Gameplay mutation and rela
 - CoreScripts use the additive `SeedContainerInventory()` API when loading persisted cell data, so canonical state is restored after a server restart before any client delta can be accepted.
 - CoreScripts use the additive, idempotent `SeedObjectState()` API before sending persisted placements, so dynamic object identity survives a server restart without trusting a client to recreate it.
 - Existing `OnObjectPlace` validators run at `OnObjectPlaceIntent`; the legacy callback and handlers run only after the entire placement batch commits within the world and per-player quotas.
-- Object state, move, rotate, scale, lock and delete validators run at `OnObjectMutationIntent`. Existing callbacks remain post-commit; CoreScripts also expose `OnObjectMove` and `OnObjectRotate` custom-event hooks.
+- Object activation, state, move, rotate, scale, lock and delete validators run at `OnObjectMutationIntent`. Existing callbacks remain post-commit; CoreScripts also expose `OnObjectMove` and `OnObjectRotate` custom-event hooks. Player activators are bound to the sending transport connection.
 - Use `OnPlayerAttackIntent` to inspect or deny a sanitized combat request. `SetPlayerAttackStrength` may modify its normalized strength; the server validates the result, rolls hit chance, computes damage and publishes canonical health.
 - Use `OnActorAttackIntent` for the equivalent authority-leased actor request. Call `SetActorAttackStrength` with the supplied actor index to modify ranged strength before the server revalidates and resolves it.
 - Use `OnPlayerCastIntent` and `OnActorCastIntent` to reject malformed or disallowed cast presentation. Alpha.1 validates identities, IDs, projectile geometry and reported caster transforms, but canonical server calculation of spell success and effects is still a later hardening gate; scripts must not treat these callbacks as proof that a gameplay effect occurred.

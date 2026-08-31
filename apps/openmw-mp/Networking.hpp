@@ -118,6 +118,7 @@ namespace  mwmp
         bool seedServerObjectState(const BaseObjectList& objectList);
         bool validateObjectMutation(Player& player, const BaseObjectList& incoming,
             mechanics::ObjectMutationKind kind);
+        bool validateObjectActivation(Player& player, const BaseObjectList& incoming);
         bool commitObjectMutation(Player& player);
         void cancelObjectMutation(Player& player) noexcept;
         bool validatePlayerActiveEffects(Player& player, const BasePlayer& incoming);

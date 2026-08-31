@@ -91,6 +91,7 @@ This is the first hardening milestone for the major OpenMW 0.52 compatibility an
 * Add a bounded transactional canonical object-state ledger with world and per-player dynamic-object quotas
 * Seed persisted dynamic placements into canonical object state before synchronizing them to clients
 * Validate and commit object state, movement, rotation, scale, lock and deletion batches against canonical state before Lua persistence or relay
+* Bind object activations to the sending transport identity and reject deleted or unknown dynamic targets before Lua policy runs
 * Assign dynamic object IDs on the server and commit object placement batches canonically before legacy Lua persistence or relay handlers run
 
 0.8.1

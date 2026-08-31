@@ -813,6 +813,83 @@ bool Networking::validateObjectMutation(Player& player,
     return false;
 }
 
+bool Networking::validateObjectActivation(Player& player,
+    const BaseObjectList& incoming)
+{
+    mPendingObjectMutations.erase(player.guid.g);
+    mechanics::ObjectResult result{ mechanics::ObjectDecision::InvalidObject };
+    const std::string cellDescription = incoming.cell.getShortDescription();
+    if (!cellDescription.empty()
+        && incoming.packetOrigin <= PACKET_ORIGIN::CLIENT_SCRIPT_GLOBAL
+        && !incoming.baseObjects.empty()
+        && incoming.baseObjectCount == incoming.baseObjects.size()
+        && incoming.baseObjects.size() <= mechanics::ObjectStateLedger::MaximumChanges)
+    {
+        std::vector<mechanics::ObjectMutation> seeds;
+        seeds.reserve(incoming.baseObjects.size());
+        bool complete = true;
+        for (const BaseObject& object : incoming.baseObjects)
+        {
+            if (!object.activatingActor.isPlayer
+                || object.activatingActor.guid.g != player.guid.g)
+            {
+                complete = false;
+                break;
+            }
+            if (object.isPlayer)
+            {
+                if (!Players::doesPlayerExist(object.guid))
+                    complete = false;
+                if (!complete)
+                    break;
+                continue;
+            }
+
+            const mechanics::ObjectIdentity identity{
+                cellDescription, object.refNum, object.mpNum };
+            const auto existing = mObjectStateLedger.find(identity);
+            if (existing)
+            {
+                if (existing->deleted)
+                {
+                    result.decision = mechanics::ObjectDecision::DeletedObject;
+                    complete = false;
+                    break;
+                }
+                continue;
+            }
+            if (object.refNum == 0 || object.mpNum != 0)
+            {
+                result.decision = mechanics::ObjectDecision::MissingObject;
+                complete = false;
+                break;
+            }
+            seeds.push_back({ mechanics::ObjectMutationKind::Seed,
+                canonicalStaticObject(object, cellDescription, player.guid.g) });
+        }
+
+        if (complete)
+        {
+            result = mObjectStateLedger.previewBatch(seeds);
+            if (result.applied())
+            {
+                mPendingObjectMutations.insert_or_assign(
+                    player.guid.g, std::move(seeds));
+                return true;
+            }
+        }
+    }
+
+    const unsigned int violations = ++mObjectViolations[player.guid.g];
+    LOG_MESSAGE_SIMPLE(TimedLog::LOG_WARN,
+        "Rejected object activation from connection %llu: %s (violation %u)",
+        static_cast<unsigned long long>(player.guid.g),
+        mechanics::describe(result.decision), violations);
+    if (violations >= 5)
+        disconnectTransport({ player.guid.g }, "repeated invalid object activations");
+    return false;
+}
+
 bool Networking::commitObjectMutation(Player& player)
 {
     const auto pending = mPendingObjectMutations.find(player.guid.g);
