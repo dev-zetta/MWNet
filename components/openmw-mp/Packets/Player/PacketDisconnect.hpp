@@ -12,7 +12,6 @@ namespace mwmp
         PacketDisconnect() : PlayerPacket()
         {
             packetID = ID_USER_DISCONNECTED;
-            orderChannel = CHANNEL_SYSTEM;
         }
     };
 }

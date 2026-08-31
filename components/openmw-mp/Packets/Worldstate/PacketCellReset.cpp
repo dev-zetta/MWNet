@@ -6,7 +6,6 @@ using namespace mwmp;
 PacketCellReset::PacketCellReset() : WorldstatePacket()
 {
     packetID = ID_CELL_RESET;
-    orderChannel = CHANNEL_SYSTEM;
 }
 
 void PacketCellReset::Packet(RakNet::BitStream *newBitstream, bool send)

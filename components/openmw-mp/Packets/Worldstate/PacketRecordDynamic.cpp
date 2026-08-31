@@ -9,7 +9,6 @@ using namespace mwmp;
 PacketRecordDynamic::PacketRecordDynamic() : WorldstatePacket()
 {
     packetID = ID_RECORD_DYNAMIC;
-    orderChannel = CHANNEL_WORLDSTATE;
 }
 
 void PacketRecordDynamic::Packet(RakNet::BitStream *newBitstream, bool send)

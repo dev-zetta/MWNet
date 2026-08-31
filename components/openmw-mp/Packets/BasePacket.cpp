@@ -1,16 +1,12 @@
 #include <components/openmw-mp/NetworkMessages.hpp>
 #include <components/openmw-mp/Protocol/ApplicationPacketId.hpp>
 #include <components/openmw-mp/Transport/ApplicationPacketDispatcher.hpp>
-#include <PacketPriority.h>
 #include "BasePacket.hpp"
 
 using namespace mwmp;
 
 BasePacket::BasePacket()
     : packetID(0)
-    , reliability(RELIABLE_ORDERED)
-    , priority(HIGH_PRIORITY)
-    , orderChannel(CHANNEL_SYSTEM)
     , bsRead(nullptr)
     , bsSend(nullptr)
     , bs(nullptr)

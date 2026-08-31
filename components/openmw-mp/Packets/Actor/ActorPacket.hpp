@@ -4,7 +4,6 @@
 #include <string>
 #include <RakNetTypes.h>
 #include <BitStream.h>
-#include <PacketPriority.h>
 #include <components/openmw-mp/Base/BaseActor.hpp>
 
 #include <components/openmw-mp/Packets/BasePacket.hpp>

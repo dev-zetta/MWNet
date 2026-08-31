@@ -6,7 +6,6 @@ using namespace mwmp;
 PacketClientScriptSettings::PacketClientScriptSettings() : WorldstatePacket()
 {
     packetID = ID_CLIENT_SCRIPT_SETTINGS;
-    orderChannel = CHANNEL_WORLDSTATE;
 }
 
 void PacketClientScriptSettings::Packet(RakNet::BitStream *newBitstream, bool send)

@@ -11,7 +11,6 @@
 #include <variant>
 #include <RakNetTypes.h>
 #include <BitStream.h>
-#include <PacketPriority.h>
 #include <components/esm/path.hpp>
 #include <components/esm/position.hpp>
 #include <components/esm/refid.hpp>
@@ -413,9 +412,6 @@ namespace mwmp
         uint32_t dispatchPacket(bool toOther);
 
         uint8_t packetID;
-        PacketReliability reliability;
-        PacketPriority priority;
-        int8_t orderChannel;
         RakNet::BitStream *bsRead, *bsSend, *bs;
         std::optional<protocol::PacketReader> mReader;
         std::optional<protocol::PacketWriter> mWriter;

@@ -8,7 +8,6 @@ using namespace mwmp;
 PacketWorldDestinationOverride::PacketWorldDestinationOverride() : WorldstatePacket()
 {
     packetID = ID_WORLD_DESTINATION_OVERRIDE;
-    orderChannel = CHANNEL_WORLDSTATE;
 }
 
 void PacketWorldDestinationOverride::Packet(RakNet::BitStream *newBitstream, bool send)

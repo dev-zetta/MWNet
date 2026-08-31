@@ -1,5 +1,4 @@
 #include <components/openmw-mp/NetworkMessages.hpp>
-#include <PacketPriority.h>
 #include "ObjectPacket.hpp"
 
 using namespace mwmp;
@@ -8,9 +7,6 @@ ObjectPacket::ObjectPacket() : BasePacket()
 {
     hasCellData = false;
     packetID = 0;
-    priority = HIGH_PRIORITY;
-    reliability = RELIABLE_ORDERED;
-    orderChannel = CHANNEL_OBJECT;
 }
 
 ObjectPacket::~ObjectPacket()

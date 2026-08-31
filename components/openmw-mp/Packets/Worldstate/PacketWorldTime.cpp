@@ -6,7 +6,6 @@ using namespace mwmp;
 PacketWorldTime::PacketWorldTime() : WorldstatePacket()
 {
     packetID = ID_WORLD_TIME;
-    orderChannel = CHANNEL_WORLDSTATE;
 }
 
 void PacketWorldTime::Packet(RakNet::BitStream *newBitstream, bool send)

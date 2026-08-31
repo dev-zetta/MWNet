@@ -6,7 +6,6 @@ using namespace mwmp;
 PacketSystemHandshake::PacketSystemHandshake() : SystemPacket()
 {
     packetID = ID_SYSTEM_HANDSHAKE;
-    orderChannel = CHANNEL_SYSTEM;
 }
 
 void PacketSystemHandshake::Packet(RakNet::BitStream *newBitstream, bool send)

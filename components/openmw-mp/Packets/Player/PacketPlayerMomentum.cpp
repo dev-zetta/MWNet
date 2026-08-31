@@ -6,7 +6,6 @@ using namespace mwmp;
 PacketPlayerMomentum::PacketPlayerMomentum() : PlayerPacket()
 {
     packetID = ID_PLAYER_MOMENTUM;
-    priority = MEDIUM_PRIORITY;
 }
 
 void PacketPlayerMomentum::Packet(RakNet::BitStream *newBitstream, bool send)

@@ -5,8 +5,6 @@
 mwmp::PacketPlayerCellState::PacketPlayerCellState() : PlayerPacket()
 {
     packetID = ID_PLAYER_CELL_STATE;
-    priority = IMMEDIATE_PRIORITY;
-    reliability = RELIABLE_ORDERED;
 }
 
 void mwmp::PacketPlayerCellState::Packet(RakNet::BitStream *newBitstream, bool send)

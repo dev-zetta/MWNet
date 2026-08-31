@@ -6,8 +6,6 @@ using namespace mwmp;
 PacketPlayerPosition::PacketPlayerPosition() : PlayerPacket()
 {
     packetID = ID_PLAYER_POSITION;
-    priority = MEDIUM_PRIORITY;
-    //reliability = UNRELIABLE_SEQUENCED;
 }
 
 void PacketPlayerPosition::Packet(RakNet::BitStream *newBitstream, bool send)

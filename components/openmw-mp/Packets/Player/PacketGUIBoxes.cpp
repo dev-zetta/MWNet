@@ -6,7 +6,6 @@ using namespace mwmp;
 PacketGUIBoxes::PacketGUIBoxes() : PlayerPacket()
 {
     packetID = ID_GUI_MESSAGEBOX;
-    orderChannel = CHANNEL_SYSTEM;
 }
 
 void PacketGUIBoxes::Packet(RakNet::BitStream *newBitstream, bool send)

@@ -1,5 +1,4 @@
 #include <components/openmw-mp/NetworkMessages.hpp>
-#include <PacketPriority.h>
 #include "SystemPacket.hpp"
 
 using namespace mwmp;
@@ -7,9 +6,6 @@ using namespace mwmp;
 SystemPacket::SystemPacket() : BasePacket()
 {
     packetID = 0;
-    priority = HIGH_PRIORITY;
-    reliability = RELIABLE_ORDERED;
-    orderChannel = CHANNEL_SYSTEM;
 }
 
 SystemPacket::~SystemPacket()

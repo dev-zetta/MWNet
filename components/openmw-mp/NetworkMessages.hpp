@@ -118,16 +118,6 @@ enum GameMessages
     ID_PLACEHOLDER
 };
 
-enum OrderingChannel
-{
-    CHANNEL_SYSTEM = 0,
-    CHANNEL_ACTOR,
-    CHANNEL_PLAYER,
-    CHANNEL_OBJECT,
-    CHANNEL_MASTER,
-    CHANNEL_WORLDSTATE
-};
-
 static_assert(ID_USER_MYID
     == static_cast<int>(mwmp::protocol::ApplicationPacketId::UserMyId));
 static_assert(ID_PLAYER_COOLDOWNS

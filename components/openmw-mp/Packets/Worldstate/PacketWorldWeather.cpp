@@ -6,7 +6,6 @@ using namespace mwmp;
 PacketWorldWeather::PacketWorldWeather() : WorldstatePacket()
 {
     packetID = ID_WORLD_WEATHER;
-    orderChannel = CHANNEL_WORLDSTATE;
 }
 
 void PacketWorldWeather::Packet(RakNet::BitStream *newBitstream, bool send)

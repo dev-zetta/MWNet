@@ -6,7 +6,6 @@ using namespace mwmp;
 PacketGameSettings::PacketGameSettings() : PlayerPacket()
 {
     packetID = ID_GAME_SETTINGS;
-    orderChannel = CHANNEL_SYSTEM;
 }
 
 void PacketGameSettings::Packet(RakNet::BitStream *newBitstream, bool send)

@@ -6,7 +6,6 @@ using namespace mwmp;
 PacketWorldKillCount::PacketWorldKillCount() : WorldstatePacket()
 {
     packetID = ID_WORLD_KILL_COUNT;
-    orderChannel = CHANNEL_SYSTEM;
 }
 
 void PacketWorldKillCount::Packet(RakNet::BitStream *newBitstream, bool send)

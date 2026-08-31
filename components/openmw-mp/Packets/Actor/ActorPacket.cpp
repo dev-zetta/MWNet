@@ -1,5 +1,4 @@
 #include <components/openmw-mp/NetworkMessages.hpp>
-#include <PacketPriority.h>
 #include "ActorPacket.hpp"
 
 using namespace mwmp;
@@ -7,9 +6,6 @@ using namespace mwmp;
 ActorPacket::ActorPacket() : BasePacket()
 {
     packetID = 0;
-    priority = HIGH_PRIORITY;
-    reliability = RELIABLE_ORDERED;
-    orderChannel = CHANNEL_ACTOR;
 }
 
 ActorPacket::~ActorPacket()

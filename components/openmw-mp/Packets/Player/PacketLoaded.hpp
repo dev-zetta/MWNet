@@ -11,7 +11,6 @@ namespace mwmp
         PacketLoaded() : PlayerPacket()
         {
             packetID = ID_LOADED;
-            orderChannel = CHANNEL_SYSTEM;
         }
     };
 }
