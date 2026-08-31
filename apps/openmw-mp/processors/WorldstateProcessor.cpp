@@ -11,7 +11,7 @@ void WorldstateProcessor::Do(WorldstatePacket &packet, Player &player, BaseWorld
     packet.Send(true);
 }
 
-bool WorldstateProcessor::Process(RakNet::Packet &packet, BaseWorldstate &worldstate) noexcept
+bool WorldstateProcessor::Process(RakNet::Packet &packet, BaseWorldstate &worldstate)
 {
     for (auto &processor : processors)
     {
@@ -34,6 +34,8 @@ bool WorldstateProcessor::Process(RakNet::Packet &packet, BaseWorldstate &worlds
                     LOG_MESSAGE_SIMPLE(TimedLog::LOG_ERROR, "Received %s that failed integrity check and was ignored!", processor.second->strPacketID.c_str());
                     return true;
                 }
+                if (!processor.second->Validate(*player, decoded))
+                    return true;
                 worldstate = std::move(decoded);
             }
             else

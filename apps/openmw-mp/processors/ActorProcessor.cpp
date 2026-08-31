@@ -34,6 +34,9 @@ bool ActorProcessor::Process(RakNet::Packet &packet, BaseActorList &actorList)
                     LOG_MESSAGE_SIMPLE(TimedLog::LOG_ERROR, "Received %s that failed integrity check and was ignored!", processor.second->strPacketID.c_str());
                     return true;
                 }
+                if (!Networking::getPtr()->validateActorAuthority(decoded)
+                    || !processor.second->Validate(*player, decoded))
+                    return true;
                 actorList = std::move(decoded);
             }
             else
@@ -43,9 +46,6 @@ bool ActorProcessor::Process(RakNet::Packet &packet, BaseActorList &actorList)
                 actorList.guid = packet.guid;
                 actorList.isValid = true;
             }
-
-            if (!Networking::getPtr()->validateActorAuthority(actorList))
-                return true;
 
             myPacket->setActorList(&actorList);
             processor.second->Do(*myPacket, *player, actorList);

@@ -14,10 +14,12 @@ namespace mwmp
     class ObjectProcessor : public BasePacketProcessor<ObjectProcessor>
     {
     public:
+        virtual ~ObjectProcessor() = default;
 
         virtual void Do(ObjectPacket &packet, Player &player, BaseObjectList &objectList);
+        virtual bool Validate(Player&, const BaseObjectList&) { return true; }
 
-        static bool Process(RakNet::Packet &packet, BaseObjectList &objectList) noexcept;
+        static bool Process(RakNet::Packet &packet, BaseObjectList &objectList);
     };
 }
 

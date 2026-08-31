@@ -12,10 +12,12 @@ namespace mwmp
     class WorldstateProcessor : public BasePacketProcessor<WorldstateProcessor>
     {
     public:
+        virtual ~WorldstateProcessor() = default;
 
         virtual void Do(WorldstatePacket &packet, Player &player, BaseWorldstate &worldstate);
+        virtual bool Validate(Player&, const BaseWorldstate&) { return true; }
 
-        static bool Process(RakNet::Packet &packet, BaseWorldstate &worldstate) noexcept;
+        static bool Process(RakNet::Packet &packet, BaseWorldstate &worldstate);
     };
 }
 

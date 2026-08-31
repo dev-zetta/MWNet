@@ -14,8 +14,10 @@ namespace mwmp
     class ActorProcessor : public BasePacketProcessor<ActorProcessor>
     {
     public:
+        virtual ~ActorProcessor() = default;
 
         virtual void Do(ActorPacket &packet, Player &player, BaseActorList &actorList);
+        virtual bool Validate(Player&, const BaseActorList&) { return true; }
 
         static bool Process(RakNet::Packet &packet, BaseActorList &actorList);
     };

@@ -11,7 +11,7 @@ void ObjectProcessor::Do(ObjectPacket &packet, Player &player, BaseObjectList &o
     packet.Send(true);
 }
 
-bool ObjectProcessor::Process(RakNet::Packet &packet, BaseObjectList &objectList) noexcept
+bool ObjectProcessor::Process(RakNet::Packet &packet, BaseObjectList &objectList)
 {
     for (auto &processor : processors)
     {
@@ -34,6 +34,8 @@ bool ObjectProcessor::Process(RakNet::Packet &packet, BaseObjectList &objectList
                     LOG_MESSAGE_SIMPLE(TimedLog::LOG_ERROR, "Received %s that failed integrity check and was ignored!", processor.second->strPacketID.c_str());
                     return true;
                 }
+                if (!processor.second->Validate(*player, decoded))
+                    return true;
                 objectList = std::move(decoded);
             }
             else

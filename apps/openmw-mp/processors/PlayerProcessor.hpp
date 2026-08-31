@@ -11,6 +11,7 @@ namespace mwmp
     class PlayerProcessor : public BasePacketProcessor<PlayerProcessor>
     {
     public:
+        virtual ~PlayerProcessor() = default;
 
         virtual void Do(PlayerPacket &packet, Player &player) = 0;
         virtual bool Validate(Player&, const BasePlayer&) { return true; }
