@@ -25,6 +25,7 @@ namespace mwmp
         std::vector<mechanics::SpellDefinition> definitions;
         std::vector<mechanics::ActorMagicTemplate> actorTemplates;
         std::unordered_set<std::string> consumableItems;
+        std::unordered_set<std::string> directConsumableItems;
         double fatigueBase = 1;
         double fatigueMultiplier = 0;
     };

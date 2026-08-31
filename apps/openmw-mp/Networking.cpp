@@ -2689,8 +2689,12 @@ namespace
         state.maximumFatigue = combat.maximumFatigue;
         state.willpower = currentStat(
             player.creatureStats.mAttributes, ESM::Attribute::Willpower);
+        state.intelligence = currentStat(
+            player.creatureStats.mAttributes, ESM::Attribute::Intelligence);
         state.luck = currentStat(
             player.creatureStats.mAttributes, ESM::Attribute::Luck);
+        state.alchemySkill = currentStat(
+            player.npcStats.mSkills, ESM::Skill::Alchemy);
         state.enchantSkill = currentStat(
             player.npcStats.mSkills, ESM::Skill::Enchant);
         state.fatigueTerm = std::max(0.0, fatigueBase
@@ -5590,6 +5594,12 @@ void Networking::setConsumableMagicItems(
     std::unordered_set<std::string> itemIds)
 {
     mConsumableMagicItems = std::move(itemIds);
+}
+
+void Networking::setDirectConsumableMagicItems(
+    std::unordered_set<std::string> itemIds)
+{
+    mDirectConsumableMagicItems = std::move(itemIds);
 }
 
 void Networking::setSpellFatigueFormula(double base, double multiplier)

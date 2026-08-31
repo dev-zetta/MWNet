@@ -14,11 +14,13 @@ namespace ESM
     struct Class;
     struct Creature;
     struct Enchantment;
+    struct Ingredient;
     struct MagicEffect;
     struct NPC;
     struct Race;
     struct Skill;
     struct Spell;
+    struct Potion;
     struct Cell;
     struct Container;
     struct Door;
@@ -54,7 +56,9 @@ namespace EsmLoader
         std::vector<ESM::Class> mClasses;
         std::vector<ESM::Creature> mCreatures;
         std::vector<ESM::Enchantment> mEnchantments;
+        std::vector<ESM::Ingredient> mIngredients;
         std::vector<ESM::MagicEffect> mMagicEffects;
+        std::vector<ESM::Potion> mPotions;
         std::vector<ESM::Spell> mSpells;
         std::vector<ESM::NPC> mNpcs;
         std::vector<ESM::Race> mRaces;

@@ -400,6 +400,8 @@ int main(int argc, char *argv[])
             }
             networking.setConsumableMagicItems(
                 std::move(magicContent->consumableItems));
+            networking.setDirectConsumableMagicItems(
+                std::move(magicContent->directConsumableItems));
             networking.setSpellFatigueFormula(magicContent->fatigueBase,
                 magicContent->fatigueMultiplier);
         }

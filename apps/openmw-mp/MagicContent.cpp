@@ -6,11 +6,13 @@
 #include <components/esm3/loadcrea.hpp>
 #include <components/esm3/loadench.hpp>
 #include <components/esm3/loadgmst.hpp>
+#include <components/esm3/loadingr.hpp>
 #include <components/esm3/loadmgef.hpp>
 #include <components/esm3/loadnpc.hpp>
 #include <components/esm3/loadrace.hpp>
 #include <components/esm3/loadskil.hpp>
 #include <components/esm3/loadspel.hpp>
+#include <components/esm3/loadalch.hpp>
 #include <components/esm3/readerscache.hpp>
 #include <components/esmloader/esmdata.hpp>
 #include <components/esmloader/lessbyid.hpp>
@@ -482,6 +484,7 @@ namespace mwmp
         }
         result.actorTemplates = makeActorTemplates(data, npcMagickaMultiplier);
         result.definitions.reserve(data.mSpells.size()
+            + data.mPotions.size() + data.mIngredients.size()
             + data.mEnchantedItems.size());
         for (const ESM::Spell& spell : data.mSpells)
         {
@@ -502,6 +505,65 @@ namespace mwmp
                 = makeEffects(spell, data, effectCostMultiplier, options);
             if (!definition.effects.empty())
                 result.definitions.push_back(std::move(definition));
+        }
+
+        for (const ESM::Potion& potion : data.mPotions)
+        {
+            mechanics::SpellDefinition definition;
+            definition.id = canonicalId(potion.mId);
+            definition.displayName = potion.mName.empty()
+                ? definition.id : potion.mName;
+            definition.sourceKind = mechanics::SpellSourceKind::Item;
+            definition.alwaysSucceeds = true;
+            definition.stacking = true;
+            definition.effects = makeEffects(
+                potion, data, effectCostMultiplier, options);
+            if (definition.effects.empty())
+                continue;
+            result.consumableItems.insert(definition.id);
+            result.directConsumableItems.insert(definition.id);
+            result.definitions.push_back(std::move(definition));
+        }
+
+        for (const ESM::Ingredient& ingredient : data.mIngredients)
+        {
+            const ESM::RefId& effectId = ingredient.mData.mEffectID[0];
+            if (effectId.empty())
+                continue;
+            const ESM::MagicEffect* magicEffect
+                = findRecord(data.mMagicEffects, effectId);
+            if (magicEffect == nullptr)
+                throw std::runtime_error("ingredient references an unknown effect");
+
+            ESM::ENAMstruct effect{};
+            effect.mEffectID = effectId;
+            effect.mSkill = ingredient.mData.mSkills[0];
+            effect.mAttribute = ingredient.mData.mAttributes[0];
+            effect.mRange = ESM::RT_Self;
+            effect.mDuration = 1;
+            effect.mMagnMin = 1;
+            effect.mMagnMax = 1;
+
+            mechanics::SpellDefinition definition;
+            definition.id = canonicalId(ingredient.mId);
+            definition.displayName = ingredient.mName.empty()
+                ? definition.id : ingredient.mName;
+            definition.sourceKind = mechanics::SpellSourceKind::Item;
+            definition.stacking = true;
+            definition.ingredient = true;
+            definition.ingredientHasMagnitude
+                = (magicEffect->mData.mFlags
+                    & ESM::MagicEffect::NoMagnitude) == 0;
+            definition.ingredientHasDuration
+                = (magicEffect->mData.mFlags
+                    & ESM::MagicEffect::NoDuration) == 0;
+            definition.ingredientEffectBaseCost
+                = magicEffect->mData.mBaseCost;
+            definition.effects.push_back(makeEffect(
+                effect, *magicEffect, effectCostMultiplier, options));
+            result.consumableItems.insert(definition.id);
+            result.directConsumableItems.insert(definition.id);
+            result.definitions.push_back(std::move(definition));
         }
 
         for (const EsmLoader::EnchantedItem& item : data.mEnchantedItems)

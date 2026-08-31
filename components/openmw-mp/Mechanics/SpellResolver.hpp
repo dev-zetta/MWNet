@@ -88,6 +88,10 @@ namespace mwmp::mechanics
         double baseSuccessChance = 1;
         bool alwaysSucceeds = false;
         bool stacking = false;
+        bool ingredient = false;
+        bool ingredientHasMagnitude = false;
+        bool ingredientHasDuration = false;
+        double ingredientEffectBaseCost = 0;
         std::vector<SpellEffectDefinition> effects;
 
         bool operator==(const SpellDefinition&) const = default;
@@ -106,7 +110,9 @@ namespace mwmp::mechanics
         Position3 position;
         bool alive = true;
         double willpower = 0;
+        double intelligence = 0;
         double luck = 0;
+        double alchemySkill = 0;
         double fatigueTerm = 1;
         double soundMagnitude = 0;
         double enchantSkill = 10;

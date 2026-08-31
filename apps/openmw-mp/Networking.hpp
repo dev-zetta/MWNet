@@ -107,6 +107,7 @@ namespace  mwmp
         bool installActorMagicTemplates(
             const std::vector<mechanics::ActorMagicTemplate>& actors);
         void setConsumableMagicItems(std::unordered_set<std::string> itemIds);
+        void setDirectConsumableMagicItems(std::unordered_set<std::string> itemIds);
         void setSpellFatigueFormula(double base, double multiplier);
 
         std::optional<session::AuthorityLease> assignActorAuthority(
@@ -275,6 +276,7 @@ namespace  mwmp
         mechanics::SpellbookLedger mSpellbookLedger;
         mechanics::SpellResolver mSpellResolver;
         std::unordered_set<std::string> mConsumableMagicItems;
+        std::unordered_set<std::string> mDirectConsumableMagicItems;
         double mSpellFatigueBase = 1;
         double mSpellFatigueMultiplier = 0;
         std::unordered_set<std::uint64_t> mAuthenticatedConnections;

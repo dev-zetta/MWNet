@@ -93,7 +93,7 @@ namespace mwmp::mechanics
             return result;
         }
 
-        const SpellDefinition& definition = definitionIt->second;
+        SpellDefinition definition = definitionIt->second;
         const bool requiresTarget = std::ranges::any_of(definition.effects,
             [](const SpellEffectDefinition& effect) {
                 return effect.range != SpellRange::Self;
@@ -181,7 +181,39 @@ namespace mwmp::mechanics
             result.itemChargeSpent = effectiveItemChargeCost;
 
         result.successChance = definition.alwaysSucceeds ? 1.0 : 0.0;
-        if (!definition.alwaysSucceeds && !caster.silenced)
+        if (definition.ingredient)
+        {
+            const double ingredientChance = std::max(0.0,
+                (caster.alchemySkill + 0.2 * caster.intelligence
+                    + 0.1 * caster.luck) * caster.fatigueTerm);
+            const double roll = std::floor(successRoll * 100.0);
+            result.successChance = std::clamp(ingredientChance / 100.0, 0.0, 1.0);
+            if (ingredientChance <= 0 || roll > ingredientChance)
+            {
+                result.decision = SpellDecision::Failed;
+                result.targetHealth = caster.health;
+                return result;
+            }
+
+            const double y = roll / std::min(ingredientChance, 100.0)
+                * 0.25 * ingredientChance;
+            SpellEffectDefinition& effect = definition.effects.front();
+            if (effect.kind == SpellEffectKind::Timed)
+                effect.duration = std::clamp(std::floor(y), 1.0,
+                    MaximumDurationSeconds);
+            double magnitude = 1.0;
+            if (definition.ingredientHasMagnitude)
+            {
+                const double numerator = definition.ingredientHasDuration
+                    ? 0.05 * y : y;
+                magnitude = std::clamp(std::floor(numerator
+                    / (0.1 * definition.ingredientEffectBaseCost)),
+                    1.0, MaximumStatValue);
+            }
+            effect.minimumMagnitude = magnitude;
+            effect.maximumMagnitude = magnitude;
+        }
+        else if (!definition.alwaysSucceeds && !caster.silenced)
         {
             double lowestDifference = std::numeric_limits<double>::max();
             double lowestSkill = 0;
@@ -213,7 +245,8 @@ namespace mwmp::mechanics
                 * caster.fatigueTerm * caster.castingMultiplier / 100.0,
                 0.0, 1.0);
         }
-        if (!definition.alwaysSucceeds && successRoll >= result.successChance)
+        if (!definition.ingredient && !definition.alwaysSucceeds
+            && successRoll >= result.successChance)
         {
             result.decision = SpellDecision::Failed;
             result.targetHealth = externalTarget != nullptr
@@ -440,7 +473,8 @@ namespace mwmp::mechanics
             && state.resistance <= 1 && validCoordinate(state.position.x)
             && validCoordinate(state.position.y) && validCoordinate(state.position.z)
             && state.alive == (state.health > 0)
-            && validStat(state.willpower) && validStat(state.luck)
+            && validStat(state.willpower) && validStat(state.intelligence)
+            && validStat(state.luck) && validStat(state.alchemySkill)
             && std::isfinite(state.fatigueTerm) && state.fatigueTerm >= 0
             && state.fatigueTerm <= MaximumStatValue
             && validStat(state.soundMagnitude) && validStat(state.enchantSkill)
@@ -460,6 +494,8 @@ namespace mwmp::mechanics
             || !validNonNegative(definition.itemChargeCost, MaximumStatValue)
             || !validNonNegative(definition.itemMaximumCharge, MaximumStatValue)
             || !validNonNegative(definition.baseSuccessChance, 1)
+            || !validNonNegative(definition.ingredientEffectBaseCost,
+                MaximumStatValue)
             || definition.effects.empty()
             || definition.effects.size() > MaximumEffectsPerSpell)
         {
@@ -472,6 +508,23 @@ namespace mwmp::mechanics
         if (definition.sourceKind == SpellSourceKind::Item
             && definition.magickaCost != 0)
             return false;
+        if (definition.ingredient
+            && (definition.sourceKind != SpellSourceKind::Item
+                || definition.alwaysSucceeds || definition.effects.size() != 1
+                || definition.effects.front().range != SpellRange::Self
+                || definition.itemChargeCost != 0
+                || definition.itemMaximumCharge != 0
+                || definition.ingredientEffectBaseCost <= 0))
+        {
+            return false;
+        }
+        if (!definition.ingredient
+            && (definition.ingredientHasMagnitude
+                || definition.ingredientHasDuration
+                || definition.ingredientEffectBaseCost != 0))
+        {
+            return false;
+        }
         return std::ranges::all_of(definition.effects,
             [&validNonNegative](const SpellEffectDefinition& effect) {
                 return validString(effect.effectId)

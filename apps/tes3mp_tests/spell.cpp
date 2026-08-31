@@ -239,6 +239,50 @@ namespace
             .decision == SpellDecision::StaleSequence);
     }
 
+    void testIngredientUseUsesCanonicalAlchemyRoll()
+    {
+        SpellResolver resolver;
+        const CombatantId caster{ CombatantKind::Player, 1, {} };
+        SpellCombatantState state = combatant(50, 0, {});
+        state.health = 40;
+        state.alchemySkill = 40;
+        state.intelligence = 50;
+        state.luck = 30;
+        state.fatigueTerm = 0.75;
+        EXPECT(resolver.upsertCombatant(caster, state));
+
+        SpellDefinition ingredient;
+        ingredient.id = "comberry";
+        ingredient.displayName = "Comberry";
+        ingredient.sourceKind = SpellSourceKind::Item;
+        ingredient.stacking = true;
+        ingredient.ingredient = true;
+        ingredient.ingredientHasMagnitude = true;
+        ingredient.ingredientHasDuration = true;
+        ingredient.ingredientEffectBaseCost = 2;
+        ingredient.effects = {
+            { "restore magicka", {}, SpellEffectKind::Timed,
+                SpellRange::Self, 1, 1, 1, 0 },
+        };
+        EXPECT(resolver.upsertDefinition(ingredient));
+
+        const SpellResult applied = resolver.resolve(
+            { caster, std::nullopt, ingredient.id, 1, 0 }, 0.39, 0.75);
+        EXPECT(applied.decision == SpellDecision::Applied);
+        EXPECT(std::abs(applied.successChance - 0.3975) < 0.000001);
+        EXPECT(applied.applications.size() == 1);
+        EXPECT(applied.activeSpell.has_value());
+        EXPECT(applied.activeSpell->effects.size() == 1);
+        EXPECT(applied.activeSpell->effects[0].magnitude == 2);
+        EXPECT(applied.activeSpell->effects[0].duration == 9);
+
+        const SpellResult failed = resolver.resolve(
+            { caster, std::nullopt, ingredient.id, 2, 0 }, 0.90, 0);
+        EXPECT(failed.decision == SpellDecision::Failed);
+        EXPECT(std::abs(failed.successChance - 0.3975) < 0.000001);
+        EXPECT(failed.applications.empty());
+    }
+
     void testRangeTargetAndResourceValidation()
     {
         SpellResolver resolver;
@@ -288,6 +332,7 @@ int runSpellTests()
 {
     testServerOwnsSuccessAndEffects();
     testFailureConsumesOnlyCanonicalCost();
+    testIngredientUseUsesCanonicalAlchemyRoll();
     testRangeTargetAndResourceValidation();
     testMixedRangesApplyToCanonicalTargets();
     testItemChargeIsCanonicalResource();

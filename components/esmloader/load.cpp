@@ -18,11 +18,13 @@
 #include <components/esm3/loaddoor.hpp>
 #include <components/esm3/loadgmst.hpp>
 #include <components/esm3/loadench.hpp>
+#include <components/esm3/loadingr.hpp>
 #include <components/esm3/loadmgef.hpp>
 #include <components/esm3/loadnpc.hpp>
 #include <components/esm3/loadrace.hpp>
 #include <components/esm3/loadskil.hpp>
 #include <components/esm3/loadspel.hpp>
+#include <components/esm3/loadalch.hpp>
 #include <components/esm3/loadland.hpp>
 #include <components/esm3/loadstat.hpp>
 #include <components/esm3/loadweap.hpp>
@@ -150,7 +152,9 @@ namespace EsmLoader
             Records<ESM::Class> mClasses;
             Records<ESM::Creature> mCreatures;
             Records<ESM::Enchantment> mEnchantments;
+            Records<ESM::Ingredient> mIngredients;
             Records<ESM::MagicEffect> mMagicEffects;
+            Records<ESM::Potion> mPotions;
             Records<ESM::Spell> mSpells;
             Records<ESM::NPC> mNpcs;
             Records<ESM::Race> mRaces;
@@ -211,6 +215,10 @@ namespace EsmLoader
                     if (query.mLoadMagic)
                         return loadRecord(reader, content.mEnchantments);
                     break;
+                case ESM::REC_INGR:
+                    if (query.mLoadMagic)
+                        return loadRecord(reader, content.mIngredients);
+                    break;
                 case ESM::REC_MGEF:
                     if (query.mLoadMagic)
                         return loadRecord(reader, content.mMagicEffects);
@@ -218,6 +226,10 @@ namespace EsmLoader
                 case ESM::REC_SPEL:
                     if (query.mLoadMagic)
                         return loadRecord(reader, content.mSpells);
+                    break;
+                case ESM::REC_ALCH:
+                    if (query.mLoadMagic)
+                        return loadRecord(reader, content.mPotions);
                     break;
                 case ESM::REC_ARMO:
                     if (query.mLoadMagic)
@@ -396,6 +408,8 @@ namespace EsmLoader
         if (query.mLoadMagic)
             loaded << ' ' << content.mSpells.size() << " spells,"
                    << ' ' << content.mEnchantments.size() << " enchantments,"
+                   << ' ' << content.mPotions.size() << " potions,"
+                   << ' ' << content.mIngredients.size() << " ingredients,"
                    << ' ' << content.mMagicEffects.size() << " magic effects,";
         if (query.mLoadLands)
             loaded << ' ' << content.mLands.size() << " lands,";
@@ -427,7 +441,9 @@ namespace EsmLoader
         if (query.mLoadMagic)
         {
             result.mEnchantments = prepareRecords(content.mEnchantments, GetKey{});
+            result.mIngredients = prepareRecords(content.mIngredients, GetKey{});
             result.mMagicEffects = prepareRecords(content.mMagicEffects, GetKey{});
+            result.mPotions = prepareRecords(content.mPotions, GetKey{});
             result.mSpells = prepareRecords(content.mSpells, GetKey{});
             addEnchantedItems(content.mArmors, false, result.mEnchantedItems);
             addEnchantedItems(content.mBooks, true, result.mEnchantedItems);
@@ -466,6 +482,8 @@ namespace EsmLoader
         if (query.mLoadMagic)
             prepared << ' ' << result.mSpells.size() << " unique spells,"
                      << ' ' << result.mEnchantments.size() << " unique enchantments,"
+                     << ' ' << result.mPotions.size() << " unique potions,"
+                     << ' ' << result.mIngredients.size() << " unique ingredients,"
                      << ' ' << result.mMagicEffects.size() << " unique magic effects,"
                      << ' ' << result.mEnchantedItems.size() << " enchanted items,";
         if (query.mLoadLands)
