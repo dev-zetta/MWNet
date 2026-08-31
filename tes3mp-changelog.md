@@ -6,9 +6,12 @@ This is the first hardening milestone for the major OpenMW 0.52 compatibility an
 ### Engine and build modernization
 
 * Restore the upstream OpenMW build and test options, remove duplicate target registration, add TES3MP test and fuzz targets, and modernize vendored dependency CMake policies
+* Keep clean `TES3MP_TESTS_ONLY` builds independent of the OpenMW client and Boost logging stack so protocol, persistence, mechanics and ownership tests can run in minimal GCC, Clang and sanitizer environments
 * Bind new alpha servers to loopback, require an explicit `publicListen` opt-in for non-loopback addresses, and disable legacy public master announcements by default
 * Restore a clean dedicated-server-only build and enforce it in CI alongside the full client/server build
 * Add the fail-closed protocol 11 envelope and codec with fixed-width little-endian fields, sticky decode errors, UTF-8 validation, allocation limits, traffic limits, unit tests and a decoder fuzz target
+* Cover every protocol-11 message and routable application packet, all exact field limits, signed-negative legacy lengths, byte-by-byte secure-handshake truncation and transactional decode failure in regression tests
+* Add dedicated libFuzzer entry points for protocol fields, transport framing, authentication and encrypted handshakes plus a release-budget campaign that retains corpora, logs and discovered failures
 * Replace the legacy bidirectional packet `RW` API with direction-safe field and collection operations backed exclusively by the active protocol-11 `PacketReader` or `PacketWriter`
 * Harden the packet boundary during the protocol-11 cutover with initialized state, checked collection and string limits, whole-model transactional decoding, exact pre-initialization sizing, malformed-message rejection and decode gates before gameplay or Lua processing
 * Stop logging attempted server passwords and prevent partially encoded or oversized packets from being sent
@@ -21,6 +24,7 @@ This is the first hardening milestone for the major OpenMW 0.52 compatibility an
 * Define protocol-11 intent/result message identities and enforce side-aware packet allowlists across transport, content, account, spawn and disconnect session states
 * Add protected password buffers, moderate-cost Argon2id account credentials, fail-safe legacy SHA-256 migration and account/IP plus pre-KDF authentication throttles
 * Add a transport/session gate that disconnects peers whose inbound or outbound messages violate the authenticated lifecycle allowlist
+* Add real encrypted headless integration scenarios for first trust, fingerprint mismatch, registration, legacy credential migration, lockout, duplicate initialization, reconnect, chat, movement, inventory, combat, jail, death and respawn
 * Add a transport-independent application-packet bridge and bounded connection dispatcher with direction-specific intent/result routing, fixed lane assignment and sequenced unreliable movement snapshots for the live runtime cutover
 * Update the multiplayer client, dedicated server and tools onto OpenMW 0.52, including its current rendering, input, Lua, navigation and content APIs
 * Port TES3MP-specific code to C++20, Qt 6 and the current `ESM::RefId`, settings, resource and world APIs
@@ -98,6 +102,8 @@ This is the first hardening milestone for the major OpenMW 0.52 compatibility an
 * Treat potion and ingredient use as server-validated intents, atomically commit inventory consumption and canonical magic outcomes, and keep the client path presentation-only
 * Expose item-use intent/rejection hooks and `IsUsedItemServerResolved` while preserving the legacy post-commit `OnPlayerItemUse` callback
 * Record bounded server tick and serialization p99 samples, persistence queue depth, per-connection traffic and resident memory, with periodic typed metric reports
+* Add deterministic connect/death cycle and eight-client latency/loss soak profiles, bounded queue and memory-growth checks, retained JSON metrics and a five-percent performance-regression comparator
+* Fault-inject process termination at every atomic-persistence stage, verify old-or-new record recovery, and make temporary file names collision-resistant across crashed process restarts
 * Add a canonical justice ledger with server-owned bounty reductions and bounded, ID-tracked jail sentences
 * Treat player bounty packets as increase-only intents, preserve legacy validators before canonical commit, and reserve bounty reductions for server scripts
 * Require clients to acknowledge server-issued jail sentence IDs only after the asynchronous jail flow completes, rejecting stale or forged completions

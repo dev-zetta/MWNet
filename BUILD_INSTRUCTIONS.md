@@ -249,6 +249,40 @@ build/
 
 ---
 
+## Testing and release validation
+
+The protocol, persistence, mechanics and ownership tests have a dependency-light configuration that does not require the OpenMW client stack:
+
+```bash
+cmake -S . -B build-protocol -DTES3MP_TESTS_ONLY=ON
+cmake --build build-protocol --parallel
+ctest --test-dir build-protocol --output-on-failure
+```
+
+A full dependency build with `BUILD_TES3MP_TESTS=ON` also provides `tes3mp-headless-integration`, which exercises the authenticated protocol over real encrypted loopback connections, and `tes3mp-persistence-fault`, which kills a writer process at every atomic-save stage.
+
+The release-budget fuzz campaign requires a Clang/libFuzzer build with `BUILD_TES3MP_FUZZERS=ON`. It runs the protocol, transport, authentication and secure-handshake targets concurrently and retains their corpora, logs and failures:
+
+```bash
+CI/run_tes3mp_fuzz_campaign.sh --release-budget
+```
+
+Run the mandatory connect/death cycles and 24-hour eight-client latency/loss soak against an exact candidate with:
+
+```bash
+CI/run_tes3mp_soak.sh --release-gates
+```
+
+Compare like-for-like performance artifacts against the recorded alpha.1 baseline. A regression above five percent requires an explicit reviewed justification:
+
+```bash
+CI/compare_tes3mp_performance.py baseline.json candidate.json
+```
+
+Shorter developer runs are available through each script's `--help`, but do not satisfy the release gates. See [RELEASE_GATES.md](RELEASE_GATES.md) for all cross-platform, sanitizer, fuzz, soak, security and legal evidence required before a stable release.
+
+---
+
 ## Running TES3MP
 
 ### Client

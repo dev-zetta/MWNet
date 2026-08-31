@@ -8,7 +8,7 @@ TES3MP 1.0 is released sequentially. Passing a later implementation milestone do
 | --- | --- | --- |
 | `1.0.0-alpha.1` | Clean out-of-tree builds, protocol 11 only, fail-closed codec, unit/fuzz targets, loopback default | Implementation present; release-candidate cross-platform evidence pending |
 | `1.0.0-alpha.2` | GameNetworkingSockets, encrypted identity handshake, TOFU and Argon2id migration | Implementation present on the alpha branch; milestone is not released out of sequence |
-| `1.0.0-alpha.3` | Canonical authority, lifecycle gates, owned workers and atomic persistence | Foundation present; adversarial integration and fault-injection evidence pending |
+| `1.0.0-alpha.3` | Canonical authority, lifecycle gates, owned workers and atomic persistence | Implementation and automated encrypted integration/fault harnesses present; exact-candidate evidence pending |
 | `1.0.0-beta.1` | Sanitizer and fuzz gates, limited opt-in public test, independent security review | Blocked |
 | `1.0.0` | Cross-platform, soak, migration, security, legal and documentation gates | Blocked |
 
