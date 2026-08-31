@@ -13,6 +13,7 @@
 #include <components/openmw-mp/Mechanics/EquipmentLedger.hpp>
 #include <components/openmw-mp/Mechanics/CombatResolver.hpp>
 #include <components/openmw-mp/Mechanics/ActiveEffectLedger.hpp>
+#include <components/openmw-mp/Mechanics/ActorMagicRegistry.hpp>
 #include <components/openmw-mp/Mechanics/ActorStateLedger.hpp>
 #include <components/openmw-mp/Mechanics/CastIntentValidator.hpp>
 #include <components/openmw-mp/Mechanics/JusticeLedger.hpp>
@@ -101,6 +102,8 @@ namespace  mwmp
         bool isPassworded() const;
         bool installSpellDefinitions(
             const std::vector<mechanics::SpellDefinition>& definitions);
+        bool installActorMagicTemplates(
+            const std::vector<mechanics::ActorMagicTemplate>& actors);
         void setConsumableMagicItems(std::unordered_set<std::string> itemIds);
         void setSpellFatigueFormula(double base, double multiplier);
 
@@ -256,6 +259,7 @@ namespace  mwmp
         mechanics::EquipmentLedger mEquipmentLedger;
         mechanics::CombatResolver mCombatResolver;
         mechanics::ActiveEffectLedger mActiveEffectLedger;
+        mechanics::ActorMagicRegistry mActorMagicRegistry;
         mechanics::ActorStateLedger mActorStateLedger;
         mechanics::CastIntentValidator mCastIntentValidator;
         mechanics::JusticeLedger mJusticeLedger;

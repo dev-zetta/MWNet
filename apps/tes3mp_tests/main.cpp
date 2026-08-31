@@ -6,6 +6,7 @@
 int runProtocolTests();
 int runProgressionTests();
 int runActiveEffectTests();
+int runActorMagicTests();
 int runActorStateTests();
 int runAuthorityTests();
 int runCastTests();
@@ -42,7 +43,8 @@ int main()
         return 1;
     }
 
-    int failures = runProtocolTests() + runActiveEffectTests() + runActorStateTests()
+    int failures = runProtocolTests() + runActiveEffectTests() + runActorMagicTests()
+        + runActorStateTests()
         + runAuthorityTests() + runCastTests() + runCombatTests()
         + runEquipmentTests() + runInventoryTests() + runJusticeTests() + runMovementTests()
         + runMetricsTests()

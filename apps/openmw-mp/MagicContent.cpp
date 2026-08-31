@@ -1,9 +1,15 @@
 #include "MagicContent.hpp"
 
 #include <components/esm/defs.hpp>
+#include <components/esm/attr.hpp>
+#include <components/esm3/loadclas.hpp>
+#include <components/esm3/loadcrea.hpp>
 #include <components/esm3/loadench.hpp>
 #include <components/esm3/loadgmst.hpp>
 #include <components/esm3/loadmgef.hpp>
+#include <components/esm3/loadnpc.hpp>
+#include <components/esm3/loadrace.hpp>
+#include <components/esm3/loadskil.hpp>
 #include <components/esm3/loadspel.hpp>
 #include <components/esm3/readerscache.hpp>
 #include <components/esmloader/esmdata.hpp>
@@ -15,6 +21,7 @@
 
 #include <algorithm>
 #include <cmath>
+#include <map>
 #include <stdexcept>
 #include <string_view>
 
@@ -101,6 +108,239 @@ namespace mwmp
             if (effect.mRange == ESM::RT_Target)
                 result *= 1.5;
             return std::max(0.0, result * effectCostMultiplier);
+        }
+
+        double valueOrZero(const std::map<ESM::RefId, double>& values,
+            const ESM::RefId& id)
+        {
+            const auto found = values.find(id);
+            return found == values.end() ? 0.0 : found->second;
+        }
+
+        double roundEven(double value)
+        {
+            const double floorValue = std::floor(value);
+            const double fraction = value - floorValue;
+            if (fraction < 0.5)
+                return floorValue;
+            if (fraction > 0.5)
+                return floorValue + 1;
+            return std::fmod(floorValue, 2.0) == 0
+                ? floorValue : floorValue + 1;
+        }
+
+        void addSpells(const ESM::SpellList& source,
+            mechanics::ActorMagicTemplate& actor)
+        {
+            for (const ESM::RefId& id : source.mList)
+            {
+                const std::string value = canonicalId(id);
+                if (!value.empty())
+                    actor.spells.emplace(value);
+            }
+        }
+
+        void addInventory(const ESM::InventoryList& source,
+            mechanics::ActorMagicTemplate& actor)
+        {
+            for (const ESM::ContItem& item : source.mList)
+            {
+                const std::string id = canonicalId(item.mItem);
+                if (id.empty() || item.mCount <= 0)
+                    continue;
+                actor.inventory.push_back({ id, {}, -1, -1, item.mCount });
+            }
+        }
+
+        std::map<ESM::RefId, double> autoNpcAttributes(const ESM::NPC& npc,
+            const ESM::Race& race, const ESM::Class& characterClass,
+            const std::vector<ESM::Skill>& skills)
+        {
+            std::map<ESM::RefId, double> result;
+            const bool male = (npc.mFlags & ESM::NPC::Female) == 0;
+            for (int index = 0; index < ESM::Attribute::Length; ++index)
+            {
+                const ESM::RefId id = ESM::Attribute::indexToRefId(index);
+                result.emplace(id, race.mData.getAttribute(id, male));
+            }
+            for (const ESM::RefId& id : characterClass.mData.mAttribute)
+            {
+                if (!id.empty())
+                    result[id] += 10;
+            }
+            for (auto& [attribute, value] : result)
+            {
+                double multiplier = 0;
+                for (const ESM::Skill& skill : skills)
+                {
+                    if (skill.mData.mAttribute != attribute)
+                        continue;
+                    double addition = 0.2;
+                    for (const auto& classSkills : characterClass.mData.mSkills)
+                    {
+                        if (classSkills[0] == skill.mId)
+                            addition = 0.5;
+                        if (classSkills[1] == skill.mId)
+                            addition = 1.0;
+                    }
+                    multiplier += addition;
+                }
+                value = std::min(100.0, roundEven(value
+                    + (static_cast<double>(npc.mNpdt.mLevel) - 1.0)
+                        * multiplier));
+            }
+            return result;
+        }
+
+        std::map<ESM::RefId, double> autoNpcSkills(const ESM::NPC& npc,
+            const ESM::Race& race, const ESM::Class& characterClass,
+            const std::vector<ESM::Skill>& skills)
+        {
+            std::map<ESM::RefId, double> result;
+            for (const ESM::Skill& skill : skills)
+            {
+                double value = 0;
+                for (int column = 0; column < 2; ++column)
+                {
+                    for (const auto& classSkills : characterClass.mData.mSkills)
+                    {
+                        if (classSkills[column] == skill.mId)
+                            value += column == 0 ? 10 : 25;
+                    }
+                }
+                const auto raceBonus = std::find_if(race.mData.mBonus.begin(),
+                    race.mData.mBonus.end(), [&skill](const auto& bonus) {
+                        return bonus.mSkill == skill.mId;
+                    });
+                if (raceBonus != race.mData.mBonus.end())
+                    value += raceBonus->mBonus;
+                value += 5;
+
+                double majorityMultiplier = 0.1;
+                for (const auto& classSkills : characterClass.mData.mSkills)
+                {
+                    if (std::find(classSkills.begin(), classSkills.end(), skill.mId)
+                        != classSkills.end())
+                    {
+                        majorityMultiplier = 1.0;
+                        break;
+                    }
+                }
+                double specializationMultiplier = 0;
+                if (skill.mData.mSpecialization
+                    == characterClass.mData.mSpecialization)
+                {
+                    specializationMultiplier = 0.5;
+                    value += 5;
+                }
+                value += (static_cast<double>(npc.mNpdt.mLevel) - 1.0)
+                    * (majorityMultiplier + specializationMultiplier);
+                result.emplace(skill.mId,
+                    std::min(100.0, roundEven(value)));
+            }
+            return result;
+        }
+
+        void addMagicSkills(const std::map<ESM::RefId, double>& skills,
+            mechanics::ActorMagicTemplate& actor)
+        {
+            for (int index = 0; index < ESM::MagicSchool::Length; ++index)
+            {
+                const ESM::RefId id = ESM::MagicSchool::indexToSkillRefId(index);
+                actor.magicSkills.emplace(canonicalId(id), valueOrZero(skills, id));
+            }
+            actor.enchantSkill = valueOrZero(skills, ESM::Skill::Enchant);
+        }
+
+        std::vector<mechanics::ActorMagicTemplate> makeActorTemplates(
+            const EsmLoader::EsmData& data, double npcMagickaMultiplier)
+        {
+            std::vector<mechanics::ActorMagicTemplate> result;
+            result.reserve(data.mNpcs.size() + data.mCreatures.size());
+            for (const ESM::NPC& npc : data.mNpcs)
+            {
+                mechanics::ActorMagicTemplate actor;
+                actor.refId = canonicalId(npc.mId);
+                std::map<ESM::RefId, double> attributes;
+                std::map<ESM::RefId, double> skills;
+                const ESM::Race* race = findRecord(data.mRaces, npc.mRace);
+                if (npc.mNpdtType == ESM::NPC::NPC_WITH_AUTOCALCULATED_STATS)
+                {
+                    const ESM::Class* characterClass
+                        = findRecord(data.mClasses, npc.mClass);
+                    if (race == nullptr || characterClass == nullptr)
+                        continue;
+                    attributes = autoNpcAttributes(
+                        npc, *race, *characterClass, data.mSkills);
+                    skills = autoNpcSkills(npc, *race, *characterClass, data.mSkills);
+                    const double strength = valueOrZero(
+                        attributes, ESM::Attribute::Strength);
+                    const double endurance = valueOrZero(
+                        attributes, ESM::Attribute::Endurance);
+                    int healthMultiplier = 3;
+                    if (characterClass->mData.mSpecialization == ESM::Class::Combat)
+                        healthMultiplier += 2;
+                    else if (characterClass->mData.mSpecialization == ESM::Class::Stealth)
+                        healthMultiplier += 1;
+                    if (std::find(characterClass->mData.mAttribute.begin(),
+                            characterClass->mData.mAttribute.end(),
+                            ESM::Attribute::Endurance)
+                        != characterClass->mData.mAttribute.end())
+                    {
+                        ++healthMultiplier;
+                    }
+                    actor.maximumHealth = std::floor(0.5 * (strength + endurance))
+                        + healthMultiplier * (npc.mNpdt.mLevel - 1);
+                    actor.maximumMagicka = npcMagickaMultiplier
+                        * valueOrZero(attributes, ESM::Attribute::Intelligence);
+                    actor.maximumFatigue = strength + endurance
+                        + valueOrZero(attributes, ESM::Attribute::Agility)
+                        + valueOrZero(attributes, ESM::Attribute::Willpower);
+                }
+                else
+                {
+                    for (const auto& [id, value] : npc.mNpdt.mAttributes)
+                        attributes.emplace(id, value);
+                    for (const auto& [id, value] : npc.mNpdt.mSkills)
+                        skills.emplace(id, value);
+                    actor.maximumHealth = npc.mNpdt.mHealth;
+                    actor.maximumMagicka = npc.mNpdt.mMana;
+                    actor.maximumFatigue = npc.mNpdt.mFatigue;
+                }
+                actor.willpower = valueOrZero(
+                    attributes, ESM::Attribute::Willpower);
+                actor.luck = valueOrZero(attributes, ESM::Attribute::Luck);
+                addMagicSkills(skills, actor);
+                addSpells(npc.mSpells, actor);
+                if (race != nullptr)
+                    addSpells(race->mPowers, actor);
+                addInventory(npc.mInventory, actor);
+                result.push_back(std::move(actor));
+            }
+
+            for (const ESM::Creature& creature : data.mCreatures)
+            {
+                mechanics::ActorMagicTemplate actor;
+                actor.refId = canonicalId(creature.mId);
+                actor.maximumHealth = std::max(0, creature.mData.mHealth);
+                actor.maximumMagicka = std::max(0, creature.mData.mMana);
+                actor.maximumFatigue = std::max(0, creature.mData.mFatigue);
+                actor.willpower = std::max(0,
+                    creature.mData.getAttribute(ESM::Attribute::Willpower));
+                actor.luck = std::max(0,
+                    creature.mData.getAttribute(ESM::Attribute::Luck));
+                actor.enchantSkill = std::max(0, creature.mData.mMagic);
+                for (int index = 0; index < ESM::MagicSchool::Length; ++index)
+                {
+                    actor.magicSkills.emplace(canonicalId(
+                        ESM::MagicSchool::indexToSkillRefId(index)),
+                        std::max(0, creature.mData.mMagic));
+                }
+                addSpells(creature.mSpells, actor);
+                addInventory(creature.mInventory, actor);
+                result.push_back(std::move(actor));
+            }
+            return result;
         }
 
         mechanics::SpellEffectDefinition makeEffect(
@@ -194,6 +434,7 @@ namespace mwmp
         ToUTF8::Utf8Encoder encoder(ToUTF8::calculateEncoding(options.encoding));
         EsmLoader::Query query;
         query.mLoadGameSettings = true;
+        query.mLoadActorMagic = true;
         query.mLoadMagic = true;
         EsmLoader::EsmData data = EsmLoader::loadEsmData(query,
             options.contentFiles, collections, readers, &encoder);
@@ -202,6 +443,10 @@ namespace mwmp
                 "fEffectCostMult").getFloat();
         if (!std::isfinite(effectCostMultiplier) || effectCostMultiplier < 0)
             throw std::runtime_error("fEffectCostMult is invalid");
+        const double npcMagickaMultiplier = EsmLoader::getGameSetting(
+            data.mGameSettings, "fNPCbaseMagickaMult").getFloat();
+        if (!std::isfinite(npcMagickaMultiplier) || npcMagickaMultiplier < 0)
+            throw std::runtime_error("fNPCbaseMagickaMult is invalid");
 
         CanonicalMagicContent result;
         result.fatigueBase = EsmLoader::getGameSetting(
@@ -213,6 +458,7 @@ namespace mwmp
         {
             throw std::runtime_error("canonical fatigue settings are invalid");
         }
+        result.actorTemplates = makeActorTemplates(data, npcMagickaMultiplier);
         result.definitions.reserve(data.mSpells.size()
             + data.mEnchantedItems.size());
         for (const ESM::Spell& spell : data.mSpells)

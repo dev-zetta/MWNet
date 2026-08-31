@@ -11,12 +11,17 @@
 #include <components/esm3/loadarmo.hpp>
 #include <components/esm3/loadbook.hpp>
 #include <components/esm3/loadcell.hpp>
+#include <components/esm3/loadclas.hpp>
 #include <components/esm3/loadclot.hpp>
 #include <components/esm3/loadcont.hpp>
+#include <components/esm3/loadcrea.hpp>
 #include <components/esm3/loaddoor.hpp>
 #include <components/esm3/loadgmst.hpp>
 #include <components/esm3/loadench.hpp>
 #include <components/esm3/loadmgef.hpp>
+#include <components/esm3/loadnpc.hpp>
+#include <components/esm3/loadrace.hpp>
+#include <components/esm3/loadskil.hpp>
 #include <components/esm3/loadspel.hpp>
 #include <components/esm3/loadland.hpp>
 #include <components/esm3/loadstat.hpp>
@@ -142,9 +147,14 @@ namespace EsmLoader
             Records<ESM::Container> mContainers;
             Records<ESM::Door> mDoors;
             Records<ESM::GameSetting> mGameSettings;
+            Records<ESM::Class> mClasses;
+            Records<ESM::Creature> mCreatures;
             Records<ESM::Enchantment> mEnchantments;
             Records<ESM::MagicEffect> mMagicEffects;
             Records<ESM::Spell> mSpells;
+            Records<ESM::NPC> mNpcs;
+            Records<ESM::Race> mRaces;
+            Records<ESM::Skill> mSkills;
             Records<ESM::Armor> mArmors;
             Records<ESM::Book> mBooks;
             Records<ESM::Clothing> mClothing;
@@ -176,6 +186,26 @@ namespace EsmLoader
                 case ESM::REC_GMST:
                     if (query.mLoadGameSettings)
                         return loadRecord(reader, content.mGameSettings);
+                    break;
+                case ESM::REC_CLAS:
+                    if (query.mLoadActorMagic)
+                        return loadRecord(reader, content.mClasses);
+                    break;
+                case ESM::REC_CREA:
+                    if (query.mLoadActorMagic)
+                        return loadRecord(reader, content.mCreatures);
+                    break;
+                case ESM::REC_NPC_:
+                    if (query.mLoadActorMagic)
+                        return loadRecord(reader, content.mNpcs);
+                    break;
+                case ESM::REC_RACE:
+                    if (query.mLoadActorMagic)
+                        return loadRecord(reader, content.mRaces);
+                    break;
+                case ESM::REC_SKIL:
+                    if (query.mLoadActorMagic)
+                        return loadRecord(reader, content.mSkills);
                     break;
                 case ESM::REC_ENCH:
                     if (query.mLoadMagic)
@@ -357,6 +387,12 @@ namespace EsmLoader
             loaded << ' ' << content.mDoors.size() << " doors,";
         if (query.mLoadGameSettings)
             loaded << ' ' << content.mGameSettings.size() << " game settings,";
+        if (query.mLoadActorMagic)
+            loaded << ' ' << content.mNpcs.size() << " NPCs,"
+                   << ' ' << content.mCreatures.size() << " creatures,"
+                   << ' ' << content.mRaces.size() << " races,"
+                   << ' ' << content.mClasses.size() << " classes,"
+                   << ' ' << content.mSkills.size() << " skills,";
         if (query.mLoadMagic)
             loaded << ' ' << content.mSpells.size() << " spells,"
                    << ' ' << content.mEnchantments.size() << " enchantments,"
@@ -380,6 +416,14 @@ namespace EsmLoader
             result.mDoors = prepareRecords(content.mDoors, GetKey{});
         if (query.mLoadGameSettings)
             result.mGameSettings = prepareRecords(content.mGameSettings, GetKey{});
+        if (query.mLoadActorMagic)
+        {
+            result.mClasses = prepareRecords(content.mClasses, GetKey{});
+            result.mCreatures = prepareRecords(content.mCreatures, GetKey{});
+            result.mNpcs = prepareRecords(content.mNpcs, GetKey{});
+            result.mRaces = prepareRecords(content.mRaces, GetKey{});
+            result.mSkills = prepareRecords(content.mSkills, GetKey{});
+        }
         if (query.mLoadMagic)
         {
             result.mEnchantments = prepareRecords(content.mEnchantments, GetKey{});
@@ -413,6 +457,12 @@ namespace EsmLoader
             prepared << ' ' << result.mDoors.size() << " unique doors,";
         if (query.mLoadGameSettings)
             prepared << ' ' << result.mGameSettings.size() << " unique game settings,";
+        if (query.mLoadActorMagic)
+            prepared << ' ' << result.mNpcs.size() << " unique NPCs,"
+                     << ' ' << result.mCreatures.size() << " unique creatures,"
+                     << ' ' << result.mRaces.size() << " unique races,"
+                     << ' ' << result.mClasses.size() << " unique classes,"
+                     << ' ' << result.mSkills.size() << " unique skills,";
         if (query.mLoadMagic)
             prepared << ' ' << result.mSpells.size() << " unique spells,"
                      << ' ' << result.mEnchantments.size() << " unique enchantments,"

@@ -375,8 +375,9 @@ int main(int argc, char *argv[])
             contentOptions.maximumTargetRange = maximumTargetRange;
             magicContent = loadCanonicalMagicContent(contentOptions);
             LOG_MESSAGE_SIMPLE(TimedLog::LOG_INFO,
-                "Loaded %llu canonical spell and enchanted-item definitions",
-                static_cast<unsigned long long>(magicContent->definitions.size()));
+                "Loaded %llu canonical spell and enchanted-item definitions and %llu actor templates",
+                static_cast<unsigned long long>(magicContent->definitions.size()),
+                static_cast<unsigned long long>(magicContent->actorTemplates.size()));
         }
         else
         {
@@ -391,6 +392,12 @@ int main(int argc, char *argv[])
         {
             if (!networking.installSpellDefinitions(magicContent->definitions))
                 throw std::runtime_error("Canonical magic definitions exceed server limits or are invalid");
+            if (!networking.installActorMagicTemplates(
+                    magicContent->actorTemplates))
+            {
+                throw std::runtime_error(
+                    "Canonical actor magic templates exceed server limits or are invalid");
+            }
             networking.setConsumableMagicItems(
                 std::move(magicContent->consumableItems));
             networking.setSpellFatigueFormula(magicContent->fatigueBase,

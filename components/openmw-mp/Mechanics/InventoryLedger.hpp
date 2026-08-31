@@ -15,6 +15,7 @@ namespace mwmp::mechanics
     {
         Player,
         Container,
+        Actor,
     };
 
     struct InventoryOwner

@@ -4788,6 +4788,17 @@ bool Networking::installSpellDefinitions(
     return true;
 }
 
+bool Networking::installActorMagicTemplates(
+    const std::vector<mechanics::ActorMagicTemplate>& actors)
+{
+    for (const mechanics::ActorMagicTemplate& actor : actors)
+    {
+        if (!mActorMagicRegistry.upsert(actor))
+            return false;
+    }
+    return true;
+}
+
 void Networking::setConsumableMagicItems(
     std::unordered_set<std::string> itemIds)
 {

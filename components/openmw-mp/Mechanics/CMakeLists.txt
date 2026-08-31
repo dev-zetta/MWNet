@@ -1,5 +1,6 @@
 add_library(tes3mp-mechanics STATIC
     ActiveEffectLedger.cpp
+    ActorMagicRegistry.cpp
     ActorStateLedger.cpp
     CastIntentValidator.cpp
     CombatResolver.cpp

@@ -34,6 +34,7 @@ namespace EsmLoader
         bool mLoadContainers = false;
         bool mLoadDoors = false;
         bool mLoadGameSettings = false;
+        bool mLoadActorMagic = false;
         bool mLoadMagic = false;
         bool mLoadLands = false;
         bool mLoadStatics = false;

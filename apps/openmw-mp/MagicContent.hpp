@@ -2,6 +2,7 @@
 #define OPENMW_MP_SERVER_MAGIC_CONTENT_HPP
 
 #include <components/openmw-mp/Mechanics/SpellResolver.hpp>
+#include <components/openmw-mp/Mechanics/ActorMagicRegistry.hpp>
 
 #include <filesystem>
 #include <string>
@@ -22,6 +23,7 @@ namespace mwmp
     struct CanonicalMagicContent
     {
         std::vector<mechanics::SpellDefinition> definitions;
+        std::vector<mechanics::ActorMagicTemplate> actorTemplates;
         std::unordered_set<std::string> consumableItems;
         double fatigueBase = 1;
         double fatigueMultiplier = 0;
