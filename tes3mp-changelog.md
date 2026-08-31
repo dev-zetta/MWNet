@@ -88,6 +88,7 @@ This is the first hardening milestone for the major OpenMW 0.52 compatibility an
 * Add a rendering-independent cast-intent validator for canonical caster/target identities, bounded source IDs and finite projectile geometry
 * Validate player and authority-leased actor cast presentation intents before relay, including reported player transforms, and expose allow/deny Lua hooks
 * Add a deterministic server-side spell outcome resolver with canonical sequence, magicka or item charge, per-effect self/touch/target range, success, health/death and timed-effect results
+* Extract Morrowind's effective-school cast chance and enchant-skill charge calculations into the rendering-independent server mechanics path, including fatigue, silence and sound penalties
 * Extend the override-aware ESM loader with spells, magic effects, enchantments and enchanted-item bindings for the dedicated server's canonical magic registry
 * Record bounded server tick and serialization p99 samples, persistence queue depth, per-connection traffic and resident memory, with periodic typed metric reports
 * Add a canonical justice ledger with server-owned bounty reductions and bounded, ID-tracked jail sentences

@@ -153,10 +153,17 @@ namespace mwmp::mechanics
             result.decision = SpellDecision::InsufficientMagicka;
             return result;
         }
+        const double effectiveItemChargeCost
+            = definition.sourceKind == SpellSourceKind::Item
+                && definition.itemChargeCost > 0
+            ? std::max(1.0, definition.itemChargeCost
+                - (definition.itemChargeCost / 100.0)
+                    * (caster.enchantSkill - 10.0))
+            : 0.0;
         if (definition.sourceKind == SpellSourceKind::Item
             && (!intent.availableItemCharge
                 || !std::isfinite(*intent.availableItemCharge)
-                || *intent.availableItemCharge < definition.itemChargeCost))
+                || *intent.availableItemCharge < effectiveItemChargeCost))
         {
             result.decision = SpellDecision::InsufficientItemCharge;
             return result;
@@ -171,11 +178,41 @@ namespace mwmp::mechanics
             result.magickaSpent = definition.magickaCost;
         }
         else
-            result.itemChargeSpent = definition.itemChargeCost;
-        result.successChance = definition.alwaysSucceeds
-            ? 1.0
-            : std::clamp(definition.baseSuccessChance * caster.castingMultiplier,
+            result.itemChargeSpent = effectiveItemChargeCost;
+
+        result.successChance = definition.alwaysSucceeds ? 1.0 : 0.0;
+        if (!definition.alwaysSucceeds && !caster.silenced)
+        {
+            double lowestDifference = std::numeric_limits<double>::max();
+            double lowestSkill = 0;
+            bool hasCastingSchool = false;
+            for (const SpellEffectDefinition& effect : definition.effects)
+            {
+                if (effect.castingSchool.empty())
+                    continue;
+                hasCastingSchool = true;
+                const auto skillIt = caster.magicSkills.find(effect.castingSchool);
+                const double skill = skillIt == caster.magicSkills.end()
+                    ? 0.0 : skillIt->second;
+                const double doubledSkill = 2.0 * skill;
+                const double difference
+                    = doubledSkill - effect.castingDifficulty;
+                if (difference < lowestDifference)
+                {
+                    lowestDifference = difference;
+                    lowestSkill = doubledSkill;
+                    result.effectiveSchool = effect.castingSchool;
+                }
+            }
+            const double baseChance = hasCastingSchool
+                ? lowestSkill - definition.magickaCost
+                    + 0.2 * caster.willpower + 0.1 * caster.luck
+                    - caster.soundMagnitude
+                : definition.baseSuccessChance * 100.0;
+            result.successChance = std::clamp(baseChance
+                * caster.fatigueTerm * caster.castingMultiplier / 100.0,
                 0.0, 1.0);
+        }
         if (!definition.alwaysSucceeds && successRoll >= result.successChance)
         {
             result.decision = SpellDecision::Failed;
@@ -327,7 +364,15 @@ namespace mwmp::mechanics
             && std::isfinite(state.resistance) && state.resistance >= 0
             && state.resistance <= 1 && validCoordinate(state.position.x)
             && validCoordinate(state.position.y) && validCoordinate(state.position.z)
-            && state.alive == (state.health > 0);
+            && state.alive == (state.health > 0)
+            && validStat(state.willpower) && validStat(state.luck)
+            && std::isfinite(state.fatigueTerm) && state.fatigueTerm >= 0
+            && state.fatigueTerm <= MaximumStatValue
+            && validStat(state.soundMagnitude) && validStat(state.enchantSkill)
+            && std::ranges::all_of(state.magicSkills,
+                [&validStat](const auto& skill) {
+                    return validString(skill.first) && validStat(skill.second);
+                });
     }
 
     bool SpellResolver::validDefinition(const SpellDefinition& definition) noexcept
@@ -354,6 +399,9 @@ namespace mwmp::mechanics
             [&validNonNegative](const SpellEffectDefinition& effect) {
                 return validString(effect.effectId)
                     && (effect.argument.empty() || validString(effect.argument))
+                    && (effect.castingSchool.empty()
+                        || validString(effect.castingSchool))
+                    && validNonNegative(effect.castingDifficulty, MaximumStatValue)
                     && validNonNegative(effect.minimumMagnitude, MaximumStatValue)
                     && validNonNegative(effect.maximumMagnitude, MaximumStatValue)
                     && effect.maximumMagnitude >= effect.minimumMagnitude

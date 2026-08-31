@@ -35,6 +35,26 @@ namespace mwmp::mechanics
 
     struct SpellEffectDefinition
     {
+        SpellEffectDefinition() = default;
+
+        SpellEffectDefinition(std::string id, std::string effectArgument,
+            SpellEffectKind effectKind, SpellRange effectRange,
+            double minimum, double maximum, double effectDuration,
+            double rangeLimit, std::string school = {},
+            double difficulty = 0)
+            : effectId(std::move(id))
+            , argument(std::move(effectArgument))
+            , kind(effectKind)
+            , range(effectRange)
+            , minimumMagnitude(minimum)
+            , maximumMagnitude(maximum)
+            , duration(effectDuration)
+            , maximumRange(rangeLimit)
+            , castingSchool(std::move(school))
+            , castingDifficulty(difficulty)
+        {
+        }
+
         std::string effectId;
         std::string argument;
         SpellEffectKind kind = SpellEffectKind::Timed;
@@ -43,6 +63,8 @@ namespace mwmp::mechanics
         double maximumMagnitude = 0;
         double duration = 0;
         double maximumRange = 0;
+        std::string castingSchool;
+        double castingDifficulty = 0;
 
         bool operator==(const SpellEffectDefinition&) const = default;
     };
@@ -72,6 +94,13 @@ namespace mwmp::mechanics
         double resistance = 0;
         Position3 position;
         bool alive = true;
+        double willpower = 0;
+        double luck = 0;
+        double fatigueTerm = 1;
+        double soundMagnitude = 0;
+        double enchantSkill = 10;
+        bool silenced = false;
+        std::unordered_map<std::string, double> magicSkills;
 
         bool operator==(const SpellCombatantState&) const = default;
     };
@@ -134,6 +163,7 @@ namespace mwmp::mechanics
         double successChance = 0;
         double magickaSpent = 0;
         double itemChargeSpent = 0;
+        std::string effectiveSchool;
         double targetHealth = 0;
         bool targetDied = false;
         std::optional<CanonicalActiveSpell> activeSpell;

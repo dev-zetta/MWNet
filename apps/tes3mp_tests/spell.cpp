@@ -25,7 +25,14 @@ namespace
     SpellCombatantState combatant(
         double health, double magicka, Position3 position)
     {
-        return { health, health, magicka, magicka, 1, 0, position, health > 0 };
+        SpellCombatantState state;
+        state.health = health;
+        state.maximumHealth = health;
+        state.magicka = magicka;
+        state.maximumMagicka = magicka;
+        state.position = position;
+        state.alive = health > 0;
+        return state;
     }
 
     SpellDefinition fireball()
@@ -128,6 +135,45 @@ namespace
         EXPECT(result.magickaSpent == 0);
     }
 
+    void testMorrowindCastingFormulaUsesEffectiveSchool()
+    {
+        SpellResolver resolver;
+        const CombatantId caster{ CombatantKind::Player, 1, {} };
+        SpellCombatantState state = combatant(50, 50, {});
+        state.willpower = 40;
+        state.luck = 30;
+        state.fatigueTerm = 0.75;
+        state.magicSkills.emplace("destruction", 50);
+        state.magicSkills.emplace("alteration", 35);
+        EXPECT(resolver.upsertCombatant(caster, state));
+
+        SpellDefinition spell;
+        spell.id = "formula";
+        spell.displayName = "Formula";
+        spell.magickaCost = 20;
+        spell.effects = {
+            { "damage health", {}, SpellEffectKind::DamageHealth,
+                SpellRange::Self, 1, 1, 0, 0, "destruction", 40 },
+            { "shield", {}, SpellEffectKind::Timed,
+                SpellRange::Self, 1, 1, 1, 0, "alteration", 20 },
+        };
+        EXPECT(resolver.upsertDefinition(spell));
+
+        const SpellResult result = resolver.resolve(
+            { caster, std::nullopt, spell.id, 1 }, 0.4, 0);
+        // Alteration is effective: (70 - 20 + 8 + 3) * .75 = 45.75%.
+        EXPECT(std::abs(result.successChance - 0.4575) < 0.000001);
+        EXPECT(result.effectiveSchool == "alteration");
+        EXPECT(result.decision == SpellDecision::Applied);
+
+        state = *resolver.findCombatant(caster);
+        state.silenced = true;
+        EXPECT(resolver.upsertCombatant(caster, state));
+        EXPECT(resolver.resolve(
+            { caster, std::nullopt, spell.id, 2 }, 0, 0).decision
+            == SpellDecision::Failed);
+    }
+
     void testFailureConsumesOnlyCanonicalCost()
     {
         SpellResolver resolver;
@@ -199,6 +245,7 @@ int runSpellTests()
     testRangeTargetAndResourceValidation();
     testMixedRangesApplyToCanonicalTargets();
     testItemChargeIsCanonicalResource();
+    testMorrowindCastingFormulaUsesEffectiveSchool();
     testDefinitionsAndCapacityFailClosed();
     return sFailures;
 }
