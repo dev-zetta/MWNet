@@ -2,6 +2,7 @@
 #define OPENMW_PLAYER_HPP
 
 #include <map>
+#include <memory>
 #include <string>
 #include <chrono>
 #include <RakNetTypes.h>
@@ -17,14 +18,29 @@
 #include "Cell.hpp"
 #include "CellController.hpp"
 
-using TPlayers = std::map<RakNet::RakNetGUID, Player*>;
+using TPlayers = std::map<RakNet::RakNetGUID, std::unique_ptr<Player>>;
 using TSlots = std::map<unsigned short, Player*>;
 
 class Players
 {
 public:
-    static void newPlayer(RakNet::RakNetGUID guid);
-    static void deletePlayer(RakNet::RakNetGUID guid);
+    enum class CreationStatus
+    {
+        Created,
+        AlreadyExists,
+        NoFreeSlot
+    };
+
+    struct CreationResult
+    {
+        Player* player = nullptr;
+        CreationStatus status = CreationStatus::NoFreeSlot;
+
+        explicit operator bool() const { return status == CreationStatus::Created; }
+    };
+
+    static CreationResult newPlayer(RakNet::RakNetGUID guid, unsigned int maximumPlayers);
+    static bool deletePlayer(RakNet::RakNetGUID guid);
     static Player *getPlayer(RakNet::RakNetGUID guid);
     static Player *getPlayer(unsigned short id);
     static TPlayers *getPlayers();

@@ -14,6 +14,7 @@
 #include "Player.hpp"
 
 #include <filesystem>
+#include <memory>
 #include <string>
 #include <string_view>
 #include <unordered_set>
@@ -112,11 +113,11 @@ namespace  mwmp
         BaseObjectList baseObjectList;
         BaseWorldstate baseWorldstate;
 
-        SystemPacketController *systemPacketController;
-        PlayerPacketController *playerPacketController;
-        ActorPacketController *actorPacketController;
-        ObjectPacketController *objectPacketController;
-        WorldstatePacketController *worldstatePacketController;
+        std::unique_ptr<SystemPacketController> systemPacketController;
+        std::unique_ptr<PlayerPacketController> playerPacketController;
+        std::unique_ptr<ActorPacketController> actorPacketController;
+        std::unique_ptr<ObjectPacketController> objectPacketController;
+        std::unique_ptr<WorldstatePacketController> worldstatePacketController;
 
         bool running;
         int exitCode;

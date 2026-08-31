@@ -1,49 +1,69 @@
 #include "Player.hpp"
-#include "Networking.hpp"
+
+#include <algorithm>
+#include <limits>
 
 TPlayers Players::players;
 TSlots Players::slots;
 
-void Players::deletePlayer(RakNet::RakNetGUID guid)
+bool Players::deletePlayer(RakNet::RakNetGUID guid)
 {
     LOG_MESSAGE_SIMPLE(TimedLog::LOG_INFO, "Deleting player with guid %lu", guid.g);
 
-    if (players[guid] != 0)
-    {
-        CellController::get()->deletePlayer(players[guid]);
+    const auto playerIt = players.find(guid);
+    if (playerIt == players.end() || !playerIt->second)
+        return false;
 
-        LOG_APPEND(TimedLog::LOG_INFO, "- Emptying slot %i", players[guid]->getId());
+    Player* player = playerIt->second.get();
+    CellController::get()->deletePlayer(player);
 
-        slots[players[guid]->getId()] = 0;
-        delete players[guid];
-        players.erase(guid);
-    }
+    LOG_APPEND(TimedLog::LOG_INFO, "- Emptying slot %i", player->getId());
+
+    const auto slotIt = slots.find(player->getId());
+    if (slotIt != slots.end() && slotIt->second == player)
+        slots.erase(slotIt);
+    players.erase(playerIt);
+    return true;
 }
 
-void Players::newPlayer(RakNet::RakNetGUID guid)
+Players::CreationResult Players::newPlayer(RakNet::RakNetGUID guid, unsigned int maximumPlayers)
 {
     LOG_MESSAGE_SIMPLE(TimedLog::LOG_INFO, "Creating new player with guid %lu", guid.g);
 
-    players[guid] = new Player(guid);
-    players[guid]->cell.blank();
-    players[guid]->npc.blank();
-    players[guid]->npcStats.blank();
-    players[guid]->creatureStats.blank();
-    players[guid]->charClass.blank();
-    players[guid]->scale = 1;
-    players[guid]->isWerewolf = false;
+    const auto existingPlayer = players.find(guid);
+    if (existingPlayer != players.end())
+        return { existingPlayer->second.get(), CreationStatus::AlreadyExists };
 
-    for (unsigned int i = 0; i < mwmp::Networking::get().maxConnections(); i++)
+    const unsigned int slotLimit = std::min(maximumPlayers,
+        static_cast<unsigned int>(std::numeric_limits<unsigned short>::max()) + 1u);
+    unsigned int selectedSlot = slotLimit;
+    for (unsigned int i = 0; i < slotLimit; ++i)
     {
-        if (slots[i] == 0)
+        if (slots.find(static_cast<unsigned short>(i)) == slots.end())
         {
-            LOG_APPEND(TimedLog::LOG_INFO, "- Storing in slot %i", i);
-
-            slots[i] = players[guid];
-            slots[i]->setId(i);
+            selectedSlot = i;
             break;
         }
     }
+
+    if (selectedSlot == slotLimit)
+        return { nullptr, CreationStatus::NoFreeSlot };
+
+    auto player = std::make_unique<Player>(guid);
+    player->cell.blank();
+    player->npc.blank();
+    player->npcStats.blank();
+    player->creatureStats.blank();
+    player->charClass.blank();
+    player->scale = 1;
+    player->isWerewolf = false;
+    player->setId(static_cast<unsigned short>(selectedSlot));
+
+    Player* result = player.get();
+    players.emplace(guid, std::move(player));
+    slots.emplace(static_cast<unsigned short>(selectedSlot), result);
+    LOG_APPEND(TimedLog::LOG_INFO, "- Storing in slot %i", selectedSlot);
+    return { result, CreationStatus::Created };
 }
 
 Player *Players::getPlayer(RakNet::RakNetGUID guid)
@@ -51,7 +71,7 @@ Player *Players::getPlayer(RakNet::RakNetGUID guid)
     auto it = players.find(guid);
     if (it == players.end())
         return nullptr;
-    return it->second;
+    return it->second.get();
 }
 
 TPlayers *Players::getPlayers()
@@ -61,13 +81,17 @@ TPlayers *Players::getPlayers()
 
 unsigned short Players::getLastPlayerId()
 {
+    if (slots.empty())
+        return 0;
     return slots.rbegin()->first;
 }
 
-Player::Player(RakNet::RakNetGUID guid) : BasePlayer(guid)
+Player::Player(RakNet::RakNetGUID guid)
+    : BasePlayer(guid)
+    , id(std::numeric_limits<unsigned short>::max())
+    , loadState(NOTLOADED)
+    , handshakeCounter(0)
 {
-    handshakeCounter = 0;
-    loadState = NOTLOADED;
 }
 
 Player::~Player()
@@ -173,5 +197,6 @@ void Player::forEachLoaded(std::function<void(Player *pl, Player *other)> func)
 
 bool Players::doesPlayerExist(RakNet::RakNetGUID guid)
 {
-    return players.find(guid) != players.end();
+    const auto it = players.find(guid);
+    return it != players.end() && it->second != nullptr;
 }

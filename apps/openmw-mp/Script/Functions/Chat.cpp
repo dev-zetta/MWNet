@@ -39,12 +39,12 @@ void ChatFunctions::CleanChatForPid(unsigned short pid)
 
 void ChatFunctions::CleanChat()
 {
-    for (auto player : *Players::getPlayers())
+    for (const auto& player : *Players::getPlayers())
     {
         player.second->chatMessage.clear();
 
         mwmp::PlayerPacket *packet = mwmp::Networking::get().getPlayerPacketController()->GetPacket(ID_CHAT_MESSAGE);
-        packet->setPlayer(player.second);
+        packet->setPlayer(player.second.get());
 
         packet->Send(false);
     }

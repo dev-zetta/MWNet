@@ -56,11 +56,11 @@ Networking::Networking(RakNet::RakPeerInterface *peer,
 
     CellController::create();
 
-    systemPacketController = new SystemPacketController(peer);
-    playerPacketController = new PlayerPacketController(peer);
-    actorPacketController = new ActorPacketController(peer);
-    objectPacketController = new ObjectPacketController(peer);
-    worldstatePacketController = new WorldstatePacketController(peer);
+    systemPacketController = std::make_unique<SystemPacketController>(peer);
+    playerPacketController = std::make_unique<PlayerPacketController>(peer);
+    actorPacketController = std::make_unique<ActorPacketController>(peer);
+    objectPacketController = std::make_unique<ObjectPacketController>(peer);
+    worldstatePacketController = std::make_unique<WorldstatePacketController>(peer);
 
     // Set send stream
     systemPacketController->SetStream(0, &bsOut);
@@ -89,11 +89,6 @@ Networking::~Networking()
     CellController::destroy();
 
     sThis = 0;
-    delete systemPacketController;
-    delete playerPacketController;
-    delete actorPacketController;
-    delete objectPacketController;
-    delete worldstatePacketController;
 }
 
 bool Networking::setServerPasswordHash(std::string passwordHash, std::string& error)
@@ -350,27 +345,28 @@ void Networking::newPlayer(RakNet::RakNetGUID guid)
 
     LOG_MESSAGE_SIMPLE(TimedLog::LOG_WARN, "Sending info about other players to %lu", guid.g);
 
-    for (TPlayers::iterator pl = players->begin(); pl != players->end(); pl++) //sending other players to new player
+    for (const auto& [playerGuid, ownedPlayer] : *players) //sending other players to new player
     {
         // If we are iterating over the new player, don't send the packets below
-        if (pl->first == guid) continue;
+        if (playerGuid == guid) continue;
 
         // If an invalid key makes it into the Players map, ignore it
-        else if (pl->first == RakNet::UNASSIGNED_CRABNET_GUID) continue;
+        else if (playerGuid == RakNet::UNASSIGNED_CRABNET_GUID) continue;
 
         // if player not fully connected
-        else if (pl->second == nullptr) continue;
+        else if (!ownedPlayer) continue;
 
         // If we are iterating over a player who has inputted their name, proceed
-        else if (pl->second->getLoadState() == Player::POSTLOADED)
+        else if (ownedPlayer->getLoadState() == Player::POSTLOADED)
         {
-            playerPacketController->GetPacket(ID_PLAYER_BASEINFO)->setPlayer(pl->second);
-            playerPacketController->GetPacket(ID_PLAYER_STATS_DYNAMIC)->setPlayer(pl->second);
-            playerPacketController->GetPacket(ID_PLAYER_ATTRIBUTE)->setPlayer(pl->second);
-            playerPacketController->GetPacket(ID_PLAYER_SKILL)->setPlayer(pl->second);
-            playerPacketController->GetPacket(ID_PLAYER_POSITION)->setPlayer(pl->second);
-            playerPacketController->GetPacket(ID_PLAYER_CELL_CHANGE)->setPlayer(pl->second);
-            playerPacketController->GetPacket(ID_PLAYER_EQUIPMENT)->setPlayer(pl->second);
+            Player* otherPlayer = ownedPlayer.get();
+            playerPacketController->GetPacket(ID_PLAYER_BASEINFO)->setPlayer(otherPlayer);
+            playerPacketController->GetPacket(ID_PLAYER_STATS_DYNAMIC)->setPlayer(otherPlayer);
+            playerPacketController->GetPacket(ID_PLAYER_ATTRIBUTE)->setPlayer(otherPlayer);
+            playerPacketController->GetPacket(ID_PLAYER_SKILL)->setPlayer(otherPlayer);
+            playerPacketController->GetPacket(ID_PLAYER_POSITION)->setPlayer(otherPlayer);
+            playerPacketController->GetPacket(ID_PLAYER_CELL_CHANGE)->setPlayer(otherPlayer);
+            playerPacketController->GetPacket(ID_PLAYER_EQUIPMENT)->setPlayer(otherPlayer);
 
             playerPacketController->GetPacket(ID_PLAYER_BASEINFO)->Send(guid);
             playerPacketController->GetPacket(ID_PLAYER_STATS_DYNAMIC)->Send(guid);
@@ -402,22 +398,22 @@ void Networking::disconnectPlayer(RakNet::RakNetGUID guid)
 
 PlayerPacketController *Networking::getPlayerPacketController() const
 {
-    return playerPacketController;
+    return playerPacketController.get();
 }
 
 ActorPacketController *Networking::getActorPacketController() const
 {
-    return actorPacketController;
+    return actorPacketController.get();
 }
 
 ObjectPacketController *Networking::getObjectPacketController() const
 {
-    return objectPacketController;
+    return objectPacketController.get();
 }
 
 WorldstatePacketController *Networking::getWorldstatePacketController() const
 {
-    return worldstatePacketController;
+    return worldstatePacketController.get();
 }
 
 BaseActorList *Networking::getReceivedActorList()
@@ -549,8 +545,17 @@ void Networking::processTransportEvent(transport::TransportEvent event)
                 disconnectTransport(event.connection, "server connection capacity reached");
                 return;
             }
-            Players::newPlayer(guid);
-            if (Player* player = Players::getPlayer(guid))
+            const Players::CreationResult creation = Players::newPlayer(guid, mMaximumConnections);
+            if (!creation)
+            {
+                mDispatcher.removeConnection(event.connection);
+                disconnectTransport(event.connection,
+                    creation.status == Players::CreationStatus::AlreadyExists
+                        ? "a player already exists for this connection"
+                        : "no free player slot is available");
+                return;
+            }
+            if (Player* player = creation.player)
             {
                 try
                 {
