@@ -12,7 +12,7 @@
 static std::string tempRandomString;
 static std::string tempHashString;
 
-const char* MiscellaneousFunctions::GenerateRandomString(unsigned int length) noexcept
+const char* MiscellaneousFunctions::GenerateRandomString(unsigned int length)
 {
     const std::string characters = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz";
 
@@ -30,23 +30,23 @@ const char* MiscellaneousFunctions::GenerateRandomString(unsigned int length) no
     return tempRandomString.c_str();
 }
 
-const char* MiscellaneousFunctions::GetSHA256Hash(const char* inputString) noexcept
+const char* MiscellaneousFunctions::GetSHA256Hash(const char* inputString)
 {
     tempHashString = picosha2::hash256_hex_string(std::string{inputString});
     return tempHashString.c_str();
 }
 
-unsigned int MiscellaneousFunctions::GetLastPlayerId() noexcept
+unsigned int MiscellaneousFunctions::GetLastPlayerId()
 {
     return Players::getLastPlayerId();
 }
 
-int MiscellaneousFunctions::GetCurrentMpNum() noexcept
+int MiscellaneousFunctions::GetCurrentMpNum()
 {
     return mwmp::Networking::getPtr()->getCurrentMpNum();
 }
 
-void MiscellaneousFunctions::SetCurrentMpNum(int mpNum) noexcept
+void MiscellaneousFunctions::SetCurrentMpNum(int mpNum)
 {
     mwmp::Networking::getPtr()->setCurrentMpNum(mpNum);
 }

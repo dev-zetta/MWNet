@@ -62,7 +62,7 @@ public:
     * \param message The message logged.
     * \return void
     */
-    static void LogMessage(unsigned short level, const char *message) noexcept;
+    static void LogMessage(unsigned short level, const char *message);
 
     /**
     * \brief Write a log message without its own timestamp.
@@ -74,7 +74,7 @@ public:
     * \param message The message logged.
     * \return void
     */
-    static void LogAppend(unsigned short level, const char *message) noexcept;
+    static void LogAppend(unsigned short level, const char *message);
 
     /**
     * \brief Shut down the server.
@@ -82,7 +82,7 @@ public:
     * \param code The shutdown code.
     * \return void
     */
-    static void StopServer(int code) noexcept;
+    static void StopServer(int code);
 
     /**
     * \brief Kick a certain player from the server.
@@ -90,7 +90,7 @@ public:
     * \param pid The player ID.
     * \return void
     */
-    static void Kick(unsigned short pid) noexcept;
+    static void Kick(unsigned short pid);
 
     /**
     * \brief Ban a certain IP address from the server.
@@ -98,7 +98,7 @@ public:
     * \param ipAddress The IP address.
     * \return void
     */
-    static void BanAddress(const char *ipAddress) noexcept;
+    static void BanAddress(const char *ipAddress);
 
     /**
     * \brief Unban a certain IP address from the server.
@@ -106,7 +106,7 @@ public:
     * \param ipAddress The IP address.
     * \return void
     */
-    static void UnbanAddress(const char *ipAddress) noexcept;
+    static void UnbanAddress(const char *ipAddress);
 
     /**
     * \brief Check whether a certain file path exists.
@@ -117,7 +117,7 @@ public:
     *
     * \return Whether the file exists or not.
     */
-    static bool DoesFilePathExist(const char *filePath) noexcept;
+    static bool DoesFilePathExist(const char *filePath);
 
     /**
     * \brief Get the first filename in a folder that has a case insensitive match with the filename
@@ -127,14 +127,14 @@ public:
     *
     * \return The filename that matches.
     */
-    static const char *GetCaseInsensitiveFilename(const char *folderPath, const char *filename) noexcept;
+    static const char *GetCaseInsensitiveFilename(const char *folderPath, const char *filename);
 
     /**
     * \brief Get the path of the server's data folder.
     *
     * \return The data path.
     */
-    static const char *GetDataPath() noexcept;
+    static const char *GetDataPath();
 
     /** Write a file under the server data directory using atomic replacement. */
     static bool WriteFileAtomically(const char* relativePath, const char* contents);
@@ -150,7 +150,7 @@ public:
     *
     * \return The time since the server's startup in milliseconds.
     */
-    static unsigned int GetMillisecondsSinceServerStart() noexcept;
+    static unsigned int GetMillisecondsSinceServerStart();
 
     /**
     * \brief Get the type of the operating system used by the server.
@@ -159,7 +159,7 @@ public:
     *
     * \return The type of the operating system.
     */
-    static const char *GetOperatingSystemType() noexcept;
+    static const char *GetOperatingSystemType();
 
     /**
     * \brief Get the architecture type used by the server.
@@ -168,21 +168,21 @@ public:
     *
     * \return The architecture type.
     */
-    static const char *GetArchitectureType() noexcept;
+    static const char *GetArchitectureType();
 
     /**
     * \brief Get the TES3MP version of the server.
     *
     * \return The server version.
     */
-    static const char *GetServerVersion() noexcept;
+    static const char *GetServerVersion();
 
     /**
     * \brief Get the protocol version of the server.
     *
     * \return The protocol version.
     */
-    static const char *GetProtocolVersion() noexcept;
+    static const char *GetProtocolVersion();
 
     /**
     * \brief Get the average ping of a certain player.
@@ -190,7 +190,7 @@ public:
     * \param pid The player ID.
     * \return The average ping.
     */
-    static int GetAvgPing(unsigned short pid) noexcept;
+    static int GetAvgPing(unsigned short pid);
 
     /**
     * \brief Get the IP address of a certain player.
@@ -198,28 +198,28 @@ public:
     * \param pid The player ID.
     * \return The IP address.
     */
-    static const char* GetIP(unsigned short pid) noexcept;
+    static const char* GetIP(unsigned short pid);
 
     /**
      * \brief Get the port used by the server.
      *
      * \return The port.
      */
-    static unsigned short GetPort() noexcept;
+    static unsigned short GetPort();
 
     /**
      * \brief Get the maximum number of players.
      *
      * \return Max players
      */
-    static unsigned int GetMaxPlayers() noexcept;
+    static unsigned int GetMaxPlayers();
 
     /**
      * \brief Checking if the server requires a password to connect.
      *
      * \return Whether the server requires a password
      */
-    static bool HasPassword() noexcept;
+    static bool HasPassword();
 
     /**
     * \brief Get the data file enforcement state of the server.
@@ -228,7 +228,7 @@ public:
     *
     * \return The enforcement state.
     */
-    static bool GetDataFileEnforcementState() noexcept;
+    static bool GetDataFileEnforcementState();
 
     /**
     * \brief Get the script error ignoring state of the server.
@@ -237,7 +237,7 @@ public:
     *
     * \return The script error ignoring state.
     */
-    static bool GetScriptErrorIgnoringState() noexcept;
+    static bool GetScriptErrorIgnoringState();
 
     /**
     * \brief Set the game mode of the server, as displayed in the server browser.
@@ -245,7 +245,7 @@ public:
     * \param gameMode The new game mode.
     * \return void
     */
-    static void SetGameMode(const char* gameMode) noexcept;
+    static void SetGameMode(const char* gameMode);
 
     /**
     * \brief Set the name of the server, as displayed in the server browser.
@@ -253,7 +253,7 @@ public:
     * \param name The new name.
     * \return void
     */
-    static void SetHostname(const char* name) noexcept;
+    static void SetHostname(const char* name);
 
     /**
     * \brief Set the password required to join the server.
@@ -261,7 +261,7 @@ public:
     * \param password The password.
     * \return void
     */
-    static void SetServerPassword(const char *password) noexcept;
+    static void SetServerPassword(const char *password);
 
     /**
     * \brief Set the data file enforcement state of the server.
@@ -271,7 +271,7 @@ public:
     * \param state The new enforcement state.
     * \return void
     */
-    static void SetDataFileEnforcementState(bool state) noexcept;
+    static void SetDataFileEnforcementState(bool state);
 
     /**
     * \brief Set whether script errors should be ignored or not.
@@ -283,7 +283,7 @@ public:
     * \param state The new script error ignoring state.
     * \return void
     */
-    static void SetScriptErrorIgnoringState(bool state) noexcept;
+    static void SetScriptErrorIgnoringState(bool state);
 
     /**
     * \brief Set a rule string for the server details displayed in the server browser.
@@ -292,7 +292,7 @@ public:
     * \param value The string value of the rule.
     * \return void
     */
-    static void SetRuleString(const char *key, const char *value) noexcept;
+    static void SetRuleString(const char *key, const char *value);
 
     /**
     * \brief Set a rule value for the server details displayed in the server browser.
@@ -301,7 +301,7 @@ public:
     * \param value The numerical value of the rule.
     * \return void
     */
-    static void SetRuleValue(const char *key, double value) noexcept;
+    static void SetRuleValue(const char *key, double value);
 
     /**
      * \brief Add a data file and a corresponding CRC32 checksum to the data file loadout
@@ -315,15 +315,15 @@ public:
      * @param dataFilename The filename of the data file.
      * @param checksumString A string with the CRC32 checksum required.
      */
-    static void AddDataFileRequirement(const char *dataFilename, const char *checksumString) noexcept;
+    static void AddDataFileRequirement(const char *dataFilename, const char *checksumString);
 
     // All methods below are deprecated versions of methods from above
 
-    static bool DoesFileExist(const char *filePath) noexcept;
-    static const char *GetModDir() noexcept;
-    static bool GetPluginEnforcementState() noexcept;
-    static void SetPluginEnforcementState(bool state) noexcept;
-    static void AddPluginHash(const char *pluginName, const char *checksumString) noexcept;
+    static bool DoesFileExist(const char *filePath);
+    static const char *GetModDir();
+    static bool GetPluginEnforcementState();
+    static void SetPluginEnforcementState(bool state);
+    static void AddPluginHash(const char *pluginName, const char *checksumString);
 };
 
 #endif //OPENMW_SERVERAPI_HPP

@@ -36,7 +36,7 @@ public:
     * \param pid The player ID whose journal changes should be used.
     * \return void
     */
-    static void ClearJournalChanges(unsigned short pid) noexcept;
+    static void ClearJournalChanges(unsigned short pid);
 
     /**
     * \brief Get the number of indexes in a player's latest journal changes.
@@ -44,7 +44,7 @@ public:
     * \param pid The player ID whose journal changes should be used.
     * \return The number of indexes.
     */
-    static unsigned int GetJournalChangesSize(unsigned short pid) noexcept;
+    static unsigned int GetJournalChangesSize(unsigned short pid);
 
     /**
     * \brief Add a new journal item of type ENTRY to the journal changes for a player,
@@ -56,7 +56,7 @@ public:
     * \param actorRefId The actor refId of the journal item.
     * \return void
     */
-    static void AddJournalEntry(unsigned short pid, const char* quest, unsigned int index, const char* actorRefId) noexcept;
+    static void AddJournalEntry(unsigned short pid, const char* quest, unsigned int index, const char* actorRefId);
 
     /**
     * \brief Add a new journal item of type ENTRY to the journal changes for a player,
@@ -72,7 +72,7 @@ public:
     * \return void
     */
     static void AddJournalEntryWithTimestamp(unsigned short pid, const char* quest, unsigned int index, const char* actorRefId,
-        unsigned int daysPassed, unsigned int month, unsigned int day) noexcept;
+        unsigned int daysPassed, unsigned int month, unsigned int day);
 
     /**
     * \brief Add a new journal item of type INDEX to the journal changes for a player.
@@ -82,7 +82,7 @@ public:
     * \param index The quest index of the journal item.
     * \return void
     */
-    static void AddJournalIndex(unsigned short pid, const char* quest, unsigned int index) noexcept;
+    static void AddJournalIndex(unsigned short pid, const char* quest, unsigned int index);
 
     /**
     * \brief Set the reputation of a certain player.
@@ -91,7 +91,7 @@ public:
     * \param value The reputation.
     * \return void
     */
-    static void SetReputation(unsigned short pid, int value) noexcept;
+    static void SetReputation(unsigned short pid, int value);
 
     /**
     * \brief Get the quest at a certain index in a player's latest journal changes.
@@ -100,7 +100,7 @@ public:
     * \param index The index of the journalItem.
     * \return The quest.
     */
-    static const char *GetJournalItemQuest(unsigned short pid, unsigned int index) noexcept;
+    static const char *GetJournalItemQuest(unsigned short pid, unsigned int index);
 
     /**
     * \brief Get the quest index at a certain index in a player's latest journal changes.
@@ -109,7 +109,7 @@ public:
     * \param index The index of the journalItem.
     * \return The quest index.
     */
-    static int GetJournalItemIndex(unsigned short pid, unsigned int index) noexcept;
+    static int GetJournalItemIndex(unsigned short pid, unsigned int index);
 
     /**
     * \brief Get the journal item type at a certain index in a player's latest journal changes.
@@ -118,7 +118,7 @@ public:
     * \param index The index of the journalItem.
     * \return The type (0 for ENTRY, 1 for INDEX).
     */
-    static int GetJournalItemType(unsigned short pid, unsigned int index) noexcept;
+    static int GetJournalItemType(unsigned short pid, unsigned int index);
 
     /**
     * \brief Get the actor refId at a certain index in a player's latest journal changes.
@@ -129,7 +129,7 @@ public:
     * \param index The index of the journalItem.
     * \return The actor refId.
     */
-    static const char *GetJournalItemActorRefId(unsigned short pid, unsigned int index) noexcept;
+    static const char *GetJournalItemActorRefId(unsigned short pid, unsigned int index);
 
     /**
     * \brief Get the a certain player's reputation.
@@ -137,7 +137,7 @@ public:
     * \param pid The player ID.
     * \return The reputation.
     */
-    static int GetReputation(unsigned short pid) noexcept;
+    static int GetReputation(unsigned short pid);
 
     /**
     * \brief Send a PlayerJournal packet with a player's recorded journal changes.
@@ -149,7 +149,7 @@ public:
     *                           to the packet (false by default).
     * \return void
     */
-    static void SendJournalChanges(unsigned short pid, bool sendToOtherPlayers, bool skipAttachedPlayer) noexcept;
+    static void SendJournalChanges(unsigned short pid, bool sendToOtherPlayers, bool skipAttachedPlayer);
 
     /**
     * \brief Send a PlayerReputation packet with a player's recorded reputation.
@@ -161,11 +161,11 @@ public:
     *                           to the packet (false by default).
     * \return void
     */
-    static void SendReputation(unsigned short pid, bool sendToOtherPlayers, bool skipAttachedPlayer) noexcept;
+    static void SendReputation(unsigned short pid, bool sendToOtherPlayers, bool skipAttachedPlayer);
 
     // All methods below are deprecated versions of methods from above
 
-    static void InitializeJournalChanges(unsigned short pid) noexcept;
+    static void InitializeJournalChanges(unsigned short pid);
 
 private:
 

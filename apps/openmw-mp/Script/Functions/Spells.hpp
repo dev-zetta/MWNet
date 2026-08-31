@@ -59,7 +59,7 @@ public:
     * \param pid The player ID whose spellbook changes should be used.
     * \return void
     */
-    static void ClearSpellbookChanges(unsigned short pid) noexcept;
+    static void ClearSpellbookChanges(unsigned short pid);
 
     /**
     * \brief Clear the last recorded spells active changes for a player.
@@ -69,7 +69,7 @@ public:
     * \param pid The player ID whose spells active changes should be used.
     * \return void
     */
-    static void ClearSpellsActiveChanges(unsigned short pid) noexcept;
+    static void ClearSpellsActiveChanges(unsigned short pid);
 
     /**
     * \brief Clear the last recorded cooldown changes for a player.
@@ -79,7 +79,7 @@ public:
     * \param pid The player ID whose cooldown changes should be used.
     * \return void
     */
-    static void ClearCooldownChanges(unsigned short pid) noexcept;
+    static void ClearCooldownChanges(unsigned short pid);
 
     /**
     * \brief Get the number of indexes in a player's latest spellbook changes.
@@ -87,7 +87,7 @@ public:
     * \param pid The player ID whose spellbook changes should be used.
     * \return The number of indexes.
     */
-    static unsigned int GetSpellbookChangesSize(unsigned short pid) noexcept;
+    static unsigned int GetSpellbookChangesSize(unsigned short pid);
 
     /**
     * \brief Get the action type used in a player's latest spellbook changes.
@@ -95,7 +95,7 @@ public:
     * \param pid The player ID whose spellbook changes should be used.
     * \return The action type (0 for SET, 1 for ADD, 2 for REMOVE).
     */
-    static unsigned int GetSpellbookChangesAction(unsigned short pid) noexcept;
+    static unsigned int GetSpellbookChangesAction(unsigned short pid);
 
     /**
     * \brief Get the number of indexes in a player's latest spells active changes.
@@ -103,7 +103,7 @@ public:
     * \param pid The player ID whose spells active changes should be used.
     * \return The number of indexes for spells active changes.
     */
-    static unsigned int GetSpellsActiveChangesSize(unsigned short pid) noexcept;
+    static unsigned int GetSpellsActiveChangesSize(unsigned short pid);
 
     /**
     * \brief Get the action type used in a player's latest spells active changes.
@@ -111,7 +111,7 @@ public:
     * \param pid The player ID whose spells active changes should be used.
     * \return The action type (0 for SET, 1 for ADD, 2 for REMOVE).
     */
-    static unsigned int GetSpellsActiveChangesAction(unsigned short pid) noexcept;
+    static unsigned int GetSpellsActiveChangesAction(unsigned short pid);
 
     /**
     * \brief Get the number of indexes in a player's latest cooldown changes.
@@ -119,7 +119,7 @@ public:
     * \param pid The player ID whose cooldown changes should be used.
     * \return The number of indexes.
     */
-    static unsigned int GetCooldownChangesSize(unsigned short pid) noexcept;
+    static unsigned int GetCooldownChangesSize(unsigned short pid);
 
     /**
     * \brief Set the action type in a player's spellbook changes.
@@ -128,7 +128,7 @@ public:
     * \param action The action (0 for SET, 1 for ADD, 2 for REMOVE).
     * \return void
     */
-    static void SetSpellbookChangesAction(unsigned short pid, unsigned char action) noexcept;
+    static void SetSpellbookChangesAction(unsigned short pid, unsigned char action);
 
     /**
     * \brief Set the action type in a player's spells active changes.
@@ -137,7 +137,7 @@ public:
     * \param action The action (0 for SET, 1 for ADD, 2 for REMOVE).
     * \return void
     */
-    static void SetSpellsActiveChangesAction(unsigned short pid, unsigned char action) noexcept;
+    static void SetSpellsActiveChangesAction(unsigned short pid, unsigned char action);
 
     /**
     * \brief Add a new spell to the spellbook changes for a player.
@@ -146,7 +146,7 @@ public:
     * \param spellId The spellId of the spell.
     * \return void
     */
-    static void AddSpell(unsigned short pid, const char* spellId) noexcept;
+    static void AddSpell(unsigned short pid, const char* spellId);
 
     /**
     * \brief Add a new active spell to the spells active changes for a player,
@@ -158,7 +158,7 @@ public:
     * \param stackingState Whether the spell should stack with other instances of itself.
     * \return void
     */
-    static void AddSpellActive(unsigned short pid, const char* spellId, const char* displayName, bool stackingState) noexcept;
+    static void AddSpellActive(unsigned short pid, const char* spellId, const char* displayName, bool stackingState);
 
     /**
     * \brief Add a new effect to the next active spell that will be added to a player.
@@ -172,7 +172,7 @@ public:
     *            used for Fortify Attribute.
     * \return void
     */
-    static void AddSpellActiveEffect(unsigned short pid, int effectId, double magnitude, double duration, double timeLeft, int arg) noexcept;
+    static void AddSpellActiveEffect(unsigned short pid, int effectId, double magnitude, double duration, double timeLeft, int arg);
 
     /**
     * \brief Add a new cooldown spell to the cooldown changes for a player.
@@ -183,7 +183,7 @@ public:
     * \param startHour The hour at which the cooldown starts.
     * \return void
     */
-    static void AddCooldownSpell(unsigned short pid, const char* spellId, unsigned int startDay, double startHour) noexcept;
+    static void AddCooldownSpell(unsigned short pid, const char* spellId, unsigned int startDay, double startHour);
 
     /**
     * \brief Get the spell id at a certain index in a player's latest spellbook changes.
@@ -192,7 +192,7 @@ public:
     * \param index The index of the spell.
     * \return The spell id.
     */
-    static const char *GetSpellId(unsigned short pid, unsigned int index) noexcept;
+    static const char *GetSpellId(unsigned short pid, unsigned int index);
 
     /**
     * \brief Get the spell id at a certain index in a player's latest spells active changes.
@@ -201,7 +201,7 @@ public:
     * \param index The index of the spell.
     * \return The spell id.
     */
-    static const char* GetSpellsActiveId(unsigned short pid, unsigned int index) noexcept;
+    static const char* GetSpellsActiveId(unsigned short pid, unsigned int index);
 
     /**
     * \brief Get the spell display name at a certain index in a player's latest spells active changes.
@@ -210,7 +210,7 @@ public:
     * \param index The index of the spell.
     * \return The spell display name.
     */
-    static const char* GetSpellsActiveDisplayName(unsigned short pid, unsigned int index) noexcept;
+    static const char* GetSpellsActiveDisplayName(unsigned short pid, unsigned int index);
 
     /**
     * \brief Get the spell stacking state at a certain index in a player's latest spells active changes.
@@ -219,7 +219,7 @@ public:
     * \param index The index of the spell.
     * \return The spell stacking state.
     */
-    static bool GetSpellsActiveStackingState(unsigned short pid, unsigned int index) noexcept;
+    static bool GetSpellsActiveStackingState(unsigned short pid, unsigned int index);
 
     /**
     * \brief Get the number of effects at an index in a player's latest spells active changes.
@@ -228,7 +228,7 @@ public:
     * \param index The index of the spell.
     * \return The number of effects.
     */
-    static unsigned int GetSpellsActiveEffectCount(unsigned short pid, unsigned int index) noexcept;
+    static unsigned int GetSpellsActiveEffectCount(unsigned short pid, unsigned int index);
 
     /**
     * \brief Get the id for an effect index at a spell index in a player's latest spells active changes.
@@ -238,7 +238,7 @@ public:
     * \param effectIndex The index of the effect.
     * \return The id of the effect.
     */
-    static unsigned int GetSpellsActiveEffectId(unsigned short pid, unsigned int spellIndex, unsigned int effectIndex) noexcept;
+    static unsigned int GetSpellsActiveEffectId(unsigned short pid, unsigned int spellIndex, unsigned int effectIndex);
 
     /**
     * \brief Get the arg for an effect index at a spell index in a player's latest spells active changes.
@@ -248,7 +248,7 @@ public:
     * \param effectIndex The index of the effect.
     * \return The arg of the effect.
     */
-    static int GetSpellsActiveEffectArg(unsigned short pid, unsigned int spellIndex, unsigned int effectIndex) noexcept;
+    static int GetSpellsActiveEffectArg(unsigned short pid, unsigned int spellIndex, unsigned int effectIndex);
 
     /**
     * \brief Get the magnitude for an effect index at a spell index in a player's latest spells active changes.
@@ -258,7 +258,7 @@ public:
     * \param effectIndex The index of the effect.
     * \return The magnitude of the effect.
     */
-    static double GetSpellsActiveEffectMagnitude(unsigned short pid, unsigned int spellIndex, unsigned int effectIndex) noexcept;
+    static double GetSpellsActiveEffectMagnitude(unsigned short pid, unsigned int spellIndex, unsigned int effectIndex);
 
     /**
     * \brief Get the duration for an effect index at a spell index in a player's latest spells active changes.
@@ -268,7 +268,7 @@ public:
     * \param effectIndex The index of the effect.
     * \return The duration of the effect.
     */
-    static double GetSpellsActiveEffectDuration(unsigned short pid, unsigned int spellIndex, unsigned int effectIndex) noexcept;
+    static double GetSpellsActiveEffectDuration(unsigned short pid, unsigned int spellIndex, unsigned int effectIndex);
 
     /**
     * \brief Get the time left for an effect index at a spell index in a player's latest spells active changes.
@@ -278,7 +278,7 @@ public:
     * \param effectIndex The index of the effect.
     * \return The time left for the effect.
     */
-    static double GetSpellsActiveEffectTimeLeft(unsigned short pid, unsigned int spellIndex, unsigned int effectIndex) noexcept;
+    static double GetSpellsActiveEffectTimeLeft(unsigned short pid, unsigned int spellIndex, unsigned int effectIndex);
 
     /**
     * \brief Check whether the spell at a certain index in a player's latest spells active changes has a player
@@ -288,7 +288,7 @@ public:
     * \param index The index of the spell.
     * \return Whether a player is the caster of the spell.
     */
-    static bool DoesSpellsActiveHavePlayerCaster(unsigned short pid, unsigned int index) noexcept;
+    static bool DoesSpellsActiveHavePlayerCaster(unsigned short pid, unsigned int index);
 
     /**
     * \brief Get the player ID of the caster of the spell at a certain index in a player's latest spells active changes.
@@ -297,7 +297,7 @@ public:
     * \param index The index of the spell.
     * \return The player ID of the caster.
     */
-    static int GetSpellsActiveCasterPid(unsigned short pid, unsigned int index) noexcept;
+    static int GetSpellsActiveCasterPid(unsigned short pid, unsigned int index);
 
     /**
     * \brief Get the refId of the actor caster of the spell at a certain index in a player's latest spells active changes.
@@ -306,7 +306,7 @@ public:
     * \param index The index of the spell.
     * \return The refId of the caster.
     */
-    static const char* GetSpellsActiveCasterRefId(unsigned short pid, unsigned int index) noexcept;
+    static const char* GetSpellsActiveCasterRefId(unsigned short pid, unsigned int index);
 
     /**
     * \brief Get the refNum of the actor caster of the spell at a certain index in a player's latest spells active changes.
@@ -315,7 +315,7 @@ public:
     * \param index The index of the spell.
     * \return The refNum of the caster.
     */
-    static unsigned int GetSpellsActiveCasterRefNum(unsigned short pid, unsigned int index) noexcept;
+    static unsigned int GetSpellsActiveCasterRefNum(unsigned short pid, unsigned int index);
 
     /**
     * \brief Get the mpNum of the actor caster of the spell at a certain index in a player's latest spells active changes.
@@ -324,7 +324,7 @@ public:
     * \param index The index of the spell.
     * \return The mpNum of the caster.
     */
-    static unsigned int GetSpellsActiveCasterMpNum(unsigned short pid, unsigned int index) noexcept;
+    static unsigned int GetSpellsActiveCasterMpNum(unsigned short pid, unsigned int index);
 
     /**
     * \brief Get the spell id at a certain index in a player's latest cooldown changes.
@@ -333,7 +333,7 @@ public:
     * \param index The index of the cooldown spell.
     * \return The spell id.
     */
-    static const char* GetCooldownSpellId(unsigned short pid, unsigned int index) noexcept;
+    static const char* GetCooldownSpellId(unsigned short pid, unsigned int index);
 
     /**
     * \brief Get the starting day of the cooldown at a certain index in a player's latest cooldown changes.
@@ -342,7 +342,7 @@ public:
     * \param index The index of the cooldown spell.
     * \return The starting day of the cooldown.
     */
-    static unsigned int GetCooldownStartDay(unsigned short pid, unsigned int index) noexcept;
+    static unsigned int GetCooldownStartDay(unsigned short pid, unsigned int index);
 
     /**
     * \brief Get the starting hour of the cooldown at a certain index in a player's latest cooldown changes.
@@ -351,7 +351,7 @@ public:
     * \param index The index of the cooldown spell.
     * \return The starting hour of the cooldown.
     */
-    static double GetCooldownStartHour(unsigned short pid, unsigned int index) noexcept;
+    static double GetCooldownStartHour(unsigned short pid, unsigned int index);
 
     /**
     * \brief Send a PlayerSpellbook packet with a player's recorded spellbook changes.
@@ -363,7 +363,7 @@ public:
     *                           to the packet (false by default).
     * \return void
     */
-    static void SendSpellbookChanges(unsigned short pid, bool sendToOtherPlayers, bool skipAttachedPlayer) noexcept;
+    static void SendSpellbookChanges(unsigned short pid, bool sendToOtherPlayers, bool skipAttachedPlayer);
 
     /**
     * \brief Send a PlayerSpellsActive packet with a player's recorded spells active changes.
@@ -383,11 +383,11 @@ public:
     * \param pid The player ID whose cooldown changes should be used.
     * \return void
     */
-    static void SendCooldownChanges(unsigned short pid) noexcept;
+    static void SendCooldownChanges(unsigned short pid);
 
     // All methods below are deprecated versions of methods from above
 
-    static void InitializeSpellbookChanges(unsigned short pid) noexcept;
+    static void InitializeSpellbookChanges(unsigned short pid);
 
 private:
 

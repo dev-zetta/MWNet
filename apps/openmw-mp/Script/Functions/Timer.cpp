@@ -6,12 +6,12 @@
 
 using namespace mwmp;
 
-int ScriptFunctions::CreateTimer(ScriptFunc callback, int msec) noexcept
+int ScriptFunctions::CreateTimer(ScriptFunc callback, int msec)
 {
     return mwmp::TimerAPI::CreateTimer(callback, msec, "", std::vector<boost::any>());
 }
 
-int ScriptFunctions::CreateTimerEx(ScriptFunc callback, int msec, const char *types, va_list args) noexcept
+int ScriptFunctions::CreateTimerEx(ScriptFunc callback, int msec, const char *types, va_list args)
 {
     try
     {
@@ -27,27 +27,27 @@ int ScriptFunctions::CreateTimerEx(ScriptFunc callback, int msec, const char *ty
 
 }
 
-void ScriptFunctions::StartTimer(int timerId) noexcept
+void ScriptFunctions::StartTimer(int timerId)
 {
     TimerAPI::StartTimer(timerId);
 }
 
-void ScriptFunctions::StopTimer(int timerId) noexcept
+void ScriptFunctions::StopTimer(int timerId)
 {
     TimerAPI::StopTimer(timerId);
 }
 
-void ScriptFunctions::RestartTimer(int timerId, int msec) noexcept
+void ScriptFunctions::RestartTimer(int timerId, int msec)
 {
     TimerAPI::ResetTimer(timerId, msec);
 }
 
-void ScriptFunctions::FreeTimer(int timerId) noexcept
+void ScriptFunctions::FreeTimer(int timerId)
 {
     TimerAPI::FreeTimer(timerId);
 }
 
-bool ScriptFunctions::IsTimerElapsed(int timerId) noexcept
+bool ScriptFunctions::IsTimerElapsed(int timerId)
 {
     return TimerAPI::IsTimerElapsed(timerId);
 }

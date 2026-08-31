@@ -8,7 +8,7 @@
 
 #include <iostream>
 
-double ShapeshiftFunctions::GetScale(unsigned short pid) noexcept
+double ShapeshiftFunctions::GetScale(unsigned short pid)
 {
     Player *player;
     GET_PLAYER(pid, player, 0.0f);
@@ -16,7 +16,7 @@ double ShapeshiftFunctions::GetScale(unsigned short pid) noexcept
     return player->scale;
 }
 
-bool ShapeshiftFunctions::IsWerewolf(unsigned short pid) noexcept
+bool ShapeshiftFunctions::IsWerewolf(unsigned short pid)
 {
     Player *player;
     GET_PLAYER(pid, player, 0);
@@ -24,7 +24,7 @@ bool ShapeshiftFunctions::IsWerewolf(unsigned short pid) noexcept
     return player->isWerewolf;
 }
 
-const char *ShapeshiftFunctions::GetCreatureRefId(unsigned short pid) noexcept
+const char *ShapeshiftFunctions::GetCreatureRefId(unsigned short pid)
 {
     Player *player;
     GET_PLAYER(pid, player, 0);
@@ -32,7 +32,7 @@ const char *ShapeshiftFunctions::GetCreatureRefId(unsigned short pid) noexcept
     return player->creatureRefId.c_str();
 }
 
-bool ShapeshiftFunctions::GetCreatureNameDisplayState(unsigned short pid) noexcept
+bool ShapeshiftFunctions::GetCreatureNameDisplayState(unsigned short pid)
 {
     Player *player;
     GET_PLAYER(pid, player, 0);
@@ -40,7 +40,7 @@ bool ShapeshiftFunctions::GetCreatureNameDisplayState(unsigned short pid) noexce
     return player->displayCreatureName;
 }
 
-void ShapeshiftFunctions::SetScale(unsigned short pid, double scale) noexcept
+void ShapeshiftFunctions::SetScale(unsigned short pid, double scale)
 {
     Player *player;
     GET_PLAYER(pid, player, );
@@ -48,7 +48,7 @@ void ShapeshiftFunctions::SetScale(unsigned short pid, double scale) noexcept
     player->scale = scale;
 }
 
-void ShapeshiftFunctions::SetWerewolfState(unsigned short pid, bool isWerewolf) noexcept
+void ShapeshiftFunctions::SetWerewolfState(unsigned short pid, bool isWerewolf)
 {
     Player *player;
     GET_PLAYER(pid, player, );
@@ -56,7 +56,7 @@ void ShapeshiftFunctions::SetWerewolfState(unsigned short pid, bool isWerewolf) 
     player->isWerewolf = isWerewolf;
 }
 
-void ShapeshiftFunctions::SetCreatureRefId(unsigned short pid, const char *refId) noexcept
+void ShapeshiftFunctions::SetCreatureRefId(unsigned short pid, const char *refId)
 {
     Player *player;
     GET_PLAYER(pid, player, );
@@ -64,7 +64,7 @@ void ShapeshiftFunctions::SetCreatureRefId(unsigned short pid, const char *refId
     player->creatureRefId = refId;
 }
 
-void ShapeshiftFunctions::SetCreatureNameDisplayState(unsigned short pid, bool displayState) noexcept
+void ShapeshiftFunctions::SetCreatureNameDisplayState(unsigned short pid, bool displayState)
 {
     Player *player;
     GET_PLAYER(pid, player, );

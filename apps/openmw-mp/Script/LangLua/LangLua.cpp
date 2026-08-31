@@ -22,13 +22,13 @@ namespace
             || name == "GetScriptErrorIgnoringState";
     }
 
-    int raiseLuaApiError(lua_State* lua, const char* message) noexcept
+    int raiseLuaApiError(lua_State* lua, const char* message)
     {
         return luaL_error(lua, "TES3MP API error: %s", message);
     }
 
     template<int (*Function)(lua_State*)>
-    int safeLuaFunction(lua_State* lua) noexcept
+    int safeLuaFunction(lua_State* lua)
     {
         char error[512]{};
         if (Script::IsPreAuthenticationCallback())
@@ -139,7 +139,7 @@ struct LuaFunctionDispatcher<0, FunctionIndex> {
 
 // Lua function wrapper for functions returning 'void'
 template <unsigned int FunctionIndex>
-static typename std::enable_if<ScriptFunctions::functions[FunctionIndex].func.ret == 'v', int>::type LuaFunctionWrapper(lua_State* lua) noexcept {
+static typename std::enable_if<ScriptFunctions::functions[FunctionIndex].func.ret == 'v', int>::type LuaFunctionWrapper(lua_State* lua) {
     char error[512]{};
     if (Script::IsPreAuthenticationCallback()
         && !allowedBeforeAuthentication(ScriptFunctions::functions[FunctionIndex].name))
@@ -168,7 +168,7 @@ static typename std::enable_if<ScriptFunctions::functions[FunctionIndex].func.re
 
 // Lua function wrapper for functions with non-void return types
 template <unsigned int FunctionIndex>
-static typename std::enable_if<ScriptFunctions::functions[FunctionIndex].func.ret != 'v', int>::type LuaFunctionWrapper(lua_State* lua) noexcept {
+static typename std::enable_if<ScriptFunctions::functions[FunctionIndex].func.ret != 'v', int>::type LuaFunctionWrapper(lua_State* lua) {
     char error[512]{};
     if (Script::IsPreAuthenticationCallback()
         && !allowedBeforeAuthentication(ScriptFunctions::functions[FunctionIndex].name))

@@ -23,7 +23,7 @@ public:
     *                           to the packet (false by default).
     * \return void
     */
-    static void SendMessage(unsigned short pid, const char *message, bool sendToOtherPlayers, bool skipAttachedPlayer) noexcept;
+    static void SendMessage(unsigned short pid, const char *message, bool sendToOtherPlayers, bool skipAttachedPlayer);
 
     /**
     * \brief Remove all messages from chat for a certain player.

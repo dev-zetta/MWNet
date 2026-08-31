@@ -11,12 +11,12 @@ constexpr char TypeString<Types...>::value[];
 constexpr ScriptFunctionData ScriptFunctions::functions[];
 constexpr ScriptCallbackData ScriptFunctions::callbacks[];
 
-void ScriptFunctions::MakePublic(ScriptFunc _public, const char *name, char ret_type, const char *def) noexcept
+void ScriptFunctions::MakePublic(ScriptFunc _public, const char *name, char ret_type, const char *def)
 {
     Public::MakePublic(_public, name, ret_type, def);
 }
 
-boost::any ScriptFunctions::CallPublic(const char *name, va_list args) noexcept
+boost::any ScriptFunctions::CallPublic(const char *name, va_list args)
 {
     std::vector<boost::any> params;
 

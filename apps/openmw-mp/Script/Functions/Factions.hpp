@@ -36,7 +36,7 @@ public:
     * \param pid The player ID whose faction changes should be used.
     * \return void
     */
-    static void ClearFactionChanges(unsigned short pid) noexcept;
+    static void ClearFactionChanges(unsigned short pid);
 
     /**
     * \brief Get the number of indexes in a player's latest faction changes.
@@ -44,7 +44,7 @@ public:
     * \param pid The player ID whose faction changes should be used.
     * \return The number of indexes.
     */
-    static unsigned int GetFactionChangesSize(unsigned short pid) noexcept;
+    static unsigned int GetFactionChangesSize(unsigned short pid);
 
     /**
     * \brief Get the action type used in a player's latest faction changes.
@@ -52,7 +52,7 @@ public:
     * \param pid The player ID whose faction changes should be used.
     * \return The action type (0 for RANK, 1 for EXPULSION, 2 for REPUTATION).
     */
-    static unsigned char GetFactionChangesAction(unsigned short pid) noexcept;
+    static unsigned char GetFactionChangesAction(unsigned short pid);
 
     /**
     * \brief Get the factionId at a certain index in a player's latest faction changes.
@@ -61,7 +61,7 @@ public:
     * \param index The index of the faction.
     * \return The factionId.
     */
-    static const char *GetFactionId(unsigned short pid, unsigned int index) noexcept;
+    static const char *GetFactionId(unsigned short pid, unsigned int index);
 
     /**
     * \brief Get the rank at a certain index in a player's latest faction changes.
@@ -70,7 +70,7 @@ public:
     * \param index The index of the faction.
     * \return The rank.
     */
-    static int GetFactionRank(unsigned short pid, unsigned int index) noexcept;
+    static int GetFactionRank(unsigned short pid, unsigned int index);
 
     /**
     * \brief Get the expulsion state at a certain index in a player's latest faction changes.
@@ -79,7 +79,7 @@ public:
     * \param index The index of the faction.
     * \return The expulsion state.
     */
-    static bool GetFactionExpulsionState(unsigned short pid, unsigned int index) noexcept;
+    static bool GetFactionExpulsionState(unsigned short pid, unsigned int index);
 
     /**
     * \brief Get the reputation at a certain index in a player's latest faction changes.
@@ -88,7 +88,7 @@ public:
     * \param index The index of the faction.
     * \return The reputation.
     */
-    static int GetFactionReputation(unsigned short pid, unsigned int index) noexcept;
+    static int GetFactionReputation(unsigned short pid, unsigned int index);
 
     /**
     * \brief Set the action type in a player's faction changes.
@@ -97,7 +97,7 @@ public:
     * \param action The action (0 for RANK, 1 for EXPULSION, 2 for REPUTATION).
     * \return void
     */
-    static void SetFactionChangesAction(unsigned short pid, unsigned char action) noexcept;
+    static void SetFactionChangesAction(unsigned short pid, unsigned char action);
 
     /**
     * \brief Set the factionId of the temporary faction stored on the server.
@@ -105,7 +105,7 @@ public:
     * \param factionId The factionId.
     * \return void
     */
-    static void SetFactionId(const char* factionId) noexcept;
+    static void SetFactionId(const char* factionId);
 
     /**
     * \brief Set the rank of the temporary faction stored on the server.
@@ -113,7 +113,7 @@ public:
     * \param rank The rank.
     * \return void
     */
-    static void SetFactionRank(unsigned int rank) noexcept;
+    static void SetFactionRank(unsigned int rank);
 
     /**
     * \brief Set the expulsion state of the temporary faction stored on the server.
@@ -121,7 +121,7 @@ public:
     * \param expulsionState The expulsion state.
     * \return void
     */
-    static void SetFactionExpulsionState(bool expulsionState) noexcept;
+    static void SetFactionExpulsionState(bool expulsionState);
 
     /**
     * \brief Set the reputation of the temporary faction stored on the server.
@@ -129,7 +129,7 @@ public:
     * \param reputation The reputation.
     * \return void
     */
-    static void SetFactionReputation(int reputation) noexcept;
+    static void SetFactionReputation(int reputation);
 
     /**
     * \brief Add the server's temporary faction to the faction changes for a player.
@@ -140,7 +140,7 @@ public:
     * \param pid The player ID whose faction changes should be used.
     * \return void
     */
-    static void AddFaction(unsigned short pid) noexcept;
+    static void AddFaction(unsigned short pid);
 
     /**
     * \brief Send a PlayerFaction packet with a player's recorded faction changes.
@@ -152,11 +152,11 @@ public:
     *                           to the packet (false by default).
     * \return void
     */
-    static void SendFactionChanges(unsigned short pid, bool sendToOtherPlayers, bool skipAttachedPlayer) noexcept;
+    static void SendFactionChanges(unsigned short pid, bool sendToOtherPlayers, bool skipAttachedPlayer);
 
     // All methods below are deprecated versions of methods from above
 
-    static void InitializeFactionChanges(unsigned short pid) noexcept;
+    static void InitializeFactionChanges(unsigned short pid);
 
 };
 

@@ -29,7 +29,7 @@ public:
     * \param pid The player ID whose topic changes should be used.
     * \return void
     */
-    static void ClearTopicChanges(unsigned short pid) noexcept;
+    static void ClearTopicChanges(unsigned short pid);
 
     /**
     * \brief Get the number of indexes in a player's latest topic changes.
@@ -37,7 +37,7 @@ public:
     * \param pid The player ID whose topic changes should be used.
     * \return The number of indexes.
     */
-    static unsigned int GetTopicChangesSize(unsigned short pid) noexcept;
+    static unsigned int GetTopicChangesSize(unsigned short pid);
 
     /**
     * \brief Add a new topic to the topic changes for a player.
@@ -46,7 +46,7 @@ public:
     * \param topicId The topicId of the topic.
     * \return void
     */
-    static void AddTopic(unsigned short pid, const char* topicId) noexcept;
+    static void AddTopic(unsigned short pid, const char* topicId);
 
     /**
     * \brief Get the topicId at a certain index in a player's latest topic changes.
@@ -55,7 +55,7 @@ public:
     * \param index The index of the topic.
     * \return The topicId.
     */
-    static const char *GetTopicId(unsigned short pid, unsigned int index) noexcept;
+    static const char *GetTopicId(unsigned short pid, unsigned int index);
 
     /**
     * \brief Send a PlayerTopic packet with a player's recorded topic changes.
@@ -67,7 +67,7 @@ public:
     *                           to the packet (false by default).
     * \return void
     */
-    static void SendTopicChanges(unsigned short pid, bool sendToOtherPlayers, bool skipAttachedPlayer) noexcept;
+    static void SendTopicChanges(unsigned short pid, bool sendToOtherPlayers, bool skipAttachedPlayer);
 
     /**
     * \brief Play a certain animation on a player's character by sending a PlayerAnimation
@@ -80,7 +80,7 @@ public:
     * \param persist Whether the animation should persist or not.
     * \return void
     */
-    static void PlayAnimation(unsigned short pid, const char* groupname, int mode, int count, bool persist) noexcept;
+    static void PlayAnimation(unsigned short pid, const char* groupname, int mode, int count, bool persist);
 
     /**
     * \brief Play a certain sound for a player as spoken by their character by sending
@@ -90,11 +90,11 @@ public:
     * \param sound The path of the sound file.
     * \return void
     */
-    static void PlaySpeech(unsigned short pid, const char* sound) noexcept;
+    static void PlaySpeech(unsigned short pid, const char* sound);
 
     // All methods below are deprecated versions of methods from above
 
-    static void InitializeTopicChanges(unsigned short pid) noexcept;
+    static void InitializeTopicChanges(unsigned short pid);
 
 };
 

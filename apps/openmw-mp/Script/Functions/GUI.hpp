@@ -41,7 +41,7 @@ public:
     * \param label The text in the messagebox.
     * \return void
     */
-    static void _MessageBox(unsigned short pid, int id, const char *label) noexcept;
+    static void _MessageBox(unsigned short pid, int id, const char *label);
 
     /**
     * \brief Display an interactive messagebox at the center of the screen that
@@ -53,7 +53,7 @@ public:
     * \parm buttons The captions of the buttons, separated by semicolons (e.g. "Yes;No;Maybe").
     * \return void
     */
-    static void CustomMessageBox(unsigned short pid, int id, const char *label, const char *buttons) noexcept;
+    static void CustomMessageBox(unsigned short pid, int id, const char *label, const char *buttons);
 
     /**
     * \brief Display an input dialog at the center of the screen.
@@ -64,7 +64,7 @@ public:
     * \parm note The text at the bottom of the input dialog.
     * \return void
     */
-    static void InputDialog(unsigned short pid, int id, const char *label, const char *note) noexcept;
+    static void InputDialog(unsigned short pid, int id, const char *label, const char *note);
 
     /**
     * \brief Display a password dialog at the center of the screen.
@@ -78,7 +78,7 @@ public:
     * \parm note The text at the bottom of the password dialog.
     * \return void
     */
-    static void PasswordDialog(unsigned short pid, int id, const char *label, const char *note) noexcept;
+    static void PasswordDialog(unsigned short pid, int id, const char *label, const char *note);
 
     /**
     * \brief Display a listbox at the center of the screen where each item takes up
@@ -101,7 +101,7 @@ public:
     * \param pid The player ID whose quick key changes should be used.
     * \return void
     */
-    static void ClearQuickKeyChanges(unsigned short pid) noexcept;
+    static void ClearQuickKeyChanges(unsigned short pid);
 
     /**
     * \brief Get the number of indexes in a player's latest quick key changes.
@@ -109,7 +109,7 @@ public:
     * \param pid The player ID whose quick key changes should be used.
     * \return The number of indexes.
     */
-    static unsigned int GetQuickKeyChangesSize(unsigned short pid) noexcept;
+    static unsigned int GetQuickKeyChangesSize(unsigned short pid);
 
     /**
     * \brief Add a new quick key to the quick key changes for a player.
@@ -120,7 +120,7 @@ public:
     * \param itemId The itemId of the item.
     * \return void
     */
-    static void AddQuickKey(unsigned short pid, unsigned short slot, int type, const char* itemId = "") noexcept;
+    static void AddQuickKey(unsigned short pid, unsigned short slot, int type, const char* itemId = "");
 
     /**
     * \brief Get the slot of the quick key at a certain index in a player's latest quick key changes.
@@ -129,7 +129,7 @@ public:
     * \param index The index of the quick key in the quick key changes vector.
     * \return The slot.
     */
-    static int GetQuickKeySlot(unsigned short pid, unsigned int index) noexcept;
+    static int GetQuickKeySlot(unsigned short pid, unsigned int index);
 
     /**
     * \brief Get the type of the quick key at a certain index in a player's latest quick key changes.
@@ -138,7 +138,7 @@ public:
     * \param index The index of the quick key in the quick key changes vector.
     * \return The quick key type.
     */
-    static int GetQuickKeyType(unsigned short pid, unsigned int index) noexcept;
+    static int GetQuickKeyType(unsigned short pid, unsigned int index);
 
     /**
     * \brief Get the itemId at a certain index in a player's latest quick key changes.
@@ -147,7 +147,7 @@ public:
     * \param index The index of the quick key in the quick key changes vector.
     * \return The itemId.
     */
-    static const char *GetQuickKeyItemId(unsigned short pid, unsigned int index) noexcept;
+    static const char *GetQuickKeyItemId(unsigned short pid, unsigned int index);
 
     /**
     * \brief Send a PlayerQuickKeys packet with a player's recorded quick key changes.
@@ -155,7 +155,7 @@ public:
     * \param pid The player ID whose quick key changes should be used.
     * \return void
     */
-    static void SendQuickKeyChanges(unsigned short pid) noexcept;
+    static void SendQuickKeyChanges(unsigned short pid);
 
     //state 0 - disallow, 1 - allow
 
@@ -169,7 +169,7 @@ public:
     * \param state The state of the map marker (false to hide, true to reveal).
     * \return void
     */
-    static void SetMapVisibility(unsigned short targetPid, unsigned short affectedPid, unsigned short state) noexcept;
+    static void SetMapVisibility(unsigned short targetPid, unsigned short affectedPid, unsigned short state);
 
     /**
     * \brief Determine whether a player's map marker can be seen by all other players.
@@ -180,11 +180,11 @@ public:
     * \param state The state of the map marker (false to hide, true to reveal).
     * \return void
     */
-    static void SetMapVisibilityAll(unsigned short targetPid, unsigned short state) noexcept;
+    static void SetMapVisibilityAll(unsigned short targetPid, unsigned short state);
 
     // All methods below are deprecated versions of methods from above
 
-    static void InitializeQuickKeyChanges(unsigned short pid) noexcept;
+    static void InitializeQuickKeyChanges(unsigned short pid);
 
 };
 

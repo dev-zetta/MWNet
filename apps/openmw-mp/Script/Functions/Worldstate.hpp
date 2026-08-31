@@ -99,7 +99,7 @@ public:
     *
     * \return void
     */
-    static void ReadReceivedWorldstate() noexcept;
+    static void ReadReceivedWorldstate();
 
     /**
     * \brief Take the contents of the read-only worldstate last received by the
@@ -108,7 +108,7 @@ public:
     *
     * \return void
     */
-    static void CopyReceivedWorldstateToStore() noexcept;
+    static void CopyReceivedWorldstateToStore();
 
     /**
     * \brief Clear the kill count changes for the write-only worldstate.
@@ -117,7 +117,7 @@ public:
     *
     * \return void
     */
-    static void ClearKillChanges() noexcept;
+    static void ClearKillChanges();
 
     /**
     * \brief Clear the map changes for the write-only worldstate.
@@ -126,7 +126,7 @@ public:
     *
     * \return void
     */
-    static void ClearMapChanges() noexcept;
+    static void ClearMapChanges();
 
     /**
     * \brief Clear the client globals for the write-only worldstate.
@@ -135,28 +135,28 @@ public:
     *
     * \return void
     */
-    static void ClearClientGlobals() noexcept;
+    static void ClearClientGlobals();
 
     /**
     * \brief Get the number of indexes in the read worldstate's kill changes.
     *
     * \return The number of indexes.
     */
-    static unsigned int GetKillChangesSize() noexcept;
+    static unsigned int GetKillChangesSize();
 
     /**
     * \brief Get the number of indexes in the read worldstate's map changes.
     *
     * \return The number of indexes.
     */
-    static unsigned int GetMapChangesSize() noexcept;
+    static unsigned int GetMapChangesSize();
 
     /**
     * \brief Get the number of indexes in the read worldstate's client globals.
     *
     * \return The number of indexes.
     */
-    static unsigned int GetClientGlobalsSize() noexcept;
+    static unsigned int GetClientGlobalsSize();
 
     /**
     * \brief Get the refId at a certain index in the read worldstate's kill count changes.
@@ -164,7 +164,7 @@ public:
     * \param index The index of the kill count.
     * \return The refId.
     */
-    static const char *GetKillRefId(unsigned int index) noexcept;
+    static const char *GetKillRefId(unsigned int index);
 
     /**
     * \brief Get the number of kills at a certain index in the read worldstate's kill count changes.
@@ -172,42 +172,42 @@ public:
     * \param index The index of the kill count.
     * \return The number of kills.
     */
-    static int GetKillNumber(unsigned int index) noexcept;
+    static int GetKillNumber(unsigned int index);
 
     /**
     * \brief Get the weather region in the read worldstate.
     *
     * \return The weather region.
     */
-    static const char *GetWeatherRegion() noexcept;
+    static const char *GetWeatherRegion();
 
     /**
     * \brief Get the current weather in the read worldstate.
     *
     * \return The current weather.
     */
-    static int GetWeatherCurrent() noexcept;
+    static int GetWeatherCurrent();
 
     /**
     * \brief Get the next weather in the read worldstate.
     *
     * \return The next weather.
     */
-    static int GetWeatherNext() noexcept;
+    static int GetWeatherNext();
 
     /**
     * \brief Get the queued weather in the read worldstate.
     *
     * \return The queued weather.
     */
-    static int GetWeatherQueued() noexcept;
+    static int GetWeatherQueued();
 
     /**
     * \brief Get the transition factor of the weather in the read worldstate.
     *
     * \return The transition factor of the weather.
     */
-    static double GetWeatherTransitionFactor() noexcept;
+    static double GetWeatherTransitionFactor();
 
     /**
     * \brief Get the X coordinate of the cell corresponding to the map tile at a certain index in
@@ -216,7 +216,7 @@ public:
     * \param index The index of the map tile.
     * \return The X coordinate of the cell.
     */
-    static int GetMapTileCellX(unsigned int index) noexcept;
+    static int GetMapTileCellX(unsigned int index);
 
     /**
     * \brief Get the Y coordinate of the cell corresponding to the map tile at a certain index in
@@ -225,7 +225,7 @@ public:
     * \param index The index of the map tile.
     * \return The Y coordinate of the cell.
     */
-    static int GetMapTileCellY(unsigned int index) noexcept;
+    static int GetMapTileCellY(unsigned int index);
 
     /**
     * \brief Get the id of the global variable at a certain index in the read worldstate's
@@ -234,7 +234,7 @@ public:
     * \param index The index of the client global.
     * \return The id.
     */
-    static const char *GetClientGlobalId(unsigned int index) noexcept;
+    static const char *GetClientGlobalId(unsigned int index);
 
     /**
     * \brief Get the type of the global variable at a certain index in the read worldstate's
@@ -243,7 +243,7 @@ public:
     * \param index The index of the client global.
     * \return The variable type (0 for INTEGER, 1 for LONG, 2 for FLOAT).
     */
-    static unsigned short GetClientGlobalVariableType(unsigned int index) noexcept;
+    static unsigned short GetClientGlobalVariableType(unsigned int index);
 
     /**
     * \brief Get the integer value of the global variable at a certain index in the read
@@ -252,7 +252,7 @@ public:
     * \param index The index of the client global.
     * \return The integer value.
     */
-    static int GetClientGlobalIntValue(unsigned int index) noexcept;
+    static int GetClientGlobalIntValue(unsigned int index);
 
     /**
     * \brief Get the float value of the global variable at a certain index in the read
@@ -261,7 +261,7 @@ public:
     * \param index The index of the client global.
     * \return The float value.
     */
-    static double GetClientGlobalFloatValue(unsigned int index) noexcept;
+    static double GetClientGlobalFloatValue(unsigned int index);
 
     /**
     * \brief Set the region affected by the next WorldRegionAuthority packet sent.
@@ -269,7 +269,7 @@ public:
     * \param authorityRegion The region.
     * \return void
     */
-    static void SetAuthorityRegion(const char* authorityRegion) noexcept;
+    static void SetAuthorityRegion(const char* authorityRegion);
 
     /**
     * \brief Set the weather region in the write-only worldstate stored on the server.
@@ -277,7 +277,7 @@ public:
     * \param region The region.
     * \return void
     */
-    static void SetWeatherRegion(const char* region) noexcept;
+    static void SetWeatherRegion(const char* region);
 
     /**
     * \brief Set the weather forcing state in the write-only worldstate stored on the server.
@@ -287,7 +287,7 @@ public:
     * \param forceState The weather forcing state.
     * \return void
     */
-    static void SetWeatherForceState(bool forceState) noexcept;
+    static void SetWeatherForceState(bool forceState);
 
     /**
     * \brief Set the current weather in the write-only worldstate stored on the server.
@@ -295,7 +295,7 @@ public:
     * \param currentWeather The current weather.
     * \return void
     */
-    static void SetWeatherCurrent(int currentWeather) noexcept;
+    static void SetWeatherCurrent(int currentWeather);
 
     /**
     * \brief Set the next weather in the write-only worldstate stored on the server.
@@ -303,7 +303,7 @@ public:
     * \param nextWeather The next weather.
     * \return void
     */
-    static void SetWeatherNext(int nextWeather) noexcept;
+    static void SetWeatherNext(int nextWeather);
 
     /**
     * \brief Set the queued weather in the write-only worldstate stored on the server.
@@ -311,7 +311,7 @@ public:
     * \param queuedWeather The queued weather.
     * \return void
     */
-    static void SetWeatherQueued(int queuedWeather) noexcept;
+    static void SetWeatherQueued(int queuedWeather);
 
     /**
     * \brief Set the transition factor for the weather in the write-only worldstate stored on the server.
@@ -319,7 +319,7 @@ public:
     * \param transitionFactor The transition factor.
     * \return void
     */
-    static void SetWeatherTransitionFactor(double transitionFactor) noexcept;
+    static void SetWeatherTransitionFactor(double transitionFactor);
 
     /**
     * \brief Set the world's hour in the write-only worldstate stored on the server.
@@ -327,7 +327,7 @@ public:
     * \param hour The hour.
     * \return void
     */
-    static void SetHour(double hour) noexcept;
+    static void SetHour(double hour);
 
     /**
     * \brief Set the world's day in the write-only worldstate stored on the server.
@@ -335,7 +335,7 @@ public:
     * \param day The day.
     * \return void
     */
-    static void SetDay(int day) noexcept;
+    static void SetDay(int day);
 
     /**
     * \brief Set the world's month in the write-only worldstate stored on the server.
@@ -343,7 +343,7 @@ public:
     * \param month The month.
     * \return void
     */
-    static void SetMonth(int month) noexcept;
+    static void SetMonth(int month);
 
     /**
     * \brief Set the world's year in the write-only worldstate stored on the server.
@@ -351,7 +351,7 @@ public:
     * \param year The year.
     * \return void
     */
-    static void SetYear(int year) noexcept;
+    static void SetYear(int year);
 
     /**
     * \brief Set the world's days passed in the write-only worldstate stored on the server.
@@ -359,7 +359,7 @@ public:
     * \param daysPassed The days passed.
     * \return void
     */
-    static void SetDaysPassed(int daysPassed) noexcept;
+    static void SetDaysPassed(int daysPassed);
 
     /**
     * \brief Set the world's time scale in the write-only worldstate stored on the server.
@@ -367,7 +367,7 @@ public:
     * \param timeScale The time scale.
     * \return void
     */
-    static void SetTimeScale(double timeScale) noexcept;
+    static void SetTimeScale(double timeScale);
 
     /**
     * \brief Set the collision state for other players in the write-only worldstate stored
@@ -376,7 +376,7 @@ public:
     * \param state The collision state.
     * \return void
     */
-    static void SetPlayerCollisionState(bool state) noexcept;
+    static void SetPlayerCollisionState(bool state);
 
     /**
     * \brief Set the collision state for actors in the write-only worldstate stored on the
@@ -385,7 +385,7 @@ public:
     * \param state The collision state.
     * \return void
     */
-    static void SetActorCollisionState(bool state) noexcept;
+    static void SetActorCollisionState(bool state);
 
     /**
     * \brief Set the collision state for placed objects in the write-only worldstate stored
@@ -394,7 +394,7 @@ public:
     * \param state The collision state.
     * \return void
     */
-    static void SetPlacedObjectCollisionState(bool state) noexcept;
+    static void SetPlacedObjectCollisionState(bool state);
 
     /**
     * \brief Whether placed objects with collision turned on should use actor collision, i.e.
@@ -403,7 +403,7 @@ public:
     * \param useActorCollision Whether to use actor collision.
     * \return void
     */
-    static void UseActorCollisionForPlacedObjects(bool useActorCollision) noexcept;
+    static void UseActorCollisionForPlacedObjects(bool useActorCollision);
 
     /**
     * \brief Add a new kill count to the kill count changes.
@@ -412,7 +412,7 @@ public:
     * \param number The number of kills in the kill count.
     * \return void
     */
-    static void AddKill(const char* refId, int number) noexcept;
+    static void AddKill(const char* refId, int number);
 
     /**
     * \brief Add a new client global integer to the client globals.
@@ -422,7 +422,7 @@ public:
     * \param intValue The integer value of the client global.
     * \return void
     */
-    static void AddClientGlobalInteger(const char* id, int intValue, unsigned int variableType = 0) noexcept;
+    static void AddClientGlobalInteger(const char* id, int intValue, unsigned int variableType = 0);
 
     /**
     * \brief Add a new client global float to the client globals.
@@ -431,7 +431,7 @@ public:
     * \param floatValue The float value of the client global.
     * \return void
     */
-    static void AddClientGlobalFloat(const char* id, double floatValue) noexcept;
+    static void AddClientGlobalFloat(const char* id, double floatValue);
 
     /**
     * \brief Add an ID to the list of script IDs whose variable changes should be sent to the
@@ -440,7 +440,7 @@ public:
     * \param scriptId The ID.
     * \return void
     */
-    static void AddSynchronizedClientScriptId(const char* scriptId) noexcept;
+    static void AddSynchronizedClientScriptId(const char* scriptId);
 
     /**
     * \brief Add an ID to the list of global IDs whose value changes should be sent to the
@@ -449,7 +449,7 @@ public:
     * \param globalId The ID.
     * \return void
     */
-    static void AddSynchronizedClientGlobalId(const char* globalId) noexcept;
+    static void AddSynchronizedClientGlobalId(const char* globalId);
 
     /**
     * \brief Add a refId to the list of refIds for which collision should be enforced
@@ -458,14 +458,14 @@ public:
     * \param refId The refId.
     * \return void
     */
-    static void AddEnforcedCollisionRefId(const char* refId) noexcept;
+    static void AddEnforcedCollisionRefId(const char* refId);
 
     /**
     * \brief Add a cell with given cellDescription to the list of cells that should be reset on the client.
     *
     * \return void
     */
-    static void AddCellToReset(const char * cellDescription) noexcept;
+    static void AddCellToReset(const char * cellDescription);
 
     /**
     * \brief Add a destination override containing the cell description for the old cell
@@ -475,7 +475,7 @@ public:
     * \param newCellDescription The new cell description.
     * \return void
     */
-    static void AddDestinationOverride(const char* oldCellDescription, const char* newCellDescription) noexcept;
+    static void AddDestinationOverride(const char* oldCellDescription, const char* newCellDescription);
 
     /**
     * \brief Clear the list of script IDs whose variable changes should be sent to the
@@ -483,7 +483,7 @@ public:
     *
     * \return void
     */
-    static void ClearSynchronizedClientScriptIds() noexcept;
+    static void ClearSynchronizedClientScriptIds();
 
     /**
     * \brief Clear the list of global IDs whose value changes should be sent to the
@@ -491,7 +491,7 @@ public:
     *
     * \return void
     */
-    static void ClearSynchronizedClientGlobalIds() noexcept;
+    static void ClearSynchronizedClientGlobalIds();
 
     /**
     * \brief Clear the list of refIds for which collision should be enforced irrespective
@@ -499,21 +499,21 @@ public:
     *
     * \return void
     */
-    static void ClearEnforcedCollisionRefIds() noexcept;
+    static void ClearEnforcedCollisionRefIds();
 
     /**
     * \brief Clear the list of cells which should be reset on the client.
     *
     * \return void
     */
-    static void ClearCellsToReset() noexcept;
+    static void ClearCellsToReset();
 
     /**
     * \brief Clear the list of destination overrides.
     *
     * \return void
     */
-    static void ClearDestinationOverrides() noexcept;
+    static void ClearDestinationOverrides();
 
     /**
     * \brief Save the .png image data of the map tile at a certain index in the read worldstate's
@@ -547,7 +547,7 @@ public:
     *                           to the packet (false by default).
     * \return void
     */
-    static void SendClientScriptGlobal(unsigned short pid, bool sendToOtherPlayers, bool skipAttachedPlayer) noexcept;
+    static void SendClientScriptGlobal(unsigned short pid, bool sendToOtherPlayers, bool skipAttachedPlayer);
 
     /**
     * \brief Send a ClientScriptSettings packet with the current client script settings in
@@ -560,7 +560,7 @@ public:
     *                           to the packet (false by default).
     * \return void
     */
-    static void SendClientScriptSettings(unsigned short pid, bool sendToOtherPlayers, bool skipAttachedPlayer) noexcept;
+    static void SendClientScriptSettings(unsigned short pid, bool sendToOtherPlayers, bool skipAttachedPlayer);
 
     /**
     * \brief Send a WorldKillCount packet with the current set of kill count changes in the write-only
@@ -573,7 +573,7 @@ public:
     *                           to the packet (false by default).
     * \return void
     */
-    static void SendWorldKillCount(unsigned short pid, bool sendToOtherPlayers, bool skipAttachedPlayer) noexcept;
+    static void SendWorldKillCount(unsigned short pid, bool sendToOtherPlayers, bool skipAttachedPlayer);
 
     /**
     * \brief Send a WorldRegionAuthority packet establishing a certain player as the only one who
@@ -584,7 +584,7 @@ public:
     * \param pid The player ID attached to the packet.
     * \return void
     */
-    static void SendWorldRegionAuthority(unsigned short pid) noexcept;
+    static void SendWorldRegionAuthority(unsigned short pid);
 
     /**
     * \brief Send a WorldMap packet with the current set of map changes in the write-only
@@ -597,7 +597,7 @@ public:
     *                           to the packet (false by default).
     * \return void
     */
-    static void SendWorldMap(unsigned short pid, bool sendToOtherPlayers, bool skipAttachedPlayer) noexcept;
+    static void SendWorldMap(unsigned short pid, bool sendToOtherPlayers, bool skipAttachedPlayer);
 
     /**
     * \brief Send a WorldTime packet with the current time and time scale in the write-only
@@ -610,7 +610,7 @@ public:
     *                           to the packet (false by default).
     * \return void
     */
-    static void SendWorldTime(unsigned short pid, bool sendToOtherPlayers, bool skipAttachedPlayer) noexcept;
+    static void SendWorldTime(unsigned short pid, bool sendToOtherPlayers, bool skipAttachedPlayer);
 
     /**
     * \brief Send a WorldWeather packet with the current weather in the write-only worldstate.
@@ -622,7 +622,7 @@ public:
     *                           to the packet (false by default).
     * \return void
     */
-    static void SendWorldWeather(unsigned short pid, bool sendToOtherPlayers, bool skipAttachedPlayer) noexcept;
+    static void SendWorldWeather(unsigned short pid, bool sendToOtherPlayers, bool skipAttachedPlayer);
 
     /**
     * \brief Send a WorldCollisionOverride packet with the current collision overrides in
@@ -635,7 +635,7 @@ public:
     *                           to the packet (false by default).
     * \return void
     */
-    static void SendWorldCollisionOverride(unsigned short pid, bool sendToOtherPlayers, bool skipAttachedPlayer) noexcept;
+    static void SendWorldCollisionOverride(unsigned short pid, bool sendToOtherPlayers, bool skipAttachedPlayer);
 
     /**
     * \brief Send a CellReset packet with a list of cells,
@@ -643,7 +643,7 @@ public:
     * \param pid The player ID attached to the packet.
     * \return void
     */
-    static void SendCellReset(unsigned short pid, bool sendToOtherPlayers) noexcept;
+    static void SendCellReset(unsigned short pid, bool sendToOtherPlayers);
 
     /**
     * \brief Send a WorldDestinationOverride packet with the current destination overrides in
@@ -656,13 +656,13 @@ public:
     *                           to the packet (false by default).
     * \return void
     */
-    static void SendWorldDestinationOverride(unsigned short pid, bool sendToOtherPlayers, bool skipAttachedPlayer) noexcept;
+    static void SendWorldDestinationOverride(unsigned short pid, bool sendToOtherPlayers, bool skipAttachedPlayer);
 
 
     // All methods below are deprecated versions of methods from above
 
-    static void ReadLastWorldstate() noexcept;
-    static void CopyLastWorldstateToStore() noexcept;
+    static void ReadLastWorldstate();
+    static void CopyLastWorldstateToStore();
 
 };
 

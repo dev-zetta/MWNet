@@ -60,7 +60,7 @@ const ESM::EffectList& GetRecordEffects(unsigned int recordIndex)
     return emptyEffectList;
 }
 
-void RecordsDynamicFunctions::ClearRecords() noexcept
+void RecordsDynamicFunctions::ClearRecords()
 {
     WorldstateFunctions::writeWorldstate.spellRecords.clear();
     WorldstateFunctions::writeWorldstate.potionRecords.clear();
@@ -89,22 +89,22 @@ void RecordsDynamicFunctions::ClearRecords() noexcept
     WorldstateFunctions::writeWorldstate.gameSettingRecords.clear();
 }
 
-unsigned short RecordsDynamicFunctions::GetRecordType() noexcept
+unsigned short RecordsDynamicFunctions::GetRecordType()
 {
     return WorldstateFunctions::readWorldstate->recordsType;
 }
 
-unsigned int RecordsDynamicFunctions::GetRecordCount() noexcept
+unsigned int RecordsDynamicFunctions::GetRecordCount()
 {
     return WorldstateFunctions::readWorldstate->recordsCount;
 }
 
-unsigned int RecordsDynamicFunctions::GetRecordEffectCount(unsigned int recordIndex) noexcept
+unsigned int RecordsDynamicFunctions::GetRecordEffectCount(unsigned int recordIndex)
 {
     return GetRecordEffects(recordIndex).mList.size();
 }
 
-int RecordsDynamicFunctions::GetRecordSubtype(unsigned int index) noexcept
+int RecordsDynamicFunctions::GetRecordSubtype(unsigned int index)
 {
     unsigned short readRecordsType = RecordsDynamicFunctions::GetRecordType();
 
@@ -116,7 +116,7 @@ int RecordsDynamicFunctions::GetRecordSubtype(unsigned int index) noexcept
     return -1;
 }
 
-const char *RecordsDynamicFunctions::GetRecordId(unsigned int index) noexcept
+const char *RecordsDynamicFunctions::GetRecordId(unsigned int index)
 {
     unsigned short readRecordsType = RecordsDynamicFunctions::GetRecordType();
 
@@ -130,7 +130,7 @@ const char *RecordsDynamicFunctions::GetRecordId(unsigned int index) noexcept
     return "invalid";
 }
 
-const char *RecordsDynamicFunctions::GetRecordBaseId(unsigned int index) noexcept
+const char *RecordsDynamicFunctions::GetRecordBaseId(unsigned int index)
 {
     unsigned short readRecordsType = RecordsDynamicFunctions::GetRecordType();
 
@@ -152,7 +152,7 @@ const char *RecordsDynamicFunctions::GetRecordBaseId(unsigned int index) noexcep
     return "invalid";
 }
 
-const char *RecordsDynamicFunctions::GetRecordName(unsigned int index) noexcept
+const char *RecordsDynamicFunctions::GetRecordName(unsigned int index)
 {
     unsigned short readRecordsType = RecordsDynamicFunctions::GetRecordType();
 
@@ -172,7 +172,7 @@ const char *RecordsDynamicFunctions::GetRecordName(unsigned int index) noexcept
     return "invalid";
 }
 
-const char *RecordsDynamicFunctions::GetRecordModel(unsigned int index) noexcept
+const char *RecordsDynamicFunctions::GetRecordModel(unsigned int index)
 {
     unsigned short readRecordsType = RecordsDynamicFunctions::GetRecordType();
 
@@ -182,7 +182,7 @@ const char *RecordsDynamicFunctions::GetRecordModel(unsigned int index) noexcept
     return "invalid";
 }
 
-const char *RecordsDynamicFunctions::GetRecordIcon(unsigned int index) noexcept
+const char *RecordsDynamicFunctions::GetRecordIcon(unsigned int index)
 {
     unsigned short readRecordsType = RecordsDynamicFunctions::GetRecordType();
 
@@ -192,7 +192,7 @@ const char *RecordsDynamicFunctions::GetRecordIcon(unsigned int index) noexcept
     return "invalid";
 }
 
-const char *RecordsDynamicFunctions::GetRecordScript(unsigned int index) noexcept
+const char *RecordsDynamicFunctions::GetRecordScript(unsigned int index)
 {
     unsigned short readRecordsType = RecordsDynamicFunctions::GetRecordType();
 
@@ -202,7 +202,7 @@ const char *RecordsDynamicFunctions::GetRecordScript(unsigned int index) noexcep
     return "invalid";
 }
 
-const char *RecordsDynamicFunctions::GetRecordEnchantmentId(unsigned int index) noexcept
+const char *RecordsDynamicFunctions::GetRecordEnchantmentId(unsigned int index)
 {
     unsigned short readRecordsType = RecordsDynamicFunctions::GetRecordType();
 
@@ -218,7 +218,7 @@ const char *RecordsDynamicFunctions::GetRecordEnchantmentId(unsigned int index) 
     return "invalid";
 }
 
-int RecordsDynamicFunctions::GetRecordEnchantmentCharge(unsigned int index) noexcept
+int RecordsDynamicFunctions::GetRecordEnchantmentCharge(unsigned int index)
 {
     unsigned short readRecordsType = RecordsDynamicFunctions::GetRecordType();
 
@@ -234,7 +234,7 @@ int RecordsDynamicFunctions::GetRecordEnchantmentCharge(unsigned int index) noex
     return -1;
 }
 
-int RecordsDynamicFunctions::GetRecordAutoCalc(unsigned int index) noexcept
+int RecordsDynamicFunctions::GetRecordAutoCalc(unsigned int index)
 {
     unsigned short readRecordsType = RecordsDynamicFunctions::GetRecordType();
 
@@ -244,7 +244,7 @@ int RecordsDynamicFunctions::GetRecordAutoCalc(unsigned int index) noexcept
     return -1;
 }
 
-int RecordsDynamicFunctions::GetRecordCharge(unsigned int index) noexcept
+int RecordsDynamicFunctions::GetRecordCharge(unsigned int index)
 {
     unsigned short readRecordsType = RecordsDynamicFunctions::GetRecordType();
 
@@ -254,7 +254,7 @@ int RecordsDynamicFunctions::GetRecordCharge(unsigned int index) noexcept
     return -1;
 }
 
-int RecordsDynamicFunctions::GetRecordCost(unsigned int index) noexcept
+int RecordsDynamicFunctions::GetRecordCost(unsigned int index)
 {
     unsigned short readRecordsType = RecordsDynamicFunctions::GetRecordType();
 
@@ -266,7 +266,7 @@ int RecordsDynamicFunctions::GetRecordCost(unsigned int index) noexcept
     return -1;
 }
 
-int RecordsDynamicFunctions::GetRecordFlags(unsigned int index) noexcept
+int RecordsDynamicFunctions::GetRecordFlags(unsigned int index)
 {
     unsigned short readRecordsType = RecordsDynamicFunctions::GetRecordType();
 
@@ -278,7 +278,7 @@ int RecordsDynamicFunctions::GetRecordFlags(unsigned int index) noexcept
     return -1;
 }
 
-int RecordsDynamicFunctions::GetRecordValue(unsigned int index) noexcept
+int RecordsDynamicFunctions::GetRecordValue(unsigned int index)
 {
     unsigned short readRecordsType = RecordsDynamicFunctions::GetRecordType();
 
@@ -288,7 +288,7 @@ int RecordsDynamicFunctions::GetRecordValue(unsigned int index) noexcept
     return -1;
 }
 
-double RecordsDynamicFunctions::GetRecordWeight(unsigned int index) noexcept
+double RecordsDynamicFunctions::GetRecordWeight(unsigned int index)
 {
     unsigned short readRecordsType = RecordsDynamicFunctions::GetRecordType();
 
@@ -298,7 +298,7 @@ double RecordsDynamicFunctions::GetRecordWeight(unsigned int index) noexcept
     return -1;
 }
 
-unsigned int RecordsDynamicFunctions::GetRecordQuantity(unsigned int index) noexcept
+unsigned int RecordsDynamicFunctions::GetRecordQuantity(unsigned int index)
 {
     unsigned short readRecordsType = RecordsDynamicFunctions::GetRecordType();
 
@@ -310,52 +310,52 @@ unsigned int RecordsDynamicFunctions::GetRecordQuantity(unsigned int index) noex
     return 1;
 }
 
-unsigned int RecordsDynamicFunctions::GetRecordEffectId(unsigned int recordIndex, unsigned int effectIndex) noexcept
+unsigned int RecordsDynamicFunctions::GetRecordEffectId(unsigned int recordIndex, unsigned int effectIndex)
 {
     return static_cast<unsigned int>(ESM::MagicEffect::refIdToIndex(GetRecordEffects(recordIndex).mList.at(effectIndex).mData.mEffectID));
 }
 
-int RecordsDynamicFunctions::GetRecordEffectAttribute(unsigned int recordIndex, unsigned int effectIndex) noexcept
+int RecordsDynamicFunctions::GetRecordEffectAttribute(unsigned int recordIndex, unsigned int effectIndex)
 {
     return ESM::Attribute::refIdToIndex(GetRecordEffects(recordIndex).mList.at(effectIndex).mData.mAttribute);
 }
 
-int RecordsDynamicFunctions::GetRecordEffectSkill(unsigned int recordIndex, unsigned int effectIndex) noexcept
+int RecordsDynamicFunctions::GetRecordEffectSkill(unsigned int recordIndex, unsigned int effectIndex)
 {
     return ESM::Skill::refIdToIndex(GetRecordEffects(recordIndex).mList.at(effectIndex).mData.mSkill);
 }
 
-unsigned int RecordsDynamicFunctions::GetRecordEffectRangeType(unsigned int recordIndex, unsigned int effectIndex) noexcept
+unsigned int RecordsDynamicFunctions::GetRecordEffectRangeType(unsigned int recordIndex, unsigned int effectIndex)
 {
     return GetRecordEffects(recordIndex).mList.at(effectIndex).mData.mRange;
 }
 
-int RecordsDynamicFunctions::GetRecordEffectArea(unsigned int recordIndex, unsigned int effectIndex) noexcept
+int RecordsDynamicFunctions::GetRecordEffectArea(unsigned int recordIndex, unsigned int effectIndex)
 {
     return GetRecordEffects(recordIndex).mList.at(effectIndex).mData.mArea;
 }
 
-int RecordsDynamicFunctions::GetRecordEffectDuration(unsigned int recordIndex, unsigned int effectIndex) noexcept
+int RecordsDynamicFunctions::GetRecordEffectDuration(unsigned int recordIndex, unsigned int effectIndex)
 {
     return GetRecordEffects(recordIndex).mList.at(effectIndex).mData.mDuration;
 }
 
-int RecordsDynamicFunctions::GetRecordEffectMagnitudeMax(unsigned int recordIndex, unsigned int effectIndex) noexcept
+int RecordsDynamicFunctions::GetRecordEffectMagnitudeMax(unsigned int recordIndex, unsigned int effectIndex)
 {
     return GetRecordEffects(recordIndex).mList.at(effectIndex).mData.mMagnMax;
 }
 
-int RecordsDynamicFunctions::GetRecordEffectMagnitudeMin(unsigned int recordIndex, unsigned int effectIndex) noexcept
+int RecordsDynamicFunctions::GetRecordEffectMagnitudeMin(unsigned int recordIndex, unsigned int effectIndex)
 {
     return GetRecordEffects(recordIndex).mList.at(effectIndex).mData.mMagnMin;
 }
 
-void RecordsDynamicFunctions::SetRecordType(unsigned int type) noexcept
+void RecordsDynamicFunctions::SetRecordType(unsigned int type)
 {
     WorldstateFunctions::writeWorldstate.recordsType = type;
 }
 
-void RecordsDynamicFunctions::SetRecordId(const char* id) noexcept
+void RecordsDynamicFunctions::SetRecordId(const char* id)
 {
     unsigned short writeRecordsType = WorldstateFunctions::writeWorldstate.recordsType;
 
@@ -411,7 +411,7 @@ void RecordsDynamicFunctions::SetRecordId(const char* id) noexcept
         LOG_MESSAGE_SIMPLE(TimedLog::LOG_ERROR, "Tried to set id for record type %i which lacks that property", writeRecordsType);
 }
 
-void RecordsDynamicFunctions::SetRecordBaseId(const char* baseId) noexcept
+void RecordsDynamicFunctions::SetRecordBaseId(const char* baseId)
 {
     unsigned short writeRecordsType = WorldstateFunctions::writeWorldstate.recordsType;
 
@@ -469,7 +469,7 @@ void RecordsDynamicFunctions::SetRecordBaseId(const char* baseId) noexcept
         LOG_MESSAGE_SIMPLE(TimedLog::LOG_ERROR, "Tried to set baseId for record type %i which lacks that property", writeRecordsType);
 }
 
-void RecordsDynamicFunctions::SetRecordInventoryBaseId(const char* inventoryBaseId) noexcept
+void RecordsDynamicFunctions::SetRecordInventoryBaseId(const char* inventoryBaseId)
 {
     unsigned short writeRecordsType = WorldstateFunctions::writeWorldstate.recordsType;
 
@@ -481,7 +481,7 @@ void RecordsDynamicFunctions::SetRecordInventoryBaseId(const char* inventoryBase
         LOG_MESSAGE_SIMPLE(TimedLog::LOG_ERROR, "Tried to set inventoryBaseId for record type %i which lacks that property", writeRecordsType);
 }
 
-void RecordsDynamicFunctions::SetRecordSubtype(unsigned int subtype) noexcept
+void RecordsDynamicFunctions::SetRecordSubtype(unsigned int subtype)
 {
     unsigned short writeRecordsType = WorldstateFunctions::writeWorldstate.recordsType;
 
@@ -510,7 +510,7 @@ void RecordsDynamicFunctions::SetRecordSubtype(unsigned int subtype) noexcept
     tempOverrides.hasSubtype = true;
 }
 
-void RecordsDynamicFunctions::SetRecordName(const char* name) noexcept
+void RecordsDynamicFunctions::SetRecordName(const char* name)
 {
     unsigned short writeRecordsType = WorldstateFunctions::writeWorldstate.recordsType;
 
@@ -561,7 +561,7 @@ void RecordsDynamicFunctions::SetRecordName(const char* name) noexcept
     tempOverrides.hasName = true;
 }
 
-void RecordsDynamicFunctions::SetRecordModel(const char* model) noexcept
+void RecordsDynamicFunctions::SetRecordModel(const char* model)
 {
     unsigned short writeRecordsType = WorldstateFunctions::writeWorldstate.recordsType;
 
@@ -612,7 +612,7 @@ void RecordsDynamicFunctions::SetRecordModel(const char* model) noexcept
     tempOverrides.hasModel = true;
 }
 
-void RecordsDynamicFunctions::SetRecordIcon(const char* icon) noexcept
+void RecordsDynamicFunctions::SetRecordIcon(const char* icon)
 {
     unsigned short writeRecordsType = WorldstateFunctions::writeWorldstate.recordsType;
 
@@ -649,7 +649,7 @@ void RecordsDynamicFunctions::SetRecordIcon(const char* icon) noexcept
     tempOverrides.hasIcon = true;
 }
 
-void RecordsDynamicFunctions::SetRecordScript(const char* script) noexcept
+void RecordsDynamicFunctions::SetRecordScript(const char* script)
 {
     unsigned short writeRecordsType = WorldstateFunctions::writeWorldstate.recordsType;
 
@@ -696,7 +696,7 @@ void RecordsDynamicFunctions::SetRecordScript(const char* script) noexcept
     tempOverrides.hasScript = true;
 }
 
-void RecordsDynamicFunctions::SetRecordEnchantmentId(const char* enchantmentId) noexcept
+void RecordsDynamicFunctions::SetRecordEnchantmentId(const char* enchantmentId)
 {
     unsigned short writeRecordsType = WorldstateFunctions::writeWorldstate.recordsType;
 
@@ -717,7 +717,7 @@ void RecordsDynamicFunctions::SetRecordEnchantmentId(const char* enchantmentId) 
     tempOverrides.hasEnchantmentId = true;
 }
 
-void RecordsDynamicFunctions::SetRecordEnchantmentCharge(int enchantmentCharge) noexcept
+void RecordsDynamicFunctions::SetRecordEnchantmentCharge(int enchantmentCharge)
 {
     unsigned short writeRecordsType = WorldstateFunctions::writeWorldstate.recordsType;
 
@@ -738,7 +738,7 @@ void RecordsDynamicFunctions::SetRecordEnchantmentCharge(int enchantmentCharge) 
     tempOverrides.hasEnchantmentCharge = true;
 }
 
-void RecordsDynamicFunctions::SetRecordAutoCalc(int autoCalc) noexcept
+void RecordsDynamicFunctions::SetRecordAutoCalc(int autoCalc)
 {
     unsigned short writeRecordsType = WorldstateFunctions::writeWorldstate.recordsType;
 
@@ -766,7 +766,7 @@ void RecordsDynamicFunctions::SetRecordAutoCalc(int autoCalc) noexcept
     tempOverrides.hasAutoCalc = true;
 }
 
-void RecordsDynamicFunctions::SetRecordCharge(int charge) noexcept
+void RecordsDynamicFunctions::SetRecordCharge(int charge)
 {
     unsigned short writeRecordsType = WorldstateFunctions::writeWorldstate.recordsType;
 
@@ -781,7 +781,7 @@ void RecordsDynamicFunctions::SetRecordCharge(int charge) noexcept
     tempOverrides.hasCharge = true;
 }
 
-void RecordsDynamicFunctions::SetRecordCost(int cost) noexcept
+void RecordsDynamicFunctions::SetRecordCost(int cost)
 {
     unsigned short writeRecordsType = WorldstateFunctions::writeWorldstate.recordsType;
 
@@ -798,7 +798,7 @@ void RecordsDynamicFunctions::SetRecordCost(int cost) noexcept
     tempOverrides.hasCost = true;
 }
 
-void RecordsDynamicFunctions::SetRecordFlags(int flags) noexcept
+void RecordsDynamicFunctions::SetRecordFlags(int flags)
 {
     unsigned short writeRecordsType = WorldstateFunctions::writeWorldstate.recordsType;
 
@@ -827,7 +827,7 @@ void RecordsDynamicFunctions::SetRecordFlags(int flags) noexcept
     tempOverrides.hasFlags = true;
 }
 
-void RecordsDynamicFunctions::SetRecordValue(int value) noexcept
+void RecordsDynamicFunctions::SetRecordValue(int value)
 {
     unsigned short writeRecordsType = WorldstateFunctions::writeWorldstate.recordsType;
 
@@ -864,7 +864,7 @@ void RecordsDynamicFunctions::SetRecordValue(int value) noexcept
     tempOverrides.hasValue = true;
 }
 
-void RecordsDynamicFunctions::SetRecordWeight(double weight) noexcept
+void RecordsDynamicFunctions::SetRecordWeight(double weight)
 {
     unsigned short writeRecordsType = WorldstateFunctions::writeWorldstate.recordsType;
 
@@ -903,7 +903,7 @@ void RecordsDynamicFunctions::SetRecordWeight(double weight) noexcept
     tempOverrides.hasWeight = true;
 }
 
-void RecordsDynamicFunctions::SetRecordQuality(double quality) noexcept
+void RecordsDynamicFunctions::SetRecordQuality(double quality)
 {
     unsigned short writeRecordsType = WorldstateFunctions::writeWorldstate.recordsType;
 
@@ -924,7 +924,7 @@ void RecordsDynamicFunctions::SetRecordQuality(double quality) noexcept
     tempOverrides.hasQuality = true;
 }
 
-void RecordsDynamicFunctions::SetRecordUses(int uses) noexcept
+void RecordsDynamicFunctions::SetRecordUses(int uses)
 {
     unsigned short writeRecordsType = WorldstateFunctions::writeWorldstate.recordsType;
 
@@ -943,7 +943,7 @@ void RecordsDynamicFunctions::SetRecordUses(int uses) noexcept
     tempOverrides.hasUses = true;
 }
 
-void RecordsDynamicFunctions::SetRecordTime(int time) noexcept
+void RecordsDynamicFunctions::SetRecordTime(int time)
 {
     unsigned short writeRecordsType = WorldstateFunctions::writeWorldstate.recordsType;
 
@@ -958,7 +958,7 @@ void RecordsDynamicFunctions::SetRecordTime(int time) noexcept
     tempOverrides.hasTime = true;
 }
 
-void RecordsDynamicFunctions::SetRecordRadius(int radius) noexcept
+void RecordsDynamicFunctions::SetRecordRadius(int radius)
 {
     unsigned short writeRecordsType = WorldstateFunctions::writeWorldstate.recordsType;
 
@@ -973,7 +973,7 @@ void RecordsDynamicFunctions::SetRecordRadius(int radius) noexcept
     tempOverrides.hasRadius = true;
 }
 
-void RecordsDynamicFunctions::SetRecordColor(unsigned int red, unsigned int green, unsigned int blue) noexcept
+void RecordsDynamicFunctions::SetRecordColor(unsigned int red, unsigned int green, unsigned int blue)
 {
     unsigned short writeRecordsType = WorldstateFunctions::writeWorldstate.recordsType;
 
@@ -988,7 +988,7 @@ void RecordsDynamicFunctions::SetRecordColor(unsigned int red, unsigned int gree
     tempOverrides.hasColor = true;
 }
 
-void RecordsDynamicFunctions::SetRecordArmorRating(int armorRating) noexcept
+void RecordsDynamicFunctions::SetRecordArmorRating(int armorRating)
 {
     unsigned short writeRecordsType = WorldstateFunctions::writeWorldstate.recordsType;
 
@@ -1003,7 +1003,7 @@ void RecordsDynamicFunctions::SetRecordArmorRating(int armorRating) noexcept
     tempOverrides.hasArmorRating = true;
 }
 
-void RecordsDynamicFunctions::SetRecordHealth(int health) noexcept
+void RecordsDynamicFunctions::SetRecordHealth(int health)
 {
     unsigned short writeRecordsType = WorldstateFunctions::writeWorldstate.recordsType;
 
@@ -1024,7 +1024,7 @@ void RecordsDynamicFunctions::SetRecordHealth(int health) noexcept
     tempOverrides.hasHealth = true;
 }
 
-void RecordsDynamicFunctions::SetRecordDamageChop(unsigned int minDamage, unsigned int maxDamage) noexcept
+void RecordsDynamicFunctions::SetRecordDamageChop(unsigned int minDamage, unsigned int maxDamage)
 {
     unsigned short writeRecordsType = WorldstateFunctions::writeWorldstate.recordsType;
 
@@ -1047,7 +1047,7 @@ void RecordsDynamicFunctions::SetRecordDamageChop(unsigned int minDamage, unsign
     tempOverrides.hasDamageChop = true;
 }
 
-void RecordsDynamicFunctions::SetRecordDamageSlash(unsigned int minDamage, unsigned int maxDamage) noexcept
+void RecordsDynamicFunctions::SetRecordDamageSlash(unsigned int minDamage, unsigned int maxDamage)
 {
     unsigned short writeRecordsType = WorldstateFunctions::writeWorldstate.recordsType;
 
@@ -1070,7 +1070,7 @@ void RecordsDynamicFunctions::SetRecordDamageSlash(unsigned int minDamage, unsig
     tempOverrides.hasDamageSlash = true;
 }
 
-void RecordsDynamicFunctions::SetRecordDamageThrust(unsigned int minDamage, unsigned int maxDamage) noexcept
+void RecordsDynamicFunctions::SetRecordDamageThrust(unsigned int minDamage, unsigned int maxDamage)
 {
     unsigned short writeRecordsType = WorldstateFunctions::writeWorldstate.recordsType;
 
@@ -1093,7 +1093,7 @@ void RecordsDynamicFunctions::SetRecordDamageThrust(unsigned int minDamage, unsi
     tempOverrides.hasDamageThrust = true;
 }
 
-void RecordsDynamicFunctions::SetRecordReach(double reach) noexcept
+void RecordsDynamicFunctions::SetRecordReach(double reach)
 {
     unsigned short writeRecordsType = WorldstateFunctions::writeWorldstate.recordsType;
 
@@ -1108,7 +1108,7 @@ void RecordsDynamicFunctions::SetRecordReach(double reach) noexcept
     tempOverrides.hasReach = true;
 }
 
-void RecordsDynamicFunctions::SetRecordSpeed(double speed) noexcept
+void RecordsDynamicFunctions::SetRecordSpeed(double speed)
 {
     unsigned short writeRecordsType = WorldstateFunctions::writeWorldstate.recordsType;
 
@@ -1123,7 +1123,7 @@ void RecordsDynamicFunctions::SetRecordSpeed(double speed) noexcept
     tempOverrides.hasSpeed = true;
 }
 
-void RecordsDynamicFunctions::SetRecordKeyState(bool keyState) noexcept
+void RecordsDynamicFunctions::SetRecordKeyState(bool keyState)
 {
     unsigned short writeRecordsType = WorldstateFunctions::writeWorldstate.recordsType;
 
@@ -1141,7 +1141,7 @@ void RecordsDynamicFunctions::SetRecordKeyState(bool keyState) noexcept
     tempOverrides.hasKeyState = true;
 }
 
-void RecordsDynamicFunctions::SetRecordScrollState(bool scrollState) noexcept
+void RecordsDynamicFunctions::SetRecordScrollState(bool scrollState)
 {
     unsigned short writeRecordsType = WorldstateFunctions::writeWorldstate.recordsType;
 
@@ -1156,7 +1156,7 @@ void RecordsDynamicFunctions::SetRecordScrollState(bool scrollState) noexcept
     tempOverrides.hasScrollState = true;
 }
 
-void RecordsDynamicFunctions::SetRecordSkillId(int skillId) noexcept
+void RecordsDynamicFunctions::SetRecordSkillId(int skillId)
 {
     unsigned short writeRecordsType = WorldstateFunctions::writeWorldstate.recordsType;
 
@@ -1171,7 +1171,7 @@ void RecordsDynamicFunctions::SetRecordSkillId(int skillId) noexcept
     tempOverrides.hasSkillId = true;
 }
 
-void RecordsDynamicFunctions::SetRecordText(const char* text) noexcept
+void RecordsDynamicFunctions::SetRecordText(const char* text)
 {
     unsigned short writeRecordsType = WorldstateFunctions::writeWorldstate.recordsType;
 
@@ -1186,7 +1186,7 @@ void RecordsDynamicFunctions::SetRecordText(const char* text) noexcept
     tempOverrides.hasText = true;
 }
 
-void RecordsDynamicFunctions::SetRecordHair(const char* hair) noexcept
+void RecordsDynamicFunctions::SetRecordHair(const char* hair)
 {
     unsigned short writeRecordsType = WorldstateFunctions::writeWorldstate.recordsType;
 
@@ -1201,7 +1201,7 @@ void RecordsDynamicFunctions::SetRecordHair(const char* hair) noexcept
     tempOverrides.hasHair = true;
 }
 
-void RecordsDynamicFunctions::SetRecordHead(const char* head) noexcept
+void RecordsDynamicFunctions::SetRecordHead(const char* head)
 {
     unsigned short writeRecordsType = WorldstateFunctions::writeWorldstate.recordsType;
 
@@ -1216,7 +1216,7 @@ void RecordsDynamicFunctions::SetRecordHead(const char* head) noexcept
     tempOverrides.hasHead = true;
 }
 
-void RecordsDynamicFunctions::SetRecordGender(unsigned int gender) noexcept
+void RecordsDynamicFunctions::SetRecordGender(unsigned int gender)
 {
     unsigned short writeRecordsType = WorldstateFunctions::writeWorldstate.recordsType;
 
@@ -1233,7 +1233,7 @@ void RecordsDynamicFunctions::SetRecordGender(unsigned int gender) noexcept
     tempOverrides.hasGender = true;
 }
 
-void RecordsDynamicFunctions::SetRecordRace(const char* race) noexcept
+void RecordsDynamicFunctions::SetRecordRace(const char* race)
 {
     unsigned short writeRecordsType = WorldstateFunctions::writeWorldstate.recordsType;
 
@@ -1247,7 +1247,7 @@ void RecordsDynamicFunctions::SetRecordRace(const char* race) noexcept
     tempOverrides.hasRace = true;
 }
 
-void RecordsDynamicFunctions::SetRecordClass(const char* charClass) noexcept
+void RecordsDynamicFunctions::SetRecordClass(const char* charClass)
 {
     unsigned short writeRecordsType = WorldstateFunctions::writeWorldstate.recordsType;
 
@@ -1257,7 +1257,7 @@ void RecordsDynamicFunctions::SetRecordClass(const char* charClass) noexcept
         LOG_MESSAGE_SIMPLE(TimedLog::LOG_ERROR, "Tried to set character class for record type %i which lacks that property", writeRecordsType);
 }
 
-void RecordsDynamicFunctions::SetRecordFaction(const char* faction) noexcept
+void RecordsDynamicFunctions::SetRecordFaction(const char* faction)
 {
     unsigned short writeRecordsType = WorldstateFunctions::writeWorldstate.recordsType;
 
@@ -1272,7 +1272,7 @@ void RecordsDynamicFunctions::SetRecordFaction(const char* faction) noexcept
     tempOverrides.hasFaction = true;
 }
 
-void RecordsDynamicFunctions::SetRecordScale(double scale) noexcept
+void RecordsDynamicFunctions::SetRecordScale(double scale)
 {
     unsigned short writeRecordsType = WorldstateFunctions::writeWorldstate.recordsType;
 
@@ -1287,7 +1287,7 @@ void RecordsDynamicFunctions::SetRecordScale(double scale) noexcept
     tempOverrides.hasScale = true;
 }
 
-void RecordsDynamicFunctions::SetRecordBloodType(int bloodType) noexcept
+void RecordsDynamicFunctions::SetRecordBloodType(int bloodType)
 {
     unsigned short writeRecordsType = WorldstateFunctions::writeWorldstate.recordsType;
 
@@ -1302,7 +1302,7 @@ void RecordsDynamicFunctions::SetRecordBloodType(int bloodType) noexcept
     tempOverrides.hasBloodType = true;
 }
 
-void RecordsDynamicFunctions::SetRecordVampireState(bool vampireState) noexcept
+void RecordsDynamicFunctions::SetRecordVampireState(bool vampireState)
 {
     unsigned short writeRecordsType = WorldstateFunctions::writeWorldstate.recordsType;
 
@@ -1317,7 +1317,7 @@ void RecordsDynamicFunctions::SetRecordVampireState(bool vampireState) noexcept
     tempOverrides.hasVampireState = true;
 }
 
-void RecordsDynamicFunctions::SetRecordLevel(int level) noexcept
+void RecordsDynamicFunctions::SetRecordLevel(int level)
 {
     unsigned short writeRecordsType = WorldstateFunctions::writeWorldstate.recordsType;
 
@@ -1334,7 +1334,7 @@ void RecordsDynamicFunctions::SetRecordLevel(int level) noexcept
     tempOverrides.hasLevel = true;
 }
 
-void RecordsDynamicFunctions::SetRecordMagicka(int magicka) noexcept
+void RecordsDynamicFunctions::SetRecordMagicka(int magicka)
 {
     unsigned short writeRecordsType = WorldstateFunctions::writeWorldstate.recordsType;
 
@@ -1351,7 +1351,7 @@ void RecordsDynamicFunctions::SetRecordMagicka(int magicka) noexcept
     tempOverrides.hasMagicka = true;
 }
 
-void RecordsDynamicFunctions::SetRecordFatigue(int fatigue) noexcept
+void RecordsDynamicFunctions::SetRecordFatigue(int fatigue)
 {
     unsigned short writeRecordsType = WorldstateFunctions::writeWorldstate.recordsType;
 
@@ -1368,7 +1368,7 @@ void RecordsDynamicFunctions::SetRecordFatigue(int fatigue) noexcept
     tempOverrides.hasFatigue = true;
 }
 
-void RecordsDynamicFunctions::SetRecordSoulValue(int soulValue) noexcept
+void RecordsDynamicFunctions::SetRecordSoulValue(int soulValue)
 {
     unsigned short writeRecordsType = WorldstateFunctions::writeWorldstate.recordsType;
 
@@ -1383,7 +1383,7 @@ void RecordsDynamicFunctions::SetRecordSoulValue(int soulValue) noexcept
     tempOverrides.hasSoulValue = true;
 }
 
-void RecordsDynamicFunctions::SetRecordAIFight(int aiFight) noexcept
+void RecordsDynamicFunctions::SetRecordAIFight(int aiFight)
 {
     unsigned short writeRecordsType = WorldstateFunctions::writeWorldstate.recordsType;
 
@@ -1400,7 +1400,7 @@ void RecordsDynamicFunctions::SetRecordAIFight(int aiFight) noexcept
     tempOverrides.hasAiFight = true;
 }
 
-void RecordsDynamicFunctions::SetRecordAIFlee(int aiFlee) noexcept
+void RecordsDynamicFunctions::SetRecordAIFlee(int aiFlee)
 {
     unsigned short writeRecordsType = WorldstateFunctions::writeWorldstate.recordsType;
 
@@ -1417,7 +1417,7 @@ void RecordsDynamicFunctions::SetRecordAIFlee(int aiFlee) noexcept
     tempOverrides.hasAiFlee = true;
 }
 
-void RecordsDynamicFunctions::SetRecordAIAlarm(int aiAlarm) noexcept
+void RecordsDynamicFunctions::SetRecordAIAlarm(int aiAlarm)
 {
     unsigned short writeRecordsType = WorldstateFunctions::writeWorldstate.recordsType;
 
@@ -1434,7 +1434,7 @@ void RecordsDynamicFunctions::SetRecordAIAlarm(int aiAlarm) noexcept
     tempOverrides.hasAiAlarm = true;
 }
 
-void RecordsDynamicFunctions::SetRecordAIServices(int aiServices) noexcept
+void RecordsDynamicFunctions::SetRecordAIServices(int aiServices)
 {
     unsigned short writeRecordsType = WorldstateFunctions::writeWorldstate.recordsType;
 
@@ -1451,7 +1451,7 @@ void RecordsDynamicFunctions::SetRecordAIServices(int aiServices) noexcept
     tempOverrides.hasAiServices = true;
 }
 
-void RecordsDynamicFunctions::SetRecordSound(const char* sound) noexcept
+void RecordsDynamicFunctions::SetRecordSound(const char* sound)
 {
     unsigned short writeRecordsType = WorldstateFunctions::writeWorldstate.recordsType;
 
@@ -1468,7 +1468,7 @@ void RecordsDynamicFunctions::SetRecordSound(const char* sound) noexcept
     tempOverrides.hasSound = true;
 }
 
-void RecordsDynamicFunctions::SetRecordVolume(double volume) noexcept
+void RecordsDynamicFunctions::SetRecordVolume(double volume)
 {
     unsigned short writeRecordsType = WorldstateFunctions::writeWorldstate.recordsType;
 
@@ -1483,7 +1483,7 @@ void RecordsDynamicFunctions::SetRecordVolume(double volume) noexcept
     tempOverrides.hasVolume = true;
 }
 
-void RecordsDynamicFunctions::SetRecordMinRange(double minRange) noexcept
+void RecordsDynamicFunctions::SetRecordMinRange(double minRange)
 {
     unsigned short writeRecordsType = WorldstateFunctions::writeWorldstate.recordsType;
 
@@ -1498,7 +1498,7 @@ void RecordsDynamicFunctions::SetRecordMinRange(double minRange) noexcept
     tempOverrides.hasMinRange = true;
 }
 
-void RecordsDynamicFunctions::SetRecordMaxRange(double maxRange) noexcept
+void RecordsDynamicFunctions::SetRecordMaxRange(double maxRange)
 {
     unsigned short writeRecordsType = WorldstateFunctions::writeWorldstate.recordsType;
 
@@ -1513,7 +1513,7 @@ void RecordsDynamicFunctions::SetRecordMaxRange(double maxRange) noexcept
     tempOverrides.hasMaxRange = true;
 }
 
-void RecordsDynamicFunctions::SetRecordOpenSound(const char* sound) noexcept
+void RecordsDynamicFunctions::SetRecordOpenSound(const char* sound)
 {
     unsigned short writeRecordsType = WorldstateFunctions::writeWorldstate.recordsType;
 
@@ -1528,7 +1528,7 @@ void RecordsDynamicFunctions::SetRecordOpenSound(const char* sound) noexcept
     tempOverrides.hasOpenSound = true;
 }
 
-void RecordsDynamicFunctions::SetRecordCloseSound(const char* sound) noexcept
+void RecordsDynamicFunctions::SetRecordCloseSound(const char* sound)
 {
     unsigned short writeRecordsType = WorldstateFunctions::writeWorldstate.recordsType;
 
@@ -1543,7 +1543,7 @@ void RecordsDynamicFunctions::SetRecordCloseSound(const char* sound) noexcept
     tempOverrides.hasCloseSound = true;
 }
 
-void RecordsDynamicFunctions::SetRecordScriptText(const char* scriptText) noexcept
+void RecordsDynamicFunctions::SetRecordScriptText(const char* scriptText)
 {
     unsigned short writeRecordsType = WorldstateFunctions::writeWorldstate.recordsType;
 
@@ -1558,7 +1558,7 @@ void RecordsDynamicFunctions::SetRecordScriptText(const char* scriptText) noexce
     tempOverrides.hasScriptText = true;
 }
 
-void RecordsDynamicFunctions::SetRecordIntegerVariable(int intVar) noexcept
+void RecordsDynamicFunctions::SetRecordIntegerVariable(int intVar)
 {
     unsigned short writeRecordsType = WorldstateFunctions::writeWorldstate.recordsType;
 
@@ -1574,7 +1574,7 @@ void RecordsDynamicFunctions::SetRecordIntegerVariable(int intVar) noexcept
     }
 }
 
-void RecordsDynamicFunctions::SetRecordFloatVariable(double floatVar) noexcept
+void RecordsDynamicFunctions::SetRecordFloatVariable(double floatVar)
 {
     unsigned short writeRecordsType = WorldstateFunctions::writeWorldstate.recordsType;
 
@@ -1590,7 +1590,7 @@ void RecordsDynamicFunctions::SetRecordFloatVariable(double floatVar) noexcept
     }
 }
 
-void RecordsDynamicFunctions::SetRecordStringVariable(const char* stringVar) noexcept
+void RecordsDynamicFunctions::SetRecordStringVariable(const char* stringVar)
 {
     unsigned short writeRecordsType = WorldstateFunctions::writeWorldstate.recordsType;
 
@@ -1606,7 +1606,7 @@ void RecordsDynamicFunctions::SetRecordStringVariable(const char* stringVar) noe
     }
 }
 
-void RecordsDynamicFunctions::SetRecordIdByIndex(unsigned int index, const char* id) noexcept
+void RecordsDynamicFunctions::SetRecordIdByIndex(unsigned int index, const char* id)
 {
     unsigned short writeRecordsType = WorldstateFunctions::writeWorldstate.recordsType;
 
@@ -1628,7 +1628,7 @@ void RecordsDynamicFunctions::SetRecordIdByIndex(unsigned int index, const char*
         LOG_MESSAGE_SIMPLE(TimedLog::LOG_ERROR, "Tried to set id for record type %i which lacks that property", writeRecordsType);
 }
 
-void RecordsDynamicFunctions::SetRecordEnchantmentIdByIndex(unsigned int index, const char* enchantmentId) noexcept
+void RecordsDynamicFunctions::SetRecordEnchantmentIdByIndex(unsigned int index, const char* enchantmentId)
 {
     unsigned short writeRecordsType = WorldstateFunctions::writeWorldstate.recordsType;
 
@@ -1644,47 +1644,47 @@ void RecordsDynamicFunctions::SetRecordEnchantmentIdByIndex(unsigned int index, 
         LOG_MESSAGE_SIMPLE(TimedLog::LOG_ERROR, "Tried to set enchantmentId for record type %i which lacks that property", writeRecordsType);
 }
 
-void RecordsDynamicFunctions::SetRecordEffectId(unsigned int effectId) noexcept
+void RecordsDynamicFunctions::SetRecordEffectId(unsigned int effectId)
 {
     tempEffect.mEffectID = ESM::MagicEffect::indexToRefId(static_cast<int>(effectId));
 }
 
-void RecordsDynamicFunctions::SetRecordEffectAttribute(int attributeId) noexcept
+void RecordsDynamicFunctions::SetRecordEffectAttribute(int attributeId)
 {
     tempEffect.mAttribute = ESM::Attribute::indexToRefId(attributeId);
 }
 
-void RecordsDynamicFunctions::SetRecordEffectSkill(int skillId) noexcept
+void RecordsDynamicFunctions::SetRecordEffectSkill(int skillId)
 {
     tempEffect.mSkill = ESM::Skill::indexToRefId(skillId);
 }
 
-void RecordsDynamicFunctions::SetRecordEffectRangeType(unsigned int rangeType) noexcept
+void RecordsDynamicFunctions::SetRecordEffectRangeType(unsigned int rangeType)
 {
     tempEffect.mRange = rangeType;
 }
 
-void RecordsDynamicFunctions::SetRecordEffectArea(int area) noexcept
+void RecordsDynamicFunctions::SetRecordEffectArea(int area)
 {
     tempEffect.mArea = area;
 }
 
-void RecordsDynamicFunctions::SetRecordEffectDuration(int duration) noexcept
+void RecordsDynamicFunctions::SetRecordEffectDuration(int duration)
 {
     tempEffect.mDuration = duration;
 }
 
-void RecordsDynamicFunctions::SetRecordEffectMagnitudeMax(int magnitudeMax) noexcept
+void RecordsDynamicFunctions::SetRecordEffectMagnitudeMax(int magnitudeMax)
 {
     tempEffect.mMagnMax = magnitudeMax;
 }
 
-void RecordsDynamicFunctions::SetRecordEffectMagnitudeMin(int magnitudeMin) noexcept
+void RecordsDynamicFunctions::SetRecordEffectMagnitudeMin(int magnitudeMin)
 {
     tempEffect.mMagnMin = magnitudeMin;
 }
 
-void RecordsDynamicFunctions::SetRecordBodyPartType(unsigned int partType) noexcept
+void RecordsDynamicFunctions::SetRecordBodyPartType(unsigned int partType)
 {
     unsigned short writeRecordsType = WorldstateFunctions::writeWorldstate.recordsType;
 
@@ -1697,27 +1697,27 @@ void RecordsDynamicFunctions::SetRecordBodyPartType(unsigned int partType) noexc
         tempBodyPartReference.mPart = partType;
 }
 
-void RecordsDynamicFunctions::SetRecordBodyPartIdForMale(const char* partId) noexcept
+void RecordsDynamicFunctions::SetRecordBodyPartIdForMale(const char* partId)
 {
     tempBodyPartReference.mMale = ESM::RefId::stringRefId(partId);
 }
 
-void RecordsDynamicFunctions::SetRecordBodyPartIdForFemale(const char* partId) noexcept
+void RecordsDynamicFunctions::SetRecordBodyPartIdForFemale(const char* partId)
 {
     tempBodyPartReference.mFemale = ESM::RefId::stringRefId(partId);
 }
 
-void RecordsDynamicFunctions::SetRecordInventoryItemId(const char* itemId) noexcept
+void RecordsDynamicFunctions::SetRecordInventoryItemId(const char* itemId)
 {
     tempInventoryItem.refId = itemId;
 }
 
-void RecordsDynamicFunctions::SetRecordInventoryItemCount(unsigned int count) noexcept
+void RecordsDynamicFunctions::SetRecordInventoryItemCount(unsigned int count)
 {
     tempInventoryItem.count = count;
 }
 
-void RecordsDynamicFunctions::AddRecord() noexcept
+void RecordsDynamicFunctions::AddRecord()
 {
     unsigned short writeRecordsType = WorldstateFunctions::writeWorldstate.recordsType;
 
@@ -1875,7 +1875,7 @@ void RecordsDynamicFunctions::AddRecord() noexcept
     tempOverrides = {};
 }
 
-void RecordsDynamicFunctions::AddRecordEffect() noexcept
+void RecordsDynamicFunctions::AddRecordEffect()
 {
     unsigned short writeRecordsType = WorldstateFunctions::writeWorldstate.recordsType;
 
@@ -1907,7 +1907,7 @@ void RecordsDynamicFunctions::AddRecordEffect() noexcept
     tempEffect = {};
 }
 
-void RecordsDynamicFunctions::AddRecordBodyPart() noexcept
+void RecordsDynamicFunctions::AddRecordBodyPart()
 {
     unsigned short writeRecordsType = WorldstateFunctions::writeWorldstate.recordsType;
 
@@ -1920,7 +1920,7 @@ void RecordsDynamicFunctions::AddRecordBodyPart() noexcept
     tempBodyPart = {};
 }
 
-void RecordsDynamicFunctions::AddRecordInventoryItem() noexcept
+void RecordsDynamicFunctions::AddRecordInventoryItem()
 {
     unsigned short writeRecordsType = WorldstateFunctions::writeWorldstate.recordsType;
 
@@ -1935,7 +1935,7 @@ void RecordsDynamicFunctions::AddRecordInventoryItem() noexcept
     tempInventoryItem = {};
 }
 
-void RecordsDynamicFunctions::SendRecordDynamic(unsigned short pid, bool sendToOtherPlayers, bool skipAttachedPlayer) noexcept
+void RecordsDynamicFunctions::SendRecordDynamic(unsigned short pid, bool sendToOtherPlayers, bool skipAttachedPlayer)
 {
     Player *player;
     GET_PLAYER(pid, player, );

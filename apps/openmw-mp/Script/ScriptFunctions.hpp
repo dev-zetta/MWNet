@@ -23,6 +23,8 @@
 #include <Script/Functions/Stats.hpp>
 #include <Script/Functions/Worldstate.hpp>
 #include <RakNetTypes.h>
+#include <stdexcept>
+#include <string>
 #include <tuple>
 #include <apps/openmw-mp/Player.hpp>
 #include "ScriptFunction.hpp"
@@ -36,10 +38,9 @@
 
 #define GET_PLAYER(pid, pl, retvalue) \
      pl = Players::getPlayer(pid); \
-     if (player == nullptr) {\
-        LOG_MESSAGE_SIMPLE(TimedLog::LOG_ERROR, "%s: Player with pid \'%d\' not found\n", __PRETTY_FUNCTION__, pid);\
-        /*ScriptFunctions::StopServer(1);*/ \
-        return retvalue;\
+     if (pl == nullptr) {\
+        throw std::runtime_error(std::string(__PRETTY_FUNCTION__) \
+            + ": player with pid " + std::to_string(pid) + " was not found");\
 }
 
 
@@ -47,8 +48,8 @@ class ScriptFunctions
 {
 public:
 
-    static void MakePublic(ScriptFunc _public, const char *name, char ret_type, const char *def) noexcept;
-    static boost::any CallPublic(const char *name, va_list args) noexcept;
+    static void MakePublic(ScriptFunc _public, const char *name, char ret_type, const char *def);
+    static boost::any CallPublic(const char *name, va_list args);
 
      /**
      * \brief Create a timer that will run a script function after a certain interval.
@@ -57,7 +58,7 @@ public:
      * \param msec The interval in miliseconds.
      * \return The ID of the timer thus created.
      */
-    static int CreateTimer(ScriptFunc callback, int msec) noexcept;
+    static int CreateTimer(ScriptFunc callback, int msec);
 
     /**
     * \brief Create a timer that will run a script function after a certain interval and pass
@@ -73,7 +74,7 @@ public:
     * \param args The arguments.
     * \return The ID of the timer thus created.
     */
-    static int CreateTimerEx(ScriptFunc callback, int msec, const char *types, va_list args) noexcept;
+    static int CreateTimerEx(ScriptFunc callback, int msec, const char *types, va_list args);
 
     /**
     * \brief Start the timer with a certain ID.
@@ -81,7 +82,7 @@ public:
     * \param timerId The timer ID.
     * \return void
     */
-    static void StartTimer(int timerId) noexcept;
+    static void StartTimer(int timerId);
 
     /**
     * \brief Stop the timer with a certain ID.
@@ -89,7 +90,7 @@ public:
     * \param timerId The timer ID.
     * \return void
     */
-    static void StopTimer(int timerId) noexcept;
+    static void StopTimer(int timerId);
 
     /**
     * \brief Restart the timer with a certain ID for a certain interval.
@@ -98,7 +99,7 @@ public:
     * \param msec The interval in miliseconds.
     * \return void
     */
-    static void RestartTimer(int timerId, int msec) noexcept;
+    static void RestartTimer(int timerId, int msec);
 
     /**
     * \brief Free the timer with a certain ID.
@@ -106,7 +107,7 @@ public:
     * \param timerId The timer ID.
     * \return void
     */
-    static void FreeTimer(int timerId) noexcept;
+    static void FreeTimer(int timerId);
 
     /**
     * \brief Check whether a timer is elapsed.
@@ -114,7 +115,7 @@ public:
     * \param timerId The timer ID.
     * \return Whether the timer is elapsed.
     */
-    static bool IsTimerElapsed(int timerId) noexcept;
+    static bool IsTimerElapsed(int timerId);
 
 
     static constexpr ScriptFunctionData functions[]{

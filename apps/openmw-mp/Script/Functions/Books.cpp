@@ -7,7 +7,7 @@
 
 using namespace mwmp;
 
-void BookFunctions::ClearBookChanges(unsigned short pid) noexcept
+void BookFunctions::ClearBookChanges(unsigned short pid)
 {
     Player *player;
     GET_PLAYER(pid, player, );
@@ -15,7 +15,7 @@ void BookFunctions::ClearBookChanges(unsigned short pid) noexcept
     player->bookChanges.clear();
 }
 
-unsigned int BookFunctions::GetBookChangesSize(unsigned short pid) noexcept
+unsigned int BookFunctions::GetBookChangesSize(unsigned short pid)
 {
     Player *player;
     GET_PLAYER(pid, player, 0);
@@ -23,7 +23,7 @@ unsigned int BookFunctions::GetBookChangesSize(unsigned short pid) noexcept
     return player->bookChanges.size();
 }
 
-void BookFunctions::AddBook(unsigned short pid, const char* bookId) noexcept
+void BookFunctions::AddBook(unsigned short pid, const char* bookId)
 {
     Player *player;
     GET_PLAYER(pid, player, );
@@ -34,7 +34,7 @@ void BookFunctions::AddBook(unsigned short pid, const char* bookId) noexcept
     player->bookChanges.push_back(book);
 }
 
-const char *BookFunctions::GetBookId(unsigned short pid, unsigned int index) noexcept
+const char *BookFunctions::GetBookId(unsigned short pid, unsigned int index)
 {
     Player *player;
     GET_PLAYER(pid, player, "");
@@ -45,7 +45,7 @@ const char *BookFunctions::GetBookId(unsigned short pid, unsigned int index) noe
     return player->bookChanges.at(index).bookId.c_str();
 }
 
-void BookFunctions::SendBookChanges(unsigned short pid, bool sendToOtherPlayers, bool skipAttachedPlayer) noexcept
+void BookFunctions::SendBookChanges(unsigned short pid, bool sendToOtherPlayers, bool skipAttachedPlayer)
 {
     Player *player;
     GET_PLAYER(pid, player, );
@@ -62,7 +62,7 @@ void BookFunctions::SendBookChanges(unsigned short pid, bool sendToOtherPlayers,
 
 // All methods below are deprecated versions of methods from above
 
-void BookFunctions::InitializeBookChanges(unsigned short pid) noexcept
+void BookFunctions::InitializeBookChanges(unsigned short pid)
 {
     ClearBookChanges(pid);
 }

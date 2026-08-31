@@ -165,7 +165,7 @@ public:
     * \param pid The player ID to send it to.
     * \return void
     */
-    static void SendSettings(unsigned short pid, bool sendToOtherPlayers, bool skipAttachedPlayer) noexcept;
+    static void SendSettings(unsigned short pid, bool sendToOtherPlayers, bool skipAttachedPlayer);
 };
 
 #endif //OPENMW_SETTINGSAPI_HPP

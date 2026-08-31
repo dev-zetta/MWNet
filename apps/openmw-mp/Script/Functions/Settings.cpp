@@ -92,7 +92,7 @@ void SettingFunctions::ClearVRSettingValues(unsigned short pid) {
     player->vrSettings.clear();
 }
 
-void SettingFunctions::SendSettings(unsigned short pid, bool sendToOtherPlayers, bool skipAttachedPlayer) noexcept
+void SettingFunctions::SendSettings(unsigned short pid, bool sendToOtherPlayers, bool skipAttachedPlayer)
 {
     Player *player;
     GET_PLAYER(pid, player,);

@@ -6,7 +6,7 @@
 #include <apps/openmw-mp/Script/ScriptFunctions.hpp>
 #include <apps/openmw-mp/Networking.hpp>
 
-void ChatFunctions::SendMessage(unsigned short pid, const char *message, bool sendToOtherPlayers, bool skipAttachedPlayer) noexcept
+void ChatFunctions::SendMessage(unsigned short pid, const char *message, bool sendToOtherPlayers, bool skipAttachedPlayer)
 {
     Player *player;
     GET_PLAYER(pid, player,);

@@ -24,12 +24,12 @@ std::vector<ESM::ActiveEffect> storedActorActiveEffects;
 
 static std::string tempCellDescription;
 
-void ActorFunctions::ReadReceivedActorList() noexcept
+void ActorFunctions::ReadReceivedActorList()
 {
     readActorList = mwmp::Networking::getPtr()->getReceivedActorList();
 }
 
-void ActorFunctions::ReadCellActorList(const char* cellDescription) noexcept
+void ActorFunctions::ReadCellActorList(const char* cellDescription)
 {
     ESM::Cell esmCell = Utils::getCellFromDescription(cellDescription);
     Cell *serverCell = CellController::get()->getCell(&esmCell);
@@ -40,7 +40,7 @@ void ActorFunctions::ReadCellActorList(const char* cellDescription) noexcept
         readActorList = {};
 }
 
-void ActorFunctions::ClearActorList() noexcept
+void ActorFunctions::ClearActorList()
 {
     writeActorList.cell.blank();
     writeActorList.authorityLeaseId = 0;
@@ -48,7 +48,7 @@ void ActorFunctions::ClearActorList() noexcept
     writeActorList.baseActors.clear();
 }
 
-void ActorFunctions::SetActorListPid(unsigned short pid) noexcept
+void ActorFunctions::SetActorListPid(unsigned short pid)
 {
     Player *player;
     GET_PLAYER(pid, player, );
@@ -56,12 +56,12 @@ void ActorFunctions::SetActorListPid(unsigned short pid) noexcept
     writeActorList.guid = player->guid;
 }
 
-void ActorFunctions::CopyReceivedActorListToStore() noexcept
+void ActorFunctions::CopyReceivedActorListToStore()
 {
     writeActorList = *readActorList;
 }
 
-unsigned int ActorFunctions::GetActorListSize() noexcept
+unsigned int ActorFunctions::GetActorListSize()
 {
     if (readActorList == nullptr)
         return 0;
@@ -69,140 +69,140 @@ unsigned int ActorFunctions::GetActorListSize() noexcept
     return readActorList->count;
 }
 
-unsigned char ActorFunctions::GetActorListAction() noexcept
+unsigned char ActorFunctions::GetActorListAction()
 {
     return readActorList->action;
 }
 
-const char *ActorFunctions::GetActorCell(unsigned int index) noexcept
+const char *ActorFunctions::GetActorCell(unsigned int index)
 {
     tempCellDescription = readActorList->baseActors.at(index).cell.getShortDescription();
     return tempCellDescription.c_str();
 }
 
-const char *ActorFunctions::GetActorRefId(unsigned int index) noexcept
+const char *ActorFunctions::GetActorRefId(unsigned int index)
 {
     return readActorList->baseActors.at(index).refId.c_str();
 }
 
-unsigned int ActorFunctions::GetActorRefNum(unsigned int index) noexcept
+unsigned int ActorFunctions::GetActorRefNum(unsigned int index)
 {
     return readActorList->baseActors.at(index).refNum;
 }
 
-unsigned int ActorFunctions::GetActorMpNum(unsigned int index) noexcept
+unsigned int ActorFunctions::GetActorMpNum(unsigned int index)
 {
     return readActorList->baseActors.at(index).mpNum;
 }
 
-double ActorFunctions::GetActorPosX(unsigned int index) noexcept
+double ActorFunctions::GetActorPosX(unsigned int index)
 {
     return readActorList->baseActors.at(index).position.pos[0];
 }
 
-double ActorFunctions::GetActorPosY(unsigned int index) noexcept
+double ActorFunctions::GetActorPosY(unsigned int index)
 {
     return readActorList->baseActors.at(index).position.pos[1];
 }
 
-double ActorFunctions::GetActorPosZ(unsigned int index) noexcept
+double ActorFunctions::GetActorPosZ(unsigned int index)
 {
     return readActorList->baseActors.at(index).position.pos[2];
 }
 
-double ActorFunctions::GetActorRotX(unsigned int index) noexcept
+double ActorFunctions::GetActorRotX(unsigned int index)
 {
     return readActorList->baseActors.at(index).position.rot[0];
 }
 
-double ActorFunctions::GetActorRotY(unsigned int index) noexcept
+double ActorFunctions::GetActorRotY(unsigned int index)
 {
     return readActorList->baseActors.at(index).position.rot[1];
 }
 
-double ActorFunctions::GetActorRotZ(unsigned int index) noexcept
+double ActorFunctions::GetActorRotZ(unsigned int index)
 {
     return readActorList->baseActors.at(index).position.rot[2];
 }
 
-double ActorFunctions::GetActorHealthBase(unsigned int index) noexcept
+double ActorFunctions::GetActorHealthBase(unsigned int index)
 {
     return readActorList->baseActors.at(index).creatureStats.mDynamic[0].mBase;
 }
 
-double ActorFunctions::GetActorHealthCurrent(unsigned int index) noexcept
+double ActorFunctions::GetActorHealthCurrent(unsigned int index)
 {
     return readActorList->baseActors.at(index).creatureStats.mDynamic[0].mCurrent;
 }
 
-double ActorFunctions::GetActorHealthModified(unsigned int index) noexcept
+double ActorFunctions::GetActorHealthModified(unsigned int index)
 {
     return readActorList->baseActors.at(index).creatureStats.mDynamic[0].mMod;
 }
 
-double ActorFunctions::GetActorMagickaBase(unsigned int index) noexcept
+double ActorFunctions::GetActorMagickaBase(unsigned int index)
 {
     return readActorList->baseActors.at(index).creatureStats.mDynamic[1].mBase;
 }
 
-double ActorFunctions::GetActorMagickaCurrent(unsigned int index) noexcept
+double ActorFunctions::GetActorMagickaCurrent(unsigned int index)
 {
     return readActorList->baseActors.at(index).creatureStats.mDynamic[1].mCurrent;
 }
 
-double ActorFunctions::GetActorMagickaModified(unsigned int index) noexcept
+double ActorFunctions::GetActorMagickaModified(unsigned int index)
 {
     return readActorList->baseActors.at(index).creatureStats.mDynamic[1].mMod;
 }
 
-double ActorFunctions::GetActorFatigueBase(unsigned int index) noexcept
+double ActorFunctions::GetActorFatigueBase(unsigned int index)
 {
     return readActorList->baseActors.at(index).creatureStats.mDynamic[2].mBase;
 }
 
-double ActorFunctions::GetActorFatigueCurrent(unsigned int index) noexcept
+double ActorFunctions::GetActorFatigueCurrent(unsigned int index)
 {
     return readActorList->baseActors.at(index).creatureStats.mDynamic[2].mCurrent;
 }
 
-double ActorFunctions::GetActorFatigueModified(unsigned int index) noexcept
+double ActorFunctions::GetActorFatigueModified(unsigned int index)
 {
     return readActorList->baseActors.at(index).creatureStats.mDynamic[2].mMod;
 }
 
-double ActorFunctions::GetActorAttackStrength(unsigned int index) noexcept
+double ActorFunctions::GetActorAttackStrength(unsigned int index)
 {
     if (readActorList == nullptr || index >= readActorList->baseActors.size())
         return 0;
     return readActorList->baseActors[index].attack.attackStrength;
 }
 
-const char *ActorFunctions::GetActorEquipmentItemRefId(unsigned int index, unsigned short slot) noexcept
+const char *ActorFunctions::GetActorEquipmentItemRefId(unsigned int index, unsigned short slot)
 {
     return readActorList->baseActors.at(index).equipmentItems[slot].refId.c_str();
 }
 
-int ActorFunctions::GetActorEquipmentItemCount(unsigned int index, unsigned short slot) noexcept
+int ActorFunctions::GetActorEquipmentItemCount(unsigned int index, unsigned short slot)
 {
     return readActorList->baseActors.at(index).equipmentItems[slot].count;
 }
 
-int ActorFunctions::GetActorEquipmentItemCharge(unsigned int index, unsigned short slot) noexcept
+int ActorFunctions::GetActorEquipmentItemCharge(unsigned int index, unsigned short slot)
 {
     return readActorList->baseActors.at(index).equipmentItems[slot].charge;
 }
 
-double ActorFunctions::GetActorEquipmentItemEnchantmentCharge(unsigned int index, unsigned short slot) noexcept
+double ActorFunctions::GetActorEquipmentItemEnchantmentCharge(unsigned int index, unsigned short slot)
 {
     return readActorList->baseActors.at(index).equipmentItems[slot].enchantmentCharge;
 }
 
-bool ActorFunctions::DoesActorHavePlayerKiller(unsigned int index) noexcept
+bool ActorFunctions::DoesActorHavePlayerKiller(unsigned int index)
 {
     return readActorList->baseActors.at(index).killer.isPlayer;
 }
 
-int ActorFunctions::GetActorKillerPid(unsigned int index) noexcept
+int ActorFunctions::GetActorKillerPid(unsigned int index)
 {
     Player *player = Players::getPlayer(readActorList->baseActors.at(index).killer.guid);
 
@@ -212,68 +212,68 @@ int ActorFunctions::GetActorKillerPid(unsigned int index) noexcept
     return -1;
 }
 
-const char *ActorFunctions::GetActorKillerRefId(unsigned int index) noexcept
+const char *ActorFunctions::GetActorKillerRefId(unsigned int index)
 {
     return readActorList->baseActors.at(index).killer.refId.c_str();
 }
 
-unsigned int ActorFunctions::GetActorKillerRefNum(unsigned int index) noexcept
+unsigned int ActorFunctions::GetActorKillerRefNum(unsigned int index)
 {
     return readActorList->baseActors.at(index).killer.refNum;
 }
 
-unsigned int ActorFunctions::GetActorKillerMpNum(unsigned int index) noexcept
+unsigned int ActorFunctions::GetActorKillerMpNum(unsigned int index)
 {
     return readActorList->baseActors.at(index).killer.mpNum;
 }
 
-const char *ActorFunctions::GetActorKillerName(unsigned int index) noexcept
+const char *ActorFunctions::GetActorKillerName(unsigned int index)
 {
     return readActorList->baseActors.at(index).killer.name.c_str();
 }
 
-unsigned int ActorFunctions::GetActorDeathState(unsigned int index) noexcept
+unsigned int ActorFunctions::GetActorDeathState(unsigned int index)
 {
     return readActorList->baseActors.at(index).deathState;
 }
 
-unsigned int ActorFunctions::GetActorSpellsActiveChangesSize(unsigned int actorIndex) noexcept
+unsigned int ActorFunctions::GetActorSpellsActiveChangesSize(unsigned int actorIndex)
 {
     return readActorList->baseActors.at(actorIndex).spellsActiveChanges.activeSpells.size();
 }
 
-unsigned int ActorFunctions::GetActorSpellsActiveChangesAction(unsigned int actorIndex) noexcept
+unsigned int ActorFunctions::GetActorSpellsActiveChangesAction(unsigned int actorIndex)
 {
     return readActorList->baseActors.at(actorIndex).spellsActiveChanges.action;
 }
 
-const char* ActorFunctions::GetActorSpellsActiveId(unsigned int actorIndex, unsigned int spellIndex) noexcept
+const char* ActorFunctions::GetActorSpellsActiveId(unsigned int actorIndex, unsigned int spellIndex)
 {
     return readActorList->baseActors.at(actorIndex).spellsActiveChanges.activeSpells.at(spellIndex).id.c_str();
 }
 
-const char* ActorFunctions::GetActorSpellsActiveDisplayName(unsigned int actorIndex, unsigned int spellIndex) noexcept
+const char* ActorFunctions::GetActorSpellsActiveDisplayName(unsigned int actorIndex, unsigned int spellIndex)
 {
     return readActorList->baseActors.at(actorIndex).spellsActiveChanges.activeSpells.at(spellIndex).params.mDisplayName.c_str();
 }
 
-bool ActorFunctions::GetActorSpellsActiveStackingState(unsigned int actorIndex, unsigned int spellIndex) noexcept
+bool ActorFunctions::GetActorSpellsActiveStackingState(unsigned int actorIndex, unsigned int spellIndex)
 {
     return readActorList->baseActors.at(actorIndex).spellsActiveChanges.activeSpells.at(spellIndex).isStackingSpell;
 }
 
-unsigned int ActorFunctions::GetActorSpellsActiveEffectCount(unsigned int actorIndex, unsigned int spellIndex) noexcept
+unsigned int ActorFunctions::GetActorSpellsActiveEffectCount(unsigned int actorIndex, unsigned int spellIndex)
 {
     return readActorList->baseActors.at(actorIndex).spellsActiveChanges.activeSpells.at(spellIndex).params.mEffects.size();
 }
 
-unsigned int ActorFunctions::GetActorSpellsActiveEffectId(unsigned int actorIndex, unsigned int spellIndex, unsigned int effectIndex) noexcept
+unsigned int ActorFunctions::GetActorSpellsActiveEffectId(unsigned int actorIndex, unsigned int spellIndex, unsigned int effectIndex)
 {
     const auto& id = readActorList->baseActors.at(actorIndex).spellsActiveChanges.activeSpells.at(spellIndex).params.mEffects.at(effectIndex).mEffectId;
     return static_cast<unsigned int>(ESM::MagicEffect::refIdToIndex(id));
 }
 
-int ActorFunctions::GetActorSpellsActiveEffectArg(unsigned int actorIndex, unsigned int spellIndex, unsigned int effectIndex) noexcept
+int ActorFunctions::GetActorSpellsActiveEffectArg(unsigned int actorIndex, unsigned int spellIndex, unsigned int effectIndex)
 {
     const auto& arg = readActorList->baseActors.at(actorIndex).spellsActiveChanges.activeSpells.at(spellIndex).params.mEffects.at(effectIndex).mArg;
     if (std::holds_alternative<ESM::RefId>(arg))
@@ -281,27 +281,27 @@ int ActorFunctions::GetActorSpellsActiveEffectArg(unsigned int actorIndex, unsig
     return 0;
 }
 
-double ActorFunctions::GetActorSpellsActiveEffectMagnitude(unsigned int actorIndex, unsigned int spellIndex, unsigned int effectIndex) noexcept
+double ActorFunctions::GetActorSpellsActiveEffectMagnitude(unsigned int actorIndex, unsigned int spellIndex, unsigned int effectIndex)
 {
     return readActorList->baseActors.at(actorIndex).spellsActiveChanges.activeSpells.at(spellIndex).params.mEffects.at(effectIndex).mMagnitude;
 }
 
-double ActorFunctions::GetActorSpellsActiveEffectDuration(unsigned int actorIndex, unsigned int spellIndex, unsigned int effectIndex) noexcept
+double ActorFunctions::GetActorSpellsActiveEffectDuration(unsigned int actorIndex, unsigned int spellIndex, unsigned int effectIndex)
 {
     return readActorList->baseActors.at(actorIndex).spellsActiveChanges.activeSpells.at(spellIndex).params.mEffects.at(effectIndex).mDuration;
 }
 
-double ActorFunctions::GetActorSpellsActiveEffectTimeLeft(unsigned int actorIndex, unsigned int spellIndex, unsigned int effectIndex) noexcept
+double ActorFunctions::GetActorSpellsActiveEffectTimeLeft(unsigned int actorIndex, unsigned int spellIndex, unsigned int effectIndex)
 {
     return readActorList->baseActors.at(actorIndex).spellsActiveChanges.activeSpells.at(spellIndex).params.mEffects.at(effectIndex).mTimeLeft;
 }
 
-bool ActorFunctions::DoesActorSpellsActiveHavePlayerCaster(unsigned int actorIndex, unsigned int spellIndex) noexcept
+bool ActorFunctions::DoesActorSpellsActiveHavePlayerCaster(unsigned int actorIndex, unsigned int spellIndex)
 {
     return readActorList->baseActors.at(actorIndex).spellsActiveChanges.activeSpells.at(spellIndex).caster.isPlayer;
 }
 
-int ActorFunctions::GetActorSpellsActiveCasterPid(unsigned int actorIndex, unsigned int spellIndex) noexcept
+int ActorFunctions::GetActorSpellsActiveCasterPid(unsigned int actorIndex, unsigned int spellIndex)
 {
     Player* caster = Players::getPlayer(readActorList->baseActors.at(actorIndex).spellsActiveChanges.activeSpells.at(spellIndex).caster.guid);
 
@@ -311,121 +311,121 @@ int ActorFunctions::GetActorSpellsActiveCasterPid(unsigned int actorIndex, unsig
     return -1;
 }
 
-const char* ActorFunctions::GetActorSpellsActiveCasterRefId(unsigned int actorIndex, unsigned int spellIndex) noexcept
+const char* ActorFunctions::GetActorSpellsActiveCasterRefId(unsigned int actorIndex, unsigned int spellIndex)
 {
     return readActorList->baseActors.at(actorIndex).spellsActiveChanges.activeSpells.at(spellIndex).caster.refId.c_str();
 }
 
-unsigned int ActorFunctions::GetActorSpellsActiveCasterRefNum(unsigned int actorIndex, unsigned int spellIndex) noexcept
+unsigned int ActorFunctions::GetActorSpellsActiveCasterRefNum(unsigned int actorIndex, unsigned int spellIndex)
 {
     return readActorList->baseActors.at(actorIndex).spellsActiveChanges.activeSpells.at(spellIndex).caster.refNum;
 }
 
-unsigned int ActorFunctions::GetActorSpellsActiveCasterMpNum(unsigned int actorIndex, unsigned int spellIndex) noexcept
+unsigned int ActorFunctions::GetActorSpellsActiveCasterMpNum(unsigned int actorIndex, unsigned int spellIndex)
 {
     return readActorList->baseActors.at(actorIndex).spellsActiveChanges.activeSpells.at(spellIndex).caster.mpNum;
 }
 
-bool ActorFunctions::DoesActorHavePosition(unsigned int index) noexcept
+bool ActorFunctions::DoesActorHavePosition(unsigned int index)
 {
     return readActorList->baseActors.at(index).hasPositionData;
 }
 
-bool ActorFunctions::DoesActorHaveStatsDynamic(unsigned int index) noexcept
+bool ActorFunctions::DoesActorHaveStatsDynamic(unsigned int index)
 {
     return readActorList->baseActors.at(index).hasStatsDynamicData;
 }
 
-void ActorFunctions::SetActorListCell(const char* cellDescription) noexcept
+void ActorFunctions::SetActorListCell(const char* cellDescription)
 {
     writeActorList.cell = Utils::getCellFromDescription(cellDescription);
 }
 
-void ActorFunctions::SetActorListAction(unsigned char action) noexcept
+void ActorFunctions::SetActorListAction(unsigned char action)
 {
     writeActorList.action = action;
 }
 
-void ActorFunctions::SetActorCell(const char* cellDescription) noexcept
+void ActorFunctions::SetActorCell(const char* cellDescription)
 {
     tempActor.cell = Utils::getCellFromDescription(cellDescription);
 }
 
-void ActorFunctions::SetActorRefId(const char* refId) noexcept
+void ActorFunctions::SetActorRefId(const char* refId)
 {
     tempActor.refId = refId;
 }
 
-void ActorFunctions::SetActorRefNum(int refNum) noexcept
+void ActorFunctions::SetActorRefNum(int refNum)
 {
     tempActor.refNum = refNum;
 }
 
-void ActorFunctions::SetActorMpNum(int mpNum) noexcept
+void ActorFunctions::SetActorMpNum(int mpNum)
 {
     tempActor.mpNum = mpNum;
 }
 
-void ActorFunctions::SetActorPosition(double x, double y, double z) noexcept
+void ActorFunctions::SetActorPosition(double x, double y, double z)
 {
     tempActor.position.pos[0] = x;
     tempActor.position.pos[1] = y;
     tempActor.position.pos[2] = z;
 }
 
-void ActorFunctions::SetActorRotation(double x, double y, double z) noexcept
+void ActorFunctions::SetActorRotation(double x, double y, double z)
 {
     tempActor.position.rot[0] = x;
     tempActor.position.rot[1] = y;
     tempActor.position.rot[2] = z;
 }
 
-void ActorFunctions::SetActorHealthBase(double value) noexcept
+void ActorFunctions::SetActorHealthBase(double value)
 {
     tempActor.creatureStats.mDynamic[0].mBase = value;
 }
 
-void ActorFunctions::SetActorHealthCurrent(double value) noexcept
+void ActorFunctions::SetActorHealthCurrent(double value)
 {
     tempActor.creatureStats.mDynamic[0].mCurrent = value;
 }
 
-void ActorFunctions::SetActorHealthModified(double value) noexcept
+void ActorFunctions::SetActorHealthModified(double value)
 {
     tempActor.creatureStats.mDynamic[0].mMod = value;
 }
 
-void ActorFunctions::SetActorMagickaBase(double value) noexcept
+void ActorFunctions::SetActorMagickaBase(double value)
 {
     tempActor.creatureStats.mDynamic[1].mBase = value;
 }
 
-void ActorFunctions::SetActorMagickaCurrent(double value) noexcept
+void ActorFunctions::SetActorMagickaCurrent(double value)
 {
     tempActor.creatureStats.mDynamic[1].mCurrent = value;
 }
 
-void ActorFunctions::SetActorMagickaModified(double value) noexcept
+void ActorFunctions::SetActorMagickaModified(double value)
 {
     tempActor.creatureStats.mDynamic[1].mMod = value;
 }
 
-void ActorFunctions::SetActorFatigueBase(double value) noexcept
+void ActorFunctions::SetActorFatigueBase(double value)
 {
     tempActor.creatureStats.mDynamic[2].mBase = value;
 }
 
-void ActorFunctions::SetActorFatigueCurrent(double value) noexcept
+void ActorFunctions::SetActorFatigueCurrent(double value)
 {
     tempActor.creatureStats.mDynamic[2].mCurrent = value;
 }
 
-void ActorFunctions::SetActorFatigueModified(double value) noexcept
+void ActorFunctions::SetActorFatigueModified(double value)
 {
     tempActor.creatureStats.mDynamic[2].mMod = value;
 }
 
-void ActorFunctions::SetActorAttackStrength(unsigned int index, double value) noexcept
+void ActorFunctions::SetActorAttackStrength(unsigned int index, double value)
 {
     if (readActorList == nullptr || index >= readActorList->baseActors.size())
         return;
@@ -433,32 +433,32 @@ void ActorFunctions::SetActorAttackStrength(unsigned int index, double value) no
         = static_cast<float>(value);
 }
 
-void ActorFunctions::SetActorSound(const char* sound) noexcept
+void ActorFunctions::SetActorSound(const char* sound)
 {
     tempActor.sound = sound;
 }
 
-void ActorFunctions::SetActorDeathState(unsigned int deathState) noexcept
+void ActorFunctions::SetActorDeathState(unsigned int deathState)
 {
     tempActor.deathState = deathState;
 }
 
-void ActorFunctions::SetActorDeathInstant(bool isInstant) noexcept
+void ActorFunctions::SetActorDeathInstant(bool isInstant)
 {
     tempActor.isInstantDeath = isInstant;
 }
 
-void ActorFunctions::SetActorSpellsActiveAction(unsigned char action) noexcept
+void ActorFunctions::SetActorSpellsActiveAction(unsigned char action)
 {
     tempActor.spellsActiveChanges.action = action;
 }
 
-void ActorFunctions::SetActorAIAction(unsigned int action) noexcept
+void ActorFunctions::SetActorAIAction(unsigned int action)
 {
     tempActor.aiAction = action;
 }
 
-void ActorFunctions::SetActorAITargetToPlayer(unsigned short pid) noexcept
+void ActorFunctions::SetActorAITargetToPlayer(unsigned short pid)
 {
     Player *player;
     GET_PLAYER(pid, player, );
@@ -469,7 +469,7 @@ void ActorFunctions::SetActorAITargetToPlayer(unsigned short pid) noexcept
     tempActor.aiTarget.guid = player->guid;
 }
 
-void ActorFunctions::SetActorAITargetToObject(int refNum, int mpNum) noexcept
+void ActorFunctions::SetActorAITargetToObject(int refNum, int mpNum)
 {
     tempActor.hasAiTarget = true;
     tempActor.aiTarget.isPlayer = false;
@@ -478,24 +478,24 @@ void ActorFunctions::SetActorAITargetToObject(int refNum, int mpNum) noexcept
     tempActor.aiTarget.mpNum = mpNum;
 }
 
-void ActorFunctions::SetActorAICoordinates(double x, double y, double z) noexcept
+void ActorFunctions::SetActorAICoordinates(double x, double y, double z)
 {
     tempActor.aiCoordinates.pos[0] = x;
     tempActor.aiCoordinates.pos[1] = y;
     tempActor.aiCoordinates.pos[2] = z;
 }
 
-void ActorFunctions::SetActorAIDistance(unsigned int distance) noexcept
+void ActorFunctions::SetActorAIDistance(unsigned int distance)
 {
     tempActor.aiDistance = distance;
 }
 
-void ActorFunctions::SetActorAIDuration(unsigned int duration) noexcept
+void ActorFunctions::SetActorAIDuration(unsigned int duration)
 {
     tempActor.aiDuration = duration;
 }
 
-void ActorFunctions::SetActorAIRepetition(bool shouldRepeat) noexcept
+void ActorFunctions::SetActorAIRepetition(bool shouldRepeat)
 {
     tempActor.aiShouldRepeat = shouldRepeat;
 }
@@ -516,7 +516,7 @@ void ActorFunctions::UnequipActorItem(unsigned short slot)
     ActorFunctions::EquipActorItem(slot, "", 0, -1, -1);
 }
 
-void ActorFunctions::AddActorSpellActive(const char* spellId, const char* displayName, bool stackingState) noexcept
+void ActorFunctions::AddActorSpellActive(const char* spellId, const char* displayName, bool stackingState)
 {
     mwmp::ActiveSpell spell;
     spell.id = spellId;
@@ -529,7 +529,7 @@ void ActorFunctions::AddActorSpellActive(const char* spellId, const char* displa
     storedActorActiveEffects.clear();
 }
 
-void ActorFunctions::AddActorSpellActiveEffect(int effectId, double magnitude, double duration, double timeLeft, int arg) noexcept
+void ActorFunctions::AddActorSpellActiveEffect(int effectId, double magnitude, double duration, double timeLeft, int arg)
 {
     ESM::ActiveEffect effect;
     effect.mEffectId = ESM::MagicEffect::indexToRefId(effectId);
@@ -541,7 +541,7 @@ void ActorFunctions::AddActorSpellActiveEffect(int effectId, double magnitude, d
     storedActorActiveEffects.push_back(effect);
 }
 
-void ActorFunctions::AddActor() noexcept
+void ActorFunctions::AddActor()
 {
     writeActorList.baseActors.push_back(tempActor);
 
@@ -557,7 +557,7 @@ void ActorFunctions::SendActorList()
     actorPacket->Send(writeActorList.guid);
 }
 
-void ActorFunctions::SendActorAuthority() noexcept
+void ActorFunctions::SendActorAuthority()
 {
     Cell *serverCell = CellController::get()->getCell(&writeActorList.cell);
 
@@ -589,7 +589,7 @@ void ActorFunctions::SendActorAuthority() noexcept
     }
 }
 
-void ActorFunctions::SendActorPosition(bool sendToOtherVisitors, bool skipAttachedPlayer) noexcept
+void ActorFunctions::SendActorPosition(bool sendToOtherVisitors, bool skipAttachedPlayer)
 {
     mwmp::ActorPacket *actorPacket = mwmp::Networking::get().getActorPacketController()->GetPacket(ID_ACTOR_POSITION);
     actorPacket->setActorList(&writeActorList);
@@ -674,7 +674,7 @@ void ActorFunctions::SendActorSpellsActiveChanges(bool sendToOtherVisitors, bool
     }
 }
 
-void ActorFunctions::SendActorSpeech(bool sendToOtherVisitors, bool skipAttachedPlayer) noexcept
+void ActorFunctions::SendActorSpeech(bool sendToOtherVisitors, bool skipAttachedPlayer)
 {
     mwmp::ActorPacket *actorPacket = mwmp::Networking::get().getActorPacketController()->GetPacket(ID_ACTOR_SPEECH);
     actorPacket->setActorList(&writeActorList);
@@ -693,7 +693,7 @@ void ActorFunctions::SendActorSpeech(bool sendToOtherVisitors, bool skipAttached
     }
 }
 
-void ActorFunctions::SendActorDeath(bool sendToOtherVisitors, bool skipAttachedPlayer) noexcept
+void ActorFunctions::SendActorDeath(bool sendToOtherVisitors, bool skipAttachedPlayer)
 {
     mwmp::ActorPacket *actorPacket = mwmp::Networking::get().getActorPacketController()->GetPacket(ID_ACTOR_DEATH);
     actorPacket->setActorList(&writeActorList);
@@ -712,7 +712,7 @@ void ActorFunctions::SendActorDeath(bool sendToOtherVisitors, bool skipAttachedP
     }
 }
 
-void ActorFunctions::SendActorAI(bool sendToOtherVisitors, bool skipAttachedPlayer) noexcept
+void ActorFunctions::SendActorAI(bool sendToOtherVisitors, bool skipAttachedPlayer)
 {
     mwmp::ActorPacket *actorPacket = mwmp::Networking::get().getActorPacketController()->GetPacket(ID_ACTOR_AI);
     actorPacket->setActorList(&writeActorList);
@@ -731,7 +731,7 @@ void ActorFunctions::SendActorAI(bool sendToOtherVisitors, bool skipAttachedPlay
     }
 }
 
-void ActorFunctions::SendActorCellChange(bool sendToOtherVisitors, bool skipAttachedPlayer) noexcept
+void ActorFunctions::SendActorCellChange(bool sendToOtherVisitors, bool skipAttachedPlayer)
 {
     mwmp::ActorPacket *actorPacket = mwmp::Networking::get().getActorPacketController()->GetPacket(ID_ACTOR_CELL_CHANGE);
     actorPacket->setActorList(&writeActorList);
@@ -753,33 +753,33 @@ void ActorFunctions::SendActorCellChange(bool sendToOtherVisitors, bool skipAtta
 
 // All methods below are deprecated versions of methods from above
 
-void ActorFunctions::ReadLastActorList() noexcept
+void ActorFunctions::ReadLastActorList()
 {
     ReadReceivedActorList();
 }
 
-void ActorFunctions::InitializeActorList(unsigned short pid) noexcept
+void ActorFunctions::InitializeActorList(unsigned short pid)
 {
     ClearActorList();
     SetActorListPid(pid);
 }
 
-void ActorFunctions::CopyLastActorListToStore() noexcept
+void ActorFunctions::CopyLastActorListToStore()
 {
     CopyReceivedActorListToStore();
 }
 
-unsigned int ActorFunctions::GetActorRefNumIndex(unsigned int index) noexcept
+unsigned int ActorFunctions::GetActorRefNumIndex(unsigned int index)
 {
     return GetActorRefNum(index);
 }
 
-unsigned int ActorFunctions::GetActorKillerRefNumIndex(unsigned int index) noexcept
+unsigned int ActorFunctions::GetActorKillerRefNumIndex(unsigned int index)
 {
     return GetActorKillerRefNum(index);
 }
 
-void ActorFunctions::SetActorRefNumIndex(int refNum) noexcept
+void ActorFunctions::SetActorRefNumIndex(int refNum)
 {
     tempActor.refNum = refNum;
 }

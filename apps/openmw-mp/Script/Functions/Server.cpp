@@ -37,22 +37,22 @@ namespace
     }
 }
 
-void ServerFunctions::LogMessage(unsigned short level, const char *message) noexcept
+void ServerFunctions::LogMessage(unsigned short level, const char *message)
 {
     LOG_MESSAGE_SIMPLE(level, "[Script]: %s", message);
 }
 
-void ServerFunctions::LogAppend(unsigned short level, const char *message) noexcept
+void ServerFunctions::LogAppend(unsigned short level, const char *message)
 {
     LOG_APPEND(level, "[Script]: %s", message);
 }
 
-void ServerFunctions::StopServer(int code) noexcept
+void ServerFunctions::StopServer(int code)
 {
     mwmp::Networking::getPtr()->stopServer(code);
 }
 
-void ServerFunctions::Kick(unsigned short pid) noexcept
+void ServerFunctions::Kick(unsigned short pid)
 {
     Player *player;
     GET_PLAYER(pid, player,);
@@ -62,22 +62,22 @@ void ServerFunctions::Kick(unsigned short pid) noexcept
     player->setLoadState(Player::KICKED);
 }
 
-void ServerFunctions::BanAddress(const char *ipAddress) noexcept
+void ServerFunctions::BanAddress(const char *ipAddress)
 {
     mwmp::Networking::getPtr()->banAddress(ipAddress);
 }
 
-void ServerFunctions::UnbanAddress(const char *ipAddress) noexcept
+void ServerFunctions::UnbanAddress(const char *ipAddress)
 {
     mwmp::Networking::getPtr()->unbanAddress(ipAddress);
 }
 
-bool ServerFunctions::DoesFilePathExist(const char *filePath) noexcept
+bool ServerFunctions::DoesFilePathExist(const char *filePath)
 {
     return boost::filesystem::exists(filePath);
 }
 
-const char *ServerFunctions::GetCaseInsensitiveFilename(const char *folderPath, const char *filename) noexcept
+const char *ServerFunctions::GetCaseInsensitiveFilename(const char *folderPath, const char *filename)
 {
     if (!boost::filesystem::exists(folderPath)) return "invalid";
 
@@ -94,7 +94,7 @@ const char *ServerFunctions::GetCaseInsensitiveFilename(const char *folderPath, 
     return "invalid";
 }
 
-const char* ServerFunctions::GetDataPath() noexcept
+const char* ServerFunctions::GetDataPath()
 {
     return Script::GetModDir();
 }
@@ -151,44 +151,44 @@ void ServerFunctions::FlushPersistence()
     mwmp::Networking::getPtr()->flushPersistence();
 }
 
-unsigned int ServerFunctions::GetMillisecondsSinceServerStart() noexcept
+unsigned int ServerFunctions::GetMillisecondsSinceServerStart()
 {
     std::chrono::high_resolution_clock::time_point currentTime = std::chrono::high_resolution_clock::now();
     std::chrono::milliseconds milliseconds = std::chrono::duration_cast<std::chrono::milliseconds>(currentTime - startupTime);
     return milliseconds.count();
 }
 
-const char *ServerFunctions::GetOperatingSystemType() noexcept
+const char *ServerFunctions::GetOperatingSystemType()
 {
     static const std::string operatingSystemType = Utils::getOperatingSystemType();
     return operatingSystemType.c_str();
 }
 
-const char *ServerFunctions::GetArchitectureType() noexcept
+const char *ServerFunctions::GetArchitectureType()
 {
     static const std::string architectureType = Utils::getArchitectureType();
     return architectureType.c_str();
 }
 
-const char *ServerFunctions::GetServerVersion() noexcept
+const char *ServerFunctions::GetServerVersion()
 {
     return TES3MP_VERSION;
 }
 
-const char *ServerFunctions::GetProtocolVersion() noexcept
+const char *ServerFunctions::GetProtocolVersion()
 {
     static std::string version = std::to_string(TES3MP_PROTO_VERSION);
     return version.c_str();
 }
 
-int ServerFunctions::GetAvgPing(unsigned short pid) noexcept
+int ServerFunctions::GetAvgPing(unsigned short pid)
 {
     Player *player;
     GET_PLAYER(pid, player, -1);
     return mwmp::Networking::get().getAvgPing(player->guid);
 }
 
-const char *ServerFunctions::GetIP(unsigned short pid) noexcept
+const char *ServerFunctions::GetIP(unsigned short pid)
 {
     Player *player;
     GET_PLAYER(pid, player, "");
@@ -197,42 +197,42 @@ const char *ServerFunctions::GetIP(unsigned short pid) noexcept
     return address.c_str();
 }
 
-unsigned short ServerFunctions::GetPort() noexcept
+unsigned short ServerFunctions::GetPort()
 {
     return mwmp::Networking::get().getPort();
 }
 
-unsigned int ServerFunctions::GetMaxPlayers() noexcept
+unsigned int ServerFunctions::GetMaxPlayers()
 {
     return mwmp::Networking::get().maxConnections();
 }
 
-bool ServerFunctions::HasPassword() noexcept
+bool ServerFunctions::HasPassword()
 {
     return mwmp::Networking::get().isPassworded();
 }
 
-bool ServerFunctions::GetDataFileEnforcementState() noexcept
+bool ServerFunctions::GetDataFileEnforcementState()
 {
     return mwmp::Networking::getPtr()->getDataFileEnforcementState();
 }
 
-bool ServerFunctions::GetScriptErrorIgnoringState() noexcept
+bool ServerFunctions::GetScriptErrorIgnoringState()
 {
     return mwmp::Networking::getPtr()->getScriptErrorIgnoringState();
 }
 
-void ServerFunctions::SetGameMode(const char *gameMode) noexcept
+void ServerFunctions::SetGameMode(const char *gameMode)
 {
     (void)gameMode;
 }
 
-void ServerFunctions::SetHostname(const char *name) noexcept
+void ServerFunctions::SetHostname(const char *name)
 {
     (void)name;
 }
 
-void ServerFunctions::SetServerPassword(const char *password) noexcept
+void ServerFunctions::SetServerPassword(const char *password)
 {
     std::string error;
     if (!mwmp::Networking::getPtr()->setServerPassword(password == nullptr ? "" : password, error))
@@ -240,29 +240,29 @@ void ServerFunctions::SetServerPassword(const char *password) noexcept
             "[Script]: Failed to update the server access password: %s", error.c_str());
 }
 
-void ServerFunctions::SetDataFileEnforcementState(bool state) noexcept
+void ServerFunctions::SetDataFileEnforcementState(bool state)
 {
     mwmp::Networking::getPtr()->setDataFileEnforcementState(state);
 }
 
-void ServerFunctions::SetScriptErrorIgnoringState(bool state) noexcept
+void ServerFunctions::SetScriptErrorIgnoringState(bool state)
 {
     mwmp::Networking::getPtr()->setScriptErrorIgnoringState(state);
 }
 
-void ServerFunctions::SetRuleString(const char *key, const char *value) noexcept
+void ServerFunctions::SetRuleString(const char *key, const char *value)
 {
     (void)key;
     (void)value;
 }
 
-void ServerFunctions::SetRuleValue(const char *key, double value) noexcept
+void ServerFunctions::SetRuleValue(const char *key, double value)
 {
     (void)key;
     (void)value;
 }
 
-void ServerFunctions::AddDataFileRequirement(const char *dataFilename, const char *checksumString) noexcept
+void ServerFunctions::AddDataFileRequirement(const char *dataFilename, const char *checksumString)
 {
     auto &samples = mwmp::Networking::getPtr()->getSamples();
     
@@ -295,27 +295,27 @@ void ServerFunctions::AddDataFileRequirement(const char *dataFilename, const cha
 
 // All methods below are deprecated versions of methods from above
 
-bool ServerFunctions::DoesFileExist(const char *filePath) noexcept
+bool ServerFunctions::DoesFileExist(const char *filePath)
 {
     return DoesFilePathExist(filePath);
 }
 
-const char* ServerFunctions::GetModDir() noexcept
+const char* ServerFunctions::GetModDir()
 {
     return GetDataPath();
 }
 
-bool ServerFunctions::GetPluginEnforcementState() noexcept
+bool ServerFunctions::GetPluginEnforcementState()
 {
     return mwmp::Networking::getPtr()->getDataFileEnforcementState();
 }
 
-void ServerFunctions::SetPluginEnforcementState(bool state) noexcept
+void ServerFunctions::SetPluginEnforcementState(bool state)
 {
     SetDataFileEnforcementState(state);
 }
 
-void ServerFunctions::AddPluginHash(const char *pluginName, const char *checksumString) noexcept
+void ServerFunctions::AddPluginHash(const char *pluginName, const char *checksumString)
 {
     AddDataFileRequirement(pluginName, checksumString);
 }

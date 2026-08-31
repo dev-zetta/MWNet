@@ -7,7 +7,7 @@
 #include <apps/openmw-mp/Networking.hpp>
 #include <apps/openmw-mp/Script/ScriptFunctions.hpp>
 
-const char *CharClassFunctions::GetDefaultClass(unsigned short pid) noexcept
+const char *CharClassFunctions::GetDefaultClass(unsigned short pid)
 {
     Player *player;
     GET_PLAYER(pid, player, "");
@@ -15,7 +15,7 @@ const char *CharClassFunctions::GetDefaultClass(unsigned short pid) noexcept
     return player->charClass.mId.getRefIdString().c_str();
 }
 
-const char *CharClassFunctions::GetClassName(unsigned short pid) noexcept
+const char *CharClassFunctions::GetClassName(unsigned short pid)
 {
     Player *player;
     GET_PLAYER(pid, player, "");
@@ -23,7 +23,7 @@ const char *CharClassFunctions::GetClassName(unsigned short pid) noexcept
     return player->charClass.mName.c_str();
 }
 
-const char *CharClassFunctions::GetClassDesc(unsigned short pid) noexcept
+const char *CharClassFunctions::GetClassDesc(unsigned short pid)
 {
     Player *player;
     GET_PLAYER(pid, player, "");
@@ -42,7 +42,7 @@ int CharClassFunctions::GetClassMajorAttribute(unsigned short pid, unsigned char
     return ESM::Attribute::refIdToIndex(player->charClass.mData.mAttribute[slot]);
 }
 
-int CharClassFunctions::GetClassSpecialization(unsigned short pid) noexcept
+int CharClassFunctions::GetClassSpecialization(unsigned short pid)
 {
     Player *player;
     GET_PLAYER(pid, player, 0);
@@ -72,7 +72,7 @@ int CharClassFunctions::GetClassMinorSkill(unsigned short pid, unsigned char slo
     return ESM::Skill::refIdToIndex(player->charClass.mData.mSkills[slot][0]);
 }
 
-int CharClassFunctions::IsClassDefault(unsigned short pid) noexcept
+int CharClassFunctions::IsClassDefault(unsigned short pid)
 {
     Player *player;
     GET_PLAYER(pid, player, 0);
@@ -80,14 +80,14 @@ int CharClassFunctions::IsClassDefault(unsigned short pid) noexcept
     return !player->charClass.mId.empty(); // true if default
 }
 
-void CharClassFunctions::SetDefaultClass(unsigned short pid, const char *id) noexcept
+void CharClassFunctions::SetDefaultClass(unsigned short pid, const char *id)
 {
     Player *player;
     GET_PLAYER(pid, player,);
 
     player->charClass.mId = ESM::RefId::stringRefId(id);
 }
-void CharClassFunctions::SetClassName(unsigned short pid, const char *name) noexcept
+void CharClassFunctions::SetClassName(unsigned short pid, const char *name)
 {
     Player *player;
     GET_PLAYER(pid, player,);
@@ -95,7 +95,7 @@ void CharClassFunctions::SetClassName(unsigned short pid, const char *name) noex
     player->charClass.mName = name;
     player->charClass.mId = ESM::RefId{};
 }
-void CharClassFunctions::SetClassDesc(unsigned short pid, const char *desc) noexcept
+void CharClassFunctions::SetClassDesc(unsigned short pid, const char *desc)
 {
     Player *player;
     GET_PLAYER(pid, player,);
@@ -113,7 +113,7 @@ void CharClassFunctions::SetClassMajorAttribute(unsigned short pid, unsigned cha
     player->charClass.mData.mAttribute[slot] = ESM::Attribute::indexToRefId(attrId);
 
 }
-void CharClassFunctions::SetClassSpecialization(unsigned short pid, int spec) noexcept
+void CharClassFunctions::SetClassSpecialization(unsigned short pid, int spec)
 {
     Player *player;
     GET_PLAYER(pid, player,);
@@ -141,7 +141,7 @@ void CharClassFunctions::SetClassMinorSkill(unsigned short pid, unsigned char sl
     player->charClass.mData.mSkills[slot][0] = ESM::Skill::indexToRefId(skillId);
 }
 
-void CharClassFunctions::SendClass(unsigned short pid) noexcept
+void CharClassFunctions::SendClass(unsigned short pid)
 {
     Player *player;
     GET_PLAYER(pid, player, );

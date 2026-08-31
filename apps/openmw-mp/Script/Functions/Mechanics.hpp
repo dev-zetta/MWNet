@@ -53,7 +53,7 @@ public:
     * \param pid The player ID.
     * \return void
     */
-    static void ClearAlliedPlayersForPlayer(unsigned short pid) noexcept;
+    static void ClearAlliedPlayersForPlayer(unsigned short pid);
 
     /**
     * \brief Get the type of a PlayerMiscellaneous packet.
@@ -61,7 +61,7 @@ public:
     * \param pid The player ID.
     * \return The type.
     */
-    static unsigned char GetMiscellaneousChangeType(unsigned short pid) noexcept;
+    static unsigned char GetMiscellaneousChangeType(unsigned short pid);
 
     /**
     * \brief Get the cell description of a player's Mark cell.
@@ -69,7 +69,7 @@ public:
     * \param pid The player ID.
     * \return The cell description.
     */
-    static const char *GetMarkCell(unsigned short pid) noexcept;
+    static const char *GetMarkCell(unsigned short pid);
 
     /**
     * \brief Get the X position of a player's Mark.
@@ -77,7 +77,7 @@ public:
     * \param pid The player ID.
     * \return The X position.
     */
-    static double GetMarkPosX(unsigned short pid) noexcept;
+    static double GetMarkPosX(unsigned short pid);
 
     /**
     * \brief Get the Y position of a player's Mark.
@@ -85,7 +85,7 @@ public:
     * \param pid The player ID.
     * \return The Y position.
     */
-    static double GetMarkPosY(unsigned short pid) noexcept;
+    static double GetMarkPosY(unsigned short pid);
 
     /**
     * \brief Get the Z position of a player's Mark.
@@ -93,7 +93,7 @@ public:
     * \param pid The player ID.
     * \return The Z position.
     */
-    static double GetMarkPosZ(unsigned short pid) noexcept;
+    static double GetMarkPosZ(unsigned short pid);
 
     /**
     * \brief Get the X rotation of a player's Mark.
@@ -101,7 +101,7 @@ public:
     * \param pid The player ID.
     * \return The X rotation.
     */
-    static double GetMarkRotX(unsigned short pid) noexcept;
+    static double GetMarkRotX(unsigned short pid);
 
     /**
     * \brief Get the Z rotation of a player's Mark.
@@ -109,7 +109,7 @@ public:
     * \param pid The player ID.
     * \return The X rotation.
     */
-    static double GetMarkRotZ(unsigned short pid) noexcept;
+    static double GetMarkRotZ(unsigned short pid);
 
     /**
     * \brief Get the ID of a player's selected spell.
@@ -117,7 +117,7 @@ public:
     * \param pid The player ID.
     * \return The spell ID.
     */
-    static const char *GetSelectedSpellId(unsigned short pid) noexcept;
+    static const char *GetSelectedSpellId(unsigned short pid);
 
     /**
     * \brief Check whether the killer of a certain player is also a player.
@@ -125,7 +125,7 @@ public:
     * \param pid The player ID of the killed player.
     * \return Whether the player was killed by another player.
     */
-    static bool DoesPlayerHavePlayerKiller(unsigned short pid) noexcept;
+    static bool DoesPlayerHavePlayerKiller(unsigned short pid);
 
     /**
     * \brief Get the player ID of the killer of a certain player.
@@ -133,7 +133,7 @@ public:
     * \param pid The player ID of the killed player.
     * \return The player ID of the killer.
     */
-    static int GetPlayerKillerPid(unsigned short pid) noexcept;
+    static int GetPlayerKillerPid(unsigned short pid);
 
     /**
     * \brief Get the refId of the actor killer of a certain player.
@@ -141,7 +141,7 @@ public:
     * \param pid The player ID of the killed player.
     * \return The refId of the killer.
     */
-    static const char *GetPlayerKillerRefId(unsigned short pid) noexcept;
+    static const char *GetPlayerKillerRefId(unsigned short pid);
 
     /**
     * \brief Get the refNum of the actor killer of a certain player.
@@ -149,7 +149,7 @@ public:
     * \param pid The player ID of the killed player.
     * \return The refNum of the killer.
     */
-    static unsigned int GetPlayerKillerRefNum(unsigned short pid) noexcept;
+    static unsigned int GetPlayerKillerRefNum(unsigned short pid);
 
     /**
     * \brief Get the mpNum of the actor killer of a certain player.
@@ -157,7 +157,7 @@ public:
     * \param pid The player ID of the killed player.
     * \return The mpNum of the killer.
     */
-    static unsigned int GetPlayerKillerMpNum(unsigned short pid) noexcept;
+    static unsigned int GetPlayerKillerMpNum(unsigned short pid);
 
     /**
     * \brief Get the name of the actor killer of a certain player.
@@ -165,7 +165,7 @@ public:
     * \param pid The player ID of the killed player.
     * \return The name of the killer.
     */
-    static const char *GetPlayerKillerName(unsigned short pid) noexcept;
+    static const char *GetPlayerKillerName(unsigned short pid);
 
     /**
     * \brief Get the draw state of a player (0 for nothing, 1 for drawn weapon,
@@ -174,7 +174,7 @@ public:
     * \param pid The player ID.
     * \return The draw state.
     */
-    static unsigned int GetDrawState(unsigned short pid) noexcept;
+    static unsigned int GetDrawState(unsigned short pid);
 
     /**
     * \brief Get the sneak state of a player.
@@ -182,7 +182,7 @@ public:
     * \param pid The player ID.
     * \return Whether the player is sneaking.
     */
-    static bool GetSneakState(unsigned short pid) noexcept;
+    static bool GetSneakState(unsigned short pid);
 
     /**
     * \brief Set the Mark cell of a player.
@@ -197,7 +197,7 @@ public:
     * \param cellDescription The cell description.
     * \return void
     */
-    static void SetMarkCell(unsigned short pid, const char *cellDescription) noexcept;
+    static void SetMarkCell(unsigned short pid, const char *cellDescription);
 
     /**
     * \brief Set the Mark position of a player.
@@ -211,7 +211,7 @@ public:
     * \param z The Z position.
     * \return void
     */
-    static void SetMarkPos(unsigned short pid, double x, double y, double z) noexcept;
+    static void SetMarkPos(unsigned short pid, double x, double y, double z);
 
     /**
     * \brief Set the Mark rotation of a player.
@@ -224,7 +224,7 @@ public:
     * \param z The Z rotation.
     * \return void
     */
-    static void SetMarkRot(unsigned short pid, double x, double z) noexcept;
+    static void SetMarkRot(unsigned short pid, double x, double z);
 
     /**
     * \brief Set the ID of a player's selected spell.
@@ -236,7 +236,7 @@ public:
     * \param spellId The spell ID.
     * \return void
     */
-    static void SetSelectedSpellId(unsigned short pid, const char *spellId) noexcept;
+    static void SetSelectedSpellId(unsigned short pid, const char *spellId);
 
     /**
     * \brief Add an ally to a player's list of allied players.
@@ -245,7 +245,7 @@ public:
     * \param alliedPlayerPid The ally's player ID.
     * \return void
     */
-    static void AddAlliedPlayerForPlayer(unsigned short pid, unsigned short alliedPlayerPid) noexcept;
+    static void AddAlliedPlayerForPlayer(unsigned short pid, unsigned short alliedPlayerPid);
 
     /**
     * \brief Send a PlayerMiscellaneous packet with a Mark location to a player.
@@ -310,8 +310,8 @@ public:
 
     // All methods below are deprecated versions of methods from above
 
-    static const char *GetDeathReason(unsigned short pid) noexcept;
-    static unsigned int GetPlayerKillerRefNumIndex(unsigned short pid) noexcept;
+    static const char *GetDeathReason(unsigned short pid);
+    static unsigned int GetPlayerKillerRefNumIndex(unsigned short pid);
 
 };
 

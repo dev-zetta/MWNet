@@ -7,7 +7,7 @@
 
 using namespace mwmp;
 
-void DialogueFunctions::ClearTopicChanges(unsigned short pid) noexcept
+void DialogueFunctions::ClearTopicChanges(unsigned short pid)
 {
     Player *player;
     GET_PLAYER(pid, player, );
@@ -15,7 +15,7 @@ void DialogueFunctions::ClearTopicChanges(unsigned short pid) noexcept
     player->topicChanges.clear();
 }
 
-unsigned int DialogueFunctions::GetTopicChangesSize(unsigned short pid) noexcept
+unsigned int DialogueFunctions::GetTopicChangesSize(unsigned short pid)
 {
     Player *player;
     GET_PLAYER(pid, player, 0);
@@ -23,7 +23,7 @@ unsigned int DialogueFunctions::GetTopicChangesSize(unsigned short pid) noexcept
     return player->topicChanges.size();
 }
 
-void DialogueFunctions::AddTopic(unsigned short pid, const char* topicId) noexcept
+void DialogueFunctions::AddTopic(unsigned short pid, const char* topicId)
 {
     Player *player;
     GET_PLAYER(pid, player, );
@@ -34,7 +34,7 @@ void DialogueFunctions::AddTopic(unsigned short pid, const char* topicId) noexce
     player->topicChanges.push_back(topic);
 }
 
-const char *DialogueFunctions::GetTopicId(unsigned short pid, unsigned int index) noexcept
+const char *DialogueFunctions::GetTopicId(unsigned short pid, unsigned int index)
 {
     Player *player;
     GET_PLAYER(pid, player, "");
@@ -45,7 +45,7 @@ const char *DialogueFunctions::GetTopicId(unsigned short pid, unsigned int index
     return player->topicChanges.at(index).topicId.c_str();
 }
 
-void DialogueFunctions::SendTopicChanges(unsigned short pid, bool sendToOtherPlayers, bool skipAttachedPlayer) noexcept
+void DialogueFunctions::SendTopicChanges(unsigned short pid, bool sendToOtherPlayers, bool skipAttachedPlayer)
 {
     Player *player;
     GET_PLAYER(pid, player, );
@@ -59,7 +59,7 @@ void DialogueFunctions::SendTopicChanges(unsigned short pid, bool sendToOtherPla
         packet->Send(true);
 }
 
-void DialogueFunctions::PlayAnimation(unsigned short pid, const char* groupname, int mode, int count, bool persist) noexcept
+void DialogueFunctions::PlayAnimation(unsigned short pid, const char* groupname, int mode, int count, bool persist)
 {
     Player *player;
     GET_PLAYER(pid, player, );
@@ -76,7 +76,7 @@ void DialogueFunctions::PlayAnimation(unsigned short pid, const char* groupname,
     player->sendToLoaded(packet);
 }
 
-void DialogueFunctions::PlaySpeech(unsigned short pid, const char* sound) noexcept
+void DialogueFunctions::PlaySpeech(unsigned short pid, const char* sound)
 {
     Player *player;
     GET_PLAYER(pid, player, );
@@ -92,7 +92,7 @@ void DialogueFunctions::PlaySpeech(unsigned short pid, const char* sound) noexce
 
 // All methods below are deprecated versions of methods from above
 
-void DialogueFunctions::InitializeTopicChanges(unsigned short pid) noexcept
+void DialogueFunctions::InitializeTopicChanges(unsigned short pid)
 {
     ClearTopicChanges(pid);
 }

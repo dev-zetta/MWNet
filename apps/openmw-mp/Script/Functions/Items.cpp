@@ -11,7 +11,7 @@
 
 using namespace mwmp;
 
-void ItemFunctions::ClearInventoryChanges(unsigned short pid) noexcept
+void ItemFunctions::ClearInventoryChanges(unsigned short pid)
 {
     Player *player;
     GET_PLAYER(pid, player, );
@@ -19,12 +19,12 @@ void ItemFunctions::ClearInventoryChanges(unsigned short pid) noexcept
     player->inventoryChanges.items.clear();
 }
 
-int ItemFunctions::GetEquipmentSize() noexcept
+int ItemFunctions::GetEquipmentSize()
 {
     return MWWorld::InventoryStore::Slots;
 }
 
-unsigned int ItemFunctions::GetEquipmentChangesSize(unsigned short pid) noexcept
+unsigned int ItemFunctions::GetEquipmentChangesSize(unsigned short pid)
 {
     Player* player;
     GET_PLAYER(pid, player, 0);
@@ -32,7 +32,7 @@ unsigned int ItemFunctions::GetEquipmentChangesSize(unsigned short pid) noexcept
     return player->equipmentIndexChanges.size();
 }
 
-unsigned int ItemFunctions::GetInventoryChangesSize(unsigned short pid) noexcept
+unsigned int ItemFunctions::GetInventoryChangesSize(unsigned short pid)
 {
     Player *player;
     GET_PLAYER(pid, player, 0);
@@ -40,7 +40,7 @@ unsigned int ItemFunctions::GetInventoryChangesSize(unsigned short pid) noexcept
     return player->inventoryChanges.items.size();
 }
 
-unsigned int ItemFunctions::GetInventoryChangesAction(unsigned short pid) noexcept
+unsigned int ItemFunctions::GetInventoryChangesAction(unsigned short pid)
 {
     Player *player;
     GET_PLAYER(pid, player, 0);
@@ -48,7 +48,7 @@ unsigned int ItemFunctions::GetInventoryChangesAction(unsigned short pid) noexce
     return player->inventoryChanges.action;
 }
 
-void ItemFunctions::SetInventoryChangesAction(unsigned short pid, unsigned char action) noexcept
+void ItemFunctions::SetInventoryChangesAction(unsigned short pid, unsigned char action)
 {
     Player *player;
     GET_PLAYER(pid, player, );
@@ -83,7 +83,7 @@ void ItemFunctions::UnequipItem(unsigned short pid, unsigned short slot)
 }
 
 void ItemFunctions::AddItemChange(unsigned short pid, const char* refId, unsigned int count, int charge,
-    double enchantmentCharge, const char* soul) noexcept
+    double enchantmentCharge, const char* soul)
 {
     Player *player;
     GET_PLAYER(pid, player, );
@@ -109,7 +109,7 @@ bool ItemFunctions::HasItemEquipped(unsigned short pid, const char* refId)
     return false;
 }
 
-int ItemFunctions::GetEquipmentChangesSlot(unsigned short pid, unsigned int changeIndex) noexcept
+int ItemFunctions::GetEquipmentChangesSlot(unsigned short pid, unsigned int changeIndex)
 {
     Player* player;
     GET_PLAYER(pid, player, 0);
@@ -118,7 +118,7 @@ int ItemFunctions::GetEquipmentChangesSlot(unsigned short pid, unsigned int chan
     return player->equipmentIndexChanges[changeIndex];
 }
 
-const char *ItemFunctions::GetEquipmentItemRefId(unsigned short pid, unsigned short slot) noexcept
+const char *ItemFunctions::GetEquipmentItemRefId(unsigned short pid, unsigned short slot)
 {
     Player *player;
     GET_PLAYER(pid, player, 0);
@@ -126,7 +126,7 @@ const char *ItemFunctions::GetEquipmentItemRefId(unsigned short pid, unsigned sh
     return player->equipmentItems[slot].refId.c_str();
 }
 
-int ItemFunctions::GetEquipmentItemCount(unsigned short pid, unsigned short slot) noexcept
+int ItemFunctions::GetEquipmentItemCount(unsigned short pid, unsigned short slot)
 {
     Player *player;
     GET_PLAYER(pid, player, 0);
@@ -134,7 +134,7 @@ int ItemFunctions::GetEquipmentItemCount(unsigned short pid, unsigned short slot
     return player->equipmentItems[slot].count;
 }
 
-int ItemFunctions::GetEquipmentItemCharge(unsigned short pid, unsigned short slot) noexcept
+int ItemFunctions::GetEquipmentItemCharge(unsigned short pid, unsigned short slot)
 {
     Player *player;
     GET_PLAYER(pid, player, 0);
@@ -142,7 +142,7 @@ int ItemFunctions::GetEquipmentItemCharge(unsigned short pid, unsigned short slo
     return player->equipmentItems[slot].charge;
 }
 
-double ItemFunctions::GetEquipmentItemEnchantmentCharge(unsigned short pid, unsigned short slot) noexcept
+double ItemFunctions::GetEquipmentItemEnchantmentCharge(unsigned short pid, unsigned short slot)
 {
     Player *player;
     GET_PLAYER(pid, player, 0);
@@ -150,7 +150,7 @@ double ItemFunctions::GetEquipmentItemEnchantmentCharge(unsigned short pid, unsi
     return player->equipmentItems[slot].enchantmentCharge;
 }
 
-const char *ItemFunctions::GetInventoryItemRefId(unsigned short pid, unsigned int index) noexcept
+const char *ItemFunctions::GetInventoryItemRefId(unsigned short pid, unsigned int index)
 {
     Player *player;
     GET_PLAYER(pid, player, "");
@@ -161,7 +161,7 @@ const char *ItemFunctions::GetInventoryItemRefId(unsigned short pid, unsigned in
     return player->inventoryChanges.items.at(index).refId.c_str();
 }
 
-int ItemFunctions::GetInventoryItemCount(unsigned short pid, unsigned int index) noexcept
+int ItemFunctions::GetInventoryItemCount(unsigned short pid, unsigned int index)
 {
     Player *player;
     GET_PLAYER(pid, player, 0);
@@ -169,7 +169,7 @@ int ItemFunctions::GetInventoryItemCount(unsigned short pid, unsigned int index)
     return player->inventoryChanges.items.at(index).count;
 }
 
-int ItemFunctions::GetInventoryItemCharge(unsigned short pid, unsigned int index) noexcept
+int ItemFunctions::GetInventoryItemCharge(unsigned short pid, unsigned int index)
 {
     Player *player;
     GET_PLAYER(pid, player, 0);
@@ -177,7 +177,7 @@ int ItemFunctions::GetInventoryItemCharge(unsigned short pid, unsigned int index
     return player->inventoryChanges.items.at(index).charge;
 }
 
-double ItemFunctions::GetInventoryItemEnchantmentCharge(unsigned short pid, unsigned int index) noexcept
+double ItemFunctions::GetInventoryItemEnchantmentCharge(unsigned short pid, unsigned int index)
 {
     Player *player;
     GET_PLAYER(pid, player, 0);
@@ -185,7 +185,7 @@ double ItemFunctions::GetInventoryItemEnchantmentCharge(unsigned short pid, unsi
     return player->inventoryChanges.items.at(index).enchantmentCharge;
 }
 
-const char *ItemFunctions::GetInventoryItemSoul(unsigned short pid, unsigned int index) noexcept
+const char *ItemFunctions::GetInventoryItemSoul(unsigned short pid, unsigned int index)
 {
     Player *player;
     GET_PLAYER(pid, player, "");
@@ -196,7 +196,7 @@ const char *ItemFunctions::GetInventoryItemSoul(unsigned short pid, unsigned int
     return player->inventoryChanges.items.at(index).soul.c_str();
 }
 
-const char *ItemFunctions::GetUsedItemRefId(unsigned short pid) noexcept
+const char *ItemFunctions::GetUsedItemRefId(unsigned short pid)
 {
     Player *player;
     GET_PLAYER(pid, player, "");
@@ -204,7 +204,7 @@ const char *ItemFunctions::GetUsedItemRefId(unsigned short pid) noexcept
     return player->usedItem.refId.c_str();
 }
 
-int ItemFunctions::GetUsedItemCount(unsigned short pid) noexcept
+int ItemFunctions::GetUsedItemCount(unsigned short pid)
 {
     Player *player;
     GET_PLAYER(pid, player, 0);
@@ -212,7 +212,7 @@ int ItemFunctions::GetUsedItemCount(unsigned short pid) noexcept
     return player->usedItem.count;
 }
 
-int ItemFunctions::GetUsedItemCharge(unsigned short pid) noexcept
+int ItemFunctions::GetUsedItemCharge(unsigned short pid)
 {
     Player *player;
     GET_PLAYER(pid, player, 0);
@@ -220,7 +220,7 @@ int ItemFunctions::GetUsedItemCharge(unsigned short pid) noexcept
     return player->usedItem.charge;
 }
 
-double ItemFunctions::GetUsedItemEnchantmentCharge(unsigned short pid) noexcept
+double ItemFunctions::GetUsedItemEnchantmentCharge(unsigned short pid)
 {
     Player *player;
     GET_PLAYER(pid, player, 0);
@@ -228,7 +228,7 @@ double ItemFunctions::GetUsedItemEnchantmentCharge(unsigned short pid) noexcept
     return player->usedItem.enchantmentCharge;
 }
 
-const char *ItemFunctions::GetUsedItemSoul(unsigned short pid) noexcept
+const char *ItemFunctions::GetUsedItemSoul(unsigned short pid)
 {
     Player *player;
     GET_PLAYER(pid, player, "");
@@ -270,7 +270,7 @@ void ItemFunctions::SendInventoryChanges(unsigned short pid, bool sendToOtherPla
         packet->Send(true);
 }
 
-void ItemFunctions::SendItemUse(unsigned short pid) noexcept
+void ItemFunctions::SendItemUse(unsigned short pid)
 {
     Player *player;
     GET_PLAYER(pid, player, );
@@ -283,13 +283,13 @@ void ItemFunctions::SendItemUse(unsigned short pid) noexcept
 
 // All methods below are deprecated versions of methods from above
 
-void ItemFunctions::InitializeInventoryChanges(unsigned short pid) noexcept
+void ItemFunctions::InitializeInventoryChanges(unsigned short pid)
 {
     ClearInventoryChanges(pid);
 }
 
 void ItemFunctions::AddItem(unsigned short pid, const char* refId, unsigned int count, int charge,
-    double enchantmentCharge, const char* soul) noexcept
+    double enchantmentCharge, const char* soul)
 {
     AddItemChange(pid, refId, count, charge, enchantmentCharge, soul);
 }

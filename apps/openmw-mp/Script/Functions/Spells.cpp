@@ -12,7 +12,7 @@ using namespace mwmp;
 
 std::vector<ESM::ActiveEffect> storedActiveEffects;
 
-void SpellFunctions::ClearSpellbookChanges(unsigned short pid) noexcept
+void SpellFunctions::ClearSpellbookChanges(unsigned short pid)
 {
     Player *player;
     GET_PLAYER(pid, player, );
@@ -20,7 +20,7 @@ void SpellFunctions::ClearSpellbookChanges(unsigned short pid) noexcept
     player->spellbookChanges.spells.clear();
 }
 
-void SpellFunctions::ClearSpellsActiveChanges(unsigned short pid) noexcept
+void SpellFunctions::ClearSpellsActiveChanges(unsigned short pid)
 {
     Player* player;
     GET_PLAYER(pid, player, );
@@ -28,7 +28,7 @@ void SpellFunctions::ClearSpellsActiveChanges(unsigned short pid) noexcept
     player->spellsActiveChanges.activeSpells.clear();
 }
 
-void SpellFunctions::ClearCooldownChanges(unsigned short pid) noexcept
+void SpellFunctions::ClearCooldownChanges(unsigned short pid)
 {
     Player* player;
     GET_PLAYER(pid, player, );
@@ -36,7 +36,7 @@ void SpellFunctions::ClearCooldownChanges(unsigned short pid) noexcept
     player->cooldownChanges.clear();
 }
 
-unsigned int SpellFunctions::GetSpellbookChangesSize(unsigned short pid) noexcept
+unsigned int SpellFunctions::GetSpellbookChangesSize(unsigned short pid)
 {
     Player *player;
     GET_PLAYER(pid, player, 0);
@@ -44,7 +44,7 @@ unsigned int SpellFunctions::GetSpellbookChangesSize(unsigned short pid) noexcep
     return player->spellbookChanges.spells.size();
 }
 
-unsigned int SpellFunctions::GetSpellbookChangesAction(unsigned short pid) noexcept
+unsigned int SpellFunctions::GetSpellbookChangesAction(unsigned short pid)
 {
     Player *player;
     GET_PLAYER(pid, player, 0);
@@ -52,7 +52,7 @@ unsigned int SpellFunctions::GetSpellbookChangesAction(unsigned short pid) noexc
     return player->spellbookChanges.action;
 }
 
-unsigned int SpellFunctions::GetSpellsActiveChangesSize(unsigned short pid) noexcept
+unsigned int SpellFunctions::GetSpellsActiveChangesSize(unsigned short pid)
 {
     Player* player;
     GET_PLAYER(pid, player, 0);
@@ -60,7 +60,7 @@ unsigned int SpellFunctions::GetSpellsActiveChangesSize(unsigned short pid) noex
     return player->spellsActiveChanges.activeSpells.size();
 }
 
-unsigned int SpellFunctions::GetSpellsActiveChangesAction(unsigned short pid) noexcept
+unsigned int SpellFunctions::GetSpellsActiveChangesAction(unsigned short pid)
 {
     Player* player;
     GET_PLAYER(pid, player, 0);
@@ -68,7 +68,7 @@ unsigned int SpellFunctions::GetSpellsActiveChangesAction(unsigned short pid) no
     return player->spellsActiveChanges.action;
 }
 
-unsigned int SpellFunctions::GetCooldownChangesSize(unsigned short pid) noexcept
+unsigned int SpellFunctions::GetCooldownChangesSize(unsigned short pid)
 {
     Player* player;
     GET_PLAYER(pid, player, 0);
@@ -76,7 +76,7 @@ unsigned int SpellFunctions::GetCooldownChangesSize(unsigned short pid) noexcept
     return player->cooldownChanges.size();
 }
 
-void SpellFunctions::SetSpellbookChangesAction(unsigned short pid, unsigned char action) noexcept
+void SpellFunctions::SetSpellbookChangesAction(unsigned short pid, unsigned char action)
 {
     Player *player;
     GET_PLAYER(pid, player, );
@@ -84,7 +84,7 @@ void SpellFunctions::SetSpellbookChangesAction(unsigned short pid, unsigned char
     player->spellbookChanges.action = action;
 }
 
-void SpellFunctions::SetSpellsActiveChangesAction(unsigned short pid, unsigned char action) noexcept
+void SpellFunctions::SetSpellsActiveChangesAction(unsigned short pid, unsigned char action)
 {
     Player* player;
     GET_PLAYER(pid, player, );
@@ -92,7 +92,7 @@ void SpellFunctions::SetSpellsActiveChangesAction(unsigned short pid, unsigned c
     player->spellsActiveChanges.action = action;
 }
 
-void SpellFunctions::AddSpell(unsigned short pid, const char* spellId) noexcept
+void SpellFunctions::AddSpell(unsigned short pid, const char* spellId)
 {
     Player *player;
     GET_PLAYER(pid, player, );
@@ -103,7 +103,7 @@ void SpellFunctions::AddSpell(unsigned short pid, const char* spellId) noexcept
     player->spellbookChanges.spells.push_back(spell);
 }
 
-void SpellFunctions::AddSpellActive(unsigned short pid, const char* spellId, const char* displayName, bool stackingState) noexcept
+void SpellFunctions::AddSpellActive(unsigned short pid, const char* spellId, const char* displayName, bool stackingState)
 {
     Player* player;
     GET_PLAYER(pid, player, );
@@ -119,7 +119,7 @@ void SpellFunctions::AddSpellActive(unsigned short pid, const char* spellId, con
     storedActiveEffects.clear();
 }
 
-void SpellFunctions::AddSpellActiveEffect(unsigned short pid, int effectId, double magnitude, double duration, double timeLeft, int arg) noexcept
+void SpellFunctions::AddSpellActiveEffect(unsigned short pid, int effectId, double magnitude, double duration, double timeLeft, int arg)
 {
     Player* player;
     GET_PLAYER(pid, player, );
@@ -134,7 +134,7 @@ void SpellFunctions::AddSpellActiveEffect(unsigned short pid, int effectId, doub
     storedActiveEffects.push_back(effect);
 }
 
-void SpellFunctions::AddCooldownSpell(unsigned short pid, const char* spellId, unsigned int startDay, double startHour) noexcept
+void SpellFunctions::AddCooldownSpell(unsigned short pid, const char* spellId, unsigned int startDay, double startHour)
 {
     Player* player;
     GET_PLAYER(pid, player, );
@@ -147,7 +147,7 @@ void SpellFunctions::AddCooldownSpell(unsigned short pid, const char* spellId, u
     player->cooldownChanges.push_back(spellCooldown);
 }
 
-const char *SpellFunctions::GetSpellId(unsigned short pid, unsigned int index) noexcept
+const char *SpellFunctions::GetSpellId(unsigned short pid, unsigned int index)
 {
     Player *player;
     GET_PLAYER(pid, player, "");
@@ -158,7 +158,7 @@ const char *SpellFunctions::GetSpellId(unsigned short pid, unsigned int index) n
     return player->spellbookChanges.spells.at(index).mId.getRefIdString().c_str();
 }
 
-const char* SpellFunctions::GetSpellsActiveId(unsigned short pid, unsigned int index) noexcept
+const char* SpellFunctions::GetSpellsActiveId(unsigned short pid, unsigned int index)
 {
     Player* player;
     GET_PLAYER(pid, player, "");
@@ -169,7 +169,7 @@ const char* SpellFunctions::GetSpellsActiveId(unsigned short pid, unsigned int i
     return player->spellsActiveChanges.activeSpells.at(index).id.c_str();
 }
 
-const char* SpellFunctions::GetSpellsActiveDisplayName(unsigned short pid, unsigned int index) noexcept
+const char* SpellFunctions::GetSpellsActiveDisplayName(unsigned short pid, unsigned int index)
 {
     Player* player;
     GET_PLAYER(pid, player, "");
@@ -180,7 +180,7 @@ const char* SpellFunctions::GetSpellsActiveDisplayName(unsigned short pid, unsig
     return player->spellsActiveChanges.activeSpells.at(index).params.mDisplayName.c_str();
 }
 
-bool SpellFunctions::GetSpellsActiveStackingState(unsigned short pid, unsigned int index) noexcept
+bool SpellFunctions::GetSpellsActiveStackingState(unsigned short pid, unsigned int index)
 {
     Player* player;
     GET_PLAYER(pid, player, false);
@@ -191,7 +191,7 @@ bool SpellFunctions::GetSpellsActiveStackingState(unsigned short pid, unsigned i
     return player->spellsActiveChanges.activeSpells.at(index).isStackingSpell;
 }
 
-unsigned int SpellFunctions::GetSpellsActiveEffectCount(unsigned short pid, unsigned int index) noexcept
+unsigned int SpellFunctions::GetSpellsActiveEffectCount(unsigned short pid, unsigned int index)
 {
     Player* player;
     GET_PLAYER(pid, player, 0);
@@ -202,7 +202,7 @@ unsigned int SpellFunctions::GetSpellsActiveEffectCount(unsigned short pid, unsi
     return player->spellsActiveChanges.activeSpells.at(index).params.mEffects.size();
 }
 
-unsigned int SpellFunctions::GetSpellsActiveEffectId(unsigned short pid, unsigned int spellIndex, unsigned int effectIndex) noexcept
+unsigned int SpellFunctions::GetSpellsActiveEffectId(unsigned short pid, unsigned int spellIndex, unsigned int effectIndex)
 {
     Player* player;
     GET_PLAYER(pid, player, 0);
@@ -213,7 +213,7 @@ unsigned int SpellFunctions::GetSpellsActiveEffectId(unsigned short pid, unsigne
     return static_cast<unsigned int>(ESM::MagicEffect::refIdToIndex(player->spellsActiveChanges.activeSpells.at(spellIndex).params.mEffects.at(effectIndex).mEffectId));
 }
 
-int SpellFunctions::GetSpellsActiveEffectArg(unsigned short pid, unsigned int spellIndex, unsigned int effectIndex) noexcept
+int SpellFunctions::GetSpellsActiveEffectArg(unsigned short pid, unsigned int spellIndex, unsigned int effectIndex)
 {
     Player* player;
     GET_PLAYER(pid, player, 0);
@@ -227,7 +227,7 @@ int SpellFunctions::GetSpellsActiveEffectArg(unsigned short pid, unsigned int sp
     return 0;
 }
 
-double SpellFunctions::GetSpellsActiveEffectMagnitude(unsigned short pid, unsigned int spellIndex, unsigned int effectIndex) noexcept
+double SpellFunctions::GetSpellsActiveEffectMagnitude(unsigned short pid, unsigned int spellIndex, unsigned int effectIndex)
 {
     Player* player;
     GET_PLAYER(pid, player, 0);
@@ -238,7 +238,7 @@ double SpellFunctions::GetSpellsActiveEffectMagnitude(unsigned short pid, unsign
     return player->spellsActiveChanges.activeSpells.at(spellIndex).params.mEffects.at(effectIndex).mMagnitude;
 }
 
-double SpellFunctions::GetSpellsActiveEffectDuration(unsigned short pid, unsigned int spellIndex, unsigned int effectIndex) noexcept
+double SpellFunctions::GetSpellsActiveEffectDuration(unsigned short pid, unsigned int spellIndex, unsigned int effectIndex)
 {
     Player* player;
     GET_PLAYER(pid, player, 0);
@@ -249,7 +249,7 @@ double SpellFunctions::GetSpellsActiveEffectDuration(unsigned short pid, unsigne
     return player->spellsActiveChanges.activeSpells.at(spellIndex).params.mEffects.at(effectIndex).mDuration;
 }
 
-double SpellFunctions::GetSpellsActiveEffectTimeLeft(unsigned short pid, unsigned int spellIndex, unsigned int effectIndex) noexcept
+double SpellFunctions::GetSpellsActiveEffectTimeLeft(unsigned short pid, unsigned int spellIndex, unsigned int effectIndex)
 {
     Player* player;
     GET_PLAYER(pid, player, 0);
@@ -260,7 +260,7 @@ double SpellFunctions::GetSpellsActiveEffectTimeLeft(unsigned short pid, unsigne
     return player->spellsActiveChanges.activeSpells.at(spellIndex).params.mEffects.at(effectIndex).mTimeLeft;
 }
 
-bool SpellFunctions::DoesSpellsActiveHavePlayerCaster(unsigned short pid, unsigned int index) noexcept
+bool SpellFunctions::DoesSpellsActiveHavePlayerCaster(unsigned short pid, unsigned int index)
 {
     Player* player;
     GET_PLAYER(pid, player, false);
@@ -271,7 +271,7 @@ bool SpellFunctions::DoesSpellsActiveHavePlayerCaster(unsigned short pid, unsign
     return player->spellsActiveChanges.activeSpells.at(index).caster.isPlayer;
 }
 
-int SpellFunctions::GetSpellsActiveCasterPid(unsigned short pid, unsigned int index) noexcept
+int SpellFunctions::GetSpellsActiveCasterPid(unsigned short pid, unsigned int index)
 {
     Player* player;
     GET_PLAYER(pid, player, -1);
@@ -287,7 +287,7 @@ int SpellFunctions::GetSpellsActiveCasterPid(unsigned short pid, unsigned int in
     return -1;
 }
 
-const char* SpellFunctions::GetSpellsActiveCasterRefId(unsigned short pid, unsigned int index) noexcept
+const char* SpellFunctions::GetSpellsActiveCasterRefId(unsigned short pid, unsigned int index)
 {
     Player* player;
     GET_PLAYER(pid, player, "");
@@ -298,7 +298,7 @@ const char* SpellFunctions::GetSpellsActiveCasterRefId(unsigned short pid, unsig
     return player->spellsActiveChanges.activeSpells.at(index).caster.refId.c_str();
 }
 
-unsigned int SpellFunctions::GetSpellsActiveCasterRefNum(unsigned short pid, unsigned int index) noexcept
+unsigned int SpellFunctions::GetSpellsActiveCasterRefNum(unsigned short pid, unsigned int index)
 {
     Player* player;
     GET_PLAYER(pid, player, 0);
@@ -309,7 +309,7 @@ unsigned int SpellFunctions::GetSpellsActiveCasterRefNum(unsigned short pid, uns
     return player->spellsActiveChanges.activeSpells.at(index).caster.refNum;
 }
 
-unsigned int SpellFunctions::GetSpellsActiveCasterMpNum(unsigned short pid, unsigned int index) noexcept
+unsigned int SpellFunctions::GetSpellsActiveCasterMpNum(unsigned short pid, unsigned int index)
 {
     Player* player;
     GET_PLAYER(pid, player, 0);
@@ -320,7 +320,7 @@ unsigned int SpellFunctions::GetSpellsActiveCasterMpNum(unsigned short pid, unsi
     return player->spellsActiveChanges.activeSpells.at(index).caster.mpNum;
 }
 
-const char* SpellFunctions::GetCooldownSpellId(unsigned short pid, unsigned int index) noexcept
+const char* SpellFunctions::GetCooldownSpellId(unsigned short pid, unsigned int index)
 {
     Player* player;
     GET_PLAYER(pid, player, "");
@@ -331,7 +331,7 @@ const char* SpellFunctions::GetCooldownSpellId(unsigned short pid, unsigned int 
     return player->cooldownChanges.at(index).id.c_str();
 }
 
-unsigned int SpellFunctions::GetCooldownStartDay(unsigned short pid, unsigned int index) noexcept
+unsigned int SpellFunctions::GetCooldownStartDay(unsigned short pid, unsigned int index)
 {
     Player* player;
     GET_PLAYER(pid, player, 0);
@@ -342,7 +342,7 @@ unsigned int SpellFunctions::GetCooldownStartDay(unsigned short pid, unsigned in
     return player->cooldownChanges.at(index).startTimestampDay;
 }
 
-double SpellFunctions::GetCooldownStartHour(unsigned short pid, unsigned int index) noexcept
+double SpellFunctions::GetCooldownStartHour(unsigned short pid, unsigned int index)
 {
     Player* player;
     GET_PLAYER(pid, player, 0.0);
@@ -353,7 +353,7 @@ double SpellFunctions::GetCooldownStartHour(unsigned short pid, unsigned int ind
     return player->cooldownChanges.at(index).startTimestampHour;
 }
 
-void SpellFunctions::SendSpellbookChanges(unsigned short pid, bool sendToOtherPlayers, bool skipAttachedPlayer) noexcept
+void SpellFunctions::SendSpellbookChanges(unsigned short pid, bool sendToOtherPlayers, bool skipAttachedPlayer)
 {
     Player *player;
     GET_PLAYER(pid, player, );
@@ -384,7 +384,7 @@ void SpellFunctions::SendSpellsActiveChanges(unsigned short pid, bool sendToOthe
         packet->Send(true);
 }
 
-void SpellFunctions::SendCooldownChanges(unsigned short pid) noexcept
+void SpellFunctions::SendCooldownChanges(unsigned short pid)
 {
     Player* player;
     GET_PLAYER(pid, player, );
@@ -396,7 +396,7 @@ void SpellFunctions::SendCooldownChanges(unsigned short pid) noexcept
 
 // All methods below are deprecated versions of methods from above
 
-void SpellFunctions::InitializeSpellbookChanges(unsigned short pid) noexcept
+void SpellFunctions::InitializeSpellbookChanges(unsigned short pid)
 {
     ClearSpellbookChanges(pid);
 }

@@ -140,7 +140,7 @@ public:
     *
     * \return void
     */
-    static void ReadReceivedActorList() noexcept;
+    static void ReadReceivedActorList();
 
     /**
     * \brief Use the temporary actor list stored for a cell as the one being read.
@@ -151,14 +151,14 @@ public:
     * \param cellDescription The description of the cell whose actor list should be read.
     * \return void
     */
-    static void ReadCellActorList(const char* cellDescription) noexcept;
+    static void ReadCellActorList(const char* cellDescription);
 
     /**
     * \brief Clear the data from the actor list stored on the server.
     *
     * \return void
     */
-    static void ClearActorList() noexcept;
+    static void ClearActorList();
 
     /**
     * \brief Set the pid attached to the ActorList.
@@ -166,7 +166,7 @@ public:
     * \param pid The player ID to whom the actor list should be attached.
     * \return void
     */
-    static void SetActorListPid(unsigned short pid) noexcept;
+    static void SetActorListPid(unsigned short pid);
 
     /**
     * \brief Take the contents of the read-only actor list last received by the
@@ -175,21 +175,21 @@ public:
     *
     * \return void
     */
-    static void CopyReceivedActorListToStore() noexcept;
+    static void CopyReceivedActorListToStore();
 
     /**
     * \brief Get the number of indexes in the read actor list.
     *
     * \return The number of indexes.
     */
-    static unsigned int GetActorListSize() noexcept;
+    static unsigned int GetActorListSize();
 
     /**
     * \brief Get the action type used in the read actor list.
     *
     * \return The action type (0 for SET, 1 for ADD, 2 for REMOVE, 3 for REQUEST).
     */
-    static unsigned char GetActorListAction() noexcept;
+    static unsigned char GetActorListAction();
 
     /**
     * \brief Get the cell description of the actor at a certain index in the read actor list.
@@ -197,7 +197,7 @@ public:
     * \param index The index of the actor.
     * \return The cell description.
     */
-    static const char *GetActorCell(unsigned int index) noexcept;
+    static const char *GetActorCell(unsigned int index);
     
     /**
     * \brief Get the refId of the actor at a certain index in the read actor list.
@@ -205,7 +205,7 @@ public:
     * \param index The index of the actor.
     * \return The refId.
     */
-    static const char *GetActorRefId(unsigned int index) noexcept;
+    static const char *GetActorRefId(unsigned int index);
 
     /**
     * \brief Get the refNum of the actor at a certain index in the read actor list.
@@ -213,7 +213,7 @@ public:
     * \param index The index of the actor.
     * \return The refNum.
     */
-    static unsigned int GetActorRefNum(unsigned int index) noexcept;
+    static unsigned int GetActorRefNum(unsigned int index);
 
     /**
     * \brief Get the mpNum of the actor at a certain index in the read actor list.
@@ -221,7 +221,7 @@ public:
     * \param index The index of the actor.
     * \return The mpNum.
     */
-    static unsigned int GetActorMpNum(unsigned int index) noexcept;
+    static unsigned int GetActorMpNum(unsigned int index);
 
     /**
     * \brief Get the X position of the actor at a certain index in the read actor list.
@@ -229,7 +229,7 @@ public:
     * \param index The index of the actor.
     * \return The X position.
     */
-    static double GetActorPosX(unsigned int index) noexcept;
+    static double GetActorPosX(unsigned int index);
 
     /**
     * \brief Get the Y position of the actor at a certain index in the read actor list.
@@ -237,7 +237,7 @@ public:
     * \param index The index of the actor.
     * \return The Y position.
     */
-    static double GetActorPosY(unsigned int index) noexcept;
+    static double GetActorPosY(unsigned int index);
 
     /**
     * \brief Get the Z position of the actor at a certain index in the read actor list.
@@ -245,7 +245,7 @@ public:
     * \param index The index of the actor.
     * \return The Z position.
     */
-    static double GetActorPosZ(unsigned int index) noexcept;
+    static double GetActorPosZ(unsigned int index);
 
     /**
     * \brief Get the X rotation of the actor at a certain index in the read actor list.
@@ -253,7 +253,7 @@ public:
     * \param index The index of the actor.
     * \return The X rotation.
     */
-    static double GetActorRotX(unsigned int index) noexcept;
+    static double GetActorRotX(unsigned int index);
 
     /**
     * \brief Get the Y rotation of the actor at a certain index in the read actor list.
@@ -261,7 +261,7 @@ public:
     * \param index The index of the actor.
     * \return The Y rotation.
     */
-    static double GetActorRotY(unsigned int index) noexcept;
+    static double GetActorRotY(unsigned int index);
 
     /**
     * \brief Get the Z rotation of the actor at a certain index in the read actor list.
@@ -269,7 +269,7 @@ public:
     * \param index The index of the actor.
     * \return The Z rotation.
     */
-    static double GetActorRotZ(unsigned int index) noexcept;
+    static double GetActorRotZ(unsigned int index);
 
     /**
     * \brief Get the base health of the actor at a certain index in the read actor list.
@@ -277,7 +277,7 @@ public:
     * \param index The index of the actor.
     * \return The base health.
     */
-    static double GetActorHealthBase(unsigned int index) noexcept;
+    static double GetActorHealthBase(unsigned int index);
 
     /**
     * \brief Get the current health of the actor at a certain index in the read actor list.
@@ -285,7 +285,7 @@ public:
     * \param index The index of the actor.
     * \return The current health.
     */
-    static double GetActorHealthCurrent(unsigned int index) noexcept;
+    static double GetActorHealthCurrent(unsigned int index);
 
     /**
     * \brief Get the modified health of the actor at a certain index in the read actor list.
@@ -293,7 +293,7 @@ public:
     * \param index The index of the actor.
     * \return The modified health.
     */
-    static double GetActorHealthModified(unsigned int index) noexcept;
+    static double GetActorHealthModified(unsigned int index);
 
     /**
     * \brief Get the base magicka of the actor at a certain index in the read actor list.
@@ -301,7 +301,7 @@ public:
     * \param index The index of the actor.
     * \return The base magicka.
     */
-    static double GetActorMagickaBase(unsigned int index) noexcept;
+    static double GetActorMagickaBase(unsigned int index);
 
     /**
     * \brief Get the current magicka of the actor at a certain index in the read actor list.
@@ -309,7 +309,7 @@ public:
     * \param index The index of the actor.
     * \return The current magicka.
     */
-    static double GetActorMagickaCurrent(unsigned int index) noexcept;
+    static double GetActorMagickaCurrent(unsigned int index);
 
     /**
     * \brief Get the modified magicka of the actor at a certain index in the read actor list.
@@ -317,7 +317,7 @@ public:
     * \param index The index of the actor.
     * \return The modified magicka.
     */
-    static double GetActorMagickaModified(unsigned int index) noexcept;
+    static double GetActorMagickaModified(unsigned int index);
 
     /**
     * \brief Get the base fatigue of the actor at a certain index in the read actor list.
@@ -325,7 +325,7 @@ public:
     * \param index The index of the actor.
     * \return The base fatigue.
     */
-    static double GetActorFatigueBase(unsigned int index) noexcept;
+    static double GetActorFatigueBase(unsigned int index);
 
     /**
     * \brief Get the current fatigue of the actor at a certain index in the read actor list.
@@ -333,7 +333,7 @@ public:
     * \param index The index of the actor.
     * \return The current fatigue.
     */
-    static double GetActorFatigueCurrent(unsigned int index) noexcept;
+    static double GetActorFatigueCurrent(unsigned int index);
 
     /**
     * \brief Get the modified fatigue of the actor at a certain index in the read actor list.
@@ -341,10 +341,10 @@ public:
     * \param index The index of the actor.
     * \return The modified fatigue.
     */
-    static double GetActorFatigueModified(unsigned int index) noexcept;
+    static double GetActorFatigueModified(unsigned int index);
 
     /** Get the normalized strength of a pending actor attack intent. */
-    static double GetActorAttackStrength(unsigned int index) noexcept;
+    static double GetActorAttackStrength(unsigned int index);
 
     /**
     * \brief Get the refId of the item in a certain slot of the equipment of the actor at a
@@ -354,7 +354,7 @@ public:
     * \param slot The slot of the equipment item.
     * \return The refId.
     */
-    static const char *GetActorEquipmentItemRefId(unsigned int index, unsigned short slot) noexcept;
+    static const char *GetActorEquipmentItemRefId(unsigned int index, unsigned short slot);
 
     /**
     * \brief Get the count of the item in a certain slot of the equipment of the actor at a
@@ -364,7 +364,7 @@ public:
     * \param slot The slot of the equipment item.
     * \return The item count.
     */
-    static int GetActorEquipmentItemCount(unsigned int index, unsigned short slot) noexcept;
+    static int GetActorEquipmentItemCount(unsigned int index, unsigned short slot);
 
     /**
     * \brief Get the charge of the item in a certain slot of the equipment of the actor at a
@@ -374,7 +374,7 @@ public:
     * \param slot The slot of the equipment item.
     * \return The charge.
     */
-    static int GetActorEquipmentItemCharge(unsigned int index, unsigned short slot) noexcept;
+    static int GetActorEquipmentItemCharge(unsigned int index, unsigned short slot);
 
     /**
     * \brief Get the enchantment charge of the item in a certain slot of the equipment of the actor at a
@@ -384,7 +384,7 @@ public:
     * \param slot The slot of the equipment item.
     * \return The enchantment charge.
     */
-    static double GetActorEquipmentItemEnchantmentCharge(unsigned int index, unsigned short slot) noexcept;
+    static double GetActorEquipmentItemEnchantmentCharge(unsigned int index, unsigned short slot);
 
     /**
     * \brief Check whether the killer of the actor at a certain index in the read actor list is a player.
@@ -392,7 +392,7 @@ public:
     * \param index The index of the actor.
     * \return Whether the actor was killed by a player.
     */
-    static bool DoesActorHavePlayerKiller(unsigned int index) noexcept;
+    static bool DoesActorHavePlayerKiller(unsigned int index);
 
     /**
     * \brief Get the player ID of the killer of the actor at a certain index in the read actor list.
@@ -400,7 +400,7 @@ public:
     * \param index The index of the actor.
     * \return The player ID of the killer.
     */
-    static int GetActorKillerPid(unsigned int index) noexcept;
+    static int GetActorKillerPid(unsigned int index);
 
     /**
     * \brief Get the refId of the actor killer of the actor at a certain index in the read actor list.
@@ -408,7 +408,7 @@ public:
     * \param index The index of the actor.
     * \return The refId of the killer.
     */
-    static const char *GetActorKillerRefId(unsigned int index) noexcept;
+    static const char *GetActorKillerRefId(unsigned int index);
 
     /**
     * \brief Get the refNum of the actor killer of the actor at a certain index in the read actor list.
@@ -416,7 +416,7 @@ public:
     * \param index The index of the actor.
     * \return The refNum of the killer.
     */
-    static unsigned int GetActorKillerRefNum(unsigned int index) noexcept;
+    static unsigned int GetActorKillerRefNum(unsigned int index);
 
     /**
     * \brief Get the mpNum of the actor killer of the actor at a certain index in the read actor list.
@@ -424,7 +424,7 @@ public:
     * \param index The index of the actor.
     * \return The mpNum of the killer.
     */
-    static unsigned int GetActorKillerMpNum(unsigned int index) noexcept;
+    static unsigned int GetActorKillerMpNum(unsigned int index);
 
     /**
     * \brief Get the name of the actor killer of the actor at a certain index in the read actor list.
@@ -432,7 +432,7 @@ public:
     * \param index The index of the actor.
     * \return The name of the killer.
     */
-    static const char *GetActorKillerName(unsigned int index) noexcept;
+    static const char *GetActorKillerName(unsigned int index);
 
     /**
     * \brief Get the deathState of the actor at a certain index in the read actor list.
@@ -440,7 +440,7 @@ public:
     * \param index The index of the actor.
     * \return The deathState.
     */
-    static unsigned int GetActorDeathState(unsigned int index) noexcept;
+    static unsigned int GetActorDeathState(unsigned int index);
 
     /**
     * \brief Get the number of indexes in an actor's latest spells active changes.
@@ -448,7 +448,7 @@ public:
     * \param actorIndex The index of the actor.
     * \return The number of indexes for spells active changes.
     */
-    static unsigned int GetActorSpellsActiveChangesSize(unsigned int actorIndex) noexcept;
+    static unsigned int GetActorSpellsActiveChangesSize(unsigned int actorIndex);
 
     /**
     * \brief Get the action type used in an actor's latest spells active changes.
@@ -456,7 +456,7 @@ public:
     * \param actorIndex The index of the actor.
     * \return The action type (0 for SET, 1 for ADD, 2 for REMOVE).
     */
-    static unsigned int GetActorSpellsActiveChangesAction(unsigned int actorIndex) noexcept;
+    static unsigned int GetActorSpellsActiveChangesAction(unsigned int actorIndex);
 
     /**
     * \brief Get the spell id at a certain index in an actor's latest spells active changes.
@@ -465,7 +465,7 @@ public:
     * \param spellIndex The index of the spell.
     * \return The spell id.
     */
-    static const char* GetActorSpellsActiveId(unsigned int actorIndex, unsigned int spellIndex) noexcept;
+    static const char* GetActorSpellsActiveId(unsigned int actorIndex, unsigned int spellIndex);
 
     /**
     * \brief Get the spell display name at a certain index in an actor's latest spells active changes.
@@ -474,7 +474,7 @@ public:
     * \param spellIndex The index of the spell.
     * \return The spell display name.
     */
-    static const char* GetActorSpellsActiveDisplayName(unsigned int actorIndex, unsigned int spellIndex) noexcept;
+    static const char* GetActorSpellsActiveDisplayName(unsigned int actorIndex, unsigned int spellIndex);
 
     /**
     * \brief Get the spell stacking state at a certain index in an actor's latest spells active changes.
@@ -483,7 +483,7 @@ public:
     * \param spellIndex The index of the spell.
     * \return The spell stacking state.
     */
-    static bool GetActorSpellsActiveStackingState(unsigned int actorIndex, unsigned int spellIndex) noexcept;
+    static bool GetActorSpellsActiveStackingState(unsigned int actorIndex, unsigned int spellIndex);
 
     /**
     * \brief Get the number of effects at an index in an actor's latest spells active changes.
@@ -492,7 +492,7 @@ public:
     * \param spellIndex The index of the spell.
     * \return The number of effects.
     */
-    static unsigned int GetActorSpellsActiveEffectCount(unsigned int actorIndex, unsigned int spellIndex) noexcept;
+    static unsigned int GetActorSpellsActiveEffectCount(unsigned int actorIndex, unsigned int spellIndex);
 
     /**
     * \brief Get the id for an effect index at a spell index in an actor's latest spells active changes.
@@ -502,7 +502,7 @@ public:
     * \param effectIndex The index of the effect.
     * \return The id of the effect.
     */
-    static unsigned int GetActorSpellsActiveEffectId(unsigned int actorIndex, unsigned int spellIndex, unsigned int effectIndex) noexcept;
+    static unsigned int GetActorSpellsActiveEffectId(unsigned int actorIndex, unsigned int spellIndex, unsigned int effectIndex);
 
     /**
     * \brief Get the arg for an effect index at a spell index in an actor's latest spells active changes.
@@ -512,7 +512,7 @@ public:
     * \param effectIndex The index of the effect.
     * \return The arg of the effect.
     */
-    static int GetActorSpellsActiveEffectArg(unsigned int actorIndex, unsigned int spellIndex, unsigned int effectIndex) noexcept;
+    static int GetActorSpellsActiveEffectArg(unsigned int actorIndex, unsigned int spellIndex, unsigned int effectIndex);
 
     /**
     * \brief Get the magnitude for an effect index at a spell index in an actor's latest spells active changes.
@@ -522,7 +522,7 @@ public:
     * \param effectIndex The index of the effect.
     * \return The magnitude of the effect.
     */
-    static double GetActorSpellsActiveEffectMagnitude(unsigned int actorIndex, unsigned int spellIndex, unsigned int effectIndex) noexcept;
+    static double GetActorSpellsActiveEffectMagnitude(unsigned int actorIndex, unsigned int spellIndex, unsigned int effectIndex);
 
     /**
     * \brief Get the duration for an effect index at a spell index in an actor's latest spells active changes.
@@ -532,7 +532,7 @@ public:
     * \param effectIndex The index of the effect.
     * \return The duration of the effect.
     */
-    static double GetActorSpellsActiveEffectDuration(unsigned int actorIndex, unsigned int spellIndex, unsigned int effectIndex) noexcept;
+    static double GetActorSpellsActiveEffectDuration(unsigned int actorIndex, unsigned int spellIndex, unsigned int effectIndex);
 
     /**
     * \brief Get the time left for an effect index at a spell index in an actor's latest spells active changes.
@@ -542,7 +542,7 @@ public:
     * \param effectIndex The index of the effect.
     * \return The time left for the effect.
     */
-    static double GetActorSpellsActiveEffectTimeLeft(unsigned int actorIndex, unsigned int spellIndex, unsigned int effectIndex) noexcept;
+    static double GetActorSpellsActiveEffectTimeLeft(unsigned int actorIndex, unsigned int spellIndex, unsigned int effectIndex);
 
     /**
     * \brief Check whether the spell at a certain index in an actor's latest spells active changes has a player
@@ -552,7 +552,7 @@ public:
     * \param spellIndex The index of the spell.
     * \return Whether a player is the caster of the spell.
     */
-    static bool DoesActorSpellsActiveHavePlayerCaster(unsigned int actorIndex, unsigned int spellIndex) noexcept;
+    static bool DoesActorSpellsActiveHavePlayerCaster(unsigned int actorIndex, unsigned int spellIndex);
 
     /**
     * \brief Get the player ID of the caster of the spell at a certain index in an actor's latest spells active changes.
@@ -561,7 +561,7 @@ public:
     * \param spellIndex The index of the spell.
     * \return The player ID of the caster.
     */
-    static int GetActorSpellsActiveCasterPid(unsigned int actorIndex, unsigned int spellIndex) noexcept;
+    static int GetActorSpellsActiveCasterPid(unsigned int actorIndex, unsigned int spellIndex);
 
     /**
     * \brief Get the refId of the actor caster of the spell at a certain index in an actor's latest spells active changes.
@@ -570,7 +570,7 @@ public:
     * \param spellIndex The index of the spell.
     * \return The refId of the caster.
     */
-    static const char* GetActorSpellsActiveCasterRefId(unsigned int actorIndex, unsigned int spellIndex) noexcept;
+    static const char* GetActorSpellsActiveCasterRefId(unsigned int actorIndex, unsigned int spellIndex);
 
     /**
     * \brief Get the refNum of the actor caster of the spell at a certain index in an actor's latest spells active changes.
@@ -579,7 +579,7 @@ public:
     * \param spellIndex The index of the spell.
     * \return The refNum of the caster.
     */
-    static unsigned int GetActorSpellsActiveCasterRefNum(unsigned int actorIndex, unsigned int spellIndex) noexcept;
+    static unsigned int GetActorSpellsActiveCasterRefNum(unsigned int actorIndex, unsigned int spellIndex);
 
     /**
     * \brief Get the mpNum of the actor caster of the spell at a certain index in an actor's latest spells active changes.
@@ -588,7 +588,7 @@ public:
     * \param spellIndex The index of the spell.
     * \return The mpNum of the caster.
     */
-    static unsigned int GetActorSpellsActiveCasterMpNum(unsigned int actorIndex, unsigned int spellIndex) noexcept;
+    static unsigned int GetActorSpellsActiveCasterMpNum(unsigned int actorIndex, unsigned int spellIndex);
 
     /**
     * \brief Check whether there is any positional data for the actor at a certain index in
@@ -599,7 +599,7 @@ public:
     * \param index The index of the actor.
     * \return Whether the read actor list contains positional data.
     */
-    static bool DoesActorHavePosition(unsigned int index) noexcept;
+    static bool DoesActorHavePosition(unsigned int index);
 
     /**
     * \brief Check whether there is any dynamic stats data for the actor at a certain index in
@@ -610,7 +610,7 @@ public:
     * \param index The index of the actor.
     * \return Whether the read actor list contains dynamic stats data.
     */
-    static bool DoesActorHaveStatsDynamic(unsigned int index) noexcept;
+    static bool DoesActorHaveStatsDynamic(unsigned int index);
 
     /**
     * \brief Set the cell of the temporary actor list stored on the server.
@@ -621,7 +621,7 @@ public:
     * \param cellDescription The description of the cell.
     * \return void
     */
-    static void SetActorListCell(const char* cellDescription) noexcept;
+    static void SetActorListCell(const char* cellDescription);
 
     /**
     * \brief Set the action type of the temporary actor list stored on the server.
@@ -629,7 +629,7 @@ public:
     * \param action The action type (0 for SET, 1 for ADD, 2 for REMOVE, 3 for REQUEST).
     * \return void
     */
-    static void SetActorListAction(unsigned char action) noexcept;
+    static void SetActorListAction(unsigned char action);
 
     /**
     * \brief Set the cell of the temporary actor stored on the server.
@@ -643,7 +643,7 @@ public:
     * \param cellDescription The description of the cell.
     * \return void
     */
-    static void SetActorCell(const char* cellDescription) noexcept;
+    static void SetActorCell(const char* cellDescription);
 
     /**
     * \brief Set the refId of the temporary actor stored on the server.
@@ -651,7 +651,7 @@ public:
     * \param refId The refId.
     * \return void
     */
-    static void SetActorRefId(const char* refId) noexcept;
+    static void SetActorRefId(const char* refId);
 
     /**
     * \brief Set the refNum of the temporary actor stored on the server.
@@ -659,7 +659,7 @@ public:
     * \param refNum The refNum.
     * \return void
     */
-    static void SetActorRefNum(int refNum) noexcept;
+    static void SetActorRefNum(int refNum);
 
     /**
     * \brief Set the mpNum of the temporary actor stored on the server.
@@ -667,7 +667,7 @@ public:
     * \param mpNum The mpNum.
     * \return void
     */
-    static void SetActorMpNum(int mpNum) noexcept;
+    static void SetActorMpNum(int mpNum);
 
     /**
     * \brief Set the position of the temporary actor stored on the server.
@@ -677,7 +677,7 @@ public:
     * \param z The Z position.
     * \return void
     */
-    static void SetActorPosition(double x, double y, double z) noexcept;
+    static void SetActorPosition(double x, double y, double z);
 
     /**
     * \brief Set the rotation of the temporary actor stored on the server.
@@ -687,7 +687,7 @@ public:
     * \param z The Z rotation.
     * \return void
     */
-    static void SetActorRotation(double x, double y, double z) noexcept;
+    static void SetActorRotation(double x, double y, double z);
 
     /**
     * \brief Set the base health of the temporary actor stored on the server.
@@ -695,7 +695,7 @@ public:
     * \param value The new value.
     * \return void
     */
-    static void SetActorHealthBase(double value) noexcept;
+    static void SetActorHealthBase(double value);
 
     /**
     * \brief Set the current health of the temporary actor stored on the server.
@@ -703,7 +703,7 @@ public:
     * \param value The new value.
     * \return void
     */
-    static void SetActorHealthCurrent(double value) noexcept;
+    static void SetActorHealthCurrent(double value);
 
     /**
     * \brief Set the modified health of the temporary actor stored on the server.
@@ -711,7 +711,7 @@ public:
     * \param value The new value.
     * \return void
     */
-    static void SetActorHealthModified(double value) noexcept;
+    static void SetActorHealthModified(double value);
 
     /**
     * \brief Set the base magicka of the temporary actor stored on the server.
@@ -719,7 +719,7 @@ public:
     * \param value The new value.
     * \return void
     */
-    static void SetActorMagickaBase(double value) noexcept;
+    static void SetActorMagickaBase(double value);
 
     /**
     * \brief Set the current magicka of the temporary actor stored on the server.
@@ -727,7 +727,7 @@ public:
     * \param value The new value.
     * \return void
     */
-    static void SetActorMagickaCurrent(double value) noexcept;
+    static void SetActorMagickaCurrent(double value);
 
     /**
     * \brief Set the modified magicka of the temporary actor stored on the server.
@@ -735,7 +735,7 @@ public:
     * \param value The new value.
     * \return void
     */
-    static void SetActorMagickaModified(double value) noexcept;
+    static void SetActorMagickaModified(double value);
 
     /**
     * \brief Set the base fatigue of the temporary actor stored on the server.
@@ -743,7 +743,7 @@ public:
     * \param value The new value.
     * \return void
     */
-    static void SetActorFatigueBase(double value) noexcept;
+    static void SetActorFatigueBase(double value);
 
     /**
     * \brief Set the current fatigue of the temporary actor stored on the server.
@@ -751,7 +751,7 @@ public:
     * \param value The new value.
     * \return void
     */
-    static void SetActorFatigueCurrent(double value) noexcept;
+    static void SetActorFatigueCurrent(double value);
 
     /**
     * \brief Set the modified fatigue of the temporary actor stored on the server.
@@ -759,10 +759,10 @@ public:
     * \param value The new value.
     * \return void
     */
-    static void SetActorFatigueModified(double value) noexcept;
+    static void SetActorFatigueModified(double value);
 
     /** Modify the normalized strength of a pending actor attack intent. */
-    static void SetActorAttackStrength(unsigned int index, double value) noexcept;
+    static void SetActorAttackStrength(unsigned int index, double value);
 
     /**
     * \brief Set the sound of the temporary actor stored on the server.
@@ -770,7 +770,7 @@ public:
     * \param sound The sound.
     * \return void
     */
-    static void SetActorSound(const char* sound) noexcept;
+    static void SetActorSound(const char* sound);
 
     /**
     * \brief Set the deathState of the temporary actor stored on the server.
@@ -778,7 +778,7 @@ public:
     * \param deathState The deathState.
     * \return void
     */
-    static void SetActorDeathState(unsigned int deathState) noexcept;
+    static void SetActorDeathState(unsigned int deathState);
 
     /**
     * \brief Set whether the death of the temporary actor stored on the server should
@@ -787,7 +787,7 @@ public:
     * \param isInstant Whether the death should be instant.
     * \return void
     */
-    static void SetActorDeathInstant(bool isInstant) noexcept;
+    static void SetActorDeathInstant(bool isInstant);
 
     /**
     * \brief Set the action type in the spells active changes of the temporary actor
@@ -796,7 +796,7 @@ public:
     * \param action The action (0 for SET, 1 for ADD, 2 for REMOVE).
     * \return void
     */
-    static void SetActorSpellsActiveAction(unsigned char action) noexcept;
+    static void SetActorSpellsActiveAction(unsigned char action);
 
     /**
     * \brief Set the AI action of the temporary actor stored on the server.
@@ -804,7 +804,7 @@ public:
     * \param action The new action.
     * \return void
     */
-    static void SetActorAIAction(unsigned int action) noexcept;
+    static void SetActorAIAction(unsigned int action);
 
     /**
     * \brief Set a player as the AI target of the temporary actor stored on the server.
@@ -812,7 +812,7 @@ public:
     * \param pid The player ID.
     * \return void
     */
-    static void SetActorAITargetToPlayer(unsigned short pid) noexcept;
+    static void SetActorAITargetToPlayer(unsigned short pid);
 
     /**
     * \brief Set another object as the AI target of the temporary actor stored on the server.
@@ -821,7 +821,7 @@ public:
     * \param mpNum The mpNum of the target object.
     * \return void
     */
-    static void SetActorAITargetToObject(int refNum, int mpNum) noexcept;
+    static void SetActorAITargetToObject(int refNum, int mpNum);
 
     /**
     * \brief Set the coordinates for the AI package associated with the current AI action.
@@ -831,7 +831,7 @@ public:
     * \param z The Z coordinate.
     * \return void
     */
-    static void SetActorAICoordinates(double x, double y, double z) noexcept;
+    static void SetActorAICoordinates(double x, double y, double z);
 
     /**
     * \brief Set the distance of the AI package associated with the current AI action.
@@ -839,7 +839,7 @@ public:
     * \param distance The distance of the package.
     * \return void
     */
-    static void SetActorAIDistance(unsigned int distance) noexcept;
+    static void SetActorAIDistance(unsigned int distance);
 
     /**
     * \brief Set the duration of the AI package associated with the current AI action.
@@ -847,7 +847,7 @@ public:
     * \param duration The duration of the package.
     * \return void
     */
-    static void SetActorAIDuration(unsigned int duration) noexcept;
+    static void SetActorAIDuration(unsigned int duration);
 
     /**
     * \brief Set whether the current AI package should be repeated.
@@ -857,7 +857,7 @@ public:
     * \param shouldRepeat Whether the package should be repeated.
     * \return void
     */
-    static void SetActorAIRepetition(bool shouldRepeat) noexcept;
+    static void SetActorAIRepetition(bool shouldRepeat);
 
     /**
     * \brief Equip an item in a certain slot of the equipment of the temporary actor stored
@@ -890,7 +890,7 @@ public:
     * \param stackingState Whether the spell should stack with other instances of itself.
     * \return void
     */
-    static void AddActorSpellActive(const char* spellId, const char* displayName, bool stackingState) noexcept;
+    static void AddActorSpellActive(const char* spellId, const char* displayName, bool stackingState);
 
     /**
     * \brief Add a new effect to the next active spell that will be added to the temporary actor
@@ -904,7 +904,7 @@ public:
     *            used for Fortify Attribute.
     * \return void
     */
-    static void AddActorSpellActiveEffect(int effectId, double magnitude, double duration, double timeLeft, int arg) noexcept;
+    static void AddActorSpellActiveEffect(int effectId, double magnitude, double duration, double timeLeft, int arg);
 
     /**
     * \brief Add a copy of the server's temporary actor to the server's temporary actor list.
@@ -914,7 +914,7 @@ public:
     *
     * \return void
     */
-    static void AddActor() noexcept;
+    static void AddActor();
 
     /**
     * \brief Send an ActorList packet.
@@ -935,7 +935,7 @@ public:
     *
     * \return void
     */
-    static void SendActorAuthority() noexcept;
+    static void SendActorAuthority();
 
     /**
     * \brief Send an ActorPosition packet.
@@ -947,7 +947,7 @@ public:
     *
     * \return void
     */
-    static void SendActorPosition(bool sendToOtherVisitors, bool skipAttachedPlayer) noexcept;
+    static void SendActorPosition(bool sendToOtherVisitors, bool skipAttachedPlayer);
 
     /**
     * \brief Send an ActorStatsDynamic packet.
@@ -994,7 +994,7 @@ public:
     *                           to the packet (false by default).
     * \return void
     */
-    static void SendActorSpeech(bool sendToOtherVisitors, bool skipAttachedPlayer) noexcept;
+    static void SendActorSpeech(bool sendToOtherVisitors, bool skipAttachedPlayer);
 
     /**
     * \brief Send an ActorDeath packet.
@@ -1005,7 +1005,7 @@ public:
     *                           to the packet (false by default).
     * \return void
     */
-    static void SendActorDeath(bool sendToOtherVisitors, bool skipAttachedPlayer) noexcept;
+    static void SendActorDeath(bool sendToOtherVisitors, bool skipAttachedPlayer);
 
     /**
     * \brief Send an ActorAI packet.
@@ -1016,7 +1016,7 @@ public:
     *                           to the packet (false by default).
     * \return void
     */
-    static void SendActorAI(bool sendToOtherVisitors, bool skipAttachedPlayer) noexcept;
+    static void SendActorAI(bool sendToOtherVisitors, bool skipAttachedPlayer);
 
     /**
     * \brief Send an ActorCellChange packet.
@@ -1028,17 +1028,17 @@ public:
     *
     * \return void
     */
-    static void SendActorCellChange(bool sendToOtherVisitors, bool skipAttachedPlayer) noexcept;
+    static void SendActorCellChange(bool sendToOtherVisitors, bool skipAttachedPlayer);
 
 
     // All methods below are deprecated versions of methods from above
 
-    static void ReadLastActorList() noexcept;
-    static void InitializeActorList(unsigned short pid) noexcept;
-    static void CopyLastActorListToStore() noexcept;
-    static unsigned int GetActorRefNumIndex(unsigned int index) noexcept;
-    static unsigned int GetActorKillerRefNumIndex(unsigned int index) noexcept;
-    static void SetActorRefNumIndex(int refNum) noexcept;
+    static void ReadLastActorList();
+    static void InitializeActorList(unsigned short pid);
+    static void CopyLastActorListToStore();
+    static unsigned int GetActorRefNumIndex(unsigned int index);
+    static unsigned int GetActorKillerRefNumIndex(unsigned int index);
+    static void SetActorRefNumIndex(int refNum);
 };
 
 

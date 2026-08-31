@@ -6,7 +6,7 @@
 
 #include <iostream>
 
-double PositionFunctions::GetPosX(unsigned short pid) noexcept
+double PositionFunctions::GetPosX(unsigned short pid)
 {
     Player *player;
     GET_PLAYER(pid, player, 0.0f);
@@ -14,7 +14,7 @@ double PositionFunctions::GetPosX(unsigned short pid) noexcept
     return player->position.pos[0];
 }
 
-double PositionFunctions::GetPosY(unsigned short pid) noexcept
+double PositionFunctions::GetPosY(unsigned short pid)
 {
     Player *player;
     GET_PLAYER(pid, player, 0.0f);
@@ -22,7 +22,7 @@ double PositionFunctions::GetPosY(unsigned short pid) noexcept
     return player->position.pos[1];
 }
 
-double PositionFunctions::GetPosZ(unsigned short pid) noexcept
+double PositionFunctions::GetPosZ(unsigned short pid)
 {
     Player *player;
     GET_PLAYER(pid, player, 0.0f);
@@ -30,7 +30,7 @@ double PositionFunctions::GetPosZ(unsigned short pid) noexcept
     return player->position.pos[2];
 }
 
-double PositionFunctions::GetPreviousCellPosX(unsigned short pid) noexcept
+double PositionFunctions::GetPreviousCellPosX(unsigned short pid)
 {
     Player *player;
     GET_PLAYER(pid, player, 0.0f);
@@ -38,7 +38,7 @@ double PositionFunctions::GetPreviousCellPosX(unsigned short pid) noexcept
     return player->previousCellPosition.pos[0];
 }
 
-double PositionFunctions::GetPreviousCellPosY(unsigned short pid) noexcept
+double PositionFunctions::GetPreviousCellPosY(unsigned short pid)
 {
     Player *player;
     GET_PLAYER(pid, player, 0.0f);
@@ -46,7 +46,7 @@ double PositionFunctions::GetPreviousCellPosY(unsigned short pid) noexcept
     return player->previousCellPosition.pos[1];
 }
 
-double PositionFunctions::GetPreviousCellPosZ(unsigned short pid) noexcept
+double PositionFunctions::GetPreviousCellPosZ(unsigned short pid)
 {
     Player *player;
     GET_PLAYER(pid, player, 0.0f);
@@ -54,7 +54,7 @@ double PositionFunctions::GetPreviousCellPosZ(unsigned short pid) noexcept
     return player->previousCellPosition.pos[2];
 }
 
-double PositionFunctions::GetRotX(unsigned short pid) noexcept
+double PositionFunctions::GetRotX(unsigned short pid)
 {
     Player *player;
     GET_PLAYER(pid, player, 0.0f);
@@ -62,7 +62,7 @@ double PositionFunctions::GetRotX(unsigned short pid) noexcept
     return player->position.rot[0];
 }
 
-double PositionFunctions::GetRotZ(unsigned short pid) noexcept
+double PositionFunctions::GetRotZ(unsigned short pid)
 {
     Player *player;
     GET_PLAYER(pid, player, 0.0f);
@@ -70,7 +70,7 @@ double PositionFunctions::GetRotZ(unsigned short pid) noexcept
     return player->position.rot[2];
 }
 
-void PositionFunctions::SetPos(unsigned short pid, double x, double y, double z) noexcept
+void PositionFunctions::SetPos(unsigned short pid, double x, double y, double z)
 {
     Player *player;
     GET_PLAYER(pid, player,);
@@ -80,7 +80,7 @@ void PositionFunctions::SetPos(unsigned short pid, double x, double y, double z)
     player->position.pos[2] = z;
 }
 
-void PositionFunctions::SetRot(unsigned short pid, double x, double z) noexcept
+void PositionFunctions::SetRot(unsigned short pid, double x, double z)
 {
     Player *player;
     GET_PLAYER(pid, player, );
@@ -89,7 +89,7 @@ void PositionFunctions::SetRot(unsigned short pid, double x, double z) noexcept
     player->position.rot[2] = z;
 }
 
-void PositionFunctions::SetMomentum(unsigned short pid, double x, double y, double z) noexcept
+void PositionFunctions::SetMomentum(unsigned short pid, double x, double y, double z)
 {
     Player *player;
     GET_PLAYER(pid, player, );
@@ -99,7 +99,7 @@ void PositionFunctions::SetMomentum(unsigned short pid, double x, double y, doub
     player->momentum.pos[2] = z;
 }
 
-void PositionFunctions::SendPos(unsigned short pid) noexcept
+void PositionFunctions::SendPos(unsigned short pid)
 {
     Player *player;
     GET_PLAYER(pid, player, );
@@ -112,7 +112,7 @@ void PositionFunctions::SendPos(unsigned short pid) noexcept
     packet->Send(false);
 }
 
-void PositionFunctions::SendMomentum(unsigned short pid) noexcept
+void PositionFunctions::SendMomentum(unsigned short pid)
 {
     Player *player;
     GET_PLAYER(pid, player, );

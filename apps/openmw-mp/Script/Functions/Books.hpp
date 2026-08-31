@@ -26,7 +26,7 @@ public:
     * \param pid The player ID whose book changes should be used.
     * \return void
     */
-    static void ClearBookChanges(unsigned short pid) noexcept;
+    static void ClearBookChanges(unsigned short pid);
 
     /**
     * \brief Get the number of indexes in a player's latest book changes.
@@ -34,7 +34,7 @@ public:
     * \param pid The player ID whose book changes should be used.
     * \return The number of indexes.
     */
-    static unsigned int GetBookChangesSize(unsigned short pid) noexcept;
+    static unsigned int GetBookChangesSize(unsigned short pid);
 
     /**
     * \brief Add a new book to the book changes for a player.
@@ -43,7 +43,7 @@ public:
     * \param bookId The bookId of the book.
     * \return void
     */
-    static void AddBook(unsigned short pid, const char* bookId) noexcept;
+    static void AddBook(unsigned short pid, const char* bookId);
 
     /**
     * \brief Get the bookId at a certain index in a player's latest book changes.
@@ -52,7 +52,7 @@ public:
     * \param index The index of the book.
     * \return The bookId.
     */
-    static const char *GetBookId(unsigned short pid, unsigned int index) noexcept;
+    static const char *GetBookId(unsigned short pid, unsigned int index);
 
     /**
     * \brief Send a PlayerBook packet with a player's recorded book changes.
@@ -64,11 +64,11 @@ public:
     *                           to the packet (false by default).
     * \return void
     */
-    static void SendBookChanges(unsigned short pid, bool sendToOtherPlayers, bool skipAttachedPlayer) noexcept;
+    static void SendBookChanges(unsigned short pid, bool sendToOtherPlayers, bool skipAttachedPlayer);
 
     // All methods below are deprecated versions of methods from above
 
-    static void InitializeBookChanges(unsigned short pid) noexcept;
+    static void InitializeBookChanges(unsigned short pid);
 
 };
 

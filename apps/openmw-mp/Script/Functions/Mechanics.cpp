@@ -11,7 +11,7 @@
 
 static std::string tempCellDescription;
 
-void MechanicsFunctions::ClearAlliedPlayersForPlayer(unsigned short pid) noexcept
+void MechanicsFunctions::ClearAlliedPlayersForPlayer(unsigned short pid)
 {
     Player *player;
     GET_PLAYER(pid, player, );
@@ -19,7 +19,7 @@ void MechanicsFunctions::ClearAlliedPlayersForPlayer(unsigned short pid) noexcep
     player->alliedPlayers.clear();
 }
 
-unsigned char MechanicsFunctions::GetMiscellaneousChangeType(unsigned short pid) noexcept
+unsigned char MechanicsFunctions::GetMiscellaneousChangeType(unsigned short pid)
 {
     Player *player;
     GET_PLAYER(pid, player, 0);
@@ -27,7 +27,7 @@ unsigned char MechanicsFunctions::GetMiscellaneousChangeType(unsigned short pid)
     return player->miscellaneousChangeType;
 }
 
-const char *MechanicsFunctions::GetMarkCell(unsigned short pid) noexcept
+const char *MechanicsFunctions::GetMarkCell(unsigned short pid)
 {
     Player *player;
     GET_PLAYER(pid, player, 0);
@@ -36,7 +36,7 @@ const char *MechanicsFunctions::GetMarkCell(unsigned short pid) noexcept
     return tempCellDescription.c_str();
 }
 
-double MechanicsFunctions::GetMarkPosX(unsigned short pid) noexcept
+double MechanicsFunctions::GetMarkPosX(unsigned short pid)
 {
     Player *player;
     GET_PLAYER(pid, player, 0.0f);
@@ -44,7 +44,7 @@ double MechanicsFunctions::GetMarkPosX(unsigned short pid) noexcept
     return player->markPosition.pos[0];
 }
 
-double MechanicsFunctions::GetMarkPosY(unsigned short pid) noexcept
+double MechanicsFunctions::GetMarkPosY(unsigned short pid)
 {
     Player *player;
     GET_PLAYER(pid, player, 0.0f);
@@ -52,7 +52,7 @@ double MechanicsFunctions::GetMarkPosY(unsigned short pid) noexcept
     return player->markPosition.pos[1];
 }
 
-double MechanicsFunctions::GetMarkPosZ(unsigned short pid) noexcept
+double MechanicsFunctions::GetMarkPosZ(unsigned short pid)
 {
     Player *player;
     GET_PLAYER(pid, player, 0.0f);
@@ -60,7 +60,7 @@ double MechanicsFunctions::GetMarkPosZ(unsigned short pid) noexcept
     return player->markPosition.pos[2];
 }
 
-double MechanicsFunctions::GetMarkRotX(unsigned short pid) noexcept
+double MechanicsFunctions::GetMarkRotX(unsigned short pid)
 {
     Player *player;
     GET_PLAYER(pid, player, 0.0f);
@@ -68,7 +68,7 @@ double MechanicsFunctions::GetMarkRotX(unsigned short pid) noexcept
     return player->markPosition.rot[0];
 }
 
-double MechanicsFunctions::GetMarkRotZ(unsigned short pid) noexcept
+double MechanicsFunctions::GetMarkRotZ(unsigned short pid)
 {
     Player *player;
     GET_PLAYER(pid, player, 0.0f);
@@ -76,7 +76,7 @@ double MechanicsFunctions::GetMarkRotZ(unsigned short pid) noexcept
     return player->markPosition.rot[2];
 }
 
-bool MechanicsFunctions::DoesPlayerHavePlayerKiller(unsigned short pid) noexcept
+bool MechanicsFunctions::DoesPlayerHavePlayerKiller(unsigned short pid)
 {
     Player *player;
     GET_PLAYER(pid, player, false);
@@ -84,7 +84,7 @@ bool MechanicsFunctions::DoesPlayerHavePlayerKiller(unsigned short pid) noexcept
     return player->killer.isPlayer;
 }
 
-int MechanicsFunctions::GetPlayerKillerPid(unsigned short pid) noexcept
+int MechanicsFunctions::GetPlayerKillerPid(unsigned short pid)
 {
     Player *player;
     GET_PLAYER(pid, player, 0);
@@ -97,7 +97,7 @@ int MechanicsFunctions::GetPlayerKillerPid(unsigned short pid) noexcept
     return -1;
 }
 
-const char *MechanicsFunctions::GetPlayerKillerRefId(unsigned short pid) noexcept
+const char *MechanicsFunctions::GetPlayerKillerRefId(unsigned short pid)
 {
     Player *player;
     GET_PLAYER(pid, player, "");
@@ -105,7 +105,7 @@ const char *MechanicsFunctions::GetPlayerKillerRefId(unsigned short pid) noexcep
     return player->killer.refId.c_str();
 }
 
-unsigned int MechanicsFunctions::GetPlayerKillerRefNum(unsigned short pid) noexcept
+unsigned int MechanicsFunctions::GetPlayerKillerRefNum(unsigned short pid)
 {
     Player *player;
     GET_PLAYER(pid, player, 0);
@@ -113,7 +113,7 @@ unsigned int MechanicsFunctions::GetPlayerKillerRefNum(unsigned short pid) noexc
     return player->killer.refNum;
 }
 
-unsigned int MechanicsFunctions::GetPlayerKillerMpNum(unsigned short pid) noexcept
+unsigned int MechanicsFunctions::GetPlayerKillerMpNum(unsigned short pid)
 {
     Player *player;
     GET_PLAYER(pid, player, 0);
@@ -121,7 +121,7 @@ unsigned int MechanicsFunctions::GetPlayerKillerMpNum(unsigned short pid) noexce
     return player->killer.mpNum;
 }
 
-const char *MechanicsFunctions::GetPlayerKillerName(unsigned short pid) noexcept
+const char *MechanicsFunctions::GetPlayerKillerName(unsigned short pid)
 {
     Player *player;
     GET_PLAYER(pid, player, "");
@@ -129,7 +129,7 @@ const char *MechanicsFunctions::GetPlayerKillerName(unsigned short pid) noexcept
     return player->killer.name.c_str();
 }
 
-const char *MechanicsFunctions::GetSelectedSpellId(unsigned short pid) noexcept
+const char *MechanicsFunctions::GetSelectedSpellId(unsigned short pid)
 {
     Player *player;
     GET_PLAYER(pid, player, 0);
@@ -137,7 +137,7 @@ const char *MechanicsFunctions::GetSelectedSpellId(unsigned short pid) noexcept
     return player->selectedSpellId.c_str();
 }
 
-unsigned int MechanicsFunctions::GetDrawState(unsigned short pid) noexcept
+unsigned int MechanicsFunctions::GetDrawState(unsigned short pid)
 {
     Player *player;
     GET_PLAYER(pid, player, false);
@@ -145,7 +145,7 @@ unsigned int MechanicsFunctions::GetDrawState(unsigned short pid) noexcept
     return player->drawState;
 }
 
-bool MechanicsFunctions::GetSneakState(unsigned short pid) noexcept
+bool MechanicsFunctions::GetSneakState(unsigned short pid)
 {
     Player *player;
     GET_PLAYER(pid, player, false);
@@ -154,7 +154,7 @@ bool MechanicsFunctions::GetSneakState(unsigned short pid) noexcept
     return (player->movementFlags & 8) != 0;
 }
 
-void MechanicsFunctions::SetMarkCell(unsigned short pid, const char *cellDescription) noexcept
+void MechanicsFunctions::SetMarkCell(unsigned short pid, const char *cellDescription)
 {
     Player *player;
     GET_PLAYER(pid, player, );
@@ -162,7 +162,7 @@ void MechanicsFunctions::SetMarkCell(unsigned short pid, const char *cellDescrip
     player->markCell = Utils::getCellFromDescription(cellDescription);
 }
 
-void MechanicsFunctions::SetMarkPos(unsigned short pid, double x, double y, double z) noexcept
+void MechanicsFunctions::SetMarkPos(unsigned short pid, double x, double y, double z)
 {
     Player *player;
     GET_PLAYER(pid, player, );
@@ -172,7 +172,7 @@ void MechanicsFunctions::SetMarkPos(unsigned short pid, double x, double y, doub
     player->markPosition.pos[2] = z;
 }
 
-void MechanicsFunctions::SetMarkRot(unsigned short pid, double x, double z) noexcept
+void MechanicsFunctions::SetMarkRot(unsigned short pid, double x, double z)
 {
     Player *player;
     GET_PLAYER(pid, player, );
@@ -181,7 +181,7 @@ void MechanicsFunctions::SetMarkRot(unsigned short pid, double x, double z) noex
     player->markPosition.rot[2] = z;
 }
 
-void MechanicsFunctions::SetSelectedSpellId(unsigned short pid, const char *spellId) noexcept
+void MechanicsFunctions::SetSelectedSpellId(unsigned short pid, const char *spellId)
 {
     Player *player;
     GET_PLAYER(pid, player, );
@@ -189,7 +189,7 @@ void MechanicsFunctions::SetSelectedSpellId(unsigned short pid, const char *spel
     player->selectedSpellId = spellId;
 }
 
-void MechanicsFunctions::AddAlliedPlayerForPlayer(unsigned short pid, unsigned short alliedPlayerPid) noexcept
+void MechanicsFunctions::AddAlliedPlayerForPlayer(unsigned short pid, unsigned short alliedPlayerPid)
 {
     Player *player;
     GET_PLAYER(pid, player, );
@@ -281,7 +281,7 @@ void MechanicsFunctions::Resurrect(unsigned short pid, unsigned int type)
 
 // All methods below are deprecated versions of methods from above
 
-const char *MechanicsFunctions::GetDeathReason(unsigned short pid) noexcept
+const char *MechanicsFunctions::GetDeathReason(unsigned short pid)
 {
     Player *player;
     GET_PLAYER(pid, player, 0);
@@ -299,7 +299,7 @@ const char *MechanicsFunctions::GetDeathReason(unsigned short pid) noexcept
     return "suicide";
 }
 
-unsigned int MechanicsFunctions::GetPlayerKillerRefNumIndex(unsigned short pid) noexcept
+unsigned int MechanicsFunctions::GetPlayerKillerRefNumIndex(unsigned short pid)
 {
     return GetPlayerKillerRefNum(pid);
 }

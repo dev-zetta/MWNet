@@ -26,7 +26,7 @@ public:
     * \param pid The player ID.
     * \return The scale.
     */
-    static double GetScale(unsigned short pid) noexcept;
+    static double GetScale(unsigned short pid);
 
     /**
     * \brief Check whether a player is a werewolf.
@@ -36,7 +36,7 @@ public:
     * \param pid The player ID.
     * \return The werewolf state.
     */
-    static bool IsWerewolf(unsigned short pid) noexcept;
+    static bool IsWerewolf(unsigned short pid);
 
     /**
     * \brief Get the refId of the creature the player is disguised as.
@@ -44,7 +44,7 @@ public:
     * \param pid The player ID.
     * \return The creature refId.
     */
-    static const char *GetCreatureRefId(unsigned short pid) noexcept;
+    static const char *GetCreatureRefId(unsigned short pid);
 
     /**
     * \brief Check whether a player's name is replaced by that of the creature they are
@@ -55,7 +55,7 @@ public:
     * \param pid The player ID.
     * \return The creature name display state.
     */
-    static bool GetCreatureNameDisplayState(unsigned short pid) noexcept;
+    static bool GetCreatureNameDisplayState(unsigned short pid);
 
     /**
     * \brief Set the scale of a player.
@@ -67,7 +67,7 @@ public:
     * \param scale The new scale.
     * \return void
     */
-    static void SetScale(unsigned short pid, double scale) noexcept;
+    static void SetScale(unsigned short pid, double scale);
 
     /**
     * \brief Set the werewolf state of a player.
@@ -79,7 +79,7 @@ public:
     * \param isWerewolf The new werewolf state.
     * \return void
     */
-    static void SetWerewolfState(unsigned short pid, bool isWerewolf) noexcept;
+    static void SetWerewolfState(unsigned short pid, bool isWerewolf);
 
     /**
     * \brief Set the refId of the creature a player is disguised as.
@@ -91,7 +91,7 @@ public:
     * \param refId The creature refId.
     * \return void
     */
-    static void SetCreatureRefId(unsigned short pid, const char *refId) noexcept;
+    static void SetCreatureRefId(unsigned short pid, const char *refId);
 
     /**
     * \brief Set whether a player's name is replaced by that of the creature they are
@@ -101,7 +101,7 @@ public:
     * \param displayState The creature name display state.
     * \return void
     */
-    static void SetCreatureNameDisplayState(unsigned short pid, bool displayState) noexcept;
+    static void SetCreatureNameDisplayState(unsigned short pid, bool displayState);
 
     /**
     * \brief Send a PlayerShapeshift packet about a player.

@@ -8,7 +8,7 @@
 
 using namespace mwmp;
 
-void QuestFunctions::ClearJournalChanges(unsigned short pid) noexcept
+void QuestFunctions::ClearJournalChanges(unsigned short pid)
 {
     Player *player;
     GET_PLAYER(pid, player, );
@@ -16,7 +16,7 @@ void QuestFunctions::ClearJournalChanges(unsigned short pid) noexcept
     player->journalChanges.clear();
 }
 
-unsigned int QuestFunctions::GetJournalChangesSize(unsigned short pid) noexcept
+unsigned int QuestFunctions::GetJournalChangesSize(unsigned short pid)
 {
     Player *player;
     GET_PLAYER(pid, player, 0);
@@ -24,7 +24,7 @@ unsigned int QuestFunctions::GetJournalChangesSize(unsigned short pid) noexcept
     return player->journalChanges.size();
 }
 
-void QuestFunctions::AddJournalEntry(unsigned short pid, const char* quest, unsigned int index, const char* actorRefId) noexcept
+void QuestFunctions::AddJournalEntry(unsigned short pid, const char* quest, unsigned int index, const char* actorRefId)
 {
     Player *player;
     GET_PLAYER(pid, player, );
@@ -40,7 +40,7 @@ void QuestFunctions::AddJournalEntry(unsigned short pid, const char* quest, unsi
 }
 
 void QuestFunctions::AddJournalEntryWithTimestamp(unsigned short pid, const char* quest, unsigned int index, const char* actorRefId,
-    unsigned int daysPassed, unsigned int month, unsigned int day) noexcept
+    unsigned int daysPassed, unsigned int month, unsigned int day)
 {
     Player *player;
     GET_PLAYER(pid, player, );
@@ -59,7 +59,7 @@ void QuestFunctions::AddJournalEntryWithTimestamp(unsigned short pid, const char
     player->journalChanges.push_back(journalItem);
 }
 
-void QuestFunctions::AddJournalIndex(unsigned short pid, const char* quest, unsigned int index) noexcept
+void QuestFunctions::AddJournalIndex(unsigned short pid, const char* quest, unsigned int index)
 {
     Player *player;
     GET_PLAYER(pid, player, );
@@ -72,7 +72,7 @@ void QuestFunctions::AddJournalIndex(unsigned short pid, const char* quest, unsi
     player->journalChanges.push_back(journalItem);
 }
 
-void QuestFunctions::SetReputation(unsigned short pid, int value) noexcept
+void QuestFunctions::SetReputation(unsigned short pid, int value)
 {
     Player *player;
     GET_PLAYER(pid, player, );
@@ -80,7 +80,7 @@ void QuestFunctions::SetReputation(unsigned short pid, int value) noexcept
     player->npcStats.mReputation = value;
 }
 
-const char *QuestFunctions::GetJournalItemQuest(unsigned short pid, unsigned int index) noexcept
+const char *QuestFunctions::GetJournalItemQuest(unsigned short pid, unsigned int index)
 {
     Player *player;
     GET_PLAYER(pid, player, "");
@@ -91,7 +91,7 @@ const char *QuestFunctions::GetJournalItemQuest(unsigned short pid, unsigned int
     return player->journalChanges.at(index).quest.c_str();
 }
 
-int QuestFunctions::GetJournalItemIndex(unsigned short pid, unsigned int index) noexcept
+int QuestFunctions::GetJournalItemIndex(unsigned short pid, unsigned int index)
 {
     Player *player;
     GET_PLAYER(pid, player, 0);
@@ -99,7 +99,7 @@ int QuestFunctions::GetJournalItemIndex(unsigned short pid, unsigned int index) 
     return player->journalChanges.at(index).index;
 }
 
-int QuestFunctions::GetJournalItemType(unsigned short pid, unsigned int index) noexcept
+int QuestFunctions::GetJournalItemType(unsigned short pid, unsigned int index)
 {
     Player *player;
     GET_PLAYER(pid, player, 0);
@@ -107,7 +107,7 @@ int QuestFunctions::GetJournalItemType(unsigned short pid, unsigned int index) n
     return player->journalChanges.at(index).type;
 }
 
-const char *QuestFunctions::GetJournalItemActorRefId(unsigned short pid, unsigned int index) noexcept
+const char *QuestFunctions::GetJournalItemActorRefId(unsigned short pid, unsigned int index)
 {
     Player *player;
     GET_PLAYER(pid, player, 0);
@@ -115,7 +115,7 @@ const char *QuestFunctions::GetJournalItemActorRefId(unsigned short pid, unsigne
     return player->journalChanges.at(index).actorRefId.c_str();
 }
 
-int QuestFunctions::GetReputation(unsigned short pid) noexcept
+int QuestFunctions::GetReputation(unsigned short pid)
 {
     Player *player;
     GET_PLAYER(pid, player, 0);
@@ -123,7 +123,7 @@ int QuestFunctions::GetReputation(unsigned short pid) noexcept
     return player->npcStats.mReputation;
 }
 
-void QuestFunctions::SendJournalChanges(unsigned short pid, bool sendToOtherPlayers, bool skipAttachedPlayer) noexcept
+void QuestFunctions::SendJournalChanges(unsigned short pid, bool sendToOtherPlayers, bool skipAttachedPlayer)
 {
     Player *player;
     GET_PLAYER(pid, player, );
@@ -137,7 +137,7 @@ void QuestFunctions::SendJournalChanges(unsigned short pid, bool sendToOtherPlay
         packet->Send(true);
 }
 
-void QuestFunctions::SendReputation(unsigned short pid, bool sendToOtherPlayers, bool skipAttachedPlayer) noexcept
+void QuestFunctions::SendReputation(unsigned short pid, bool sendToOtherPlayers, bool skipAttachedPlayer)
 {
     Player *player;
     GET_PLAYER(pid, player, );
@@ -153,7 +153,7 @@ void QuestFunctions::SendReputation(unsigned short pid, bool sendToOtherPlayers,
 
 // All methods below are deprecated versions of methods from above
 
-void QuestFunctions::InitializeJournalChanges(unsigned short pid) noexcept
+void QuestFunctions::InitializeJournalChanges(unsigned short pid)
 {
     ClearJournalChanges(pid);
 }
