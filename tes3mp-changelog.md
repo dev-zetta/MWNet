@@ -78,6 +78,8 @@ This is the first hardening milestone for the major OpenMW 0.52 compatibility an
 * Reject actor death outcomes submitted by authority clients while silently ignoring acknowledgements of an already canonical server death
 * Scope canonical container inventory identities to their cells so identical reference numbers cannot alias across the world
 * Apply multi-container inventory changes transactionally so a failed operation cannot leave only part of a packet committed
+* Validate container mutations natively, run Lua policy before commit, and preserve legacy `OnContainer` handlers as post-commit persistence notifications
+* Restore canonical container inventories from persisted cell data before accepting client deltas after a server restart
 
 0.8.1
 -----

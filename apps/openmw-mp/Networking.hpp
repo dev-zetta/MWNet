@@ -103,6 +103,9 @@ namespace  mwmp
         bool validatePlayerInventory(Player& player, const BasePlayer& incoming);
         bool commitPlayerInventory(Player& player);
         bool applyServerInventoryChanges(Player& player);
+        bool validateContainerAction(Player& player, const BaseObjectList& incoming);
+        bool commitContainerAction(Player& player, const BaseObjectList& incoming);
+        bool seedServerContainerInventory(const BaseObjectList& objectList);
         bool validatePlayerStats(Player& player, const BasePlayer& incoming);
         bool reconcilePlayerStats(Player& player);
         bool applyServerPlayerStats(Player& player);

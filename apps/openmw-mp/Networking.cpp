@@ -364,6 +364,83 @@ namespace
         }
         return result;
     }
+
+    struct ContainerOperations
+    {
+        mwmp::mechanics::InventoryDecision decision
+            = mwmp::mechanics::InventoryDecision::InvalidAction;
+        std::vector<mwmp::mechanics::InventoryOperation> operations;
+    };
+
+    ContainerOperations containerOperations(const mwmp::BaseObjectList& objectList,
+        const mwmp::mechanics::InventoryLedger& ledger, bool serverAuthored = false)
+    {
+        ContainerOperations result;
+        const auto action = inventoryAction(objectList.action);
+        const std::string cellDescription = objectList.cell.getShortDescription();
+        if (!action || cellDescription.empty()
+            || objectList.baseObjectCount != objectList.baseObjects.size()
+            || objectList.containerSubAction > mwmp::BaseObjectList::RESTOCK_RESULT)
+        {
+            return result;
+        }
+        if (!serverAuthored && *action == mwmp::mechanics::InventoryAction::Set
+            && objectList.containerSubAction != mwmp::BaseObjectList::REPLY_TO_REQUEST
+            && objectList.containerSubAction != mwmp::BaseObjectList::RESTOCK_RESULT)
+        {
+            return result;
+        }
+
+        std::unordered_set<mwmp::mechanics::InventoryOwner,
+            mwmp::mechanics::InventoryOwnerHash> owners;
+        result.operations.reserve(objectList.baseObjects.size());
+        for (const mwmp::BaseObject& object : objectList.baseObjects)
+        {
+            if ((object.refNum == 0) == (object.mpNum == 0)
+                || object.containerItemCount != object.containerItems.size())
+            {
+                result.decision = mwmp::mechanics::InventoryDecision::InvalidOwner;
+                return result;
+            }
+
+            const std::uint64_t reference = (static_cast<std::uint64_t>(object.refNum) << 32)
+                | static_cast<std::uint64_t>(object.mpNum);
+            mwmp::mechanics::InventoryOwner owner{
+                mwmp::mechanics::InventoryOwnerKind::Container,
+                reference, cellDescription };
+            if (!owners.insert(owner).second)
+            {
+                result.decision = mwmp::mechanics::InventoryDecision::InvalidOwner;
+                return result;
+            }
+
+            const bool exists = ledger.snapshot(owner).has_value();
+            const bool changesUnknownState
+                = *action != mwmp::mechanics::InventoryAction::Set && !exists;
+            if (!serverAuthored && changesUnknownState)
+            {
+                result.decision = mwmp::mechanics::InventoryDecision::InvalidAction;
+                return result;
+            }
+
+            mwmp::mechanics::InventoryOperation operation;
+            operation.owner = std::move(owner);
+            operation.action = *action;
+            operation.items.reserve(object.containerItems.size());
+            for (const mwmp::ContainerItem& item : object.containerItems)
+            {
+                const std::int64_t count
+                    = *action == mwmp::mechanics::InventoryAction::Remove
+                    ? static_cast<std::int64_t>(item.actionCount)
+                    : static_cast<std::int64_t>(item.count);
+                operation.items.push_back({ item.refId, item.soul, item.charge,
+                    item.enchantmentCharge, count });
+            }
+            result.operations.push_back(std::move(operation));
+        }
+        result.decision = mwmp::mechanics::InventoryDecision::Applied;
+        return result;
+    }
 }
 
 bool Networking::validatePlayerInventory(Player& player, const BasePlayer& incoming)
@@ -425,6 +502,68 @@ bool Networking::applyServerInventoryChanges(Player& player)
         LOG_MESSAGE_SIMPLE(TimedLog::LOG_ERROR,
             "Rejected server-authored inventory action for connection %llu: %s",
             static_cast<unsigned long long>(player.guid.g),
+            mechanics::describe(result.decision));
+    }
+    return result.applied();
+}
+
+bool Networking::validateContainerAction(Player& player, const BaseObjectList& incoming)
+{
+    const ContainerOperations operations = containerOperations(incoming, mInventoryLedger);
+    mechanics::InventoryResult result{ operations.decision };
+    if (operations.decision == mechanics::InventoryDecision::Applied)
+        result = mInventoryLedger.previewBatch(operations.operations);
+    if (result.applied())
+        return true;
+
+    const unsigned int violations = ++mInventoryViolations[player.guid.g];
+    LOG_MESSAGE_SIMPLE(TimedLog::LOG_WARN,
+        "Rejected container action from connection %llu: %s (violation %u)",
+        static_cast<unsigned long long>(player.guid.g),
+        mechanics::describe(result.decision), violations);
+    if (violations >= 5)
+        disconnectTransport({ player.guid.g }, "repeated invalid container actions");
+    return false;
+}
+
+bool Networking::commitContainerAction(Player& player, const BaseObjectList& incoming)
+{
+    const ContainerOperations operations = containerOperations(incoming, mInventoryLedger);
+    mechanics::InventoryResult result{ operations.decision };
+    if (operations.decision == mechanics::InventoryDecision::Applied)
+        result = mInventoryLedger.applyBatch(operations.operations);
+    if (result.applied())
+        return true;
+
+    const unsigned int violations = ++mInventoryViolations[player.guid.g];
+    LOG_MESSAGE_SIMPLE(TimedLog::LOG_WARN,
+        "Rejected container intent at commit for connection %llu: %s (violation %u)",
+        static_cast<unsigned long long>(player.guid.g),
+        mechanics::describe(result.decision), violations);
+    if (violations >= 5)
+        disconnectTransport({ player.guid.g }, "repeated invalid container actions");
+    return false;
+}
+
+bool Networking::seedServerContainerInventory(const BaseObjectList& objectList)
+{
+    BaseObjectList normalized = objectList;
+    normalized.action = BaseObjectList::SET;
+    normalized.containerSubAction = BaseObjectList::NONE;
+    normalized.baseObjectCount = normalized.baseObjects.size();
+    for (BaseObject& object : normalized.baseObjects)
+        object.containerItemCount = object.containerItems.size();
+
+    const ContainerOperations operations
+        = containerOperations(normalized, mInventoryLedger, true);
+    mechanics::InventoryResult result{ operations.decision };
+    if (operations.decision == mechanics::InventoryDecision::Applied)
+        result = mInventoryLedger.applyBatch(operations.operations);
+    if (!result.applied())
+    {
+        LOG_MESSAGE_SIMPLE(TimedLog::LOG_ERROR,
+            "Failed to seed canonical container inventory for %s: %s",
+            normalized.cell.getShortDescription().c_str(),
             mechanics::describe(result.decision));
     }
     return result.applied();

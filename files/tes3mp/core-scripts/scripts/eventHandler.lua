@@ -1,5 +1,7 @@
 local eventHandler = {}
 local pendingPlayerInventoryEvents = {}
+local pendingContainerEvents = {}
+local pendingContainerRestocks = {}
 
 commandHandler = require("commandHandler")
 
@@ -476,8 +478,16 @@ eventHandler.InitializeDefaultHandlers = function()
 
         local debugMessage = nil
 
+        if pendingContainerRestocks[pid] == nil then
+            pendingContainerRestocks[pid] = {}
+        end
+        if pendingContainerRestocks[pid][cellDescription] == nil then
+            pendingContainerRestocks[pid][cellDescription] = {}
+        end
+
         for uniqueIndex, object in pairs(objects) do
             tes3mp.LogAppend(enumerations.log.INFO, "- Accepting restock request for " .. object.refId .. " " .. uniqueIndex)
+            pendingContainerRestocks[pid][cellDescription][uniqueIndex] = true
         end
 
         tes3mp.CopyReceivedObjectListToStore()
@@ -1678,7 +1688,9 @@ eventHandler.OnConsoleCommand = function(pid, cellDescription)
     end
 end
 
-eventHandler.OnContainer = function(pid, cellDescription)
+eventHandler.OnContainerIntent = function(pid, cellDescription)
+    pendingContainerEvents[pid] = nil
+
     if Players[pid] ~= nil and Players[pid]:IsLoggedIn() then
 
         tes3mp.ReadReceivedObjectList()
@@ -1715,6 +1727,7 @@ eventHandler.OnContainer = function(pid, cellDescription)
         end
 
         local subAction = tes3mp.GetObjectListContainerSubAction()
+        local action = tes3mp.GetObjectListAction()
         
         local objects = {}
 
@@ -1742,22 +1755,36 @@ eventHandler.OnContainer = function(pid, cellDescription)
         end
 
         if isAllowed then
+            if action == enumerations.container.SET and
+                subAction == enumerations.containerSub.REPLY_TO_REQUEST and
+                (not isCellLoaded or not LoadedCells[cellDescription].isRequestingContainerData or
+                    LoadedCells[cellDescription].containerRequestPid ~= pid) then
+                tes3mp.LogMessage(enumerations.log.WARN, "Rejected unsolicited container state reply from " ..
+                    logicHandler.GetChatName(pid) .. " for " .. cellDescription)
+                return false
+            elseif action == enumerations.container.SET and
+                subAction == enumerations.containerSub.RESTOCK_RESULT then
+                local restocksForCell = nil
+                if pendingContainerRestocks[pid] ~= nil then
+                    restocksForCell = pendingContainerRestocks[pid][cellDescription]
+                end
+                for _, object in pairs(objects) do
+                    if restocksForCell == nil or restocksForCell[object.uniqueIndex] ~= true then
+                        tes3mp.LogMessage(enumerations.log.WARN, "Rejected unsolicited container restock result from " ..
+                            logicHandler.GetChatName(pid) .. " for " .. object.uniqueIndex)
+                        return false
+                    end
+                end
+            end
+
             local eventStatus = customEventHooks.triggerValidators("OnContainer", {pid, cellDescription, objects})
             if eventStatus.validDefaultHandler then
-                local useTemporaryLoad = false
-
-                if not isCellLoaded then
-                    logicHandler.LoadCell(cellDescription)
-                    useTemporaryLoad = true
-                end
-
-                -- Don't sync this packet here; BaseCell():SaveContainers will have to
-                -- deal with it
-                LoadedCells[cellDescription]:SaveContainers(pid)
-
-                if useTemporaryLoad then
-                    logicHandler.UnloadCell(cellDescription)
-                end
+                pendingContainerEvents[pid] = {
+                    eventStatus = eventStatus,
+                    objects = objects,
+                    subAction = subAction
+                }
+                return true
             end
             customEventHooks.triggerHandlers("OnContainer", eventStatus, {pid, cellDescription, objects})
         else
@@ -1767,6 +1794,54 @@ eventHandler.OnContainer = function(pid, cellDescription)
     else
         tes3mp.Kick(pid)
     end
+    return false
+end
+
+eventHandler.OnContainer = function(pid, cellDescription)
+    local pendingEvent = pendingContainerEvents[pid]
+    pendingContainerEvents[pid] = nil
+    if pendingEvent == nil then
+        return
+    end
+
+    local useTemporaryLoad = false
+    if LoadedCells[cellDescription] == nil then
+        logicHandler.LoadCell(cellDescription)
+        useTemporaryLoad = true
+    end
+
+    -- Native validation has committed the complete packet transactionally. Preserve
+    -- the 0.8.1 callback as the post-commit persistence and synchronization boundary.
+    LoadedCells[cellDescription]:SaveContainers(pid)
+
+    if pendingEvent.subAction == enumerations.containerSub.RESTOCK_RESULT and
+        pendingContainerRestocks[pid] ~= nil and
+        pendingContainerRestocks[pid][cellDescription] ~= nil then
+        for _, object in pairs(pendingEvent.objects) do
+            pendingContainerRestocks[pid][cellDescription][object.uniqueIndex] = nil
+        end
+    end
+
+    if useTemporaryLoad then
+        logicHandler.UnloadCell(cellDescription)
+    end
+
+    customEventHooks.triggerHandlers("OnContainer", pendingEvent.eventStatus,
+        {pid, cellDescription, pendingEvent.objects})
+end
+
+eventHandler.OnContainerIntentRejected = function(pid, cellDescription, reason)
+    local pendingEvent = pendingContainerEvents[pid]
+    pendingContainerEvents[pid] = nil
+    if pendingEvent == nil then
+        return
+    end
+
+    tes3mp.LogAppend(enumerations.log.WARN, "- Rejected Container after script validation: " .. reason)
+    local eventStatus = customEventHooks.makeEventStatus(false,
+        pendingEvent.eventStatus.validCustomHandlers)
+    customEventHooks.triggerHandlers("OnContainer", eventStatus,
+        {pid, cellDescription, pendingEvent.objects})
 end
 
 eventHandler.OnVideoPlay = function(pid)

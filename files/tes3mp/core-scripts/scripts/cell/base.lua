@@ -1552,6 +1552,12 @@ function BaseCell:LoadContainers(pid, objectData, uniqueIndexArray)
         -- Set the action to SET
         tes3mp.SetObjectListAction(0)
 
+        if not tes3mp.SeedContainerInventory() then
+            tes3mp.LogAppend(enumerations.log.ERROR,
+                "- Refused to send invalid persisted container state for " .. self.description)
+            return
+        end
+
         tes3mp.SendContainer()
     end
 end

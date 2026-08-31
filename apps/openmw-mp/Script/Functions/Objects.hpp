@@ -8,6 +8,7 @@
     {"SetObjectListPid",                      ObjectFunctions::SetObjectListPid},\
     \
     {"CopyReceivedObjectListToStore",         ObjectFunctions::CopyReceivedObjectListToStore},\
+    {"SeedContainerInventory",                ObjectFunctions::SeedContainerInventory},\
     \
     {"GetObjectListSize",                     ObjectFunctions::GetObjectListSize},\
     {"GetObjectListOrigin",                   ObjectFunctions::GetObjectListOrigin},\
@@ -220,6 +221,14 @@ public:
     * \return void
     */
     static void CopyReceivedObjectListToStore() noexcept;
+
+    /**
+    * \brief Seed or replace canonical container inventory state from the object list
+    *        currently stored by the server.
+    *
+    * \return Whether the complete object list passed canonical validation and was applied.
+    */
+    static bool SeedContainerInventory();
 
     /**
     * \brief Get the number of indexes in the read object list.

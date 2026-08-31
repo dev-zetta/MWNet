@@ -716,6 +716,14 @@ function OnContainer(pid, cellDescription)
     eventHandler.OnContainer(pid, cellDescription)
 end
 
+function OnContainerIntent(pid, cellDescription)
+    return eventHandler.OnContainerIntent(pid, cellDescription)
+end
+
+function OnContainerIntentRejected(pid, cellDescription, reason)
+    eventHandler.OnContainerIntentRejected(pid, cellDescription, reason)
+end
+
 function OnVideoPlay(pid)
     tes3mp.LogMessage(enumerations.log.INFO, "Called \"OnVideoPlay\" for " .. logicHandler.GetChatName(pid))
     eventHandler.OnVideoPlay(pid)

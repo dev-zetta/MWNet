@@ -44,6 +44,11 @@ void ObjectFunctions::CopyReceivedObjectListToStore() noexcept
     writeObjectList = *readObjectList;
 }
 
+bool ObjectFunctions::SeedContainerInventory()
+{
+    return mwmp::Networking::getPtr()->seedServerContainerInventory(writeObjectList);
+}
+
 unsigned int ObjectFunctions::GetObjectListSize() noexcept
 {
     return readObjectList->baseObjectCount;
