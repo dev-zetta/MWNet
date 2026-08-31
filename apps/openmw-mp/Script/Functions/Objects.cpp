@@ -6,6 +6,8 @@
 #include <apps/openmw-mp/Utils.hpp>
 #include <apps/openmw-mp/Script/ScriptFunctions.hpp>
 
+#include <stdexcept>
+
 #include "Objects.hpp"
 
 using namespace mwmp;
@@ -18,6 +20,19 @@ const BaseObject emptyObject = {};
 
 ContainerItem tempContainerItem;
 const ContainerItem emptyContainerItem = {};
+
+namespace
+{
+    BaseObjectList& requireReadObjectList()
+    {
+        if (readObjectList == nullptr)
+        {
+            throw std::runtime_error(
+                "no object list is selected; call ReadReceivedObjectList first");
+        }
+        return *readObjectList;
+    }
+}
 
 void ObjectFunctions::ReadReceivedObjectList()
 {
@@ -41,7 +56,7 @@ void ObjectFunctions::SetObjectListPid(unsigned short pid)
 
 void ObjectFunctions::CopyReceivedObjectListToStore()
 {
-    writeObjectList = *readObjectList;
+    writeObjectList = requireReadObjectList();
 }
 
 bool ObjectFunctions::SeedContainerInventory()
@@ -56,42 +71,42 @@ bool ObjectFunctions::SeedObjectState()
 
 unsigned int ObjectFunctions::GetObjectListSize()
 {
-    return readObjectList->baseObjectCount;
+    return requireReadObjectList().baseObjectCount;
 }
 
 unsigned char ObjectFunctions::GetObjectListOrigin()
 {
-    return readObjectList->packetOrigin;
+    return requireReadObjectList().packetOrigin;
 }
 
 const char *ObjectFunctions::GetObjectListClientScript()
 {
-    return readObjectList->originClientScript.c_str();
+    return requireReadObjectList().originClientScript.c_str();
 }
 
 unsigned char ObjectFunctions::GetObjectListAction()
 {
-    return readObjectList->action;
+    return requireReadObjectList().action;
 }
 
 const char *ObjectFunctions::GetObjectListConsoleCommand()
 {
-    return readObjectList->consoleCommand.c_str();
+    return requireReadObjectList().consoleCommand.c_str();
 }
 
 unsigned char ObjectFunctions::GetObjectListContainerSubAction()
 {
-    return readObjectList->containerSubAction;
+    return requireReadObjectList().containerSubAction;
 }
 
 bool ObjectFunctions::IsObjectPlayer(unsigned int index)
 {
-    return readObjectList->baseObjects.at(index).isPlayer;
+    return requireReadObjectList().baseObjects.at(index).isPlayer;
 }
 
 int ObjectFunctions::GetObjectPid(unsigned int index)
 {
-    Player *player = Players::getPlayer(readObjectList->baseObjects.at(index).guid);
+    Player *player = Players::getPlayer(requireReadObjectList().baseObjects.at(index).guid);
 
     if (player != nullptr)
         return player->getId();
@@ -101,102 +116,102 @@ int ObjectFunctions::GetObjectPid(unsigned int index)
 
 const char *ObjectFunctions::GetObjectRefId(unsigned int index)
 {
-    return readObjectList->baseObjects.at(index).refId.c_str();
+    return requireReadObjectList().baseObjects.at(index).refId.c_str();
 }
 
 unsigned int ObjectFunctions::GetObjectRefNum(unsigned int index)
 {
-    return readObjectList->baseObjects.at(index).refNum;
+    return requireReadObjectList().baseObjects.at(index).refNum;
 }
 
 unsigned int ObjectFunctions::GetObjectMpNum(unsigned int index)
 {
-    return readObjectList->baseObjects.at(index).mpNum;
+    return requireReadObjectList().baseObjects.at(index).mpNum;
 }
 
 int ObjectFunctions::GetObjectCount(unsigned int index)
 {
-    return readObjectList->baseObjects.at(index).count;
+    return requireReadObjectList().baseObjects.at(index).count;
 }
 
 int ObjectFunctions::GetObjectCharge(unsigned int index)
 {
-    return readObjectList->baseObjects.at(index).charge;
+    return requireReadObjectList().baseObjects.at(index).charge;
 }
 
 double ObjectFunctions::GetObjectEnchantmentCharge(unsigned int index)
 {
-    return readObjectList->baseObjects.at(index).enchantmentCharge;
+    return requireReadObjectList().baseObjects.at(index).enchantmentCharge;
 }
 
 const char *ObjectFunctions::GetObjectSoul(unsigned int index)
 {
-    return readObjectList->baseObjects.at(index).soul.c_str();
+    return requireReadObjectList().baseObjects.at(index).soul.c_str();
 }
 
 int ObjectFunctions::GetObjectGoldValue(unsigned int index)
 {
-    return readObjectList->baseObjects.at(index).goldValue;
+    return requireReadObjectList().baseObjects.at(index).goldValue;
 }
 
 double ObjectFunctions::GetObjectScale(unsigned int index)
 {
-    return readObjectList->baseObjects.at(index).scale;
+    return requireReadObjectList().baseObjects.at(index).scale;
 }
 
 const char *ObjectFunctions::GetObjectSoundId(unsigned int index)
 {
-    return readObjectList->baseObjects.at(index).soundId.c_str();
+    return requireReadObjectList().baseObjects.at(index).soundId.c_str();
 }
 
 bool ObjectFunctions::GetObjectState(unsigned int index)
 {
-    return readObjectList->baseObjects.at(index).objectState;
+    return requireReadObjectList().baseObjects.at(index).objectState;
 }
 
 int ObjectFunctions::GetObjectDoorState(unsigned int index)
 {
-    return readObjectList->baseObjects.at(index).doorState;
+    return requireReadObjectList().baseObjects.at(index).doorState;
 }
 
 int ObjectFunctions::GetObjectLockLevel(unsigned int index)
 {
-    return readObjectList->baseObjects.at(index).lockLevel;
+    return requireReadObjectList().baseObjects.at(index).lockLevel;
 }
 
 unsigned int ObjectFunctions::GetObjectDialogueChoiceType(unsigned int index)
 {
-    return readObjectList->baseObjects.at(index).dialogueChoiceType;
+    return requireReadObjectList().baseObjects.at(index).dialogueChoiceType;
 }
 
 const char* ObjectFunctions::GetObjectDialogueChoiceTopic(unsigned int index)
 {
-    return readObjectList->baseObjects.at(index).topicId.c_str();
+    return requireReadObjectList().baseObjects.at(index).topicId.c_str();
 }
 
 unsigned int ObjectFunctions::GetObjectGoldPool(unsigned int index)
 {
-    return readObjectList->baseObjects.at(index).goldPool;
+    return requireReadObjectList().baseObjects.at(index).goldPool;
 }
 
 double ObjectFunctions::GetObjectLastGoldRestockHour(unsigned int index)
 {
-    return readObjectList->baseObjects.at(index).lastGoldRestockHour;
+    return requireReadObjectList().baseObjects.at(index).lastGoldRestockHour;
 }
 
 int ObjectFunctions::GetObjectLastGoldRestockDay(unsigned int index)
 {
-    return readObjectList->baseObjects.at(index).lastGoldRestockDay;
+    return requireReadObjectList().baseObjects.at(index).lastGoldRestockDay;
 }
 
 bool ObjectFunctions::DoesObjectHavePlayerActivating(unsigned int index)
 {
-    return readObjectList->baseObjects.at(index).activatingActor.isPlayer;
+    return requireReadObjectList().baseObjects.at(index).activatingActor.isPlayer;
 }
 
 int ObjectFunctions::GetObjectActivatingPid(unsigned int index)
 {
-    Player *player = Players::getPlayer(readObjectList->baseObjects.at(index).activatingActor.guid);
+    Player *player = Players::getPlayer(requireReadObjectList().baseObjects.at(index).activatingActor.guid);
 
     if (player != nullptr)
         return player->getId();
@@ -206,52 +221,52 @@ int ObjectFunctions::GetObjectActivatingPid(unsigned int index)
 
 const char *ObjectFunctions::GetObjectActivatingRefId(unsigned int index)
 {
-    return readObjectList->baseObjects.at(index).activatingActor.refId.c_str();
+    return requireReadObjectList().baseObjects.at(index).activatingActor.refId.c_str();
 }
 
 unsigned int ObjectFunctions::GetObjectActivatingRefNum(unsigned int index)
 {
-    return readObjectList->baseObjects.at(index).activatingActor.refNum;
+    return requireReadObjectList().baseObjects.at(index).activatingActor.refNum;
 }
 
 unsigned int ObjectFunctions::GetObjectActivatingMpNum(unsigned int index)
 {
-    return readObjectList->baseObjects.at(index).activatingActor.mpNum;
+    return requireReadObjectList().baseObjects.at(index).activatingActor.mpNum;
 }
 
 const char *ObjectFunctions::GetObjectActivatingName(unsigned int index)
 {
-    return readObjectList->baseObjects.at(index).activatingActor.name.c_str();
+    return requireReadObjectList().baseObjects.at(index).activatingActor.name.c_str();
 }
 
 bool ObjectFunctions::GetObjectHitSuccess(unsigned int index)
 {
-    return readObjectList->baseObjects.at(index).hitAttack.success;
+    return requireReadObjectList().baseObjects.at(index).hitAttack.success;
 }
 
 double ObjectFunctions::GetObjectHitDamage(unsigned int index)
 {
-    return readObjectList->baseObjects.at(index).hitAttack.damage;
+    return requireReadObjectList().baseObjects.at(index).hitAttack.damage;
 }
 
 bool ObjectFunctions::GetObjectHitBlock(unsigned int index)
 {
-    return readObjectList->baseObjects.at(index).hitAttack.block;
+    return requireReadObjectList().baseObjects.at(index).hitAttack.block;
 }
 
 bool ObjectFunctions::GetObjectHitKnockdown(unsigned int index)
 {
-    return readObjectList->baseObjects.at(index).hitAttack.knockdown;
+    return requireReadObjectList().baseObjects.at(index).hitAttack.knockdown;
 }
 
 bool ObjectFunctions::DoesObjectHavePlayerHitting(unsigned int index)
 {
-    return readObjectList->baseObjects.at(index).hittingActor.isPlayer;
+    return requireReadObjectList().baseObjects.at(index).hittingActor.isPlayer;
 }
 
 int ObjectFunctions::GetObjectHittingPid(unsigned int index)
 {
-    Player *player = Players::getPlayer(readObjectList->baseObjects.at(index).hittingActor.guid);
+    Player *player = Players::getPlayer(requireReadObjectList().baseObjects.at(index).hittingActor.guid);
 
     if (player != nullptr)
         return player->getId();
@@ -261,52 +276,52 @@ int ObjectFunctions::GetObjectHittingPid(unsigned int index)
 
 const char *ObjectFunctions::GetObjectHittingRefId(unsigned int index)
 {
-    return readObjectList->baseObjects.at(index).hittingActor.refId.c_str();
+    return requireReadObjectList().baseObjects.at(index).hittingActor.refId.c_str();
 }
 
 unsigned int ObjectFunctions::GetObjectHittingRefNum(unsigned int index)
 {
-    return readObjectList->baseObjects.at(index).hittingActor.refNum;
+    return requireReadObjectList().baseObjects.at(index).hittingActor.refNum;
 }
 
 unsigned int ObjectFunctions::GetObjectHittingMpNum(unsigned int index)
 {
-    return readObjectList->baseObjects.at(index).hittingActor.mpNum;
+    return requireReadObjectList().baseObjects.at(index).hittingActor.mpNum;
 }
 
 const char *ObjectFunctions::GetObjectHittingName(unsigned int index)
 {
-    return readObjectList->baseObjects.at(index).hittingActor.name.c_str();
+    return requireReadObjectList().baseObjects.at(index).hittingActor.name.c_str();
 }
 
 bool ObjectFunctions::GetObjectSummonState(unsigned int index)
 {
-    return readObjectList->baseObjects.at(index).isSummon;
+    return requireReadObjectList().baseObjects.at(index).isSummon;
 }
 
 double ObjectFunctions::GetObjectSummonDuration(unsigned int index)
 {
-    return readObjectList->baseObjects.at(index).summonDuration;
+    return requireReadObjectList().baseObjects.at(index).summonDuration;
 }
 
 double ObjectFunctions::GetObjectSummonEffectId(unsigned int index)
 {
-    return readObjectList->baseObjects.at(index).summonEffectId;
+    return requireReadObjectList().baseObjects.at(index).summonEffectId;
 }
 
 const char *ObjectFunctions::GetObjectSummonSpellId(unsigned int index)
 {
-    return readObjectList->baseObjects.at(index).summonSpellId.c_str();
+    return requireReadObjectList().baseObjects.at(index).summonSpellId.c_str();
 }
 
 bool ObjectFunctions::DoesObjectHavePlayerSummoner(unsigned int index)
 {
-    return readObjectList->baseObjects.at(index).master.isPlayer;
+    return requireReadObjectList().baseObjects.at(index).master.isPlayer;
 }
 
 int ObjectFunctions::GetObjectSummonerPid(unsigned int index)
 {
-    Player *player = Players::getPlayer(readObjectList->baseObjects.at(index).master.guid);
+    Player *player = Players::getPlayer(requireReadObjectList().baseObjects.at(index).master.guid);
     
     if (player != nullptr)
         return player->getId();
@@ -316,128 +331,128 @@ int ObjectFunctions::GetObjectSummonerPid(unsigned int index)
 
 const char *ObjectFunctions::GetObjectSummonerRefId(unsigned int index)
 {
-    return readObjectList->baseObjects.at(index).master.refId.c_str();
+    return requireReadObjectList().baseObjects.at(index).master.refId.c_str();
 }
 
 unsigned int ObjectFunctions::GetObjectSummonerRefNum(unsigned int index)
 {
-    return readObjectList->baseObjects.at(index).master.refNum;
+    return requireReadObjectList().baseObjects.at(index).master.refNum;
 }
 
 unsigned int ObjectFunctions::GetObjectSummonerMpNum(unsigned int index)
 {
-    return readObjectList->baseObjects.at(index).master.mpNum;
+    return requireReadObjectList().baseObjects.at(index).master.mpNum;
 }
 
 double ObjectFunctions::GetObjectPosX(unsigned int index)
 {
-    return readObjectList->baseObjects.at(index).position.pos[0];
+    return requireReadObjectList().baseObjects.at(index).position.pos[0];
 }
 
 double ObjectFunctions::GetObjectPosY(unsigned int index)
 {
-    return readObjectList->baseObjects.at(index).position.pos[1];
+    return requireReadObjectList().baseObjects.at(index).position.pos[1];
 }
 
 double ObjectFunctions::GetObjectPosZ(unsigned int index)
 {
-    return readObjectList->baseObjects.at(index).position.pos[2];
+    return requireReadObjectList().baseObjects.at(index).position.pos[2];
 }
 
 double ObjectFunctions::GetObjectRotX(unsigned int index)
 {
-    return readObjectList->baseObjects.at(index).position.rot[0];
+    return requireReadObjectList().baseObjects.at(index).position.rot[0];
 }
 
 double ObjectFunctions::GetObjectRotY(unsigned int index)
 {
-    return readObjectList->baseObjects.at(index).position.rot[1];
+    return requireReadObjectList().baseObjects.at(index).position.rot[1];
 }
 
 double ObjectFunctions::GetObjectRotZ(unsigned int index)
 {
-    return readObjectList->baseObjects.at(index).position.rot[2];
+    return requireReadObjectList().baseObjects.at(index).position.rot[2];
 }
 
 const char *ObjectFunctions::GetVideoFilename(unsigned int index)
 {
-    return readObjectList->baseObjects.at(index).videoFilename.c_str();
+    return requireReadObjectList().baseObjects.at(index).videoFilename.c_str();
 }
 
 unsigned int ObjectFunctions::GetClientLocalsSize(unsigned int objectIndex)
 {
-    return readObjectList->baseObjects.at(objectIndex).clientLocals.size();
+    return requireReadObjectList().baseObjects.at(objectIndex).clientLocals.size();
 }
 
 unsigned int ObjectFunctions::GetClientLocalInternalIndex(unsigned int objectIndex, unsigned int variableIndex)
 {
-    return readObjectList->baseObjects.at(objectIndex).clientLocals.at(variableIndex).internalIndex;
+    return requireReadObjectList().baseObjects.at(objectIndex).clientLocals.at(variableIndex).internalIndex;
 }
 
 unsigned short ObjectFunctions::GetClientLocalVariableType(unsigned int objectIndex, unsigned int variableIndex)
 {
-    return readObjectList->baseObjects.at(objectIndex).clientLocals.at(variableIndex).variableType;
+    return requireReadObjectList().baseObjects.at(objectIndex).clientLocals.at(variableIndex).variableType;
 }
 
 int ObjectFunctions::GetClientLocalIntValue(unsigned int objectIndex, unsigned int variableIndex)
 {
-    return readObjectList->baseObjects.at(objectIndex).clientLocals.at(variableIndex).intValue;
+    return requireReadObjectList().baseObjects.at(objectIndex).clientLocals.at(variableIndex).intValue;
 }
 
 double ObjectFunctions::GetClientLocalFloatValue(unsigned int objectIndex, unsigned int variableIndex)
 {
-    return readObjectList->baseObjects.at(objectIndex).clientLocals.at(variableIndex).floatValue;
+    return requireReadObjectList().baseObjects.at(objectIndex).clientLocals.at(variableIndex).floatValue;
 }
 
 unsigned int ObjectFunctions::GetContainerChangesSize(unsigned int objectIndex)
 {
-    return readObjectList->baseObjects.at(objectIndex).containerItemCount;
+    return requireReadObjectList().baseObjects.at(objectIndex).containerItemCount;
 }
 
 const char *ObjectFunctions::GetContainerItemRefId(unsigned int objectIndex, unsigned int itemIndex)
 {
-    return readObjectList->baseObjects.at(objectIndex)
+    return requireReadObjectList().baseObjects.at(objectIndex)
         .containerItems.at(itemIndex).refId.c_str();
 }
 
 int ObjectFunctions::GetContainerItemCount(unsigned int objectIndex, unsigned int itemIndex)
 {
-    return readObjectList->baseObjects.at(objectIndex)
+    return requireReadObjectList().baseObjects.at(objectIndex)
         .containerItems.at(itemIndex).count;
 }
 
 int ObjectFunctions::GetContainerItemCharge(unsigned int objectIndex, unsigned int itemIndex)
 {
-    return readObjectList->baseObjects.at(objectIndex)
+    return requireReadObjectList().baseObjects.at(objectIndex)
         .containerItems.at(itemIndex).charge;
 }
 
 double ObjectFunctions::GetContainerItemEnchantmentCharge(unsigned int objectIndex, unsigned int itemIndex)
 {
-    return readObjectList->baseObjects.at(objectIndex)
+    return requireReadObjectList().baseObjects.at(objectIndex)
         .containerItems.at(itemIndex).enchantmentCharge;
 }
 
 const char *ObjectFunctions::GetContainerItemSoul(unsigned int objectIndex, unsigned int itemIndex)
 {
-    return readObjectList->baseObjects.at(objectIndex)
+    return requireReadObjectList().baseObjects.at(objectIndex)
         .containerItems.at(itemIndex).soul.c_str();
 }
 
 int ObjectFunctions::GetContainerItemActionCount(unsigned int objectIndex, unsigned int itemIndex)
 {
-    return readObjectList->baseObjects.at(objectIndex)
+    return requireReadObjectList().baseObjects.at(objectIndex)
         .containerItems.at(itemIndex).actionCount;
 }
 
 bool ObjectFunctions::DoesObjectHaveContainer(unsigned int index)
 {
-    return readObjectList->baseObjects.at(index).hasContainer;
+    return requireReadObjectList().baseObjects.at(index).hasContainer;
 }
 
 bool ObjectFunctions::IsObjectDroppedByPlayer(unsigned int index)
 {
-    return readObjectList->baseObjects.at(index).droppedByPlayer;
+    return requireReadObjectList().baseObjects.at(index).droppedByPlayer;
 }
 
 void ObjectFunctions::SetObjectListCell(const char* cellDescription)
