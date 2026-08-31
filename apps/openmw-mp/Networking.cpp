@@ -486,20 +486,26 @@ bool Networking::validatePlayerInventory(Player& player, const BasePlayer& incom
 {
     const auto action = inventoryAction(incoming.inventoryChanges.action);
     mechanics::InventoryResult result{ mechanics::InventoryDecision::InvalidAction };
+    mechanics::EquipmentResult equipmentResult{ mechanics::EquipmentDecision::Applied };
+    std::vector<mechanics::InventoryItem> candidate;
     if (action)
     {
-        result = mInventoryLedger.preview(
+        result = mInventoryLedger.previewSnapshot(
             { mechanics::InventoryOwnerKind::Player, player.guid.g }, *action,
-            inventoryItems(incoming.inventoryChanges));
+            inventoryItems(incoming.inventoryChanges), candidate);
+        if (result.applied())
+            equipmentResult = mEquipmentLedger.validateInventory(player.guid.g, candidate);
     }
-    if (result.applied())
+    if (result.applied() && equipmentResult.applied())
         return true;
 
     const unsigned int violations = ++mInventoryViolations[player.guid.g];
     LOG_MESSAGE_SIMPLE(TimedLog::LOG_WARN,
         "Rejected inventory action from connection %llu: %s (violation %u)",
         static_cast<unsigned long long>(player.guid.g),
-        mechanics::describe(result.decision), violations);
+        result.applied() ? mechanics::describe(equipmentResult.decision)
+                         : mechanics::describe(result.decision),
+        violations);
     if (violations >= 5)
         disconnectTransport({ player.guid.g }, "repeated invalid inventory actions");
     return false;
@@ -509,20 +515,32 @@ bool Networking::commitPlayerInventory(Player& player)
 {
     const auto action = inventoryAction(player.inventoryChanges.action);
     mechanics::InventoryResult result{ mechanics::InventoryDecision::InvalidAction };
+    mechanics::EquipmentResult equipmentResult{ mechanics::EquipmentDecision::Applied };
+    std::vector<mechanics::InventoryItem> candidate;
     if (action)
     {
-        result = mInventoryLedger.apply(
+        result = mInventoryLedger.previewSnapshot(
             { mechanics::InventoryOwnerKind::Player, player.guid.g }, *action,
-            inventoryItems(player.inventoryChanges));
+            inventoryItems(player.inventoryChanges), candidate);
+        if (result.applied())
+            equipmentResult = mEquipmentLedger.validateInventory(player.guid.g, candidate);
+        if (result.applied() && equipmentResult.applied())
+        {
+            result = mInventoryLedger.apply(
+                { mechanics::InventoryOwnerKind::Player, player.guid.g }, *action,
+                inventoryItems(player.inventoryChanges));
+        }
     }
-    if (result.applied())
+    if (result.applied() && equipmentResult.applied())
         return true;
 
     const unsigned int violations = ++mInventoryViolations[player.guid.g];
     LOG_MESSAGE_SIMPLE(TimedLog::LOG_WARN,
         "Rejected modified inventory intent from connection %llu: %s (violation %u)",
         static_cast<unsigned long long>(player.guid.g),
-        mechanics::describe(result.decision), violations);
+        result.applied() ? mechanics::describe(equipmentResult.decision)
+                         : mechanics::describe(result.decision),
+        violations);
     if (violations >= 5)
         disconnectTransport({ player.guid.g }, "repeated invalid inventory actions");
     return false;
@@ -533,17 +551,28 @@ bool Networking::applyServerInventoryChanges(Player& player)
     const auto action = inventoryAction(player.inventoryChanges.action);
     if (!action)
         return false;
-    const mechanics::InventoryResult result = mInventoryLedger.apply(
+    std::vector<mechanics::InventoryItem> candidate;
+    mechanics::InventoryResult result = mInventoryLedger.previewSnapshot(
         { mechanics::InventoryOwnerKind::Player, player.guid.g }, *action,
-        inventoryItems(player.inventoryChanges));
-    if (!result.applied())
+        inventoryItems(player.inventoryChanges), candidate);
+    mechanics::EquipmentResult equipmentResult{ mechanics::EquipmentDecision::Applied };
+    if (result.applied())
+        equipmentResult = mEquipmentLedger.validateInventory(player.guid.g, candidate);
+    if (result.applied() && equipmentResult.applied())
+    {
+        result = mInventoryLedger.apply(
+            { mechanics::InventoryOwnerKind::Player, player.guid.g }, *action,
+            inventoryItems(player.inventoryChanges));
+    }
+    if (!result.applied() || !equipmentResult.applied())
     {
         LOG_MESSAGE_SIMPLE(TimedLog::LOG_ERROR,
             "Rejected server-authored inventory action for connection %llu: %s",
             static_cast<unsigned long long>(player.guid.g),
-            mechanics::describe(result.decision));
+            result.applied() ? mechanics::describe(equipmentResult.decision)
+                             : mechanics::describe(result.decision));
     }
-    return result.applied();
+    return result.applied() && equipmentResult.applied();
 }
 
 bool Networking::validatePlayerEquipment(Player& player, const BasePlayer& incoming)

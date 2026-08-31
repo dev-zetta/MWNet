@@ -98,6 +98,9 @@ namespace mwmp::mechanics
 
         InventoryResult preview(InventoryOwner owner, InventoryAction action,
             const std::vector<InventoryItem>& items) const;
+        InventoryResult previewSnapshot(InventoryOwner owner, InventoryAction action,
+            const std::vector<InventoryItem>& items,
+            std::vector<InventoryItem>& candidate) const;
         InventoryResult apply(InventoryOwner owner, InventoryAction action,
             const std::vector<InventoryItem>& items);
         InventoryResult transfer(InventoryOwner from, InventoryOwner to,

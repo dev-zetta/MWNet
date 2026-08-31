@@ -92,6 +92,12 @@ namespace
         const auto afterReject = ledger.snapshot(player);
         EXPECT(afterReject.has_value());
         EXPECT(afterReject->front().count == 10);
+
+        std::vector<InventoryItem> candidate;
+        EXPECT(ledger.previewSnapshot(player, InventoryAction::Remove,
+                   { item("gold_001", 4) }, candidate).applied());
+        EXPECT(candidate.front().count == 6);
+        EXPECT(ledger.snapshot(player)->front().count == 10);
     }
 
     void testAtomicTransfer()

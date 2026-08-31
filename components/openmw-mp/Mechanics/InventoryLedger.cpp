@@ -30,13 +30,21 @@ namespace mwmp::mechanics
     InventoryResult InventoryLedger::preview(InventoryOwner owner, InventoryAction action,
         const std::vector<InventoryItem>& items) const
     {
+        std::vector<InventoryItem> candidate;
+        return previewSnapshot(std::move(owner), action, items, candidate);
+    }
+
+    InventoryResult InventoryLedger::previewSnapshot(InventoryOwner owner,
+        InventoryAction action, const std::vector<InventoryItem>& items,
+        std::vector<InventoryItem>& candidate) const
+    {
+        candidate.clear();
         if (!validOwner(owner))
             return { InventoryDecision::InvalidOwner };
         const auto existing = mInventories.find(owner);
         if (existing == mInventories.end() && mInventories.size() >= mMaximumOwners)
             return { InventoryDecision::OwnerLimitReached };
 
-        std::vector<InventoryItem> candidate;
         if (existing != mInventories.end())
             candidate = existing->second;
         return applyTo(candidate, action, items);

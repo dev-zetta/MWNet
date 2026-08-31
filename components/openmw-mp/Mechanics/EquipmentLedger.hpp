@@ -60,6 +60,8 @@ namespace mwmp::mechanics
         EquipmentResult apply(std::uint64_t owner, bool fullSnapshot,
             const std::vector<EquipmentChange>& changes,
             const std::vector<InventoryItem>& inventory);
+        EquipmentResult validateInventory(std::uint64_t owner,
+            const std::vector<InventoryItem>& inventory) const;
 
         std::optional<Equipment> snapshot(std::uint64_t owner) const;
         bool erase(std::uint64_t owner) noexcept;

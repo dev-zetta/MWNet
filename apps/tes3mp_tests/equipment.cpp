@@ -82,6 +82,10 @@ namespace
                    { { 9, equipmentItem("common_ring", 1) } }, oneRing).decision
             == EquipmentDecision::ItemNotInInventory);
         EXPECT(ledger.snapshot(1)->at(9).empty());
+        EXPECT(ledger.validateInventory(1, oneRing).applied());
+        EXPECT(ledger.validateInventory(1, {}).decision
+            == EquipmentDecision::ItemNotInInventory);
+        EXPECT(ledger.validateInventory(99, {}).applied());
 
         const std::vector<InventoryItem> splitSouls{
             { "amulet", "rat", -1, -1, 1 },

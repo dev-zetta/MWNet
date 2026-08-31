@@ -26,6 +26,19 @@ namespace mwmp::mechanics
         return result;
     }
 
+    EquipmentResult EquipmentLedger::validateInventory(std::uint64_t owner,
+        const std::vector<InventoryItem>& inventory) const
+    {
+        if (owner == 0)
+            return { EquipmentDecision::InvalidOwner };
+        const auto existing = mEquipment.find(owner);
+        if (existing == mEquipment.end())
+            return { EquipmentDecision::Applied };
+        if (!inventoryContains(inventory, existing->second))
+            return { EquipmentDecision::ItemNotInInventory };
+        return { EquipmentDecision::Applied };
+    }
+
     std::optional<EquipmentLedger::Equipment> EquipmentLedger::snapshot(
         std::uint64_t owner) const
     {
