@@ -551,7 +551,18 @@ void Networking::processTransportEvent(transport::TransportEvent event)
             }
             Players::newPlayer(guid);
             if (Player* player = Players::getPlayer(guid))
-                Script::Call<Script::CallbackIdentity("OnTransportConnect")>(player->getId());
+            {
+                try
+                {
+                    Script::Call<Script::CallbackIdentity("OnTransportConnect")>(player->getId());
+                }
+                catch (...)
+                {
+                    disconnectTransport(event.connection,
+                        "OnTransportConnect rejected the connection");
+                    return;
+                }
+            }
             LOG_MESSAGE_SIMPLE(TimedLog::LOG_INFO,
                 "Authenticated transport connection %llu established",
                 static_cast<unsigned long long>(event.connection.value));
@@ -645,7 +656,15 @@ void Networking::processApplicationMessage(transport::TransportMessage message)
             disconnectTransport(message.connection, "spawn session transition failed");
             return;
         }
-        Script::Call<Script::CallbackIdentity("OnPlayerConnect")>(player->getId());
+        try
+        {
+            Script::Call<Script::CallbackIdentity("OnPlayerConnect")>(player->getId());
+        }
+        catch (...)
+        {
+            disconnectTransport(message.connection, "OnPlayerConnect failed");
+            return;
+        }
     }
     update(&packet, stream);
 }
@@ -696,8 +715,15 @@ void Networking::processAuthenticationMessage(transport::TransportMessage messag
     }
     mAuthenticatedConnections.insert(message.connection.value);
     const unsigned short pid = player->getId();
-    Script::Call<Script::CallbackIdentity("OnPlayerAuthenticated")>(
-        pid, result.accountName.c_str(), result.isNewAccount);
+    try
+    {
+        Script::Call<Script::CallbackIdentity("OnPlayerAuthenticated")>(
+            pid, result.accountName.c_str(), result.isNewAccount);
+    }
+    catch (...)
+    {
+        disconnectTransport(message.connection, "OnPlayerAuthenticated failed");
+    }
 }
 
 bool Networking::sendAuthenticationResponse(transport::TransportConnectionId connection,

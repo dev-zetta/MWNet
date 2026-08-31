@@ -1,6 +1,7 @@
 #include <cstdio>
 #include <exception>
 #include <iostream>
+#include <string_view>
 #include "LangLua.hpp"
 #include <Script/Script.hpp>
 #include <Script/Types.hpp>
@@ -10,6 +11,17 @@ std::set<std::string> LangLua::packageCPath;
 
 namespace
 {
+    bool allowedBeforeAuthentication(std::string_view name) noexcept
+    {
+        return name == "LogMessage" || name == "LogAppend" || name == "GetIP"
+            || name == "GetMillisecondsSinceServerStart"
+            || name == "GetOperatingSystemType" || name == "GetArchitectureType"
+            || name == "GetServerVersion" || name == "GetProtocolVersion"
+            || name == "GetMaxPlayers" || name == "GetPort" || name == "HasPassword"
+            || name == "GetDataFileEnforcementState"
+            || name == "GetScriptErrorIgnoringState";
+    }
+
     int raiseLuaApiError(lua_State* lua, const char* message) noexcept
     {
         return luaL_error(lua, "TES3MP API error: %s", message);
@@ -19,6 +31,9 @@ namespace
     int safeLuaFunction(lua_State* lua) noexcept
     {
         char error[512]{};
+        if (Script::IsPreAuthenticationCallback())
+            return raiseLuaApiError(lua,
+                "this API is unavailable during OnTransportConnect");
         try
         {
             return Function(lua);
@@ -115,6 +130,14 @@ struct LuaFunctionDispatcher<0, FunctionIndex> {
 template <unsigned int FunctionIndex>
 static typename std::enable_if<ScriptFunctions::functions[FunctionIndex].func.ret == 'v', int>::type LuaFunctionWrapper(lua_State* lua) noexcept {
     char error[512]{};
+    if (Script::IsPreAuthenticationCallback()
+        && !allowedBeforeAuthentication(ScriptFunctions::functions[FunctionIndex].name))
+    {
+        std::snprintf(error, sizeof(error),
+            "%s is unavailable during OnTransportConnect",
+            ScriptFunctions::functions[FunctionIndex].name);
+        return raiseLuaApiError(lua, error);
+    }
     try
     {
         LuaFunctionDispatcher<ScriptFunctions::functions[FunctionIndex].func.numargs,
@@ -136,6 +159,14 @@ static typename std::enable_if<ScriptFunctions::functions[FunctionIndex].func.re
 template <unsigned int FunctionIndex>
 static typename std::enable_if<ScriptFunctions::functions[FunctionIndex].func.ret != 'v', int>::type LuaFunctionWrapper(lua_State* lua) noexcept {
     char error[512]{};
+    if (Script::IsPreAuthenticationCallback()
+        && !allowedBeforeAuthentication(ScriptFunctions::functions[FunctionIndex].name))
+    {
+        std::snprintf(error, sizeof(error),
+            "%s is unavailable during OnTransportConnect",
+            ScriptFunctions::functions[FunctionIndex].name);
+        return raiseLuaApiError(lua, error);
+    }
     try
     {
         auto result = LuaFunctionDispatcher<ScriptFunctions::functions[FunctionIndex].func.numargs,

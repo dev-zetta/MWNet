@@ -2,6 +2,7 @@
 #define PLUGINSYSTEM3_SCRIPT_HPP
 
 #include <boost/any.hpp>
+#include <exception>
 #include <unordered_map>
 #include <memory>
 
@@ -42,6 +43,21 @@ private:
     int script_type;
     std::unordered_map<unsigned int, FunctionEllipsis<void>> callbacks_;
 
+    class CallbackContext
+    {
+    public:
+        explicit CallbackContext(bool preAuthentication) noexcept;
+        ~CallbackContext();
+
+        CallbackContext(const CallbackContext&) = delete;
+        CallbackContext& operator=(const CallbackContext&) = delete;
+
+    private:
+        bool mPreAuthentication = false;
+    };
+
+    static thread_local unsigned int sPreAuthenticationDepth;
+
     using ScriptList = std::vector<std::unique_ptr<Script>>;
     static ScriptList scripts;
 
@@ -60,6 +76,7 @@ public:
     static void UnloadScripts();
     static void SetModDir(const std::string &moddir);
     static const char* GetModDir();
+    static bool IsPreAuthenticationCallback() noexcept;
 
     static constexpr ScriptCallbackData const& CallBackData(const unsigned int I, const unsigned int N = 0) {
         return callbacks[N].index == I ? callbacks[N] : CallBackData(I, N + 1);
@@ -77,6 +94,7 @@ public:
         static_assert(data.callback.matches(TypeString<typename std::remove_reference<Args>::type...>::value),
                       "Wrong number or types of arguments");
 
+        CallbackContext context(I == CallbackIdentity("OnTransportConnect"));
         unsigned int count = 0;
 
         for (auto& script : scripts)
@@ -101,7 +119,23 @@ public:
                 catch (std::exception &e)
                 {
                     LOG_MESSAGE_SIMPLE(TimedLog::LOG_ERROR, "%s", e.what());
-                    Script::Call<Script::CallbackIdentity("OnServerScriptCrash")>(e.what());
+                    if constexpr (I != CallbackIdentity("OnServerScriptCrash"))
+                    {
+                        try
+                        {
+                            Script::Call<Script::CallbackIdentity("OnServerScriptCrash")>(e.what());
+                        }
+                        catch (const std::exception& crashException)
+                        {
+                            LOG_MESSAGE_SIMPLE(TimedLog::LOG_ERROR,
+                                "OnServerScriptCrash failed: %s", crashException.what());
+                        }
+                        catch (...)
+                        {
+                            LOG_MESSAGE_SIMPLE(TimedLog::LOG_ERROR,
+                                "%s", "OnServerScriptCrash failed with an unknown exception");
+                        }
+                    }
 
                     if (!mwmp::Networking::getPtr()->getScriptErrorIgnoringState())
                         throw;

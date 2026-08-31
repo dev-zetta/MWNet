@@ -7,6 +7,25 @@
 
 Script::ScriptList Script::scripts;
 std::string Script::moddir;
+thread_local unsigned int Script::sPreAuthenticationDepth = 0;
+
+Script::CallbackContext::CallbackContext(bool preAuthentication) noexcept
+    : mPreAuthentication(preAuthentication)
+{
+    if (mPreAuthentication)
+        ++sPreAuthenticationDepth;
+}
+
+Script::CallbackContext::~CallbackContext()
+{
+    if (mPreAuthentication)
+        --sPreAuthenticationDepth;
+}
+
+bool Script::IsPreAuthenticationCallback() noexcept
+{
+    return sPreAuthenticationDepth != 0;
+}
 
 Script::Script(const char *path)
 {
