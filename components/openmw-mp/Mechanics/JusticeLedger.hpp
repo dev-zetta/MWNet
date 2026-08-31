@@ -70,6 +70,8 @@ namespace mwmp::mechanics
         JusticeResult beginSentence(std::uint64_t player, std::uint32_t days,
             bool ignoreTeleportation, bool ignoreSkillIncreases,
             std::string progressText, std::string endText);
+        JusticeResult previewSentenceCompletion(
+            std::uint64_t player, std::uint64_t sentenceId) const;
         JusticeResult completeSentence(
             std::uint64_t player, std::uint64_t sentenceId, bool clearBounty);
 

@@ -125,6 +125,12 @@ namespace  mwmp
         bool applyServerPlayerBounty(Player& player);
         bool isPlayerBountyIntentPending(const Player& player) const noexcept;
         void cancelPlayerBountyIntent(Player& player) noexcept;
+        bool beginPlayerJail(Player& player, std::uint32_t days,
+            bool ignoreTeleportation, bool ignoreSkillIncreases,
+            std::string progressText, std::string endText);
+        bool validatePlayerJailCompletion(
+            Player& player, const BasePlayer& incoming);
+        bool completePlayerJail(Player& player);
         bool validatePlayerStats(Player& player, const BasePlayer& incoming);
         bool reconcilePlayerStats(Player& player);
         bool applyServerPlayerStats(Player& player);

@@ -24,6 +24,7 @@
 #include "player/ProcessorPlayerFaction.hpp"
 #include "player/ProcessorPlayerInventory.hpp"
 #include "player/ProcessorPlayerItemUse.hpp"
+#include "player/ProcessorPlayerJail.hpp"
 #include "player/ProcessorPlayerJournal.hpp"
 #include "player/ProcessorPlayerPlaceholder.hpp"
 #include "player/ProcessorPlayerInput.hpp"
@@ -111,6 +112,7 @@ void ProcessorInitializer()
     PlayerProcessor::AddProcessor(new ProcessorPlayerFaction());
     PlayerProcessor::AddProcessor(new ProcessorPlayerInventory());
     PlayerProcessor::AddProcessor(new ProcessorPlayerItemUse());
+    PlayerProcessor::AddProcessor(new ProcessorPlayerJail());
     PlayerProcessor::AddProcessor(new ProcessorPlayerJournal());
     PlayerProcessor::AddProcessor(new ProcessorPlayerPlaceholder());
     PlayerProcessor::AddProcessor(new ProcessorPlayerInput());

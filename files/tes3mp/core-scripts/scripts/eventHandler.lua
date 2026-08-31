@@ -1337,6 +1337,16 @@ eventHandler.OnPlayerBountyIntentRejected = function(pid, reason)
         {pid, reason})
 end
 
+eventHandler.OnPlayerJailComplete = function(pid, sentenceId)
+    if Players[pid] == nil or not Players[pid]:IsLoggedIn() then
+        return
+    end
+
+    local eventStatus = customEventHooks.makeEventStatus(true, true)
+    customEventHooks.triggerHandlers("OnPlayerJailComplete", eventStatus,
+        {pid, sentenceId})
+end
+
 eventHandler.OnPlayerReputation = function(pid)
     if Players[pid] ~= nil and Players[pid]:IsLoggedIn() then
         local eventStatus = customEventHooks.triggerValidators("OnPlayerReputation", {pid})

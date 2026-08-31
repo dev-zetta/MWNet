@@ -85,6 +85,7 @@ namespace mwmp
         void setSelectedSpell();
 
         void sendDeath(char newDeathState);
+        void sendJailCompletion();
         void sendClass();
         void sendInventory();
         void sendItemChange(const mwmp::Item& item, unsigned int action);

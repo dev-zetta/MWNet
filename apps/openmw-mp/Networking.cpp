@@ -23,6 +23,7 @@
 #include <chrono>
 #include <thread>
 #include <csignal>
+#include <utility>
 
 #include "Networking.hpp"
 #include "Cell.hpp"
@@ -1169,6 +1170,96 @@ void Networking::cancelPlayerBountyIntent(Player& player) noexcept
     mPendingPlayerBounties.erase(player.guid.g);
     if (const auto canonical = mJusticeLedger.find(player.guid.g))
         player.npcStats.mBounty = static_cast<std::int32_t>(canonical->bounty);
+}
+
+bool Networking::beginPlayerJail(Player& player, std::uint32_t days,
+    bool ignoreTeleportation, bool ignoreSkillIncreases,
+    std::string progressText, std::string endText)
+{
+    if (!mJusticeLedger.find(player.guid.g))
+    {
+        const mechanics::JusticeResult seeded = mJusticeLedger.setBounty(
+            player.guid.g, player.npcStats.mBounty);
+        if (!seeded.applied())
+        {
+            LOG_MESSAGE_SIMPLE(TimedLog::LOG_ERROR,
+                "Failed to seed justice state for connection %llu: %s",
+                static_cast<unsigned long long>(player.guid.g),
+                mechanics::describe(seeded.decision));
+            return false;
+        }
+    }
+
+    const mechanics::JusticeResult result = mJusticeLedger.beginSentence(
+        player.guid.g, days, ignoreTeleportation, ignoreSkillIncreases,
+        std::move(progressText), std::move(endText));
+    if (!result.applied())
+    {
+        LOG_MESSAGE_SIMPLE(TimedLog::LOG_ERROR,
+            "Rejected server-authored jail sentence for connection %llu: %s",
+            static_cast<unsigned long long>(player.guid.g),
+            mechanics::describe(result.decision));
+        return false;
+    }
+
+    const mechanics::JailSentence& sentence = *result.state.sentence;
+    try
+    {
+        player.jailAction = JailAction::Begin;
+        player.jailSentenceId = sentence.id;
+        player.jailDays = static_cast<int>(sentence.days);
+        player.ignoreJailTeleportation = sentence.ignoreTeleportation;
+        player.ignoreJailSkillIncreases = sentence.ignoreSkillIncreases;
+        player.jailProgressText = sentence.progressText;
+        player.jailEndText = sentence.endText;
+    }
+    catch (...)
+    {
+        mJusticeLedger.completeSentence(player.guid.g, sentence.id, false);
+        throw;
+    }
+    return true;
+}
+
+bool Networking::validatePlayerJailCompletion(
+    Player& player, const BasePlayer& incoming)
+{
+    mechanics::JusticeResult result;
+    if (incoming.jailAction != JailAction::Complete)
+        result.decision = mechanics::JusticeDecision::InvalidSentence;
+    else
+    {
+        result = mJusticeLedger.previewSentenceCompletion(
+            player.guid.g, incoming.jailSentenceId);
+    }
+    if (result.applied())
+        return true;
+
+    const unsigned int violations = ++mJusticeViolations[player.guid.g];
+    LOG_MESSAGE_SIMPLE(TimedLog::LOG_WARN,
+        "Rejected jail completion from connection %llu: %s (violation %u)",
+        static_cast<unsigned long long>(player.guid.g),
+        mechanics::describe(result.decision), violations);
+    if (violations >= 5)
+        disconnectTransport({ player.guid.g }, "repeated invalid jail completions");
+    return false;
+}
+
+bool Networking::completePlayerJail(Player& player)
+{
+    const mechanics::JusticeResult result = mJusticeLedger.completeSentence(
+        player.guid.g, player.jailSentenceId, false);
+    if (!result.applied())
+        return false;
+
+    player.npcStats.mBounty = static_cast<std::int32_t>(result.state.bounty);
+    player.jailAction = JailAction::Complete;
+    player.jailDays = 0;
+    player.ignoreJailTeleportation = false;
+    player.ignoreJailSkillIncreases = false;
+    player.jailProgressText.clear();
+    player.jailEndText.clear();
+    return true;
 }
 
 namespace

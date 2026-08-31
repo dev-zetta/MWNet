@@ -557,6 +557,10 @@ function OnPlayerBountyIntentRejected(pid, reason)
     eventHandler.OnPlayerBountyIntentRejected(pid, reason)
 end
 
+function OnPlayerJailComplete(pid, sentenceId)
+    eventHandler.OnPlayerJailComplete(pid, sentenceId)
+end
+
 function OnPlayerReputation(pid)
     tes3mp.LogMessage(enumerations.log.INFO, "Called \"OnPlayerReputation\" for " .. logicHandler.GetChatName(pid))
     eventHandler.OnPlayerReputation(pid)

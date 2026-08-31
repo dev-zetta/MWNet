@@ -142,6 +142,11 @@ namespace MWGui
         if (!localPlayer->jailEndText.empty())
             MWBase::Environment::get().getWindowManager()->messageBox(localPlayer->jailEndText);
         /* End of tes3mp addition */
+
+        // A completion is acknowledged only after the asynchronous jail flow
+        // has applied its local presentation and skill consequences.
+        localPlayer->sendJailCompletion();
+
             /*
             Start of tes3mp addition
 
@@ -151,6 +156,8 @@ namespace MWGui
         localPlayer->ignoreJailSkillIncreases = false;
         localPlayer->jailProgressText = "";
         localPlayer->jailEndText = "";
+        localPlayer->jailSentenceId = 0;
+        localPlayer->jailAction = mwmp::JailAction::Begin;
         /* End of tes3mp addition */
     }
 }

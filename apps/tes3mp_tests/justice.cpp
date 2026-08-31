@@ -46,6 +46,8 @@ namespace
         const std::uint64_t sentenceId = begun.state.sentence->id;
         EXPECT(ledger.beginSentence(9, 1, false, false, {}, {}).decision
             == JusticeDecision::SentenceAlreadyActive);
+        EXPECT(ledger.previewSentenceCompletion(9, sentenceId).applied());
+        EXPECT(ledger.find(9)->sentence.has_value());
         EXPECT(ledger.completeSentence(9, sentenceId + 1, true).decision
             == JusticeDecision::StaleSentence);
         EXPECT(ledger.completeSentence(9, sentenceId, true).applied());

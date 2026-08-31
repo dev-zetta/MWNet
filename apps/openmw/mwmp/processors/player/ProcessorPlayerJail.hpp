@@ -24,10 +24,15 @@ namespace mwmp
             
             if (isLocal())
             {
-                // Apply death penalties
-                if (player->jailDays > 0)
+                if (player->jailAction == JailAction::Begin
+                    && player->jailSentenceId != 0 && player->jailDays > 0)
                 {
                     MWBase::Environment::get().getWindowManager()->goToJail(player->jailDays);
+                }
+                else
+                {
+                    LOG_MESSAGE_SIMPLE(TimedLog::LOG_ERROR,
+                        "Ignored invalid server jail sentence");
                 }
             }
         }

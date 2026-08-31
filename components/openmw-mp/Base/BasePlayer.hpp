@@ -1,6 +1,8 @@
 #ifndef OPENMW_BASEPLAYER_HPP
 #define OPENMW_BASEPLAYER_HPP
 
+#include <cstdint>
+
 #include <components/esm3/loadcell.hpp>
 #include <components/esm3/loadcrea.hpp>
 #include <components/esm3/loadnpc.hpp>
@@ -15,6 +17,12 @@
 
 namespace mwmp
 {
+    enum class JailAction : std::uint8_t
+    {
+        Begin = 0,
+        Complete = 1,
+    };
+
     struct CurrentContainer
     {
         std::string refId;
@@ -262,6 +270,8 @@ namespace mwmp
 
         Target killer;
 
+        JailAction jailAction = JailAction::Begin;
+        std::uint64_t jailSentenceId = 0;
         int jailDays = 0;
         bool ignoreJailTeleportation = false;
         bool ignoreJailSkillIncreases = false;

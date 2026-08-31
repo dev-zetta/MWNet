@@ -1497,6 +1497,16 @@ void LocalPlayer::sendDeath(char newDeathState)
     MechanicsHelper::clearTarget(killer);
 }
 
+void LocalPlayer::sendJailCompletion()
+{
+    if (jailSentenceId == 0)
+        return;
+
+    jailAction = JailAction::Complete;
+    getNetworking()->getPlayerPacket(ID_PLAYER_JAIL)->setPlayer(this);
+    getNetworking()->getPlayerPacket(ID_PLAYER_JAIL)->Send();
+}
+
 void LocalPlayer::sendClass()
 {
     MWBase::World *world = MWBase::Environment::get().getWorld();

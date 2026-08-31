@@ -7,6 +7,7 @@
 #include <apps/openmw-mp/Networking.hpp>
 
 #include <iostream>
+#include <stdexcept>
 
 static std::string tempCellDescription;
 
@@ -239,16 +240,21 @@ void MechanicsFunctions::SendAlliedPlayers(unsigned short pid, bool sendToOtherP
 }
 
 void MechanicsFunctions::Jail(unsigned short pid, int jailDays, bool ignoreJailTeleportation, bool ignoreJailSkillIncreases,
-                              const char* jailProgressText, const char* jailEndText) noexcept
+                              const char* jailProgressText, const char* jailEndText)
 {
     Player *player;
     GET_PLAYER(pid, player, );
 
-    player->jailDays = jailDays;
-    player->ignoreJailTeleportation = ignoreJailTeleportation;
-    player->ignoreJailSkillIncreases = ignoreJailSkillIncreases;
-    player->jailProgressText = jailProgressText;
-    player->jailEndText = jailEndText;
+    if (jailDays == 0)
+        return;
+    if (jailDays < 0 || jailProgressText == nullptr || jailEndText == nullptr)
+        throw std::invalid_argument("the jail sentence is invalid");
+    if (!mwmp::Networking::getPtr()->beginPlayerJail(*player,
+            static_cast<std::uint32_t>(jailDays), ignoreJailTeleportation,
+            ignoreJailSkillIncreases, jailProgressText, jailEndText))
+    {
+        throw std::runtime_error("the server-authored jail sentence was rejected");
+    }
 
     mwmp::PlayerPacket *packet = mwmp::Networking::get().getPlayerPacketController()->GetPacket(ID_PLAYER_JAIL);
     packet->setPlayer(player);

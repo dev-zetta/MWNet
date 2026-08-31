@@ -13,6 +13,19 @@ void PacketPlayerJail::Packet(RakNet::BitStream *newBitstream, bool send)
 {
     PlayerPacket::Packet(newBitstream, send);
 
+    RW(player->jailAction, send);
+    RW(player->jailSentenceId, send);
+    if (!isPacketValid())
+        return;
+
+    if (player->jailAction == JailAction::Complete)
+        return;
+    if (player->jailAction != JailAction::Begin)
+    {
+        invalidate(protocol::CodecError::InvalidValue);
+        return;
+    }
+
     RW(player->jailDays, send);
     RW(player->ignoreJailTeleportation, send);
     RW(player->ignoreJailSkillIncreases, send);

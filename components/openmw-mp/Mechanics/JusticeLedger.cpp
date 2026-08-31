@@ -89,8 +89,8 @@ namespace mwmp::mechanics
         return { JusticeDecision::Applied, found->second };
     }
 
-    JusticeResult JusticeLedger::completeSentence(
-        std::uint64_t player, std::uint64_t sentenceId, bool clearBounty)
+    JusticeResult JusticeLedger::previewSentenceCompletion(
+        std::uint64_t player, std::uint64_t sentenceId) const
     {
         if (player == 0)
             return { JusticeDecision::InvalidPlayer, {} };
@@ -102,6 +102,17 @@ namespace mwmp::mechanics
         if (sentenceId == 0 || sentenceId != found->second.sentence->id)
             return { JusticeDecision::StaleSentence, found->second };
 
+        return { JusticeDecision::Applied, found->second };
+    }
+
+    JusticeResult JusticeLedger::completeSentence(
+        std::uint64_t player, std::uint64_t sentenceId, bool clearBounty)
+    {
+        JusticeResult result = previewSentenceCompletion(player, sentenceId);
+        if (!result.applied())
+            return result;
+
+        const auto found = mPlayers.find(player);
         found->second.sentence.reset();
         if (clearBounty)
             found->second.bounty = 0;

@@ -294,7 +294,7 @@ public:
     * \return void
     */
     static void Jail(unsigned short pid, int jailDays, bool ignoreJailTeleportation, bool ignoreJailSkillIncreases,
-                     const char* jailProgressText, const char* jailEndText) noexcept;
+                     const char* jailProgressText, const char* jailEndText);
 
     /**
     * \brief Send a PlayerResurrect packet about a player.
