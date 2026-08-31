@@ -76,6 +76,15 @@ Cell *CellController::getCellByName(std::string cellName)
     return it->get();
 }
 
+Cell *CellController::getCellByDescription(std::string_view description)
+{
+    const auto it = find_if(cells.begin(), cells.end(),
+        [description](const std::unique_ptr<Cell>& cell) {
+            return cell->getShortDescription() == description;
+        });
+    return it == cells.end() ? nullptr : it->get();
+}
+
 Cell *CellController::addCell(ESM::Cell cellData)
 {
     LOG_APPEND(TimedLog::LOG_INFO, "- Loaded cells: %d", cells.size());

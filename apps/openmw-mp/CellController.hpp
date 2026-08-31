@@ -4,6 +4,7 @@
 #include <deque>
 #include <memory>
 #include <string>
+#include <string_view>
 #include <components/esm/records.hpp>
 #include <components/openmw-mp/Base/BaseObject.hpp>
 #include <components/openmw-mp/Packets/Actor/ActorPacket.hpp>
@@ -36,6 +37,7 @@ public:
     Cell *getCell(const ESM::Cell *esmCell);
     Cell *getCellByXY(int x, int y);
     Cell *getCellByName(std::string cellName);
+    Cell *getCellByDescription(std::string_view description);
 
     void update(Player *player);
 

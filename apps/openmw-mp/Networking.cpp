@@ -5350,6 +5350,243 @@ void Networking::setSpellFatigueFormula(double base, double multiplier)
     mSpellFatigueMultiplier = multiplier;
 }
 
+void Networking::advanceActiveEffects(double elapsedSeconds)
+{
+    mechanics::ActiveEffectLedger activeEffects = mActiveEffectLedger;
+    const mechanics::ActiveEffectAdvanceResult advanced
+        = activeEffects.advance(elapsedSeconds);
+    if (!advanced.applied())
+    {
+        LOG_MESSAGE_SIMPLE(TimedLog::LOG_ERROR,
+            "Failed to advance canonical active effects: %s",
+            mechanics::describe(advanced.decision));
+        return;
+    }
+    if (advanced.changes.empty())
+    {
+        mActiveEffectLedger.swap(activeEffects);
+        return;
+    }
+
+    struct AppliedTick
+    {
+        mechanics::ActiveEffectTick tick;
+        bool healthChanged = false;
+        bool died = false;
+    };
+    std::vector<AppliedTick> applied;
+    applied.reserve(advanced.changes.size());
+    mechanics::CombatResolver combat = mCombatResolver;
+    mechanics::SpellResolver spells = mSpellResolver;
+    for (const mechanics::ActiveEffectTick& tick : advanced.changes)
+    {
+        AppliedTick& change = applied.emplace_back();
+        change.tick = tick;
+        if (tick.healthDelta == 0)
+            continue;
+
+        auto state = combat.find(tick.owner);
+        if (!state || !state->alive)
+            continue;
+        const bool wasAlive = state->alive;
+        state->health = std::clamp(state->health + tick.healthDelta,
+            0.0, state->maximumHealth);
+        state->alive = state->health > 0;
+        if (!combat.upsert(tick.owner, *state))
+        {
+            LOG_MESSAGE_SIMPLE(TimedLog::LOG_ERROR, "%s",
+                "Canonical active-effect health update became invalid");
+            return;
+        }
+        if (auto magicState = spells.findCombatant(tick.owner))
+        {
+            magicState->health = state->health;
+            magicState->maximumHealth = state->maximumHealth;
+            magicState->alive = state->alive;
+            if (!spells.upsertCombatant(tick.owner, *magicState))
+            {
+                LOG_MESSAGE_SIMPLE(TimedLog::LOG_ERROR, "%s",
+                    "Canonical active-effect magic state became invalid");
+                return;
+            }
+        }
+        change.healthChanged = true;
+        change.died = wasAlive && !state->alive;
+    }
+
+    mActiveEffectLedger.swap(activeEffects);
+    mCombatResolver.swap(combat);
+    mSpellResolver.swap(spells);
+
+    for (const AppliedTick& change : applied)
+    {
+        const auto canonical = mCombatResolver.find(change.tick.owner);
+        if (change.tick.owner.kind == mechanics::CombatantKind::Player)
+        {
+            Player* player = Players::getPlayer(transport::TransportConnectionId(
+                change.tick.owner.value));
+            if (player == nullptr)
+                continue;
+            if (change.healthChanged && canonical)
+            {
+                applyCanonicalHealth(*player, *canonical);
+                player->exchangeFullInfo = false;
+                player->statsDynamicIndexChanges = { 0 };
+                PlayerPacket* packet = playerPacketController->GetPacket(
+                    ID_PLAYER_STATS_DYNAMIC);
+                packet->setPlayer(player);
+                packet->Send(player->guid);
+                player->sendToLoaded(packet);
+            }
+            if (change.tick.topologyChanged)
+            {
+                player->spellsActiveChanges.action = SpellsActiveChanges::SET;
+                player->spellsActiveChanges.activeSpells.clear();
+                if (const auto snapshot = mActiveEffectLedger.snapshot(
+                        change.tick.owner))
+                {
+                    for (const mechanics::CanonicalActiveSpell& spell : *snapshot)
+                        player->spellsActiveChanges.activeSpells.push_back(
+                            wireActiveSpell(spell));
+                }
+                PlayerPacket* packet = playerPacketController->GetPacket(
+                    ID_PLAYER_SPELLS_ACTIVE);
+                packet->setPlayer(player);
+                packet->Send(player->guid);
+                player->sendToLoaded(packet);
+            }
+            if (change.died)
+            {
+                Target killer;
+                if (change.tick.damageSource)
+                {
+                    if (change.tick.damageSource->kind
+                        == mechanics::CombatantKind::Player)
+                    {
+                        killer.isPlayer = true;
+                        killer.guid = transport::TransportConnectionId(
+                            change.tick.damageSource->value);
+                    }
+                    else
+                    {
+                        killer.refNum = static_cast<unsigned int>(
+                            change.tick.damageSource->value >> 32);
+                        killer.mpNum = static_cast<unsigned int>(
+                            change.tick.damageSource->value);
+                        if (Cell* sourceCell = CellController::get()
+                                ->getCellByDescription(
+                                    change.tick.damageSource->scope))
+                        {
+                            if (BaseActor* source = sourceCell->getActor(
+                                    killer.refNum, killer.mpNum))
+                            {
+                                killer.refId = source->refId;
+                                killer.name = source->refId;
+                            }
+                        }
+                    }
+                }
+                publishCanonicalPlayerDeath(*player, killer);
+            }
+            continue;
+        }
+
+        Cell* cell = CellController::get()->getCellByDescription(
+            change.tick.owner.scope);
+        if (cell == nullptr)
+            continue;
+        const unsigned int refNum = static_cast<unsigned int>(
+            change.tick.owner.value >> 32);
+        const unsigned int mpNum = static_cast<unsigned int>(
+            change.tick.owner.value);
+        BaseActor* actor = cell->getActor(refNum, mpNum);
+        if (actor == nullptr)
+            continue;
+        if (change.healthChanged && canonical)
+        {
+            applyCanonicalHealth(*actor, *canonical);
+            actor->hasStatsDynamicData = true;
+            BaseActorList list;
+            list.cell = cell->getActorList()->cell;
+            list.authorityLeaseId = cell->getAuthorityLeaseId();
+            list.baseActors.push_back(*actor);
+            list.count = 1;
+            ActorPacket* packet = actorPacketController->GetPacket(
+                ID_ACTOR_STATS_DYNAMIC);
+            packet->setActorList(&list);
+            cell->sendToLoaded(packet, &list);
+        }
+        if (change.tick.topologyChanged)
+        {
+            BaseActor activeActor = *actor;
+            activeActor.spellsActiveChanges.action = SpellsActiveChanges::SET;
+            activeActor.spellsActiveChanges.activeSpells.clear();
+            if (const auto snapshot = mActiveEffectLedger.snapshot(
+                    change.tick.owner))
+            {
+                for (const mechanics::CanonicalActiveSpell& spell : *snapshot)
+                    activeActor.spellsActiveChanges.activeSpells.push_back(
+                        wireActiveSpell(spell));
+            }
+            BaseActorList list;
+            list.cell = cell->getActorList()->cell;
+            list.authorityLeaseId = cell->getAuthorityLeaseId();
+            list.baseActors.push_back(std::move(activeActor));
+            list.count = 1;
+            ActorPacket* packet = actorPacketController->GetPacket(
+                ID_ACTOR_SPELLS_ACTIVE);
+            packet->setActorList(&list);
+            cell->sendToLoaded(packet, &list);
+        }
+        if (change.died)
+        {
+            BaseActor dead = *actor;
+            if (change.tick.damageSource)
+            {
+                if (change.tick.damageSource->kind
+                    == mechanics::CombatantKind::Player)
+                {
+                    dead.killer.isPlayer = true;
+                    dead.killer.guid = transport::TransportConnectionId(
+                        change.tick.damageSource->value);
+                }
+                else
+                {
+                    dead.killer.refNum = static_cast<unsigned int>(
+                        change.tick.damageSource->value >> 32);
+                    dead.killer.mpNum = static_cast<unsigned int>(
+                        change.tick.damageSource->value);
+                    if (Cell* sourceCell = CellController::get()
+                            ->getCellByDescription(
+                                change.tick.damageSource->scope))
+                    {
+                        if (BaseActor* source = sourceCell->getActor(
+                                dead.killer.refNum, dead.killer.mpNum))
+                        {
+                            dead.killer.refId = source->refId;
+                            dead.killer.name = source->refId;
+                        }
+                    }
+                }
+            }
+            BaseActorList list;
+            list.cell = cell->getActorList()->cell;
+            list.authorityLeaseId = cell->getAuthorityLeaseId();
+            list.baseActors.push_back(std::move(dead));
+            list.count = 1;
+            ActorPacket* packet = actorPacketController->GetPacket(ID_ACTOR_DEATH);
+            packet->setActorList(&list);
+            cell->sendToLoaded(packet, &list);
+            baseActorList = list;
+            if (Player* authority = Players::getPlayer(*cell->getAuthority()))
+            {
+                Script::Call<Script::CallbackIdentity("OnActorDeath")>(
+                    authority->getId(), change.tick.owner.scope.c_str());
+            }
+        }
+    }
+}
+
 void Networking::processSystemPacket(const transport::ReceivedApplicationPacket& packet)
 {
     Player *player = Players::getPlayer(mwmp::transport::TransportConnectionId(packet.sender.value));
@@ -5774,6 +6011,8 @@ int Networking::mainLoop()
 
     auto nextMetricsReport = std::chrono::steady_clock::now()
         + std::chrono::minutes(1);
+    auto activeEffectClock = std::chrono::steady_clock::now();
+    auto nextActiveEffectTick = activeEffectClock + std::chrono::milliseconds(100);
     
     while (running && !killLoop)
     {
@@ -5793,6 +6032,13 @@ int Networking::mainLoop()
         TimerAPI::Tick();
         mMetrics.observeQueueDepth(mPersistenceService.pending());
         const auto now = std::chrono::steady_clock::now();
+        if (now >= nextActiveEffectTick)
+        {
+            advanceActiveEffects(
+                std::chrono::duration<double>(now - activeEffectClock).count());
+            activeEffectClock = now;
+            nextActiveEffectTick = now + std::chrono::milliseconds(100);
+        }
         mMetrics.observeTick(now - tickStarted);
         if (now >= nextMetricsReport)
         {

@@ -188,6 +188,7 @@ namespace
         EXPECT(first.applied());
         EXPECT(firstTarget != nullptr);
         EXPECT(std::abs(firstTarget->healthDelta + 3.0) < 0.000001);
+        EXPECT(firstTarget->damageSource == caster);
         EXPECT(!firstTarget->topologyChanged);
         EXPECT(std::abs(ledger.snapshot(target)->front().effects.front().timeLeft
             - 1.5) < 0.000001);

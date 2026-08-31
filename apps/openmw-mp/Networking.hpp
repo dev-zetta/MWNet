@@ -240,6 +240,7 @@ namespace  mwmp
         void processTransportEvent(transport::TransportEvent event);
         void processApplicationMessage(transport::TransportMessage message);
         void processAuthenticationMessage(transport::TransportMessage message);
+        void advanceActiveEffects(double elapsedSeconds);
         void eraseRemovedActorState(
             const std::vector<mechanics::ActorIdentity>& previousActors);
         bool validActorAiTargets(const BaseActorList& actorList) const;

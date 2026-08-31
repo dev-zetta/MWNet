@@ -49,7 +49,9 @@ namespace mwmp::mechanics
                 &ActiveEffectTick::owner);
             if (existing != changes.end())
                 return *existing;
-            changes.push_back({ owner });
+            ActiveEffectTick change;
+            change.owner = owner;
+            changes.push_back(std::move(change));
             return changes.back();
         }
     }
@@ -197,8 +199,14 @@ namespace mwmp::mechanics
                     const double rate = healthRate(effect);
                     if (rate != 0 && appliedSeconds > 0)
                     {
-                        changeFor(result.changes, owner).healthDelta
-                            += rate * appliedSeconds;
+                        ActiveEffectTick& ownerChange
+                            = changeFor(result.changes, owner);
+                        ownerChange.healthDelta += rate * appliedSeconds;
+                        if (rate < 0 && spell.caster
+                            && !ownerChange.damageSource)
+                        {
+                            ownerChange.damageSource = spell.caster;
+                        }
                         if (isAbsorbHealth(effect) && spell.caster
                             && *spell.caster != owner)
                         {

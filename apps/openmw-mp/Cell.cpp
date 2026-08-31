@@ -13,6 +13,7 @@
 
 Cell::Cell(ESM::Cell cell) : cell(cell)
 {
+    cellActorList.cell = this->cell;
     cellActorList.count = 0;
 }
 

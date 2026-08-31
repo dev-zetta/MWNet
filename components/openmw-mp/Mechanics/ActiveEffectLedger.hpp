@@ -79,6 +79,7 @@ namespace mwmp::mechanics
         CombatantId owner;
         double healthDelta = 0;
         bool topologyChanged = false;
+        std::optional<CombatantId> damageSource;
     };
 
     enum class ActiveEffectAdvanceDecision : std::uint8_t
