@@ -2015,7 +2015,7 @@ eventHandler.OnObjectMutationIntentRejected = function(pid, cellDescription, pac
 end
 
 eventHandler.OnObjectSpawn = function(pid, cellDescription)
-    eventHandler.OnGenericObjectEvent(pid, cellDescription, "ObjectSpawn")
+    eventHandler.OnObjectMutationCommitted(pid, cellDescription, "ObjectSpawn")
 end
 
 eventHandler.OnObjectDelete = function(pid, cellDescription)

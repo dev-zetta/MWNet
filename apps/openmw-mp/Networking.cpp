@@ -612,6 +612,27 @@ namespace
         return result;
     }
 
+    mwmp::mechanics::ObjectState canonicalSpawnedObject(
+        const mwmp::BaseObject& object, std::string cell,
+        std::uint64_t creator, std::uint32_t mpNum)
+    {
+        mwmp::mechanics::ObjectState result;
+        result.identity = { std::move(cell), object.refNum, mpNum };
+        result.refId = object.refId;
+        result.creator = creator;
+        result.count = 1;
+        result.charge = -1;
+        result.enchantmentCharge = -1.0;
+        for (std::size_t index = 0; index < 3; ++index)
+        {
+            result.position[index] = object.position.pos[index];
+            result.rotation[index] = object.position.rot[index];
+        }
+        result.enabled = true;
+        result.hasContainer = true;
+        return result;
+    }
+
     mwmp::mechanics::ObjectMutation canonicalObjectMutation(
         const mwmp::BaseObject& object, std::string cell,
         mwmp::mechanics::ObjectMutationKind kind)
@@ -888,6 +909,101 @@ bool Networking::validateObjectActivation(Player& player,
     if (violations >= 5)
         disconnectTransport({ player.guid.g }, "repeated invalid object activations");
     return false;
+}
+
+bool Networking::validateObjectSpawn(Player& player, const BaseObjectList& incoming)
+{
+    mPendingObjectMutations.erase(player.guid.g);
+    mechanics::ObjectResult result{ mechanics::ObjectDecision::InvalidObject };
+    const std::string cellDescription = incoming.cell.getShortDescription();
+    if (!cellDescription.empty()
+        && incoming.packetOrigin <= PACKET_ORIGIN::CLIENT_SCRIPT_GLOBAL
+        && !incoming.baseObjects.empty()
+        && incoming.baseObjectCount == incoming.baseObjects.size()
+        && incoming.baseObjects.size() <= mechanics::ObjectStateLedger::MaximumChanges
+        && currentMpNum >= 0
+        && incoming.baseObjects.size()
+            <= static_cast<std::size_t>(std::numeric_limits<int>::max() - currentMpNum))
+    {
+        std::vector<mechanics::ObjectMutation> mutations;
+        mutations.reserve(incoming.baseObjects.size());
+        bool complete = true;
+        const auto authority = mAuthorityLeases.find(cellDescription);
+        const auto now = session::AuthorityLeaseManager::Clock::now();
+        for (const BaseObject& object : incoming.baseObjects)
+        {
+            if (object.isSummon)
+            {
+                if (object.summonEffectId < 0 || object.summonEffectId > 1'000'000
+                    || object.summonSpellId.empty()
+                    || !std::isfinite(object.summonDuration)
+                    || object.summonDuration <= 0.f
+                    || object.summonDuration > 604'800.f)
+                {
+                    complete = false;
+                    break;
+                }
+                if (object.master.isPlayer)
+                {
+                    if (object.master.guid.g != player.guid.g)
+                    {
+                        complete = false;
+                        break;
+                    }
+                }
+                else if (!authority || authority->owner != player.guid.g
+                    || authority->expiresAt <= now
+                    || object.master.refId.empty()
+                    || (object.master.refNum == 0 && object.master.mpNum == 0))
+                {
+                    complete = false;
+                    break;
+                }
+            }
+
+            const int assignedMpNum = currentMpNum
+                + static_cast<int>(mutations.size()) + 1;
+            mutations.push_back({ mechanics::ObjectMutationKind::Place,
+                canonicalSpawnedObject(object, cellDescription, player.guid.g,
+                    static_cast<std::uint32_t>(assignedMpNum)) });
+        }
+
+        if (complete)
+        {
+            result = mObjectStateLedger.previewBatch(mutations);
+            if (result.applied())
+            {
+                for (std::size_t index = 0; index < mutations.size(); ++index)
+                    incrementMpNum();
+                mPendingObjectMutations.insert_or_assign(
+                    player.guid.g, std::move(mutations));
+                return true;
+            }
+        }
+    }
+
+    const unsigned int violations = ++mObjectViolations[player.guid.g];
+    LOG_MESSAGE_SIMPLE(TimedLog::LOG_WARN,
+        "Rejected object spawn from connection %llu: %s (violation %u)",
+        static_cast<unsigned long long>(player.guid.g),
+        mechanics::describe(result.decision), violations);
+    if (violations >= 5)
+        disconnectTransport({ player.guid.g }, "repeated invalid object spawns");
+    return false;
+}
+
+bool Networking::prepareObjectMutationIds(Player& player, BaseObjectList& objectList)
+{
+    const auto pending = mPendingObjectMutations.find(player.guid.g);
+    if (pending == mPendingObjectMutations.end()
+        || pending->second.size() != objectList.baseObjects.size())
+    {
+        return false;
+    }
+    for (std::size_t index = 0; index < pending->second.size(); ++index)
+        objectList.baseObjects[index].mpNum
+            = pending->second[index].object.identity.mpNum;
+    return true;
 }
 
 bool Networking::commitObjectMutation(Player& player)

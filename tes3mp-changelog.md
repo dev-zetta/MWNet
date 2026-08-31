@@ -92,6 +92,7 @@ This is the first hardening milestone for the major OpenMW 0.52 compatibility an
 * Seed persisted dynamic placements into canonical object state before synchronizing them to clients
 * Validate and commit object state, movement, rotation, scale, lock and deletion batches against canonical state before Lua persistence or relay
 * Bind object activations to the sending transport identity and reject deleted or unknown dynamic targets before Lua policy runs
+* Give spawned references server-issued identities and validate bounded summon metadata plus player or actor authority before canonical creation
 * Assign dynamic object IDs on the server and commit object placement batches canonically before legacy Lua persistence or relay handlers run
 
 0.8.1

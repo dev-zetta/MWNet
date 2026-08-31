@@ -119,6 +119,8 @@ namespace  mwmp
         bool validateObjectMutation(Player& player, const BaseObjectList& incoming,
             mechanics::ObjectMutationKind kind);
         bool validateObjectActivation(Player& player, const BaseObjectList& incoming);
+        bool validateObjectSpawn(Player& player, const BaseObjectList& incoming);
+        bool prepareObjectMutationIds(Player& player, BaseObjectList& objectList);
         bool commitObjectMutation(Player& player);
         void cancelObjectMutation(Player& player) noexcept;
         bool validatePlayerActiveEffects(Player& player, const BasePlayer& incoming);
