@@ -45,6 +45,27 @@ namespace mwmp::mechanics
         return result;
     }
 
+    ActiveEffectResult ActiveEffectLedger::previewBatch(
+        const std::vector<ActiveEffectOperation>& operations) const
+    {
+        std::unordered_map<CombatantId, std::vector<CanonicalActiveSpell>, CombatantIdHash>
+            candidates;
+        return prepareBatch(operations, candidates);
+    }
+
+    ActiveEffectResult ActiveEffectLedger::applyBatch(
+        const std::vector<ActiveEffectOperation>& operations)
+    {
+        std::unordered_map<CombatantId, std::vector<CanonicalActiveSpell>, CombatantIdHash>
+            candidates;
+        const ActiveEffectResult result = prepareBatch(operations, candidates);
+        if (!result.applied())
+            return result;
+        for (auto& [owner, spells] : candidates)
+            mActiveEffects.insert_or_assign(std::move(owner), std::move(spells));
+        return result;
+    }
+
     std::optional<std::vector<CanonicalActiveSpell>> ActiveEffectLedger::snapshot(
         CombatantId owner) const
     {
@@ -169,6 +190,42 @@ namespace mwmp::mechanics
             active.erase(existing);
         }
         return { ActiveEffectDecision::Applied, active.size() };
+    }
+
+    ActiveEffectResult ActiveEffectLedger::prepareBatch(
+        const std::vector<ActiveEffectOperation>& operations,
+        std::unordered_map<CombatantId, std::vector<CanonicalActiveSpell>,
+            CombatantIdHash>& candidates) const
+    {
+        ActiveEffectResult result{ ActiveEffectDecision::Applied };
+        std::size_t newOwnerCount = 0;
+        for (const ActiveEffectOperation& operation : operations)
+        {
+            if (!validOwner(operation.owner))
+                return { ActiveEffectDecision::InvalidOwner };
+
+            auto candidate = candidates.find(operation.owner);
+            if (candidate == candidates.end())
+            {
+                const auto existing = mActiveEffects.find(operation.owner);
+                if (existing == mActiveEffects.end()
+                    && mActiveEffects.size() + newOwnerCount >= mMaximumOwners)
+                {
+                    return { ActiveEffectDecision::OwnerLimitReached };
+                }
+                if (existing == mActiveEffects.end())
+                    ++newOwnerCount;
+                candidate = candidates.emplace(operation.owner,
+                    existing == mActiveEffects.end()
+                        ? std::vector<CanonicalActiveSpell>{}
+                        : existing->second).first;
+            }
+
+            result = applyTo(candidate->second, operation.action, operation.spells);
+            if (!result.applied())
+                return result;
+        }
+        return result;
     }
 
     const char* describe(ActiveEffectDecision decision) noexcept

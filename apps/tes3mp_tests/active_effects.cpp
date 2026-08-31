@@ -96,6 +96,38 @@ namespace
         EXPECT(std::string(describe(ActiveEffectDecision::MissingSpell))
             == "the active spell does not exist");
     }
+
+    void testBatchIsAtomic()
+    {
+        ActiveEffectLedger ledger;
+        const CombatantId first{ CombatantKind::Actor, 8, "Balmora" };
+        const CombatantId second{ CombatantKind::Actor, 9, "Balmora" };
+        EXPECT(ledger.apply(first, ActiveEffectAction::Set,
+                   { spell("fire") }).applied());
+        EXPECT(ledger.apply(second, ActiveEffectAction::Set,
+                   { spell("frost") }).applied());
+
+        const std::vector<ActiveEffectOperation> invalid{
+            { first, ActiveEffectAction::Remove, { selector("fire") } },
+            { second, ActiveEffectAction::Remove, { selector("missing") } },
+        };
+        EXPECT(ledger.previewBatch(invalid).decision
+            == ActiveEffectDecision::MissingSpell);
+        EXPECT(ledger.applyBatch(invalid).decision
+            == ActiveEffectDecision::MissingSpell);
+        EXPECT(ledger.snapshot(first)->front().id == "fire");
+        EXPECT(ledger.snapshot(second)->front().id == "frost");
+
+        const std::vector<ActiveEffectOperation> valid{
+            { first, ActiveEffectAction::Remove, { selector("fire") } },
+            { second, ActiveEffectAction::Add, { spell("poison") } },
+        };
+        EXPECT(ledger.previewBatch(valid).applied());
+        EXPECT(ledger.snapshot(first)->size() == 1);
+        EXPECT(ledger.applyBatch(valid).applied());
+        EXPECT(ledger.snapshot(first)->empty());
+        EXPECT(ledger.snapshot(second)->size() == 2);
+    }
 }
 
 int runActiveEffectTests()
@@ -103,5 +135,6 @@ int runActiveEffectTests()
     testSetAddRemove();
     testFailureIsTransactional();
     testLimitsAndScopedOwners();
+    testBatchIsAtomic();
     return sFailures;
 }

@@ -65,6 +65,13 @@ namespace mwmp::mechanics
         }
     };
 
+    struct ActiveEffectOperation
+    {
+        CombatantId owner;
+        ActiveEffectAction action = ActiveEffectAction::Set;
+        std::vector<CanonicalActiveSpell> spells;
+    };
+
     class ActiveEffectLedger
     {
     public:
@@ -80,6 +87,10 @@ namespace mwmp::mechanics
             const std::vector<CanonicalActiveSpell>& spells) const;
         ActiveEffectResult apply(CombatantId owner, ActiveEffectAction action,
             const std::vector<CanonicalActiveSpell>& spells);
+        ActiveEffectResult previewBatch(
+            const std::vector<ActiveEffectOperation>& operations) const;
+        ActiveEffectResult applyBatch(
+            const std::vector<ActiveEffectOperation>& operations);
 
         std::optional<std::vector<CanonicalActiveSpell>> snapshot(CombatantId owner) const;
         bool erase(CombatantId owner) noexcept;
@@ -95,6 +106,10 @@ namespace mwmp::mechanics
             const std::vector<CanonicalActiveSpell>& spells);
         static ActiveEffectResult removeFrom(std::vector<CanonicalActiveSpell>& active,
             const std::vector<CanonicalActiveSpell>& spells);
+        ActiveEffectResult prepareBatch(
+            const std::vector<ActiveEffectOperation>& operations,
+            std::unordered_map<CombatantId, std::vector<CanonicalActiveSpell>,
+                CombatantIdHash>& candidates) const;
 
         std::size_t mMaximumOwners;
         std::unordered_map<CombatantId, std::vector<CanonicalActiveSpell>, CombatantIdHash>
