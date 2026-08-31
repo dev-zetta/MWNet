@@ -1,12 +1,59 @@
 #include "ActiveEffectLedger.hpp"
 
 #include <algorithm>
+#include <cctype>
 #include <cmath>
 #include <unordered_set>
 #include <utility>
 
 namespace mwmp::mechanics
 {
+    namespace
+    {
+        std::string canonicalEffectId(std::string_view value)
+        {
+            std::string result;
+            result.reserve(value.size());
+            for (const unsigned char character : value)
+            {
+                if (character != ' ' && character != '_' && character != '-')
+                    result.push_back(static_cast<char>(std::tolower(character)));
+            }
+            return result;
+        }
+
+        double healthRate(const CanonicalEffect& effect)
+        {
+            const std::string id = canonicalEffectId(effect.effectId);
+            if (id == "restorehealth")
+                return effect.magnitude;
+            if (id == "damagehealth" || id == "firedamage"
+                || id == "frostdamage" || id == "shockdamage"
+                || id == "poison" || id == "sundamage"
+                || id == "absorbhealth")
+            {
+                return -effect.magnitude;
+            }
+            return 0;
+        }
+
+        bool isAbsorbHealth(const CanonicalEffect& effect)
+        {
+            return canonicalEffectId(effect.effectId) == "absorbhealth";
+        }
+
+        ActiveEffectTick& changeFor(std::vector<ActiveEffectTick>& changes,
+            const CombatantId& owner)
+        {
+            const auto existing = std::ranges::find(changes, owner,
+                &ActiveEffectTick::owner);
+            if (existing != changes.end())
+                return *existing;
+            changes.push_back({ owner });
+            return changes.back();
+        }
+    }
+
     ActiveEffectLedger::ActiveEffectLedger(std::size_t maximumOwners)
         : mMaximumOwners(maximumOwners)
     {
@@ -118,6 +165,74 @@ namespace mwmp::mechanics
         }
         mActiveEffects.swap(activeEffects);
         return true;
+    }
+
+    ActiveEffectAdvanceResult ActiveEffectLedger::advance(double elapsedSeconds)
+    {
+        ActiveEffectAdvanceResult result;
+        if (!std::isfinite(elapsedSeconds) || elapsedSeconds < 0
+            || elapsedSeconds > MaximumDurationSeconds)
+        {
+            return result;
+        }
+        result.decision = ActiveEffectAdvanceDecision::Applied;
+        if (elapsedSeconds == 0)
+            return result;
+
+        auto candidate = mActiveEffects;
+        for (auto ownerIt = candidate.begin(); ownerIt != candidate.end();)
+        {
+            const CombatantId owner = ownerIt->first;
+            std::vector<CanonicalActiveSpell>& spells = ownerIt->second;
+            bool ownerTopologyChanged = false;
+            for (auto spellIt = spells.begin(); spellIt != spells.end();)
+            {
+                CanonicalActiveSpell& spell = *spellIt;
+                for (auto effectIt = spell.effects.begin();
+                    effectIt != spell.effects.end();)
+                {
+                    CanonicalEffect& effect = *effectIt;
+                    const double appliedSeconds = std::min(
+                        elapsedSeconds, effect.timeLeft);
+                    const double rate = healthRate(effect);
+                    if (rate != 0 && appliedSeconds > 0)
+                    {
+                        changeFor(result.changes, owner).healthDelta
+                            += rate * appliedSeconds;
+                        if (isAbsorbHealth(effect) && spell.caster
+                            && *spell.caster != owner)
+                        {
+                            changeFor(result.changes, *spell.caster).healthDelta
+                                -= rate * appliedSeconds;
+                        }
+                    }
+                    effect.timeLeft = std::max(0.0,
+                        effect.timeLeft - elapsedSeconds);
+                    if (effect.timeLeft == 0)
+                    {
+                        effectIt = spell.effects.erase(effectIt);
+                        ownerTopologyChanged = true;
+                    }
+                    else
+                        ++effectIt;
+                }
+                if (spell.effects.empty())
+                {
+                    spellIt = spells.erase(spellIt);
+                    ownerTopologyChanged = true;
+                }
+                else
+                    ++spellIt;
+            }
+            if (ownerTopologyChanged)
+                changeFor(result.changes, owner).topologyChanged = true;
+            if (spells.empty())
+                ownerIt = candidate.erase(ownerIt);
+            else
+                ++ownerIt;
+        }
+        mActiveEffects.swap(candidate);
+        return result;
     }
 
     std::optional<std::vector<CanonicalActiveSpell>> ActiveEffectLedger::snapshot(
@@ -308,5 +423,17 @@ namespace mwmp::mechanics
                 return "the active-effect owner limit was reached";
         }
         return "unknown active-effect decision";
+    }
+
+    const char* describe(ActiveEffectAdvanceDecision decision) noexcept
+    {
+        switch (decision)
+        {
+            case ActiveEffectAdvanceDecision::Applied:
+                return "the active-effect clock advanced";
+            case ActiveEffectAdvanceDecision::InvalidElapsed:
+                return "the active-effect elapsed time is invalid";
+        }
+        return "unknown active-effect advance decision";
     }
 }

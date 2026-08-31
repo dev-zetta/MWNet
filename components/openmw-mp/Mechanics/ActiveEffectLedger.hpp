@@ -74,6 +74,31 @@ namespace mwmp::mechanics
         bool operator==(const ActiveEffectOperation&) const = default;
     };
 
+    struct ActiveEffectTick
+    {
+        CombatantId owner;
+        double healthDelta = 0;
+        bool topologyChanged = false;
+    };
+
+    enum class ActiveEffectAdvanceDecision : std::uint8_t
+    {
+        Applied,
+        InvalidElapsed,
+    };
+
+    struct ActiveEffectAdvanceResult
+    {
+        ActiveEffectAdvanceDecision decision
+            = ActiveEffectAdvanceDecision::InvalidElapsed;
+        std::vector<ActiveEffectTick> changes;
+
+        bool applied() const noexcept
+        {
+            return decision == ActiveEffectAdvanceDecision::Applied;
+        }
+    };
+
     class ActiveEffectLedger
     {
     public:
@@ -97,6 +122,7 @@ namespace mwmp::mechanics
             const std::vector<CombatantRelocation>& relocations) const;
         bool applyRelocations(
             const std::vector<CombatantRelocation>& relocations);
+        ActiveEffectAdvanceResult advance(double elapsedSeconds);
 
         std::optional<std::vector<CanonicalActiveSpell>> snapshot(CombatantId owner) const;
         bool erase(CombatantId owner) noexcept;
@@ -124,6 +150,7 @@ namespace mwmp::mechanics
     };
 
     const char* describe(ActiveEffectDecision decision) noexcept;
+    const char* describe(ActiveEffectAdvanceDecision decision) noexcept;
 }
 
 #endif

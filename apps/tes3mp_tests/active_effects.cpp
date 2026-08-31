@@ -1,5 +1,7 @@
 #include <components/openmw-mp/Mechanics/ActiveEffectLedger.hpp>
 
+#include <algorithm>
+#include <cmath>
 #include <iostream>
 #include <limits>
 #include <string>
@@ -159,6 +161,78 @@ namespace
         EXPECT(ledger.snapshot(destination)->front().id == "fire");
         EXPECT(ledger.snapshot(other)->front().id == "frost");
     }
+
+    const ActiveEffectTick* findTick(const ActiveEffectAdvanceResult& result,
+        const CombatantId& owner)
+    {
+        const auto found = std::ranges::find(result.changes, owner,
+            &ActiveEffectTick::owner);
+        return found == result.changes.end() ? nullptr : &*found;
+    }
+
+    void testServerClockAppliesAndExpiresHealthEffects()
+    {
+        ActiveEffectLedger ledger;
+        const CombatantId caster{ CombatantKind::Player, 1, {} };
+        const CombatantId target{ CombatantKind::Player, 2, {} };
+        CanonicalActiveSpell damage = spell("elemental");
+        damage.caster = caster;
+        damage.effects = {
+            { "Fire Damage", {}, 8, 2, 2 },
+            { "restore_health", {}, 2, 1, 1 },
+        };
+        EXPECT(ledger.apply(target, ActiveEffectAction::Set, { damage }).applied());
+
+        const ActiveEffectAdvanceResult first = ledger.advance(0.5);
+        const ActiveEffectTick* firstTarget = findTick(first, target);
+        EXPECT(first.applied());
+        EXPECT(firstTarget != nullptr);
+        EXPECT(std::abs(firstTarget->healthDelta + 3.0) < 0.000001);
+        EXPECT(!firstTarget->topologyChanged);
+        EXPECT(std::abs(ledger.snapshot(target)->front().effects.front().timeLeft
+            - 1.5) < 0.000001);
+
+        const ActiveEffectAdvanceResult second = ledger.advance(0.5);
+        const ActiveEffectTick* secondTarget = findTick(second, target);
+        EXPECT(secondTarget != nullptr);
+        EXPECT(std::abs(secondTarget->healthDelta + 3.0) < 0.000001);
+        EXPECT(secondTarget->topologyChanged);
+        EXPECT(ledger.snapshot(target)->front().effects.size() == 1);
+
+        const ActiveEffectAdvanceResult final = ledger.advance(1.0);
+        EXPECT(findTick(final, target)->topologyChanged);
+        EXPECT(!ledger.snapshot(target));
+    }
+
+    void testAbsorbHealthCreditsCanonicalCaster()
+    {
+        ActiveEffectLedger ledger;
+        const CombatantId caster{ CombatantKind::Actor, 3, "Balmora" };
+        const CombatantId target{ CombatantKind::Player, 4, {} };
+        CanonicalActiveSpell absorb = spell("absorb");
+        absorb.caster = caster;
+        absorb.effects = { { "AbsorbHealth", {}, 5, 2, 2 } };
+        EXPECT(ledger.apply(target, ActiveEffectAction::Set, { absorb }).applied());
+
+        const ActiveEffectAdvanceResult result = ledger.advance(0.25);
+        EXPECT(std::abs(findTick(result, target)->healthDelta + 1.25) < 0.000001);
+        EXPECT(std::abs(findTick(result, caster)->healthDelta - 1.25) < 0.000001);
+    }
+
+    void testInvalidClockAdvanceIsTransactional()
+    {
+        ActiveEffectLedger ledger;
+        const CombatantId player{ CombatantKind::Player, 7, {} };
+        EXPECT(ledger.apply(player, ActiveEffectAction::Set,
+                   { spell("fire") }).applied());
+        EXPECT(ledger.advance(-1).decision
+            == ActiveEffectAdvanceDecision::InvalidElapsed);
+        EXPECT(ledger.advance(std::numeric_limits<double>::quiet_NaN()).decision
+            == ActiveEffectAdvanceDecision::InvalidElapsed);
+        EXPECT(ledger.snapshot(player)->front().effects.front().timeLeft == 5);
+        EXPECT(std::string(describe(ActiveEffectAdvanceDecision::InvalidElapsed))
+            == "the active-effect elapsed time is invalid");
+    }
 }
 
 int runActiveEffectTests()
@@ -168,5 +242,8 @@ int runActiveEffectTests()
     testLimitsAndScopedOwners();
     testBatchIsAtomic();
     testActorRelocationPreservesEffectsAndCasters();
+    testServerClockAppliesAndExpiresHealthEffects();
+    testAbsorbHealthCreditsCanonicalCaster();
+    testInvalidClockAdvanceIsTransactional();
     return sFailures;
 }
