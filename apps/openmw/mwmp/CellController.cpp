@@ -16,7 +16,7 @@
 #include "LocalPlayer.hpp"
 using namespace mwmp;
 
-std::map<std::string, mwmp::Cell *> CellController::cellsInitialized;
+std::map<std::string, std::unique_ptr<mwmp::Cell>> CellController::cellsInitialized;
 std::map<std::string, std::string> CellController::localActorsToCells;
 std::map<std::string, std::string> CellController::dedicatedActorsToCells;
 std::map<std::string, unsigned int> CellController::queuedDeathStates;
@@ -38,14 +38,13 @@ void CellController::updateLocal(bool forceUpdate)
     // Loop through Cells, deleting inactive ones and updating LocalActors in active ones
     for (auto it = cellsInitialized.begin(); it != cellsInitialized.end();)
     {
-        mwmp::Cell *mpCell = it->second;
+        mwmp::Cell *mpCell = it->second.get();
 
         if (mpCell->getCellStore() == nullptr || mpCell->getCellStore()->getCell() == nullptr || !world->isCellActive(mpCell->getCellStore()->getCell()->getEsm3()))
         {
             mpCell->uninitializeLocalActors();
             mpCell->uninitializeDedicatedActors();
-            delete it->second;
-            cellsInitialized.erase(it++);
+            it = cellsInitialized.erase(it);
         }
         else
         {
@@ -63,7 +62,7 @@ void CellController::updateLocal(bool forceUpdate)
     {
         for (auto& cell : cellsInitialized)
         {
-            mwmp::Cell* mpCell = cell.second;
+            mwmp::Cell* mpCell = cell.second.get();
             if (mpCell->shouldInitializeActors == true)
             {
                 mpCell->shouldInitializeActors = false;
@@ -97,10 +96,10 @@ void CellController::initializeCell(const ESM::Cell& cell)
 
         if (!cellStore) return;
 
-        mwmp::Cell *mpCell = new mwmp::Cell(cellStore);
+        auto mpCell = std::make_unique<mwmp::Cell>(cellStore);
         mpCell->setAuthority(Main::get().getLocalPlayer()->guid);
         mpCell->shouldInitializeActors = true;
-        cellsInitialized[mapIndex] = mpCell;
+        cellsInitialized.insert_or_assign(mapIndex, std::move(mpCell));
 
         LOG_APPEND(TimedLog::LOG_VERBOSE, "- Successfully initialized mwmp::Cell %s", cell.getShortDescription().c_str());
     }
@@ -113,10 +112,9 @@ void CellController::uninitializeCell(const ESM::Cell& cell)
     // If this key exists, erase the key-value pair from the map
     if (cellsInitialized.count(mapIndex) > 0)
     {
-        mwmp::Cell* mpCell = cellsInitialized.at(mapIndex);
+        mwmp::Cell* mpCell = cellsInitialized.at(mapIndex).get();
         mpCell->uninitializeLocalActors();
         mpCell->uninitializeDedicatedActors();
-        delete cellsInitialized.at(mapIndex);
         cellsInitialized.erase(mapIndex);
     }
 }
@@ -127,10 +125,9 @@ void CellController::uninitializeCells()
     {
         for (auto it = cellsInitialized.cbegin(); it != cellsInitialized.cend(); it++)
         {
-            mwmp::Cell* mpCell = it->second;
+            mwmp::Cell* mpCell = it->second.get();
             mpCell->uninitializeLocalActors();
             mpCell->uninitializeDedicatedActors();
-            delete it->second;
         }
 
         cellsInitialized.clear();
@@ -139,134 +136,110 @@ void CellController::uninitializeCells()
 
 void CellController::readPositions(ActorList& actorList)
 {
-    std::string mapIndex = actorList.cell.getShortDescription();
-
     initializeCell(actorList.cell);
 
     // If this now exists, send it the data
-    if (cellsInitialized.count(mapIndex) > 0)
-        cellsInitialized[mapIndex]->readPositions(actorList);
+    if (Cell* cell = getCell(actorList.cell))
+        cell->readPositions(actorList);
 }
 
 void CellController::readAnimFlags(ActorList& actorList)
 {
-    std::string mapIndex = actorList.cell.getShortDescription();
-
     initializeCell(actorList.cell);
 
     // If this now exists, send it the data
-    if (cellsInitialized.count(mapIndex) > 0)
-        cellsInitialized[mapIndex]->readAnimFlags(actorList);
+    if (Cell* cell = getCell(actorList.cell))
+        cell->readAnimFlags(actorList);
 }
 
 void CellController::readAnimPlay(ActorList& actorList)
 {
-    std::string mapIndex = actorList.cell.getShortDescription();
-
     initializeCell(actorList.cell);
 
     // If this now exists, send it the data
-    if (cellsInitialized.count(mapIndex) > 0)
-        cellsInitialized[mapIndex]->readAnimPlay(actorList);
+    if (Cell* cell = getCell(actorList.cell))
+        cell->readAnimPlay(actorList);
 }
 
 void CellController::readStatsDynamic(ActorList& actorList)
 {
-    std::string mapIndex = actorList.cell.getShortDescription();
-
     initializeCell(actorList.cell);
 
     // If this now exists, send it the data
-    if (cellsInitialized.count(mapIndex) > 0)
-        cellsInitialized[mapIndex]->readStatsDynamic(actorList);
+    if (Cell* cell = getCell(actorList.cell))
+        cell->readStatsDynamic(actorList);
 }
 
 void CellController::readDeath(ActorList& actorList)
 {
-    std::string mapIndex = actorList.cell.getShortDescription();
-
     initializeCell(actorList.cell);
 
     // If this now exists, send it the data
-    if (cellsInitialized.count(mapIndex) > 0)
-        cellsInitialized[mapIndex]->readDeath(actorList);
+    if (Cell* cell = getCell(actorList.cell))
+        cell->readDeath(actorList);
 }
 
 void CellController::readEquipment(ActorList& actorList)
 {
-    std::string mapIndex = actorList.cell.getShortDescription();
-
     initializeCell(actorList.cell);
 
     // If this now exists, send it the data
-    if (cellsInitialized.count(mapIndex) > 0)
-        cellsInitialized[mapIndex]->readEquipment(actorList);
+    if (Cell* cell = getCell(actorList.cell))
+        cell->readEquipment(actorList);
 }
 
 void CellController::readSpeech(ActorList& actorList)
 {
-    std::string mapIndex = actorList.cell.getShortDescription();
-
     initializeCell(actorList.cell);
 
     // If this now exists, send it the data
-    if (cellsInitialized.count(mapIndex) > 0)
-        cellsInitialized[mapIndex]->readSpeech(actorList);
+    if (Cell* cell = getCell(actorList.cell))
+        cell->readSpeech(actorList);
 }
 
 void CellController::readSpellsActive(ActorList& actorList)
 {
-    std::string mapIndex = actorList.cell.getShortDescription();
-
     initializeCell(actorList.cell);
 
     // If this now exists, send it the data
-    if (cellsInitialized.count(mapIndex) > 0)
-        cellsInitialized[mapIndex]->readSpellsActive(actorList);
+    if (Cell* cell = getCell(actorList.cell))
+        cell->readSpellsActive(actorList);
 }
 
 void CellController::readAi(ActorList& actorList)
 {
-    std::string mapIndex = actorList.cell.getShortDescription();
-
     initializeCell(actorList.cell);
 
     // If this now exists, send it the data
-    if (cellsInitialized.count(mapIndex) > 0)
-        cellsInitialized[mapIndex]->readAi(actorList);
+    if (Cell* cell = getCell(actorList.cell))
+        cell->readAi(actorList);
 }
 
 void CellController::readAttack(ActorList& actorList)
 {
-    std::string mapIndex = actorList.cell.getShortDescription();
-
     initializeCell(actorList.cell);
 
     // If this now exists, send it the data
-    if (cellsInitialized.count(mapIndex) > 0)
-        cellsInitialized[mapIndex]->readAttack(actorList);
+    if (Cell* cell = getCell(actorList.cell))
+        cell->readAttack(actorList);
 }
 
 void CellController::readCast(ActorList& actorList)
 {
-    std::string mapIndex = actorList.cell.getShortDescription();
-
     initializeCell(actorList.cell);
 
     // If this now exists, send it the data
-    if (cellsInitialized.count(mapIndex) > 0)
-        cellsInitialized[mapIndex]->readCast(actorList);
+    if (Cell* cell = getCell(actorList.cell))
+        cell->readCast(actorList);
 }
 
 void CellController::readCellChange(ActorList& actorList)
 {
-    std::string mapIndex = actorList.cell.getShortDescription();
-
     initializeCell(actorList.cell);
 
     // If this now exists, send it the data
-    if (cellsInitialized.count(mapIndex) > 0)
-        cellsInitialized[mapIndex]->readCellChange(actorList);
+    if (Cell* cell = getCell(actorList.cell))
+        cell->readCellChange(actorList);
 }
 
 bool CellController::hasQueuedDeathState(MWWorld::Ptr ptr)
@@ -471,7 +444,7 @@ Cell *CellController::getCell(const ESM::Cell& cell)
         LOG_MESSAGE_SIMPLE(TimedLog::LOG_WARN, "CellController::getCell: cell %s not in cellsInitialized", cell.getShortDescription().c_str());
         return nullptr;
     }
-    return it->second;
+    return it->second.get();
 }
 
 MWWorld::CellStore *CellController::getCellStore(const ESM::Cell& cell)

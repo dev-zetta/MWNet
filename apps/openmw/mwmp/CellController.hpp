@@ -1,6 +1,8 @@
 #ifndef OPENMW_CELLCONTROLLER_HPP
 #define OPENMW_CELLCONTROLLER_HPP
 
+#include <memory>
+
 #include "Cell.hpp"
 #include "ActorList.hpp"
 #include "LocalActor.hpp"
@@ -74,7 +76,7 @@ namespace mwmp
         int getCellSize() const;
 
     private:
-        static std::map<std::string, mwmp::Cell *> cellsInitialized;
+        static std::map<std::string, std::unique_ptr<mwmp::Cell>> cellsInitialized;
         static std::map<std::string, std::string> localActorsToCells;
         static std::map<std::string, std::string> dedicatedActorsToCells;
         static std::map<std::string, unsigned int> queuedDeathStates;

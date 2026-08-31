@@ -2,6 +2,7 @@
 #define OPENMW_MPCELL_HPP
 
 #include <cstdint>
+#include <memory>
 
 #include "ActorList.hpp"
 #include "LocalActor.hpp"
@@ -60,8 +61,8 @@ namespace mwmp
         RakNet::RakNetGUID authorityGuid{};
         std::uint64_t authorityLeaseId = 0;
 
-        std::map<std::string, LocalActor *> localActors;
-        std::map<std::string, DedicatedActor *> dedicatedActors;
+        std::map<std::string, std::unique_ptr<LocalActor>> localActors;
+        std::map<std::string, std::unique_ptr<DedicatedActor>> dedicatedActors;
 
         float updateTimer;
     };

@@ -52,7 +52,7 @@ void Cell::updateLocal(bool forceUpdate)
 
     for (auto it = localActors.begin(); it != localActors.end();)
     {
-        LocalActor *actor = it->second;
+        LocalActor *actor = it->second.get();
 
         MWWorld::CellStore *newStore = actor->getPtr().getCell();
 
@@ -69,14 +69,13 @@ void Cell::updateLocal(bool forceUpdate)
                 Cell *newCell = cellController->getCell(actor->cell);
                 if (newCell)
                 {
-                    newCell->localActors[mapIndex] = actor;
+                    newCell->localActors.insert_or_assign(mapIndex, std::move(it->second));
                     cellController->setLocalActorRecord(mapIndex, newCell->getShortDescription());
                 }
                 else
                 {
                     LOG_MESSAGE_SIMPLE(TimedLog::LOG_WARN, "Cell::updateLocal: getCell nullptr for actor %s moving to %s", mapIndex.c_str(), actor->cell.getShortDescription().c_str());
                     cellController->removeLocalActorRecord(mapIndex);
-                    delete actor;
                 }
             }
             else
@@ -84,10 +83,9 @@ void Cell::updateLocal(bool forceUpdate)
                 LOG_APPEND(TimedLog::LOG_VERBOSE, "- Deleting LocalActor %s which is no longer under our authority",
                     mapIndex.c_str(), getShortDescription().c_str());
                 cellController->removeLocalActorRecord(mapIndex);
-                delete actor;
             }
 
-            localActors.erase(it++);
+            it = localActors.erase(it);
         }
         else
         {
@@ -99,8 +97,8 @@ void Cell::updateLocal(bool forceUpdate)
                     LOG_APPEND(TimedLog::LOG_VERBOSE, "- Deleting LocalActor %s whose reference has been deleted",
                         mapIndex.c_str(), getShortDescription().c_str());
                     cellController->removeLocalActorRecord(mapIndex);
-                    delete actor;
-                    localActors.erase(it++);
+                    it = localActors.erase(it);
+                    continue;
                 }
                 else
                 {
@@ -151,7 +149,7 @@ void Cell::readPositions(ActorList& actorList)
 
         if (dedicatedActors.count(mapIndex) > 0)
         {
-            DedicatedActor *actor = dedicatedActors[mapIndex];
+            DedicatedActor *actor = getDedicatedActor(mapIndex);
             actor->position = baseActor.position;
             actor->direction = baseActor.direction;
 
@@ -178,7 +176,7 @@ void Cell::readAnimFlags(ActorList& actorList)
 
         if (dedicatedActors.count(mapIndex) > 0)
         {
-            DedicatedActor *actor = dedicatedActors[mapIndex];
+            DedicatedActor *actor = getDedicatedActor(mapIndex);
             actor->movementFlags = baseActor.movementFlags;
             actor->drawState = baseActor.drawState;
             actor->isFlying = baseActor.isFlying;
@@ -194,7 +192,7 @@ void Cell::readAnimPlay(ActorList& actorList)
 
         if (dedicatedActors.count(mapIndex) > 0)
         {
-            DedicatedActor *actor = dedicatedActors[mapIndex];
+            DedicatedActor *actor = getDedicatedActor(mapIndex);
             actor->animation.groupname = baseActor.animation.groupname;
             actor->animation.mode = baseActor.animation.mode;
             actor->animation.count = baseActor.animation.count;
@@ -216,7 +214,7 @@ void Cell::readStatsDynamic(ActorList& actorList)
 
         if (dedicatedActors.count(mapIndex) > 0)
         {
-            DedicatedActor *actor = dedicatedActors[mapIndex];
+            DedicatedActor *actor = getDedicatedActor(mapIndex);
             actor->creatureStats = baseActor.creatureStats;
 
             if (!actor->hasStatsDynamicData)
@@ -246,7 +244,7 @@ void Cell::readDeath(ActorList& actorList)
 
         if (dedicatedActors.count(mapIndex) > 0)
         {
-            DedicatedActor *actor = dedicatedActors[mapIndex];
+            DedicatedActor *actor = getDedicatedActor(mapIndex);
             actor->creatureStats.mDead = true;
             actor->creatureStats.mDynamic[0].mCurrent = 0;
 
@@ -277,7 +275,7 @@ void Cell::readEquipment(ActorList& actorList)
 
         if (dedicatedActors.count(mapIndex) > 0)
         {
-            DedicatedActor *actor = dedicatedActors[mapIndex];
+            DedicatedActor *actor = getDedicatedActor(mapIndex);
 
             for (int slot = 0; slot < 19; ++slot)
                 actor->equipmentItems[slot] = baseActor.equipmentItems[slot];
@@ -302,7 +300,7 @@ void Cell::readSpeech(ActorList& actorList)
 
         if (dedicatedActors.count(mapIndex) > 0)
         {
-            DedicatedActor *actor = dedicatedActors[mapIndex];
+            DedicatedActor *actor = getDedicatedActor(mapIndex);
             actor->sound = baseActor.sound;
             actor->playSound();
         }
@@ -324,7 +322,7 @@ void Cell::readSpellsActive(ActorList& actorList)
 
         if (dedicatedActors.count(mapIndex) > 0)
         {
-            DedicatedActor* actor = dedicatedActors[mapIndex];
+            DedicatedActor* actor = getDedicatedActor(mapIndex);
             actor->spellsActiveChanges = baseActor.spellsActiveChanges;
 
             int spellsActiveAction = baseActor.spellsActiveChanges.action;
@@ -354,7 +352,7 @@ void Cell::readAi(ActorList& actorList)
 
         if (dedicatedActors.count(mapIndex) > 0)
         {
-            DedicatedActor *actor = dedicatedActors[mapIndex];
+            DedicatedActor *actor = getDedicatedActor(mapIndex);
             actor->aiAction = baseActor.aiAction;
             actor->aiDistance = baseActor.aiDistance;
             actor->aiDuration = baseActor.aiDuration;
@@ -380,7 +378,7 @@ void Cell::readAttack(ActorList& actorList)
         {
             LOG_MESSAGE_SIMPLE(TimedLog::LOG_INFO, "Reading ActorAttack about %s", mapIndex.c_str());
 
-            DedicatedActor *actor = dedicatedActors[mapIndex];
+            DedicatedActor *actor = getDedicatedActor(mapIndex);
             actor->attack = baseActor.attack;
 
             MechanicsHelper::processAttack(actor->attack, actor->getPtr());
@@ -398,7 +396,7 @@ void Cell::readCast(ActorList& actorList)
         {
             LOG_MESSAGE_SIMPLE(TimedLog::LOG_INFO, "Reading ActorCast about %s", mapIndex.c_str());
 
-            DedicatedActor *actor = dedicatedActors[mapIndex];
+            DedicatedActor *actor = getDedicatedActor(mapIndex);
             actor->cast = baseActor.cast;
 
             // Set the correct drawState here if we've somehow we've missed a previous
@@ -436,7 +434,8 @@ void Cell::readCellChange(ActorList& actorList)
 
         if (dedicatedActors.count(mapIndex) > 0)
         {
-            DedicatedActor *dedicatedActor = dedicatedActors[mapIndex];
+            auto actorIt = dedicatedActors.find(mapIndex);
+            DedicatedActor *dedicatedActor = actorIt->second.get();
             dedicatedActor->cell = baseActor.cell;
             dedicatedActor->position = baseActor.position;
             dedicatedActor->direction = baseActor.direction;
@@ -456,11 +455,14 @@ void Cell::readCellChange(ActorList& actorList)
                 Cell *newCell = cellController->getCell(dedicatedActor->cell);
                 if (newCell)
                 {
-                    newCell->dedicatedActors[mapIndex] = dedicatedActor;
+                    newCell->dedicatedActors.insert_or_assign(mapIndex, std::move(actorIt->second));
                     cellController->setDedicatedActorRecord(mapIndex, newCell->getShortDescription());
                 }
                 else
+                {
                     LOG_MESSAGE_SIMPLE(TimedLog::LOG_WARN, "Cell::updateDedicated: getCell nullptr for DedicatedActor %s moving to %s", mapIndex.c_str(), dedicatedActor->cell.getShortDescription().c_str());
+                    cellController->removeDedicatedActorRecord(mapIndex);
+                }
             }
             else
             {
@@ -471,7 +473,7 @@ void Cell::readCellChange(ActorList& actorList)
                     Cell *newCell = cellController->getCell(dedicatedActor->cell);
                     if (newCell)
                     {
-                        LocalActor *localActor = new LocalActor();
+                        auto localActor = std::make_unique<LocalActor>();
                         localActor->cell = dedicatedActor->cell;
                         localActor->setPtr(dedicatedActor->getPtr());
                         localActor->position = dedicatedActor->position;
@@ -481,7 +483,7 @@ void Cell::readCellChange(ActorList& actorList)
                         localActor->isFlying = dedicatedActor->isFlying;
                         localActor->creatureStats = dedicatedActor->creatureStats;
 
-                        newCell->localActors[mapIndex] = localActor;
+                        newCell->localActors.insert_or_assign(mapIndex, std::move(localActor));
                         cellController->setLocalActorRecord(mapIndex, newCell->getShortDescription());
                     }
                     else
@@ -491,10 +493,9 @@ void Cell::readCellChange(ActorList& actorList)
                 LOG_APPEND(TimedLog::LOG_VERBOSE, "- Deleting DedicatedActor %s which is no longer needed",
                     mapIndex.c_str(), getShortDescription().c_str());
                 cellController->removeDedicatedActorRecord(mapIndex);
-                delete dedicatedActor;
             }
 
-            dedicatedActors.erase(mapIndex);
+            dedicatedActors.erase(actorIt);
         }
     }
 }
@@ -504,11 +505,11 @@ void Cell::initializeLocalActor(const MWWorld::Ptr& ptr)
     std::string mapIndex = Main::get().getCellController()->generateMapIndex(ptr);
     LOG_APPEND(TimedLog::LOG_VERBOSE, "- Initializing LocalActor %s in %s", mapIndex.c_str(), getShortDescription().c_str());
 
-    LocalActor *actor = new LocalActor();
+    auto actor = std::make_unique<LocalActor>();
     actor->cell = store->getCell()->getEsm3();
     actor->setPtr(ptr);
 
-    localActors[mapIndex] = actor;
+    localActors.insert_or_assign(mapIndex, std::move(actor));
 
     Main::get().getCellController()->setLocalActorRecord(mapIndex, getShortDescription());
 
@@ -547,11 +548,11 @@ void Cell::initializeDedicatedActor(const MWWorld::Ptr& ptr)
     std::string mapIndex = Main::get().getCellController()->generateMapIndex(ptr);
     LOG_APPEND(TimedLog::LOG_VERBOSE, "- Initializing DedicatedActor %s in %s", mapIndex.c_str(), getShortDescription().c_str());
 
-    DedicatedActor *actor = new DedicatedActor();
+    auto actor = std::make_unique<DedicatedActor>();
     actor->cell = store->getCell()->getEsm3();
     actor->setPtr(ptr);
 
-    dedicatedActors[mapIndex] = actor;
+    dedicatedActors.insert_or_assign(mapIndex, std::move(actor));
 
     Main::get().getCellController()->setDedicatedActorRecord(mapIndex, getShortDescription());
 
@@ -579,10 +580,7 @@ void Cell::initializeDedicatedActors(ActorList& actorList)
 void Cell::uninitializeLocalActors()
 {
     for (const auto &actor : localActors)
-    {
         Main::get().getCellController()->removeLocalActorRecord(actor.first);
-        delete actor.second;
-    }
 
     localActors.clear();
 }
@@ -599,7 +597,6 @@ void Cell::uninitializeDedicatedActors(ActorList& actorList)
             continue;
         }
         Main::get().getCellController()->removeDedicatedActorRecord(mapIndex);
-        delete it->second;
         dedicatedActors.erase(it);
     }
 }
@@ -607,10 +604,7 @@ void Cell::uninitializeDedicatedActors(ActorList& actorList)
 void Cell::uninitializeDedicatedActors()
 {
     for (const auto &actor : dedicatedActors)
-    {
         Main::get().getCellController()->removeDedicatedActorRecord(actor.first);
-        delete actor.second;
-    }
 
     dedicatedActors.clear();
 }
@@ -623,7 +617,7 @@ LocalActor *Cell::getLocalActor(std::string actorIndex)
         LOG_MESSAGE_SIMPLE(TimedLog::LOG_WARN, "Cell::getLocalActor: actor %s not found in cell", actorIndex.c_str());
         return nullptr;
     }
-    return it->second;
+    return it->second.get();
 }
 
 DedicatedActor *Cell::getDedicatedActor(std::string actorIndex)
@@ -634,7 +628,7 @@ DedicatedActor *Cell::getDedicatedActor(std::string actorIndex)
         LOG_MESSAGE_SIMPLE(TimedLog::LOG_WARN, "Cell::getDedicatedActor: actor %s not found in cell", actorIndex.c_str());
         return nullptr;
     }
-    return it->second;
+    return it->second.get();
 }
 
 bool Cell::hasLocalAuthority()
