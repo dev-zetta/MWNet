@@ -41,14 +41,18 @@ Networking::Networking(RakNet::RakPeerInterface *peer,
     transport::Protocol11Endpoint& endpoint,
     const std::filesystem::path& credentialDirectory,
     const std::filesystem::path& legacyPlayerDirectory,
-    unsigned int maximumConnections, unsigned short port)
+    unsigned int maximumConnections, unsigned short port,
+    double movementMaximumSpeed, unsigned int movementViolationLimit)
     : mEndpoint(endpoint)
     , mDispatcher(endpoint.transport(), transport::ApplicationPacketFlow::ServerToClient,
         maximumConnections)
     , mReceiver(transport::ApplicationPacketFlow::ClientToServer)
     , mAuthentication(credentialDirectory, legacyPlayerDirectory)
+    , mMovementValidator(maximumConnections)
     , mMaximumConnections(maximumConnections)
     , mPort(port)
+    , mMovementMaximumSpeed(movementMaximumSpeed)
+    , mMovementViolationLimit(movementViolationLimit)
 {
     sThis = this;
     this->peer = peer;
@@ -156,6 +160,61 @@ bool Networking::releaseActorAuthority(const ESM::Cell& cell, RakNet::RakNetGUID
     std::uint64_t leaseId)
 {
     return mAuthorityLeases.release(cell.getShortDescription(), owner.g, leaseId);
+}
+
+bool Networking::validatePlayerMovement(Player& player, const BasePlayer& incoming)
+{
+    mechanics::MovementSample sample;
+    sample.position = { incoming.position.pos[0], incoming.position.pos[1],
+        incoming.position.pos[2] };
+    sample.cell = player.cell.getShortDescription();
+    sample.sequence = mCurrentApplicationSequence;
+    // Initial synchronization may deliver position before cell state. It is
+    // not gameplay movement and cannot establish a meaningful spatial bound.
+    if (sample.cell.empty())
+        return true;
+
+    const mechanics::MovementValidationResult result = mMovementValidator.validate(
+        player.guid.g, sample, mMovementMaximumSpeed,
+        mechanics::MovementValidator::Clock::now());
+    if (result.accepted())
+        return true;
+
+    const unsigned int violations = ++mMovementViolations[player.guid.g];
+    LOG_MESSAGE_SIMPLE(TimedLog::LOG_WARN,
+        "Rejected movement from connection %llu: %s; distance %.3f, allowed %.3f (violation %u)",
+        static_cast<unsigned long long>(player.guid.g), mechanics::describe(result.decision),
+        result.distance, result.allowedDistance, violations);
+    try
+    {
+        double travelled = result.distance;
+        double allowed = result.allowedDistance;
+        unsigned int violationCount = violations;
+        Script::Call<Script::CallbackIdentity("OnPlayerMovementViolation")>(player.getId(),
+            mechanics::describe(result.decision), travelled, allowed, violationCount);
+    }
+    catch (...)
+    {
+        LOG_MESSAGE_SIMPLE(TimedLog::LOG_ERROR,
+            "%s", "OnPlayerMovementViolation failed; movement remains rejected");
+    }
+    if (violations >= mMovementViolationLimit)
+        disconnectTransport({ player.guid.g }, "repeated invalid movement samples");
+    return false;
+}
+
+bool Networking::authorizePlayerMovement(const Player& player, double tolerance)
+{
+    return mMovementValidator.authorizeTransition(player.guid.g,
+        player.cell.getShortDescription(),
+        { player.position.pos[0], player.position.pos[1], player.position.pos[2] },
+        tolerance, mechanics::MovementValidator::Clock::now());
+}
+
+void Networking::resetPlayerMovement(std::uint64_t connection) noexcept
+{
+    mMovementValidator.erase(connection);
+    mMovementViolations.erase(connection);
 }
 
 bool Networking::isPassworded() const
@@ -444,6 +503,7 @@ void Networking::disconnectPlayer(RakNet::RakNetGUID guid)
     }
     mAuthorityLeases.releaseOwner(guid.g);
     mAuthorityViolations.erase(guid.g);
+    resetPlayerMovement(guid.g);
     Players::deletePlayer(guid);
 }
 
@@ -722,6 +782,7 @@ void Networking::processApplicationMessage(transport::TransportMessage message)
             return;
         }
     }
+    mCurrentApplicationSequence = application.sequence;
     update(&packet, stream);
 }
 

@@ -6,7 +6,7 @@ using namespace mwmp;
 template<class T>
 typename BasePacketProcessor<T>::processors_t BasePacketProcessor<T>::processors;
 
-bool PlayerProcessor::Process(RakNet::Packet &packet) noexcept
+bool PlayerProcessor::Process(RakNet::Packet &packet)
 {
     for (auto &processor : processors)
     {
@@ -28,6 +28,8 @@ bool PlayerProcessor::Process(RakNet::Packet &packet) noexcept
                         processor.second->strPacketID.c_str());
                     return true;
                 }
+                if (!processor.second->Validate(*player, validation))
+                    return true;
                 myPacket->setPlayer(player);
                 myPacket->Read();
                 if (!myPacket->isPacketValid())

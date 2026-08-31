@@ -122,5 +122,7 @@ void CellFunctions::SendCell(unsigned short pid) noexcept
     mwmp::PlayerPacket *packet = mwmp::Networking::get().getPlayerPacketController()->GetPacket(ID_PLAYER_CELL_CHANGE);
     packet->setPlayer(player);
 
+    mwmp::Networking::getPtr()->authorizePlayerMovement(*player);
+
     packet->Send(false);
 }

@@ -20,6 +20,10 @@ namespace mwmp
 
         void Do(PlayerPacket &packet, Player &player) override
         {
+            // Cell-transition intent validation is introduced separately. Until
+            // then, start a new same-cell movement baseline after the accepted
+            // legacy transition so position validation does not break doors.
+            Networking::getPtr()->resetPlayerMovement(player.guid.g);
             LOG_MESSAGE_SIMPLE(TimedLog::LOG_INFO, "Received %s from %s", strPacketID.c_str(), player.npc.mName.c_str());
             LOG_APPEND(TimedLog::LOG_INFO, "- Moved to %s", player.cell.getShortDescription().c_str());
 

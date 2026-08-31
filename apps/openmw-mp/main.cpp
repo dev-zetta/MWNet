@@ -1,3 +1,4 @@
+#include <cmath>
 #include <iostream>
 #include <limits>
 
@@ -278,6 +279,8 @@ int main(int argc, char *argv[])
     std::string address = mgr.getString("localAddress", "General");
     bool publicListen = mgr.getBool("publicListen", "General");
     int port = mgr.getInt("port", "General");
+    const double movementMaximumSpeed = mgr.getDouble("movementMaximumSpeed", "Security");
+    const int movementViolationLimit = mgr.getInt("movementViolationLimit", "Security");
 
     std::string passwordHash = mgr.getString("passwordHash", "General");
 
@@ -322,6 +325,11 @@ int main(int argc, char *argv[])
             throw std::runtime_error("maximumPlayers must be between 1 and 65535");
         if (port <= 0 || port > std::numeric_limits<unsigned short>::max())
             throw std::runtime_error("port must be between 1 and 65535");
+        if (!std::isfinite(movementMaximumSpeed) || movementMaximumSpeed <= 0
+            || movementMaximumSpeed > 1'000'000)
+            throw std::runtime_error("Security/movementMaximumSpeed must be between 0 and 1000000");
+        if (movementViolationLimit <= 0 || movementViolationLimit > 100)
+            throw std::runtime_error("Security/movementViolationLimit must be between 1 and 100");
 
         std::string transportError;
         auto endpoint = transport::Protocol11Endpoint::createServer(
@@ -345,7 +353,8 @@ int main(int argc, char *argv[])
         const std::filesystem::path serverData(dataDirectory);
         Networking networking(peer, *endpoint, serverData / "account",
             serverData / "player", static_cast<unsigned int>(players),
-            static_cast<unsigned short>(port));
+            static_cast<unsigned short>(port), movementMaximumSpeed,
+            static_cast<unsigned int>(movementViolationLimit));
         std::string passwordError;
         if (!networking.setServerPasswordHash(std::move(passwordHash), passwordError))
             throw std::runtime_error("Invalid General/passwordHash: " + passwordError);

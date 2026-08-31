@@ -7,6 +7,7 @@
 #include <components/openmw-mp/Controllers/ObjectPacketController.hpp>
 #include <components/openmw-mp/Controllers/WorldstatePacketController.hpp>
 #include <components/openmw-mp/Packets/PacketPreInit.hpp>
+#include <components/openmw-mp/Mechanics/MovementValidator.hpp>
 #include <components/openmw-mp/Security/ServerAuthenticationService.hpp>
 #include <components/openmw-mp/Session/AuthorityLease.hpp>
 #include <components/openmw-mp/Transport/ApplicationPacketDispatcher.hpp>
@@ -31,7 +32,8 @@ namespace  mwmp
             transport::Protocol11Endpoint& endpoint,
             const std::filesystem::path& credentialDirectory,
             const std::filesystem::path& legacyPlayerDirectory,
-            unsigned int maximumConnections, unsigned short port);
+            unsigned int maximumConnections, unsigned short port,
+            double movementMaximumSpeed, unsigned int movementViolationLimit);
         ~Networking();
 
         void newPlayer(RakNet::RakNetGUID guid);
@@ -87,6 +89,9 @@ namespace  mwmp
         bool validateActorAuthority(const BaseActorList& actorList);
         bool releaseActorAuthority(const ESM::Cell& cell, RakNet::RakNetGUID owner,
             std::uint64_t leaseId);
+        bool validatePlayerMovement(Player& player, const BasePlayer& incoming);
+        bool authorizePlayerMovement(const Player& player, double tolerance = 128.0);
+        void resetPlayerMovement(std::uint64_t connection) noexcept;
 
         static const Networking &get();
         static Networking *getPtr();
@@ -113,11 +118,16 @@ namespace  mwmp
         transport::ApplicationPacketReceiver mReceiver;
         security::ServerAuthenticationService mAuthentication;
         session::AuthorityLeaseManager mAuthorityLeases;
+        mechanics::MovementValidator mMovementValidator;
         std::unordered_set<std::uint64_t> mAuthenticatedConnections;
         std::unordered_map<std::uint64_t, unsigned int> mAuthorityViolations;
+        std::unordered_map<std::uint64_t, unsigned int> mMovementViolations;
         std::unordered_set<std::string> mBannedAddresses;
         unsigned int mMaximumConnections;
         unsigned short mPort;
+        double mMovementMaximumSpeed;
+        unsigned int mMovementViolationLimit;
+        std::uint64_t mCurrentApplicationSequence = 0;
 
         BaseSystem baseSystem;
         BaseActorList baseActorList;

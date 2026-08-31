@@ -2,6 +2,7 @@
 #define OPENMW_PROCESSORPLAYERPOSITION_HPP
 
 #include "../PlayerProcessor.hpp"
+#include "apps/openmw-mp/Networking.hpp"
 
 namespace mwmp
 {
@@ -11,6 +12,11 @@ namespace mwmp
         ProcessorPlayerPosition()
         {
             BPP_INIT(ID_PLAYER_POSITION)
+        }
+
+        bool Validate(Player& player, const BasePlayer& incoming) override
+        {
+            return Networking::getPtr()->validatePlayerMovement(player, incoming);
         }
 
         void Do(PlayerPacket &packet, Player &player) override
