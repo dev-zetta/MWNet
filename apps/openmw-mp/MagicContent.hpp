@@ -23,6 +23,8 @@ namespace mwmp
     {
         std::vector<mechanics::SpellDefinition> definitions;
         std::unordered_set<std::string> consumableItems;
+        double fatigueBase = 1;
+        double fatigueMultiplier = 0;
     };
 
     CanonicalMagicContent loadCanonicalMagicContent(

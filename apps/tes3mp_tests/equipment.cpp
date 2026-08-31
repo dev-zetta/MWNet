@@ -135,6 +135,19 @@ namespace
         EXPECT(std::string(describe(EquipmentDecision::ItemNotInInventory))
             == "an equipped item is not present in the canonical inventory");
     }
+
+    void testSwap()
+    {
+        EquipmentLedger first;
+        EquipmentLedger second;
+        const std::vector<InventoryItem> inventory{
+            inventoryItem("iron_sword", 1) };
+        EXPECT(first.apply(1, false,
+                   { { 0, equipmentItem("iron_sword", 1) } }, inventory).applied());
+        second.swap(first);
+        EXPECT(!first.snapshot(1).has_value());
+        EXPECT(second.snapshot(1)->at(0).refId == "iron_sword");
+    }
 }
 
 int runEquipmentTests()
@@ -143,5 +156,6 @@ int runEquipmentTests()
     testInventoryOwnership();
     testRejectsMalformedChanges();
     testCleanup();
+    testSwap();
     return sFailures;
 }

@@ -133,6 +133,12 @@ namespace mwmp::mechanics
         return mInventories.erase(owner) != 0;
     }
 
+    void InventoryLedger::swap(InventoryLedger& other) noexcept
+    {
+        std::swap(mMaximumOwners, other.mMaximumOwners);
+        mInventories.swap(other.mInventories);
+    }
+
     void InventoryLedger::clear() noexcept
     {
         mInventories.clear();

@@ -119,6 +119,7 @@ namespace
         item.displayName = "Ring of Healing";
         item.sourceKind = SpellSourceKind::Item;
         item.itemChargeCost = 12;
+        item.itemMaximumCharge = 100;
         item.alwaysSucceeds = true;
         item.effects = {
             { "restore health", {}, SpellEffectKind::RestoreHealth,
@@ -133,6 +134,11 @@ namespace
         EXPECT(result.decision == SpellDecision::Applied);
         EXPECT(result.itemChargeSpent == 12);
         EXPECT(result.magickaSpent == 0);
+
+        SpellResolver replacement;
+        replacement.swap(resolver);
+        EXPECT(!resolver.findCombatant(caster).has_value());
+        EXPECT(replacement.findCombatant(caster).has_value());
     }
 
     void testMorrowindCastingFormulaUsesEffectiveSchool()

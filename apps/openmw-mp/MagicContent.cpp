@@ -204,6 +204,15 @@ namespace mwmp
             throw std::runtime_error("fEffectCostMult is invalid");
 
         CanonicalMagicContent result;
+        result.fatigueBase = EsmLoader::getGameSetting(
+            data.mGameSettings, "fFatigueBase").getFloat();
+        result.fatigueMultiplier = EsmLoader::getGameSetting(
+            data.mGameSettings, "fFatigueMult").getFloat();
+        if (!std::isfinite(result.fatigueBase)
+            || !std::isfinite(result.fatigueMultiplier))
+        {
+            throw std::runtime_error("canonical fatigue settings are invalid");
+        }
         result.definitions.reserve(data.mSpells.size()
             + data.mEnchantedItems.size());
         for (const ESM::Spell& spell : data.mSpells)
@@ -243,6 +252,8 @@ namespace mwmp
                 : ((enchantment->mData.mFlags & ESM::Enchantment::Autocalc) != 0
                     ? automaticCost(*enchantment, data, effectCostMultiplier)
                     : std::max(0, enchantment->mData.mCost));
+            definition.itemMaximumCharge = item.mConsumable ? 0
+                : std::max(0, enchantment->mData.mCharge);
             definition.alwaysSucceeds = true;
             definition.effects = makeEffects(
                 *enchantment, data, effectCostMultiplier, options);

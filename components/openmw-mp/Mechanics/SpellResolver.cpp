@@ -334,6 +334,16 @@ namespace mwmp::mechanics
         return mDefinitions.erase(id) != 0;
     }
 
+    void SpellResolver::swap(SpellResolver& other) noexcept
+    {
+        using std::swap;
+        swap(mMaximumCombatants, other.mMaximumCombatants);
+        swap(mMaximumDefinitions, other.mMaximumDefinitions);
+        mCombatants.swap(other.mCombatants);
+        mDefinitions.swap(other.mDefinitions);
+        mSequences.swap(other.mSequences);
+    }
+
     void SpellResolver::clear() noexcept
     {
         mSequences.clear();
@@ -385,6 +395,7 @@ namespace mwmp::mechanics
         if (!validString(definition.id) || !validString(definition.displayName)
             || !validNonNegative(definition.magickaCost, MaximumStatValue)
             || !validNonNegative(definition.itemChargeCost, MaximumStatValue)
+            || !validNonNegative(definition.itemMaximumCharge, MaximumStatValue)
             || !validNonNegative(definition.baseSuccessChance, 1)
             || definition.effects.empty()
             || definition.effects.size() > MaximumEffectsPerSpell)
@@ -392,7 +403,8 @@ namespace mwmp::mechanics
             return false;
         }
         if (definition.sourceKind == SpellSourceKind::Regular
-            && definition.itemChargeCost != 0)
+            && (definition.itemChargeCost != 0
+                || definition.itemMaximumCharge != 0))
             return false;
         if (definition.sourceKind == SpellSourceKind::Item
             && definition.magickaCost != 0)

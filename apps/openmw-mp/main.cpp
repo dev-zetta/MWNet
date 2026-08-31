@@ -393,6 +393,8 @@ int main(int argc, char *argv[])
                 throw std::runtime_error("Canonical magic definitions exceed server limits or are invalid");
             networking.setConsumableMagicItems(
                 std::move(magicContent->consumableItems));
+            networking.setSpellFatigueFormula(magicContent->fatigueBase,
+                magicContent->fatigueMultiplier);
         }
         std::string passwordError;
         if (!networking.setServerPasswordHash(std::move(passwordHash), passwordError))

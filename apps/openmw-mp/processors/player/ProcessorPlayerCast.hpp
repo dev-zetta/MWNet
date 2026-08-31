@@ -28,6 +28,14 @@ namespace mwmp
 
             if (!player.creatureStats.mDead)
             {
+                Networking* networking = Networking::getPtr();
+                networking->sanitizePlayerCast(player);
+                if (player.cast.pressed)
+                {
+                    player.sendToLoaded(&packet);
+                    return;
+                }
+
                 unsigned short targetPid = std::numeric_limits<unsigned short>::max();
                 if (player.cast.target.isPlayer)
                 {
@@ -43,6 +51,14 @@ namespace mwmp
                     const char* reason = "denied by script";
                     Script::Call<Script::CallbackIdentity(
                         "OnPlayerCastIntentRejected")>(player.getId(), reason);
+                    return;
+                }
+                std::string rejectionReason;
+                if (!networking->resolvePlayerCast(player, rejectionReason))
+                {
+                    Script::Call<Script::CallbackIdentity(
+                        "OnPlayerCastIntentRejected")>(
+                            player.getId(), rejectionReason.c_str());
                     return;
                 }
                 player.sendToLoaded(&packet);

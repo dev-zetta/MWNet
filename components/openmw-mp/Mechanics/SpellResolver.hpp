@@ -77,6 +77,7 @@ namespace mwmp::mechanics
         SpellSourceKind sourceKind = SpellSourceKind::Regular;
         double magickaCost = 0;
         double itemChargeCost = 0;
+        double itemMaximumCharge = 0;
         double baseSuccessChance = 1;
         bool alwaysSucceeds = false;
         bool stacking = false;
@@ -205,6 +206,7 @@ namespace mwmp::mechanics
         std::optional<SpellDefinition> findDefinition(const std::string& id) const;
         bool eraseCombatant(CombatantId id) noexcept;
         bool eraseDefinition(const std::string& id) noexcept;
+        void swap(SpellResolver& other) noexcept;
         void clear() noexcept;
 
     private:

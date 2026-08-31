@@ -110,6 +110,7 @@ namespace mwmp::mechanics
 
         std::optional<std::vector<InventoryItem>> snapshot(InventoryOwner owner) const;
         bool erase(InventoryOwner owner) noexcept;
+        void swap(InventoryLedger& other) noexcept;
         void clear() noexcept;
         std::size_t size() const noexcept;
 

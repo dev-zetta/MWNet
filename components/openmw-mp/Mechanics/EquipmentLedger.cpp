@@ -53,6 +53,11 @@ namespace mwmp::mechanics
         return mEquipment.erase(owner) != 0;
     }
 
+    void EquipmentLedger::swap(EquipmentLedger& other) noexcept
+    {
+        mEquipment.swap(other.mEquipment);
+    }
+
     void EquipmentLedger::clear() noexcept
     {
         mEquipment.clear();

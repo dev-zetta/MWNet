@@ -65,6 +65,7 @@ namespace mwmp::mechanics
 
         std::optional<Equipment> snapshot(std::uint64_t owner) const;
         bool erase(std::uint64_t owner) noexcept;
+        void swap(EquipmentLedger& other) noexcept;
         void clear() noexcept;
         std::size_t size() const noexcept;
 

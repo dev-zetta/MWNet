@@ -102,6 +102,7 @@ namespace  mwmp
         bool installSpellDefinitions(
             const std::vector<mechanics::SpellDefinition>& definitions);
         void setConsumableMagicItems(std::unordered_set<std::string> itemIds);
+        void setSpellFatigueFormula(double base, double multiplier);
 
         std::optional<session::AuthorityLease> assignActorAuthority(
             const ESM::Cell& cell, mwmp::transport::TransportConnectionId owner);
@@ -165,6 +166,8 @@ namespace  mwmp
         bool validateActorCellChanges(Player& player, const BaseActorList& incoming);
         bool commitActorCellChanges(Player& player, BaseActorList& actorList);
         bool validatePlayerCast(Player& player, const BasePlayer& incoming);
+        void sanitizePlayerCast(Player& player) noexcept;
+        bool resolvePlayerCast(Player& player, std::string& rejectionReason);
         bool validateActorCasts(Player& player, const BaseActorList& incoming);
         bool validatePlayerBounty(Player& player, const BasePlayer& incoming);
         bool commitPlayerBounty(Player& player);
@@ -262,6 +265,8 @@ namespace  mwmp
         mechanics::SpellbookLedger mSpellbookLedger;
         mechanics::SpellResolver mSpellResolver;
         std::unordered_set<std::string> mConsumableMagicItems;
+        double mSpellFatigueBase = 1;
+        double mSpellFatigueMultiplier = 0;
         std::unordered_set<std::uint64_t> mAuthenticatedConnections;
         std::unordered_map<std::uint64_t, unsigned int> mAuthorityViolations;
         std::unordered_map<std::uint64_t, unsigned int> mMovementViolations;

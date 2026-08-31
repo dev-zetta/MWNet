@@ -187,6 +187,18 @@ namespace
         EXPECT(ledger.snapshot(first)->front().count == 5);
         EXPECT(ledger.snapshot(second)->size() == 2);
     }
+
+    void testSwap()
+    {
+        InventoryLedger first;
+        InventoryLedger second;
+        const InventoryOwner owner{ InventoryOwnerKind::Player, 1 };
+        EXPECT(first.apply(owner, InventoryAction::Set,
+                   { item("gold_001", 10) }).applied());
+        second.swap(first);
+        EXPECT(!first.snapshot(owner).has_value());
+        EXPECT(second.snapshot(owner)->front().count == 10);
+    }
 }
 
 int runInventoryTests()
@@ -198,5 +210,6 @@ int runInventoryTests()
     testLimits();
     testContainerOwnersAreCellScoped();
     testBatchIsAtomic();
+    testSwap();
     return sFailures;
 }
