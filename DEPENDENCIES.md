@@ -12,3 +12,11 @@ The FetchContent fallback is disabled by default. Release and CI builds must res
 OpenMW's inherited dependencies remain documented by its build system, platform dependency manifests and third-party notices. The release SBOM supplements those sources; it does not replace license texts or attribution requirements.
 
 TES3MP's additional GPL terms and the complete third-party notice set require specialist legal review before stable 1.0.0. This repository does not declare that review complete.
+
+Generate the source SPDX 2.3 inventory with:
+
+```bash
+python3 CI/generate_spdx_sbom.py --output build-metadata/tes3mp.spdx.json
+```
+
+CI retains this artifact for every change. It inventories the direct TES3MP protocol dependencies and all bundled `extern/` directories. Release packaging must supplement it with the exact platform and dynamically linked binary dependency graph.

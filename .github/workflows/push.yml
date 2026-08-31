@@ -31,6 +31,15 @@ jobs:
     - name: Check TES3MP 0.8.1 Lua API compatibility
       run: CI/check_tes3mp_lua_api.sh
 
+    - name: Generate SPDX SBOM
+      run: python3 CI/generate_spdx_sbom.py --output build-metadata/tes3mp.spdx.json
+
+    - name: Retain SPDX SBOM
+      uses: actions/upload-artifact@v6
+      with:
+        name: tes3mp-source-sbom-${{ github.sha }}
+        path: build-metadata/tes3mp.spdx.json
+
   ProtocolLinux:
     name: protocol-${{ matrix.compiler }}-${{ matrix.sanitizer }}
     runs-on: ubuntu-latest
