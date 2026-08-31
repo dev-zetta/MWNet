@@ -90,6 +90,27 @@ namespace mwmp::mechanics
         return { InventoryDecision::Applied, added.stackCount };
     }
 
+    InventoryResult InventoryLedger::previewBatch(
+        const std::vector<InventoryOperation>& operations) const
+    {
+        std::unordered_map<InventoryOwner, std::vector<InventoryItem>, InventoryOwnerHash>
+            candidates;
+        return prepareBatch(operations, candidates);
+    }
+
+    InventoryResult InventoryLedger::applyBatch(
+        const std::vector<InventoryOperation>& operations)
+    {
+        std::unordered_map<InventoryOwner, std::vector<InventoryItem>, InventoryOwnerHash>
+            candidates;
+        const InventoryResult result = prepareBatch(operations, candidates);
+        if (!result.applied())
+            return result;
+        for (auto& [owner, inventory] : candidates)
+            mInventories.insert_or_assign(std::move(owner), std::move(inventory));
+        return result;
+    }
+
     std::optional<std::vector<InventoryItem>> InventoryLedger::snapshot(
         InventoryOwner owner) const
     {
@@ -196,6 +217,41 @@ namespace mwmp::mechanics
                 inventory.erase(existing);
         }
         return { InventoryDecision::Applied, inventory.size() };
+    }
+
+    InventoryResult InventoryLedger::prepareBatch(
+        const std::vector<InventoryOperation>& operations,
+        std::unordered_map<InventoryOwner, std::vector<InventoryItem>, InventoryOwnerHash>&
+            candidates) const
+    {
+        InventoryResult result{ InventoryDecision::Applied };
+        std::size_t newOwnerCount = 0;
+        for (const InventoryOperation& operation : operations)
+        {
+            if (!validOwner(operation.owner))
+                return { InventoryDecision::InvalidOwner };
+
+            auto candidate = candidates.find(operation.owner);
+            if (candidate == candidates.end())
+            {
+                const auto existing = mInventories.find(operation.owner);
+                if (existing == mInventories.end()
+                    && mInventories.size() + newOwnerCount >= mMaximumOwners)
+                {
+                    return { InventoryDecision::OwnerLimitReached };
+                }
+                if (existing == mInventories.end())
+                    ++newOwnerCount;
+                candidate = candidates.emplace(operation.owner,
+                    existing == mInventories.end() ? std::vector<InventoryItem>{}
+                                                   : existing->second).first;
+            }
+
+            result = applyTo(candidate->second, operation.action, operation.items);
+            if (!result.applied())
+                return result;
+        }
+        return result;
     }
 
     const char* describe(InventoryDecision decision) noexcept

@@ -149,6 +149,38 @@ namespace
         EXPECT(ledger.apply({ InventoryOwnerKind::Player, 7, "Balmora" },
                    InventoryAction::Set, {}).decision == InventoryDecision::InvalidOwner);
     }
+
+    void testBatchIsAtomic()
+    {
+        InventoryLedger ledger;
+        const InventoryOwner first{ InventoryOwnerKind::Container, 8, "Balmora" };
+        const InventoryOwner second{ InventoryOwnerKind::Container, 9, "Balmora" };
+        EXPECT(ledger.apply(first, InventoryAction::Set,
+                   { item("gold_001", 10) }).applied());
+        EXPECT(ledger.apply(second, InventoryAction::Set,
+                   { item("diamond", 1) }).applied());
+
+        const std::vector<InventoryOperation> invalid{
+            { first, InventoryAction::Remove, { item("gold_001", 5) } },
+            { second, InventoryAction::Remove, { item("diamond", 2) } },
+        };
+        EXPECT(ledger.previewBatch(invalid).decision
+            == InventoryDecision::InsufficientItems);
+        EXPECT(ledger.applyBatch(invalid).decision
+            == InventoryDecision::InsufficientItems);
+        EXPECT(ledger.snapshot(first)->front().count == 10);
+        EXPECT(ledger.snapshot(second)->front().count == 1);
+
+        const std::vector<InventoryOperation> valid{
+            { first, InventoryAction::Remove, { item("gold_001", 5) } },
+            { second, InventoryAction::Add, { item("gold_001", 5) } },
+        };
+        EXPECT(ledger.previewBatch(valid).applied());
+        EXPECT(ledger.snapshot(first)->front().count == 10);
+        EXPECT(ledger.applyBatch(valid).applied());
+        EXPECT(ledger.snapshot(first)->front().count == 5);
+        EXPECT(ledger.snapshot(second)->size() == 2);
+    }
 }
 
 int runInventoryTests()
@@ -159,5 +191,6 @@ int runInventoryTests()
     testAtomicTransfer();
     testLimits();
     testContainerOwnersAreCellScoped();
+    testBatchIsAtomic();
     return sFailures;
 }

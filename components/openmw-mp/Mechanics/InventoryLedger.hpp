@@ -79,6 +79,13 @@ namespace mwmp::mechanics
         bool applied() const noexcept { return decision == InventoryDecision::Applied; }
     };
 
+    struct InventoryOperation
+    {
+        InventoryOwner owner;
+        InventoryAction action = InventoryAction::Set;
+        std::vector<InventoryItem> items;
+    };
+
     class InventoryLedger
     {
     public:
@@ -95,6 +102,8 @@ namespace mwmp::mechanics
             const std::vector<InventoryItem>& items);
         InventoryResult transfer(InventoryOwner from, InventoryOwner to,
             const std::vector<InventoryItem>& items);
+        InventoryResult previewBatch(const std::vector<InventoryOperation>& operations) const;
+        InventoryResult applyBatch(const std::vector<InventoryOperation>& operations);
 
         std::optional<std::vector<InventoryItem>> snapshot(InventoryOwner owner) const;
         bool erase(InventoryOwner owner) noexcept;
@@ -110,6 +119,9 @@ namespace mwmp::mechanics
             const std::vector<InventoryItem>& items);
         static InventoryResult removeFrom(std::vector<InventoryItem>& inventory,
             const std::vector<InventoryItem>& items);
+        InventoryResult prepareBatch(const std::vector<InventoryOperation>& operations,
+            std::unordered_map<InventoryOwner, std::vector<InventoryItem>,
+                InventoryOwnerHash>& candidates) const;
 
         std::size_t mMaximumOwners;
         std::unordered_map<InventoryOwner, std::vector<InventoryItem>, InventoryOwnerHash>
