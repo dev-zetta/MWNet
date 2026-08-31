@@ -11,6 +11,7 @@ add_library(tes3mp-mechanics STATIC
     PlayerProgressionLedger.cpp
     PlayerLifecycle.cpp
     ShapeshiftLedger.cpp
+    SpellResolver.cpp
 )
 
 target_include_directories(tes3mp-mechanics PUBLIC ${CMAKE_SOURCE_DIR})

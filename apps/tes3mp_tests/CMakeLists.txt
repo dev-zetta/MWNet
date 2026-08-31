@@ -17,6 +17,7 @@ add_executable(tes3mp-tests
     progression.cpp
     session.cpp
     shapeshift.cpp
+    spell.cpp
     timed_log.cpp
     transport.cpp
     ../../components/openmw-mp/TimedLog.cpp

@@ -20,6 +20,7 @@ int runLifecycleTests();
 int runPersistenceTests();
 int runSessionTests();
 int runShapeshiftTests();
+int runSpellTests();
 int runTimedLogTests();
 int runTransportTests();
 #if defined(TES3MP_HAS_GNS_TRANSPORT)
@@ -44,7 +45,7 @@ int main()
         + runObjectStateTests() + runOwnershipTests()
         + runLifecycleTests() + runPersistenceTests() + runProgressionTests()
         + runSessionTests() + runShapeshiftTests() + runTimedLogTests()
-        + runTransportTests();
+        + runSpellTests() + runTransportTests();
 #if defined(TES3MP_HAS_GNS_TRANSPORT)
     failures += runAuthenticationTests();
     failures += runGameNetworkingSocketsTests();
