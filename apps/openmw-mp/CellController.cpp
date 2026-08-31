@@ -12,8 +12,6 @@ CellController::CellController()
 
 CellController::~CellController()
 {
-    for (auto cell : cells)
-        delete cell;
 }
 
 CellController *CellController::sThis = nullptr;
@@ -48,7 +46,7 @@ Cell *CellController::getCell(ESM::Cell *esmCell)
 
 Cell *CellController::getCellByXY(int x, int y)
 {
-    auto it = find_if(cells.begin(), cells.end(), [x, y](const Cell *c)
+    auto it = find_if(cells.begin(), cells.end(), [x, y](const std::unique_ptr<Cell>& c)
     {
         return c->cell.mData.mX == x && c->cell.mData.mY == y;
     });
@@ -59,12 +57,12 @@ Cell *CellController::getCellByXY(int x, int y)
         return nullptr;
     }
 
-    return *it;
+    return it->get();
 }
 
 Cell *CellController::getCellByName(std::string cellName)
 {
-    auto it = find_if(cells.begin(), cells.end(), [cellName](const Cell *c)
+    auto it = find_if(cells.begin(), cells.end(), [&cellName](const std::unique_ptr<Cell>& c)
     {
         return c->cell.mName == cellName;
     });
@@ -75,13 +73,13 @@ Cell *CellController::getCellByName(std::string cellName)
         return nullptr;
     }
 
-    return *it;
+    return it->get();
 }
 
 Cell *CellController::addCell(ESM::Cell cellData)
 {
     LOG_APPEND(TimedLog::LOG_INFO, "- Loaded cells: %d", cells.size());
-    auto it = find_if(cells.begin(), cells.end(), [cellData](const Cell *c) {
+    auto it = find_if(cells.begin(), cells.end(), [&cellData](const std::unique_ptr<Cell>& c) {
         // Currently we cannot compare because plugin lists can be loaded in different order
         //return c->cell.sRecordId == cellData.sRecordId;
         if (c->cell.isExterior() && cellData.isExterior())
@@ -100,13 +98,14 @@ Cell *CellController::addCell(ESM::Cell cellData)
     {
         LOG_APPEND(TimedLog::LOG_INFO, "- Adding %s to CellController", cellData.getShortDescription().c_str());
 
-        cell = new Cell(cellData);
-        cells.push_back(cell);
+        auto ownedCell = std::make_unique<Cell>(cellData);
+        cell = ownedCell.get();
+        cells.push_back(std::move(ownedCell));
     }
     else
     {
         LOG_APPEND(TimedLog::LOG_INFO, "- Found %s in CellController", cellData.getShortDescription().c_str());
-        cell = *it;
+        cell = it->get();
     }
 
     return cell;
@@ -119,12 +118,11 @@ void CellController::removeCell(Cell *cell)
 
     for (auto it = cells.begin(); it != cells.end();)
     {
-        if (*it != nullptr && *it == cell)
+        if (*it != nullptr && it->get() == cell)
         {
             Script::Call<Script::CallbackIdentity("OnCellDeletion")>(cell->getShortDescription().c_str());
             LOG_APPEND(TimedLog::LOG_INFO, "- Removing %s from CellController", cell->getShortDescription().c_str());
 
-            delete *it;
             it = cells.erase(it);
         }
         else

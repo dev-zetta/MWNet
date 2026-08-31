@@ -2,6 +2,7 @@
 #define OPENMW_SERVERCELLCONTROLLER_HPP
 
 #include <deque>
+#include <memory>
 #include <string>
 #include <components/esm/records.hpp>
 #include <components/openmw-mp/Base/BaseObject.hpp>
@@ -40,7 +41,8 @@ public:
 
 private:
     static CellController *sThis;
-    TContainer cells;
+    using OwnedCells = std::deque<std::unique_ptr<Cell>>;
+    OwnedCells cells;
 };
 
 #endif //OPENMW_SERVERCELLCONTROLLER_HPP

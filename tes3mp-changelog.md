@@ -64,6 +64,7 @@ This is the first hardening milestone for the major OpenMW 0.52 compatibility an
 * Add a security policy, threat model, responsible-disclosure process, Code of Conduct and audited Lua 0.8.1 compatibility table
 * Move the bundled prohibited-name policy into an operator-editable moderation file without logging its contents
 * Replace raw-owned Lua timer and public-function registries with bounded `unique_ptr` ownership, safe slot reuse and deferred timer deletion during callbacks
+* Make the server cell controller own loaded cells with `unique_ptr` while retaining non-owning player indexes and deferred removal after iteration
 
 0.8.1
 -----
