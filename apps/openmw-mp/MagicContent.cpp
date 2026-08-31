@@ -358,10 +358,32 @@ namespace mwmp
             mechanics::SpellEffectKind kind = mechanics::SpellEffectKind::Timed;
             if (appliedOnce || !hasDuration)
                 kind = mechanics::SpellEffectKind::Instant;
-            if (magicEffect.mId == ESM::MagicEffect::DamageHealth && appliedOnce)
-                kind = mechanics::SpellEffectKind::DamageHealth;
-            else if (magicEffect.mId == ESM::MagicEffect::RestoreHealth && appliedOnce)
-                kind = mechanics::SpellEffectKind::RestoreHealth;
+            if (kind == mechanics::SpellEffectKind::Instant)
+            {
+                if (magicEffect.mId == ESM::MagicEffect::DamageHealth
+                    || magicEffect.mId == ESM::MagicEffect::FireDamage
+                    || magicEffect.mId == ESM::MagicEffect::FrostDamage
+                    || magicEffect.mId == ESM::MagicEffect::ShockDamage
+                    || magicEffect.mId == ESM::MagicEffect::Poison
+                    || magicEffect.mId == ESM::MagicEffect::SunDamage)
+                    kind = mechanics::SpellEffectKind::DamageHealth;
+                else if (magicEffect.mId == ESM::MagicEffect::RestoreHealth)
+                    kind = mechanics::SpellEffectKind::RestoreHealth;
+                else if (magicEffect.mId == ESM::MagicEffect::DamageMagicka)
+                    kind = mechanics::SpellEffectKind::DamageMagicka;
+                else if (magicEffect.mId == ESM::MagicEffect::RestoreMagicka)
+                    kind = mechanics::SpellEffectKind::RestoreMagicka;
+                else if (magicEffect.mId == ESM::MagicEffect::DamageFatigue)
+                    kind = mechanics::SpellEffectKind::DamageFatigue;
+                else if (magicEffect.mId == ESM::MagicEffect::RestoreFatigue)
+                    kind = mechanics::SpellEffectKind::RestoreFatigue;
+                else if (magicEffect.mId == ESM::MagicEffect::AbsorbHealth)
+                    kind = mechanics::SpellEffectKind::AbsorbHealth;
+                else if (magicEffect.mId == ESM::MagicEffect::AbsorbMagicka)
+                    kind = mechanics::SpellEffectKind::AbsorbMagicka;
+                else if (magicEffect.mId == ESM::MagicEffect::AbsorbFatigue)
+                    kind = mechanics::SpellEffectKind::AbsorbFatigue;
+            }
 
             std::string argument;
             if (!effect.mAttribute.empty())

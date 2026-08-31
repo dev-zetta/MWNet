@@ -220,6 +220,31 @@ namespace
         EXPECT(std::abs(findTick(result, caster)->healthDelta - 1.25) < 0.000001);
     }
 
+    void testDynamicResourceEffectsAndAbsorbAreCanonical()
+    {
+        ActiveEffectLedger ledger;
+        const CombatantId caster{ CombatantKind::Player, 5, {} };
+        const CombatantId target{ CombatantKind::Actor, 6, "Vivec" };
+        CanonicalActiveSpell resources = spell("resources");
+        resources.caster = caster;
+        resources.effects = {
+            { "DamageMagicka", {}, 4, 2, 2 },
+            { "RestoreFatigue", {}, 3, 2, 2 },
+            { "AbsorbFatigue", {}, 2, 2, 2 },
+        };
+        EXPECT(ledger.apply(target, ActiveEffectAction::Set,
+                   { resources }).applied());
+
+        const ActiveEffectAdvanceResult result = ledger.advance(0.5);
+        const ActiveEffectTick* targetTick = findTick(result, target);
+        const ActiveEffectTick* casterTick = findTick(result, caster);
+        EXPECT(targetTick != nullptr);
+        EXPECT(casterTick != nullptr);
+        EXPECT(std::abs(targetTick->magickaDelta + 2.0) < 0.000001);
+        EXPECT(std::abs(targetTick->fatigueDelta - 0.5) < 0.000001);
+        EXPECT(std::abs(casterTick->fatigueDelta - 1.0) < 0.000001);
+    }
+
     void testInvalidClockAdvanceIsTransactional()
     {
         ActiveEffectLedger ledger;
@@ -270,6 +295,7 @@ int runActiveEffectTests()
     testActorRelocationPreservesEffectsAndCasters();
     testServerClockAppliesAndExpiresHealthEffects();
     testAbsorbHealthCreditsCanonicalCaster();
+    testDynamicResourceEffectsAndAbsorbAreCanonical();
     testInvalidClockAdvanceIsTransactional();
     testExpiryAcknowledgementsNeverMutateCanonicalState();
     return sFailures;

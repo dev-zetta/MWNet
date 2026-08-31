@@ -227,10 +227,12 @@ namespace mwmp::mechanics
             SpellCombatantState* state = nullptr;
             CanonicalActiveSpell activeSpell;
             double healthDelta = 0;
+            double magickaDelta = 0;
+            double fatigueDelta = 0;
         };
-        PendingApplication selfApplication{ intent.caster, &caster, {}, 0 };
+        PendingApplication selfApplication{ intent.caster, &caster, {}, 0, 0, 0 };
         PendingApplication targetApplication{
-            externalTargetId, externalTarget, {}, 0 };
+            externalTargetId, externalTarget, {}, 0, 0, 0 };
         const auto initializeActiveSpell = [&definition, &intent](
             CanonicalActiveSpell& spell) {
             spell.id = definition.id;
@@ -247,9 +249,14 @@ namespace mwmp::mechanics
                 ? selfApplication : targetApplication;
             const double magnitude = effect.minimumMagnitude
                 + (effect.maximumMagnitude - effect.minimumMagnitude) * magnitudeRoll;
-            const double resistedMagnitude = effect.kind == SpellEffectKind::DamageHealth
-                ? magnitude * (1.0 - application.state->resistance)
-                : magnitude;
+            const bool harmful = effect.kind == SpellEffectKind::DamageHealth
+                || effect.kind == SpellEffectKind::DamageMagicka
+                || effect.kind == SpellEffectKind::DamageFatigue
+                || effect.kind == SpellEffectKind::AbsorbHealth
+                || effect.kind == SpellEffectKind::AbsorbMagicka
+                || effect.kind == SpellEffectKind::AbsorbFatigue;
+            const double resistedMagnitude = harmful
+                ? magnitude * (1.0 - application.state->resistance) : magnitude;
             if (effect.kind == SpellEffectKind::DamageHealth)
             {
                 application.healthDelta -= resistedMagnitude;
@@ -258,6 +265,53 @@ namespace mwmp::mechanics
             if (effect.kind == SpellEffectKind::RestoreHealth)
             {
                 application.healthDelta += magnitude;
+                continue;
+            }
+            if (effect.kind == SpellEffectKind::DamageMagicka)
+            {
+                application.magickaDelta -= resistedMagnitude;
+                continue;
+            }
+            if (effect.kind == SpellEffectKind::RestoreMagicka)
+            {
+                application.magickaDelta += magnitude;
+                continue;
+            }
+            if (effect.kind == SpellEffectKind::DamageFatigue)
+            {
+                application.fatigueDelta -= resistedMagnitude;
+                continue;
+            }
+            if (effect.kind == SpellEffectKind::RestoreFatigue)
+            {
+                application.fatigueDelta += magnitude;
+                continue;
+            }
+            if (effect.kind == SpellEffectKind::AbsorbHealth)
+            {
+                if (application.id != intent.caster)
+                {
+                    application.healthDelta -= resistedMagnitude;
+                    selfApplication.healthDelta += resistedMagnitude;
+                }
+                continue;
+            }
+            if (effect.kind == SpellEffectKind::AbsorbMagicka)
+            {
+                if (application.id != intent.caster)
+                {
+                    application.magickaDelta -= resistedMagnitude;
+                    selfApplication.magickaDelta += resistedMagnitude;
+                }
+                continue;
+            }
+            if (effect.kind == SpellEffectKind::AbsorbFatigue)
+            {
+                if (application.id != intent.caster)
+                {
+                    application.fatigueDelta -= resistedMagnitude;
+                    selfApplication.fatigueDelta += resistedMagnitude;
+                }
                 continue;
             }
             if (effect.kind == SpellEffectKind::Instant)
@@ -269,14 +323,21 @@ namespace mwmp::mechanics
         const auto apply = [&result](PendingApplication& pending) {
             if (pending.state == nullptr)
                 return;
-            if (pending.healthDelta == 0 && pending.activeSpell.effects.empty())
+            if (pending.healthDelta == 0 && pending.magickaDelta == 0
+                && pending.fatigueDelta == 0 && pending.activeSpell.effects.empty())
                 return;
             pending.state->health = std::clamp(pending.state->health
                 + pending.healthDelta, 0.0, pending.state->maximumHealth);
+            pending.state->magicka = std::clamp(pending.state->magicka
+                + pending.magickaDelta, 0.0, pending.state->maximumMagicka);
+            pending.state->fatigue = std::clamp(pending.state->fatigue
+                + pending.fatigueDelta, 0.0, pending.state->maximumFatigue);
             pending.state->alive = pending.state->health > 0;
             SpellApplication application;
             application.target = pending.id;
             application.health = pending.state->health;
+            application.magicka = pending.state->magicka;
+            application.fatigue = pending.state->fatigue;
             application.died = !pending.state->alive;
             if (!pending.activeSpell.effects.empty())
                 application.activeSpell = std::move(pending.activeSpell);
@@ -370,6 +431,8 @@ namespace mwmp::mechanics
             && state.health <= state.maximumHealth && validStat(state.magicka)
             && validStat(state.maximumMagicka)
             && state.magicka <= state.maximumMagicka
+            && validStat(state.fatigue) && validStat(state.maximumFatigue)
+            && state.fatigue <= state.maximumFatigue
             && std::isfinite(state.castingMultiplier)
             && state.castingMultiplier >= 0
             && state.castingMultiplier <= MaximumStatValue

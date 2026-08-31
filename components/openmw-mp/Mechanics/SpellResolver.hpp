@@ -26,6 +26,13 @@ namespace mwmp::mechanics
         Timed,
         DamageHealth,
         RestoreHealth,
+        DamageMagicka,
+        RestoreMagicka,
+        DamageFatigue,
+        RestoreFatigue,
+        AbsorbHealth,
+        AbsorbMagicka,
+        AbsorbFatigue,
     };
 
     enum class SpellSourceKind : std::uint8_t
@@ -92,6 +99,8 @@ namespace mwmp::mechanics
         double maximumHealth = 0;
         double magicka = 0;
         double maximumMagicka = 0;
+        double fatigue = 0;
+        double maximumFatigue = 0;
         double castingMultiplier = 1;
         double resistance = 0;
         Position3 position;
@@ -154,6 +163,8 @@ namespace mwmp::mechanics
     {
         CombatantId target;
         double health = 0;
+        double magicka = 0;
+        double fatigue = 0;
         bool died = false;
         std::optional<CanonicalActiveSpell> activeSpell;
     };

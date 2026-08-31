@@ -30,6 +30,8 @@ namespace
         state.maximumHealth = health;
         state.magicka = magicka;
         state.maximumMagicka = magicka;
+        state.fatigue = 50;
+        state.maximumFatigue = 50;
         state.position = position;
         state.alive = health > 0;
         return state;
@@ -139,6 +141,44 @@ namespace
         replacement.swap(resolver);
         EXPECT(!resolver.findCombatant(caster).has_value());
         EXPECT(replacement.findCombatant(caster).has_value());
+    }
+
+    void testInstantDynamicResourcesAndAbsorbAreCanonical()
+    {
+        SpellResolver resolver;
+        const CombatantId caster{ CombatantKind::Player, 1, {} };
+        const CombatantId target{ CombatantKind::Player, 2, {} };
+        SpellCombatantState casterState = combatant(40, 20, {});
+        casterState.health = 30;
+        casterState.fatigue = 20;
+        SpellCombatantState targetState = combatant(40, 30, { 10, 0, 0 });
+        targetState.fatigue = 30;
+        EXPECT(resolver.upsertCombatant(caster, casterState));
+        EXPECT(resolver.upsertCombatant(target, targetState));
+
+        SpellDefinition resources;
+        resources.id = "resource_transfer";
+        resources.displayName = "Resource Transfer";
+        resources.alwaysSucceeds = true;
+        resources.effects = {
+            { "absorb health", {}, SpellEffectKind::AbsorbHealth,
+                SpellRange::Touch, 5, 5, 0, 64 },
+            { "damage magicka", {}, SpellEffectKind::DamageMagicka,
+                SpellRange::Touch, 7, 7, 0, 64 },
+            { "absorb fatigue", {}, SpellEffectKind::AbsorbFatigue,
+                SpellRange::Touch, 4, 4, 0, 64 },
+        };
+        EXPECT(resolver.upsertDefinition(resources));
+
+        const SpellResult result = resolver.resolve(
+            { caster, target, resources.id, 1 }, 0, 0);
+        EXPECT(result.decision == SpellDecision::Applied);
+        EXPECT(resolver.findCombatant(caster)->health == 35);
+        EXPECT(resolver.findCombatant(caster)->fatigue == 24);
+        EXPECT(resolver.findCombatant(target)->health == 35);
+        EXPECT(resolver.findCombatant(target)->magicka == 23);
+        EXPECT(resolver.findCombatant(target)->fatigue == 26);
+        EXPECT(result.applications.size() == 2);
     }
 
     void testMorrowindCastingFormulaUsesEffectiveSchool()
@@ -251,6 +291,7 @@ int runSpellTests()
     testRangeTargetAndResourceValidation();
     testMixedRangesApplyToCanonicalTargets();
     testItemChargeIsCanonicalResource();
+    testInstantDynamicResourcesAndAbsorbAreCanonical();
     testMorrowindCastingFormulaUsesEffectiveSchool();
     testDefinitionsAndCapacityFailClosed();
     return sFailures;

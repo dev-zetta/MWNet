@@ -78,6 +78,8 @@ namespace mwmp::mechanics
     {
         CombatantId owner;
         double healthDelta = 0;
+        double magickaDelta = 0;
+        double fatigueDelta = 0;
         bool topologyChanged = false;
         std::optional<CombatantId> damageSource;
     };

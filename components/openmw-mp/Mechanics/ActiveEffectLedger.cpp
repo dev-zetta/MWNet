@@ -37,9 +37,29 @@ namespace mwmp::mechanics
             return 0;
         }
 
-        bool isAbsorbHealth(const CanonicalEffect& effect)
+        double magickaRate(const CanonicalEffect& effect)
         {
-            return canonicalEffectId(effect.effectId) == "absorbhealth";
+            const std::string id = canonicalEffectId(effect.effectId);
+            if (id == "restoremagicka")
+                return effect.magnitude;
+            if (id == "damagemagicka" || id == "absorbmagicka")
+                return -effect.magnitude;
+            return 0;
+        }
+
+        double fatigueRate(const CanonicalEffect& effect)
+        {
+            const std::string id = canonicalEffectId(effect.effectId);
+            if (id == "restorefatigue")
+                return effect.magnitude;
+            if (id == "damagefatigue" || id == "absorbfatigue")
+                return -effect.magnitude;
+            return 0;
+        }
+
+        bool isAbsorb(const CanonicalEffect& effect, std::string_view resource)
+        {
+            return canonicalEffectId(effect.effectId) == std::string("absorb") + std::string(resource);
         }
 
         ActiveEffectTick& changeFor(std::vector<ActiveEffectTick>& changes,
@@ -220,22 +240,32 @@ namespace mwmp::mechanics
                     CanonicalEffect& effect = *effectIt;
                     const double appliedSeconds = std::min(
                         elapsedSeconds, effect.timeLeft);
-                    const double rate = healthRate(effect);
-                    if (rate != 0 && appliedSeconds > 0)
+                    const double health = healthRate(effect) * appliedSeconds;
+                    const double magicka = magickaRate(effect) * appliedSeconds;
+                    const double fatigue = fatigueRate(effect) * appliedSeconds;
+                    if ((health != 0 || magicka != 0 || fatigue != 0)
+                        && appliedSeconds > 0)
                     {
                         ActiveEffectTick& ownerChange
                             = changeFor(result.changes, owner);
-                        ownerChange.healthDelta += rate * appliedSeconds;
-                        if (rate < 0 && spell.caster
+                        ownerChange.healthDelta += health;
+                        ownerChange.magickaDelta += magicka;
+                        ownerChange.fatigueDelta += fatigue;
+                        if (health < 0 && spell.caster
                             && !ownerChange.damageSource)
                         {
                             ownerChange.damageSource = spell.caster;
                         }
-                        if (isAbsorbHealth(effect) && spell.caster
-                            && *spell.caster != owner)
+                        if (spell.caster && *spell.caster != owner)
                         {
-                            changeFor(result.changes, *spell.caster).healthDelta
-                                -= rate * appliedSeconds;
+                            ActiveEffectTick& casterChange
+                                = changeFor(result.changes, *spell.caster);
+                            if (isAbsorb(effect, "health"))
+                                casterChange.healthDelta -= health;
+                            if (isAbsorb(effect, "magicka"))
+                                casterChange.magickaDelta -= magicka;
+                            if (isAbsorb(effect, "fatigue"))
+                                casterChange.fatigueDelta -= fatigue;
                         }
                     }
                     effect.timeLeft = std::max(0.0,

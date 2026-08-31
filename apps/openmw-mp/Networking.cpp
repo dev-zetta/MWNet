@@ -63,6 +63,14 @@ namespace
         Player& player, const mwmp::mechanics::CombatantState& state) noexcept;
     void applyCanonicalHealth(mwmp::BaseActor& actor,
         const mwmp::mechanics::CombatantState& state) noexcept;
+    void applyCanonicalMagicka(Player& player,
+        const mwmp::mechanics::SpellCombatantState& state) noexcept;
+    void applyCanonicalMagicka(mwmp::BaseActor& actor,
+        const mwmp::mechanics::SpellCombatantState& state) noexcept;
+    void applyCanonicalFatigue(
+        Player& player, const mwmp::mechanics::CombatantState& state) noexcept;
+    void applyCanonicalFatigue(mwmp::BaseActor& actor,
+        const mwmp::mechanics::CombatantState& state) noexcept;
 
     bool stdinHasInput() noexcept
     {
@@ -2555,6 +2563,8 @@ namespace
             state.maximumMagicka = dynamicMaximum(
                 player.creatureStats.mDynamic[1]);
         }
+        state.fatigue = combat.fatigue;
+        state.maximumFatigue = combat.maximumFatigue;
         state.willpower = currentStat(
             player.creatureStats.mAttributes, ESM::Attribute::Willpower);
         state.luck = currentStat(
@@ -2594,6 +2604,8 @@ namespace
             state.maximumMagicka = dynamicMaximum(
                 actor.creatureStats.mDynamic[1]);
         }
+        state.fatigue = combat.fatigue;
+        state.maximumFatigue = combat.maximumFatigue;
         state.position = combat.position;
         state.alive = combat.alive;
         applyMagicDefences(state, effects);
@@ -2621,6 +2633,8 @@ namespace
                 0.0, actorTemplate.maximumMagicka);
             state.maximumMagicka = actorTemplate.maximumMagicka;
         }
+        state.fatigue = combat.fatigue;
+        state.maximumFatigue = combat.maximumFatigue;
         state.position = combat.position;
         state.alive = combat.alive;
         state.willpower = actorTemplate.willpower;
@@ -3063,6 +3077,9 @@ bool Networking::resolvePlayerCast(Player& player, std::string& rejectionReason)
             return false;
         }
         state->health = application.health;
+        state->fatigue = application.fatigue;
+        state->fatigueRatio = state->maximumFatigue == 0
+            ? 1.0 : state->fatigue / state->maximumFatigue;
         state->alive = !application.died;
         if (!combat.upsert(application.target, *state))
         {
@@ -3090,6 +3107,7 @@ bool Networking::resolvePlayerCast(Player& player, std::string& rejectionReason)
     for (const mechanics::SpellApplication& application : result.applications)
     {
         const auto canonical = mCombatResolver.find(application.target);
+        const auto canonicalMagic = mSpellResolver.findCombatant(application.target);
         if (!canonical)
             continue;
         if (application.target.kind == mechanics::CombatantKind::Player)
@@ -3099,13 +3117,20 @@ bool Networking::resolvePlayerCast(Player& player, std::string& rejectionReason)
             if (affected != nullptr)
             {
                 applyCanonicalHealth(*affected, *canonical);
-                playerStatChanges[affected].push_back(0);
+                applyCanonicalFatigue(*affected, *canonical);
+                if (canonicalMagic)
+                    applyCanonicalMagicka(*affected, *canonicalMagic);
+                playerStatChanges[affected].insert(
+                    playerStatChanges[affected].end(), { 0, 1, 2 });
             }
         }
         else if (targetActor != nullptr && targetCell != nullptr
             && application.target == *presentationIntent.target)
         {
             applyCanonicalHealth(*targetActor, *canonical);
+            applyCanonicalFatigue(*targetActor, *canonical);
+            if (canonicalMagic)
+                applyCanonicalMagicka(*targetActor, *canonicalMagic);
             targetActor->hasStatsDynamicData = true;
             actorStatChanges.emplace_back(targetCell, targetActor);
         }
@@ -3650,6 +3675,9 @@ bool Networking::resolveActorCast(Player& player, BaseActorList& actorList,
             return false;
         }
         state->health = application.health;
+        state->fatigue = application.fatigue;
+        state->fatigueRatio = state->maximumFatigue == 0
+            ? 1.0 : state->fatigue / state->maximumFatigue;
         state->alive = !application.died;
         if (!combat.upsert(application.target, *state))
         {
@@ -3698,6 +3726,7 @@ bool Networking::resolveActorCast(Player& player, BaseActorList& actorList,
     for (const mechanics::SpellApplication& application : result.applications)
     {
         const auto canonical = mCombatResolver.find(application.target);
+        const auto canonicalMagic = mSpellResolver.findCombatant(application.target);
         if (!canonical)
             continue;
         if (application.target.kind == mechanics::CombatantKind::Player)
@@ -3707,8 +3736,11 @@ bool Networking::resolveActorCast(Player& player, BaseActorList& actorList,
             if (affected == nullptr)
                 continue;
             applyCanonicalHealth(*affected, *canonical);
+            applyCanonicalFatigue(*affected, *canonical);
+            if (canonicalMagic)
+                applyCanonicalMagicka(*affected, *canonicalMagic);
             affected->exchangeFullInfo = false;
-            affected->statsDynamicIndexChanges = { 0 };
+            affected->statsDynamicIndexChanges = { 0, 1, 2 };
             PlayerPacket* statsPacket = playerPacketController->GetPacket(
                 ID_PLAYER_STATS_DYNAMIC);
             statsPacket->setPlayer(affected);
@@ -3722,6 +3754,9 @@ bool Networking::resolveActorCast(Player& player, BaseActorList& actorList,
             if (affected != nullptr)
             {
                 applyCanonicalHealth(*affected, *canonical);
+                applyCanonicalFatigue(*affected, *canonical);
+                if (canonicalMagic)
+                    applyCanonicalMagicka(*affected, *canonicalMagic);
                 affected->hasStatsDynamicData = true;
                 if (std::ranges::find(changedActors, affected)
                     == changedActors.end())
@@ -5439,6 +5474,8 @@ void Networking::advanceActiveEffects(double elapsedSeconds)
     {
         mechanics::ActiveEffectTick tick;
         bool healthChanged = false;
+        bool magickaChanged = false;
+        bool fatigueChanged = false;
         bool died = false;
     };
     std::vector<AppliedTick> applied;
@@ -5449,15 +5486,28 @@ void Networking::advanceActiveEffects(double elapsedSeconds)
     {
         AppliedTick& change = applied.emplace_back();
         change.tick = tick;
-        if (tick.healthDelta == 0)
+        if (tick.healthDelta == 0 && tick.magickaDelta == 0
+            && tick.fatigueDelta == 0)
             continue;
 
         auto state = combat.find(tick.owner);
         if (!state || !state->alive)
             continue;
         const bool wasAlive = state->alive;
-        state->health = std::clamp(state->health + tick.healthDelta,
-            0.0, state->maximumHealth);
+        if (tick.healthDelta != 0)
+        {
+            state->health = std::clamp(state->health + tick.healthDelta,
+                0.0, state->maximumHealth);
+            change.healthChanged = true;
+        }
+        if (tick.fatigueDelta != 0)
+        {
+            state->fatigue = std::clamp(state->fatigue + tick.fatigueDelta,
+                0.0, state->maximumFatigue);
+            state->fatigueRatio = state->maximumFatigue == 0
+                ? 1.0 : state->fatigue / state->maximumFatigue;
+            change.fatigueChanged = true;
+        }
         state->alive = state->health > 0;
         if (!combat.upsert(tick.owner, *state))
         {
@@ -5469,6 +5519,15 @@ void Networking::advanceActiveEffects(double elapsedSeconds)
         {
             magicState->health = state->health;
             magicState->maximumHealth = state->maximumHealth;
+            magicState->fatigue = state->fatigue;
+            magicState->maximumFatigue = state->maximumFatigue;
+            if (tick.magickaDelta != 0)
+            {
+                magicState->magicka = std::clamp(
+                    magicState->magicka + tick.magickaDelta,
+                    0.0, magicState->maximumMagicka);
+                change.magickaChanged = true;
+            }
             magicState->alive = state->alive;
             if (!spells.upsertCombatant(tick.owner, *magicState))
             {
@@ -5477,7 +5536,6 @@ void Networking::advanceActiveEffects(double elapsedSeconds)
                 return;
             }
         }
-        change.healthChanged = true;
         change.died = wasAlive && !state->alive;
     }
 
@@ -5494,11 +5552,27 @@ void Networking::advanceActiveEffects(double elapsedSeconds)
                 change.tick.owner.value));
             if (player == nullptr)
                 continue;
-            if (change.healthChanged && canonical)
+            if ((change.healthChanged || change.magickaChanged
+                    || change.fatigueChanged) && canonical)
             {
-                applyCanonicalHealth(*player, *canonical);
+                player->statsDynamicIndexChanges.clear();
+                if (change.healthChanged)
+                {
+                    applyCanonicalHealth(*player, *canonical);
+                    player->statsDynamicIndexChanges.push_back(0);
+                }
+                if (change.magickaChanged)
+                {
+                    if (const auto magic = mSpellResolver.findCombatant(change.tick.owner))
+                        applyCanonicalMagicka(*player, *magic);
+                    player->statsDynamicIndexChanges.push_back(1);
+                }
+                if (change.fatigueChanged)
+                {
+                    applyCanonicalFatigue(*player, *canonical);
+                    player->statsDynamicIndexChanges.push_back(2);
+                }
                 player->exchangeFullInfo = false;
-                player->statsDynamicIndexChanges = { 0 };
                 PlayerPacket* packet = playerPacketController->GetPacket(
                     ID_PLAYER_STATS_DYNAMIC);
                 packet->setPlayer(player);
@@ -5569,9 +5643,18 @@ void Networking::advanceActiveEffects(double elapsedSeconds)
         BaseActor* actor = cell->getActor(refNum, mpNum);
         if (actor == nullptr)
             continue;
-        if (change.healthChanged && canonical)
+        if ((change.healthChanged || change.magickaChanged
+                || change.fatigueChanged) && canonical)
         {
-            applyCanonicalHealth(*actor, *canonical);
+            if (change.healthChanged)
+                applyCanonicalHealth(*actor, *canonical);
+            if (change.magickaChanged)
+            {
+                if (const auto magic = mSpellResolver.findCombatant(change.tick.owner))
+                    applyCanonicalMagicka(*actor, *magic);
+            }
+            if (change.fatigueChanged)
+                applyCanonicalFatigue(*actor, *canonical);
             actor->hasStatsDynamicData = true;
             BaseActorList list;
             list.cell = cell->getActorList()->cell;
