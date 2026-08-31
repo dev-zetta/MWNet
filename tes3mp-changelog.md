@@ -89,6 +89,7 @@ This is the first hardening milestone for the major OpenMW 0.52 compatibility an
 * Treat player bounty packets as increase-only intents, preserve legacy validators before canonical commit, and reserve bounty reductions for server scripts
 * Require clients to acknowledge server-issued jail sentence IDs only after the asynchronous jail flow completes, rejecting stale or forged completions
 * Add a bounded transactional canonical object-state ledger with world and per-player dynamic-object quotas
+* Assign dynamic object IDs on the server and commit object placement batches canonically before legacy Lua persistence or relay handlers run
 
 0.8.1
 -----

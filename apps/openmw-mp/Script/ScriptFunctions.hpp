@@ -209,6 +209,8 @@ public:
             {"OnObjectActivate",         Callback<unsigned short, const char*>()},
             {"OnObjectHit",              Callback<unsigned short, const char*>()},
             {"OnObjectPlace",            Callback<unsigned short, const char*>()},
+            {"OnObjectPlaceIntent",      Callback<unsigned short, const char*>()},
+            {"OnObjectPlaceIntentRejected", Callback<unsigned short, const char*, const char*>()},
             {"OnObjectState",            Callback<unsigned short, const char*>()},
             {"OnObjectSpawn",            Callback<unsigned short, const char*>()},
             {"OnObjectDelete",           Callback<unsigned short, const char*>()},

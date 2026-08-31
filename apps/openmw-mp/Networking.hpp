@@ -14,6 +14,7 @@
 #include <components/openmw-mp/Mechanics/ActiveEffectLedger.hpp>
 #include <components/openmw-mp/Mechanics/CastIntentValidator.hpp>
 #include <components/openmw-mp/Mechanics/JusticeLedger.hpp>
+#include <components/openmw-mp/Mechanics/ObjectStateLedger.hpp>
 #include <components/openmw-mp/Persistence/PersistenceService.hpp>
 #include <components/openmw-mp/Security/ServerAuthenticationService.hpp>
 #include <components/openmw-mp/Session/AuthorityLease.hpp>
@@ -110,6 +111,10 @@ namespace  mwmp
         bool validateContainerAction(Player& player, const BaseObjectList& incoming);
         bool commitContainerAction(Player& player, const BaseObjectList& incoming);
         bool seedServerContainerInventory(const BaseObjectList& objectList);
+        bool validateObjectPlace(Player& player, const BaseObjectList& incoming);
+        bool prepareObjectPlace(Player& player, BaseObjectList& objectList);
+        bool commitObjectPlace(Player& player);
+        void cancelObjectPlace(Player& player) noexcept;
         bool validatePlayerActiveEffects(Player& player, const BasePlayer& incoming);
         bool commitPlayerActiveEffects(Player& player);
         bool applyServerPlayerActiveEffects(Player& player);
@@ -183,6 +188,7 @@ namespace  mwmp
         mechanics::ActiveEffectLedger mActiveEffectLedger;
         mechanics::CastIntentValidator mCastIntentValidator;
         mechanics::JusticeLedger mJusticeLedger;
+        mechanics::ObjectStateLedger mObjectStateLedger;
         std::unordered_set<std::uint64_t> mAuthenticatedConnections;
         std::unordered_map<std::uint64_t, unsigned int> mAuthorityViolations;
         std::unordered_map<std::uint64_t, unsigned int> mMovementViolations;
@@ -192,7 +198,10 @@ namespace  mwmp
         std::unordered_map<std::uint64_t, unsigned int> mActiveEffectViolations;
         std::unordered_map<std::uint64_t, unsigned int> mCastViolations;
         std::unordered_map<std::uint64_t, unsigned int> mJusticeViolations;
+        std::unordered_map<std::uint64_t, unsigned int> mObjectViolations;
         std::unordered_map<std::uint64_t, std::int64_t> mPendingPlayerBounties;
+        std::unordered_map<std::uint64_t, std::vector<mechanics::ObjectMutation>>
+            mPendingObjectPlacements;
         std::unordered_map<std::uint64_t, mechanics::ActiveEffectOperation>
             mAcceptedPlayerActiveEffectIntents;
         std::unordered_set<std::uint64_t> mRelayedPlayerActiveEffectIntents;

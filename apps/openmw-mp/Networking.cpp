@@ -18,6 +18,7 @@
 #include <iostream>
 #include <algorithm>
 #include <cmath>
+#include <limits>
 #include <Script/Script.hpp>
 #include <Script/API/TimerAPI.hpp>
 #include <chrono>
@@ -568,6 +569,120 @@ bool Networking::seedServerContainerInventory(const BaseObjectList& objectList)
             mechanics::describe(result.decision));
     }
     return result.applied();
+}
+
+namespace
+{
+    mwmp::mechanics::ObjectState canonicalPlacedObject(
+        const mwmp::BaseObject& object, std::string cell,
+        std::uint64_t creator, std::uint32_t mpNum)
+    {
+        mwmp::mechanics::ObjectState result;
+        result.identity = { std::move(cell), object.refNum, mpNum };
+        result.refId = object.refId;
+        result.soul = object.soul;
+        result.creator = creator;
+        result.count = object.count;
+        result.charge = object.charge;
+        result.enchantmentCharge = object.enchantmentCharge;
+        result.goldValue = object.goldValue;
+        for (std::size_t index = 0; index < 3; ++index)
+        {
+            result.position[index] = object.position.pos[index];
+            result.rotation[index] = object.position.rot[index];
+        }
+        result.scale = object.scale;
+        result.lockLevel = object.lockLevel;
+        result.enabled = true;
+        result.hasContainer = object.hasContainer;
+        return result;
+    }
+}
+
+bool Networking::validateObjectPlace(Player& player, const BaseObjectList& incoming)
+{
+    mechanics::ObjectResult result{ mechanics::ObjectDecision::InvalidObject };
+    const std::string cellDescription = incoming.cell.getShortDescription();
+    if (!cellDescription.empty()
+        && incoming.packetOrigin <= PACKET_ORIGIN::CLIENT_SCRIPT_GLOBAL
+        && !incoming.baseObjects.empty()
+        && incoming.baseObjectCount == incoming.baseObjects.size()
+        && currentMpNum >= 0
+        && incoming.baseObjects.size()
+            <= static_cast<std::size_t>(std::numeric_limits<int>::max() - currentMpNum))
+    {
+        std::vector<mechanics::ObjectMutation> mutations;
+        mutations.reserve(incoming.baseObjects.size());
+        for (const BaseObject& object : incoming.baseObjects)
+        {
+            const int assignedMpNum = currentMpNum
+                + static_cast<int>(mutations.size()) + 1;
+            mutations.push_back({ mechanics::ObjectMutationKind::Place,
+                canonicalPlacedObject(object, cellDescription, player.guid.g,
+                    static_cast<std::uint32_t>(assignedMpNum)) });
+        }
+        result = mObjectStateLedger.previewBatch(mutations);
+        if (result.applied())
+        {
+            // Reserve the complete range only after the batch has passed native
+            // validation. Skipped IDs are safe if a later Lua policy rejects it.
+            for (std::size_t index = 0; index < mutations.size(); ++index)
+                incrementMpNum();
+            mPendingObjectPlacements.insert_or_assign(
+                player.guid.g, std::move(mutations));
+            return true;
+        }
+    }
+
+    const unsigned int violations = ++mObjectViolations[player.guid.g];
+    LOG_MESSAGE_SIMPLE(TimedLog::LOG_WARN,
+        "Rejected object placement from connection %llu: %s (violation %u)",
+        static_cast<unsigned long long>(player.guid.g),
+        mechanics::describe(result.decision), violations);
+    if (violations >= 5)
+        disconnectTransport({ player.guid.g }, "repeated invalid object placements");
+    return false;
+}
+
+bool Networking::prepareObjectPlace(Player& player, BaseObjectList& objectList)
+{
+    const auto pending = mPendingObjectPlacements.find(player.guid.g);
+    if (pending == mPendingObjectPlacements.end()
+        || pending->second.size() != objectList.baseObjects.size())
+    {
+        return false;
+    }
+    for (std::size_t index = 0; index < pending->second.size(); ++index)
+        objectList.baseObjects[index].mpNum
+            = pending->second[index].object.identity.mpNum;
+    return true;
+}
+
+bool Networking::commitObjectPlace(Player& player)
+{
+    const auto pending = mPendingObjectPlacements.find(player.guid.g);
+    if (pending == mPendingObjectPlacements.end())
+        return false;
+
+    std::vector<mechanics::ObjectMutation> mutations = std::move(pending->second);
+    mPendingObjectPlacements.erase(pending);
+    const mechanics::ObjectResult result = mObjectStateLedger.applyBatch(mutations);
+    if (result.applied())
+        return true;
+
+    const unsigned int violations = ++mObjectViolations[player.guid.g];
+    LOG_MESSAGE_SIMPLE(TimedLog::LOG_WARN,
+        "Rejected object placement at commit from connection %llu: %s (violation %u)",
+        static_cast<unsigned long long>(player.guid.g),
+        mechanics::describe(result.decision), violations);
+    if (violations >= 5)
+        disconnectTransport({ player.guid.g }, "repeated invalid object placements");
+    return false;
+}
+
+void Networking::cancelObjectPlace(Player& player) noexcept
+{
+    mPendingObjectPlacements.erase(player.guid.g);
 }
 
 namespace
@@ -2354,6 +2469,8 @@ void Networking::disconnectPlayer(RakNet::RakNetGUID guid)
     mJusticeLedger.erase(guid.g);
     mJusticeViolations.erase(guid.g);
     mPendingPlayerBounties.erase(guid.g);
+    mObjectViolations.erase(guid.g);
+    mPendingObjectPlacements.erase(guid.g);
     mAcceptedPlayerActiveEffectIntents.erase(guid.g);
     mRelayedPlayerActiveEffectIntents.erase(guid.g);
     mAcceptedActorActiveEffectIntents.erase(guid.g);

@@ -19,6 +19,8 @@ Protocol 11 changes the network and trust boundaries, not the safe TES3MP 0.8.1 
 | `OnPlayerJailComplete(pid, sentenceId)` | New | Runs after the server accepts the matching completion acknowledgement for a server-issued jail sentence |
 | `OnContainerIntent(pid, cellDescription)` | New | Runs existing container validators before the transactional canonical container commit; `false` denies the intent |
 | `OnContainerIntentRejected(pid, cellDescription, reason)` | New | Reports an intent that passed script policy but failed canonical validation at commit |
+| `OnObjectPlaceIntent(pid, cellDescription)` | New | Runs legacy `OnObjectPlace` validators after server IDs are assigned but before the transactional canonical placement commit |
+| `OnObjectPlaceIntentRejected(pid, cellDescription, reason)` | New | Reports a placement that passed script policy but failed canonical commit |
 | `OnPlayerAttackIntent(pid, isRanged, targetPid, refNum, mpNum, strength)` | New | Runs before server combat resolution; `false` denies, while `true` or `nil` allows the sanitized intent |
 | `OnPlayerAttackIntentRejected(pid, reason)` | New | Reports script denial or native validation failure without applying a client-claimed outcome |
 | `GetPlayerAttackStrength(pid)` / `SetPlayerAttackStrength(pid, strength)` | New | Lets an attack-intent validator inspect or modify normalized strength; native validation runs again before resolution |
@@ -62,6 +64,7 @@ Duplicate or out-of-order initialization is rejected. Gameplay mutation and rela
 - `Jail` keeps its 0.8.1 signature, issues a bounded server-owned sentence ID, and treats zero days as a no-op. Completion is accepted only from the sentenced transport connection with the current sentence ID; `OnPlayerJailComplete` observes the committed transition.
 - Use `OnContainerIntent` to allow or deny container changes before commit. Existing `OnContainer` validators are invoked from this secure boundary, while the legacy `OnContainer(pid, cellDescription)` callback and handlers run after the entire packet has committed canonically.
 - CoreScripts use the additive `SeedContainerInventory()` API when loading persisted cell data, so canonical state is restored after a server restart before any client delta can be accepted.
+- Existing `OnObjectPlace` validators run at `OnObjectPlaceIntent`; the legacy callback and handlers run only after the entire placement batch commits within the world and per-player quotas.
 - Use `OnPlayerAttackIntent` to inspect or deny a sanitized combat request. `SetPlayerAttackStrength` may modify its normalized strength; the server validates the result, rolls hit chance, computes damage and publishes canonical health.
 - Use `OnActorAttackIntent` for the equivalent authority-leased actor request. Call `SetActorAttackStrength` with the supplied actor index to modify ranged strength before the server revalidates and resolves it.
 - Use `OnPlayerCastIntent` and `OnActorCastIntent` to reject malformed or disallowed cast presentation. Alpha.1 validates identities, IDs, projectile geometry and reported caster transforms, but canonical server calculation of spell success and effects is still a later hardening gate; scripts must not treat these callbacks as proof that a gameplay effect occurred.

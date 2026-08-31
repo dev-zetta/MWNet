@@ -3,6 +3,7 @@ local pendingPlayerInventoryEvents = {}
 local pendingPlayerSpellsActiveEvents = {}
 local pendingActorSpellsActiveEvents = {}
 local pendingPlayerBountyEvents = {}
+local pendingObjectPlaceEvents = {}
 local pendingContainerEvents = {}
 local pendingContainerRestocks = {}
 
@@ -657,6 +658,8 @@ eventHandler.OnPlayerConnect = function(pid, playerName, nativeAuthentication)
 end
 
 eventHandler.OnPlayerDisconnect = function(pid)
+
+    pendingObjectPlaceEvents[pid] = nil
 
     local message = logicHandler.GetChatName(pid) .. " has left the server.\n"
     tes3mp.SendMessage(pid, message, true)
@@ -1785,7 +1788,110 @@ eventHandler.OnObjectSound = function(pid, cellDescription)
 end
 
 eventHandler.OnObjectPlace = function(pid, cellDescription)
-    eventHandler.OnGenericObjectEvent(pid, cellDescription, "ObjectPlace")
+    local pendingEvent = pendingObjectPlaceEvents[pid]
+    pendingObjectPlaceEvents[pid] = nil
+    if pendingEvent == nil then
+        return
+    end
+
+    local objects = pendingEvent.objects
+    local targetPlayers = pendingEvent.targetPlayers
+    local debugMessage = "Accepted ObjectPlace from " ..
+        logicHandler.GetChatName(pid) .. " about " .. cellDescription .. " for objects: "
+    local includeComma = false
+    for uniqueIndex, object in pairs(objects) do
+        if includeComma then debugMessage = debugMessage .. ", " end
+        debugMessage = debugMessage .. object.refId .. " " .. uniqueIndex
+        includeComma = true
+    end
+    tes3mp.LogMessage(enumerations.log.INFO, debugMessage)
+
+    LoadedCells[cellDescription]:SaveObjectsByPacketType("ObjectPlace", objects)
+    LoadedCells[cellDescription]:LoadObjectsByPacketType("ObjectPlace", pid, objects,
+        tableHelper.getArrayFromIndexes(objects), true)
+    customEventHooks.triggerHandlers("OnObjectPlace", pendingEvent.eventStatus,
+        {pid, cellDescription, objects, targetPlayers})
+
+    if not pendingEvent.wasCellLoaded then
+        logicHandler.UnloadCell(cellDescription)
+    end
+end
+
+eventHandler.OnObjectPlaceIntent = function(pid, cellDescription)
+    pendingObjectPlaceEvents[pid] = nil
+    if Players[pid] == nil or not Players[pid]:IsLoggedIn() then
+        tes3mp.Kick(pid)
+        return false
+    end
+
+    tes3mp.ReadReceivedObjectList()
+    local packetOrigin = tes3mp.GetObjectListOrigin()
+    tes3mp.LogAppend(enumerations.log.INFO, "- packetOrigin was " ..
+        tableHelper.getIndexByValue(enumerations.packetOrigin, packetOrigin))
+    if logicHandler.IsPacketFromConsole(packetOrigin) and
+        not logicHandler.IsPlayerAllowedConsole(pid) then
+        tes3mp.Kick(pid)
+        tes3mp.SendMessage(pid, logicHandler.GetChatName(pid) .. consoleKickMessage, true)
+        return false
+    elseif logicHandler.IsPacketFromClientScript(packetOrigin) then
+        tes3mp.LogAppend(enumerations.log.INFO, "- clientScript was " ..
+            tes3mp.GetObjectListClientScript())
+    end
+
+    local wasCellLoaded = LoadedCells[cellDescription] ~= nil
+    if not wasCellLoaded and logicHandler.DoesPacketOriginRequireLoadedCell(packetOrigin) then
+        tes3mp.LogMessage(enumerations.log.WARN, "Invalid ObjectPlace" ..
+            logicHandler.GetChatName(pid) .. " used impossible packetOrigin for unloaded " ..
+            cellDescription)
+        return false
+    end
+
+    local packetTables = packetReader.GetObjectPacketTables("ObjectPlace")
+    local objects = packetTables.objects
+    local targetPlayers = packetTables.players
+    if tableHelper.isEmpty(objects) and tableHelper.isEmpty(targetPlayers) then
+        return false
+    end
+    if not wasCellLoaded then
+        logicHandler.LoadCell(cellDescription)
+    end
+
+    local eventStatus = customEventHooks.triggerValidators("OnObjectPlace",
+        {pid, cellDescription, objects, targetPlayers})
+    if not eventStatus.validDefaultHandler then
+        customEventHooks.triggerHandlers("OnObjectPlace", eventStatus,
+            {pid, cellDescription, objects, targetPlayers})
+        if not wasCellLoaded then
+            logicHandler.UnloadCell(cellDescription)
+        end
+        return false
+    end
+
+    pendingObjectPlaceEvents[pid] = {
+        eventStatus = eventStatus,
+        objects = objects,
+        targetPlayers = targetPlayers,
+        wasCellLoaded = wasCellLoaded
+    }
+    return true
+end
+
+eventHandler.OnObjectPlaceIntentRejected = function(pid, cellDescription, reason)
+    local pendingEvent = pendingObjectPlaceEvents[pid]
+    pendingObjectPlaceEvents[pid] = nil
+    if pendingEvent == nil then
+        return
+    end
+
+    tes3mp.LogAppend(enumerations.log.WARN,
+        "- Rejected ObjectPlace after script validation: " .. reason)
+    local eventStatus = customEventHooks.makeEventStatus(false,
+        pendingEvent.eventStatus.validCustomHandlers)
+    customEventHooks.triggerHandlers("OnObjectPlace", eventStatus,
+        {pid, cellDescription, pendingEvent.objects, pendingEvent.targetPlayers})
+    if not pendingEvent.wasCellLoaded then
+        logicHandler.UnloadCell(cellDescription)
+    end
 end
 
 eventHandler.OnObjectSpawn = function(pid, cellDescription)

@@ -684,6 +684,14 @@ function OnObjectPlace(pid, cellDescription)
     eventHandler.OnObjectPlace(pid, cellDescription)
 end
 
+function OnObjectPlaceIntent(pid, cellDescription)
+    return eventHandler.OnObjectPlaceIntent(pid, cellDescription)
+end
+
+function OnObjectPlaceIntentRejected(pid, cellDescription, reason)
+    eventHandler.OnObjectPlaceIntentRejected(pid, cellDescription, reason)
+end
+
 function OnObjectSpawn(pid, cellDescription)
     tes3mp.LogMessage(enumerations.log.INFO, "Called \"OnObjectSpawn\" for " .. logicHandler.GetChatName(pid) ..
         " and cell " .. cellDescription)

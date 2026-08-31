@@ -84,7 +84,7 @@ namespace mwmp::mechanics
             && validText(object.refId, MaximumStringBytes) && !object.refId.empty()
             && validText(object.soul, MaximumStringBytes)
             && object.count > 0 && object.count <= MaximumCount
-            && object.charge >= -1
+            && object.charge >= -1 && object.charge <= MaximumCount
             && std::isfinite(object.enchantmentCharge)
             && object.enchantmentCharge >= -1.0
             && object.enchantmentCharge <= MaximumCharge
