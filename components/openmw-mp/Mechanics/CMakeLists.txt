@@ -3,6 +3,7 @@ add_library(tes3mp-mechanics STATIC
     CastIntentValidator.cpp
     CombatResolver.cpp
     InventoryLedger.cpp
+    JusticeLedger.cpp
     MovementValidator.cpp
     PlayerLifecycle.cpp
 )

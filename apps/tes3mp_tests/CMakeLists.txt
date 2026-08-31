@@ -4,6 +4,7 @@ add_executable(tes3mp-tests
     cast.cpp
     combat.cpp
     inventory.cpp
+    justice.cpp
     main.cpp
     lifecycle.cpp
     movement.cpp

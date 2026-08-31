@@ -85,6 +85,7 @@ This is the first hardening milestone for the major OpenMW 0.52 compatibility an
 * Validate player and actor active-effect changes before Lua, persistence, or relay and keep legacy callbacks as post-commit notifications
 * Add a rendering-independent cast-intent validator for canonical caster/target identities, bounded source IDs and finite projectile geometry
 * Validate player and authority-leased actor cast presentation intents before relay, including reported player transforms, and expose allow/deny Lua hooks
+* Add a canonical justice ledger with server-owned bounty reductions and bounded, ID-tracked jail sentences
 
 0.8.1
 -----
