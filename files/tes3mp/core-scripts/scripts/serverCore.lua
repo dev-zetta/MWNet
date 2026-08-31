@@ -477,6 +477,14 @@ function OnPlayerInventory(pid)
     eventHandler.OnPlayerInventory(pid)
 end
 
+function OnPlayerInventoryIntent(pid)
+    return eventHandler.OnPlayerInventoryIntent(pid)
+end
+
+function OnPlayerInventoryIntentRejected(pid)
+    eventHandler.OnPlayerInventoryIntentRejected(pid)
+end
+
 function OnPlayerSpellbook(pid)
     tes3mp.LogMessage(enumerations.log.INFO, "Called \"OnPlayerSpellbook\" for " .. logicHandler.GetChatName(pid))
     eventHandler.OnPlayerSpellbook(pid)

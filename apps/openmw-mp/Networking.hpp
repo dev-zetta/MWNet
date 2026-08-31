@@ -99,6 +99,7 @@ namespace  mwmp
         bool beginPlayerRespawn(Player& player, std::uint32_t respawnType);
         bool acknowledgePlayerRespawn(Player& player, const BasePlayer& incoming);
         bool validatePlayerInventory(Player& player, const BasePlayer& incoming);
+        bool commitPlayerInventory(Player& player);
         bool applyServerInventoryChanges(Player& player);
         persistence::QueueDecision queuePersistenceWrite(
             std::filesystem::path path, std::string_view contents);

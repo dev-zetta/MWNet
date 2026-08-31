@@ -1,4 +1,5 @@
 local eventHandler = {}
+local pendingPlayerInventoryEvents = {}
 
 commandHandler = require("commandHandler")
 
@@ -930,7 +931,54 @@ eventHandler.OnPlayerEquipment = function(pid)
 end
 
 eventHandler.OnPlayerInventory = function(pid)
-    eventHandler.OnGenericPlayerEvent(pid, "PlayerInventory")
+    local pendingEvent = pendingPlayerInventoryEvents[pid]
+    pendingPlayerInventoryEvents[pid] = nil
+
+    if pendingEvent == nil then
+        eventHandler.OnGenericPlayerEvent(pid, "PlayerInventory")
+        return
+    end
+
+    if Players[pid] ~= nil and Players[pid]:IsLoggedIn() then
+        Players[pid]:SaveDataByPacketType("PlayerInventory", pendingEvent.playerPacket)
+        customEventHooks.triggerHandlers("OnPlayerInventory", pendingEvent.eventStatus,
+            {pid, pendingEvent.playerPacket})
+    end
+end
+
+eventHandler.OnPlayerInventoryIntent = function(pid)
+    pendingPlayerInventoryEvents[pid] = nil
+
+    if Players[pid] == nil or not Players[pid]:IsLoggedIn() then
+        return false
+    end
+
+    local playerPacket = packetReader.GetPlayerPacketTables(pid, "PlayerInventory")
+    local eventStatus = customEventHooks.triggerValidators("OnPlayerInventory", {pid, playerPacket})
+
+    if not eventStatus.validDefaultHandler then
+        customEventHooks.triggerHandlers("OnPlayerInventory", eventStatus, {pid, playerPacket})
+        return false
+    end
+
+    pendingPlayerInventoryEvents[pid] = {
+        eventStatus = eventStatus,
+        playerPacket = playerPacket
+    }
+    return true
+end
+
+eventHandler.OnPlayerInventoryIntentRejected = function(pid)
+    local pendingEvent = pendingPlayerInventoryEvents[pid]
+    pendingPlayerInventoryEvents[pid] = nil
+    if pendingEvent == nil then
+        return
+    end
+
+    local eventStatus = customEventHooks.makeEventStatus(false,
+        pendingEvent.eventStatus.validCustomHandlers)
+    customEventHooks.triggerHandlers("OnPlayerInventory", eventStatus,
+        {pid, pendingEvent.playerPacket})
 end
 
 eventHandler.OnPlayerSpellbook = function(pid)

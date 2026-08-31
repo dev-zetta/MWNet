@@ -69,6 +69,31 @@ namespace
         EXPECT(ledger.snapshot(player)->size() == 1);
     }
 
+    void testPreviewDoesNotMutate()
+    {
+        InventoryLedger ledger;
+        const InventoryOwner player{ InventoryOwnerKind::Player, 1 };
+        EXPECT(ledger.apply(player, InventoryAction::Set,
+                   { item("gold_001", 10) }).applied());
+
+        const InventoryResult preview = ledger.preview(player, InventoryAction::Add,
+            { item("gold_001", 5), item("p_restore_health_s", 2) });
+        EXPECT(preview.applied());
+        EXPECT(preview.stackCount == 2);
+
+        const auto beforeCommit = ledger.snapshot(player);
+        EXPECT(beforeCommit.has_value());
+        EXPECT(beforeCommit->size() == 1);
+        EXPECT(beforeCommit->front().count == 10);
+
+        const InventoryResult rejected = ledger.preview(player, InventoryAction::Remove,
+            { item("gold_001", 11) });
+        EXPECT(rejected.decision == InventoryDecision::InsufficientItems);
+        const auto afterReject = ledger.snapshot(player);
+        EXPECT(afterReject.has_value());
+        EXPECT(afterReject->front().count == 10);
+    }
+
     void testAtomicTransfer()
     {
         InventoryLedger ledger;
@@ -110,6 +135,7 @@ int runInventoryTests()
 {
     testSetAddRemove();
     testTransactionalFailure();
+    testPreviewDoesNotMutate();
     testAtomicTransfer();
     testLimits();
     return sFailures;

@@ -318,7 +318,7 @@ bool Networking::validatePlayerInventory(Player& player, const BasePlayer& incom
     mechanics::InventoryResult result{ mechanics::InventoryDecision::InvalidAction };
     if (action)
     {
-        result = mInventoryLedger.apply(
+        result = mInventoryLedger.preview(
             { mechanics::InventoryOwnerKind::Player, player.guid.g }, *action,
             inventoryItems(incoming.inventoryChanges));
     }
@@ -328,6 +328,29 @@ bool Networking::validatePlayerInventory(Player& player, const BasePlayer& incom
     const unsigned int violations = ++mInventoryViolations[player.guid.g];
     LOG_MESSAGE_SIMPLE(TimedLog::LOG_WARN,
         "Rejected inventory action from connection %llu: %s (violation %u)",
+        static_cast<unsigned long long>(player.guid.g),
+        mechanics::describe(result.decision), violations);
+    if (violations >= 5)
+        disconnectTransport({ player.guid.g }, "repeated invalid inventory actions");
+    return false;
+}
+
+bool Networking::commitPlayerInventory(Player& player)
+{
+    const auto action = inventoryAction(player.inventoryChanges.action);
+    mechanics::InventoryResult result{ mechanics::InventoryDecision::InvalidAction };
+    if (action)
+    {
+        result = mInventoryLedger.apply(
+            { mechanics::InventoryOwnerKind::Player, player.guid.g }, *action,
+            inventoryItems(player.inventoryChanges));
+    }
+    if (result.applied())
+        return true;
+
+    const unsigned int violations = ++mInventoryViolations[player.guid.g];
+    LOG_MESSAGE_SIMPLE(TimedLog::LOG_WARN,
+        "Rejected modified inventory intent from connection %llu: %s (violation %u)",
         static_cast<unsigned long long>(player.guid.g),
         mechanics::describe(result.decision), violations);
     if (violations >= 5)

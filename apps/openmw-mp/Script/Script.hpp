@@ -42,6 +42,7 @@ private:
 
     int script_type = -1;
     std::unordered_map<unsigned int, FunctionEllipsis<void>> callbacks_;
+    std::unordered_map<unsigned int, FunctionEllipsis<bool>> booleanCallbacks_;
 
     class CallbackContext
     {
@@ -146,6 +147,83 @@ public:
         }
 
         return count;
+    }
+
+    template<unsigned int I, typename... Args>
+    static bool CallBoolean(Args&&... args)
+    {
+        constexpr ScriptCallbackData const& data = CallBackData(I);
+        static_assert(data.callback.matches(TypeString<typename std::remove_reference<Args>::type...>::value),
+            "Wrong number or types of arguments");
+
+        bool allowed = true;
+        for (auto& script : scripts)
+        {
+            try
+            {
+                if (script->script_type == SCRIPT_CPP)
+                {
+                    if (!script->booleanCallbacks_.count(I))
+                    {
+                        script->booleanCallbacks_.emplace(I,
+                            script->GetScript<FunctionEllipsis<bool>>(data.name));
+                    }
+                    auto callback = script->booleanCallbacks_[I];
+                    if (callback && !(callback)(std::forward<Args>(args)...))
+                        allowed = false;
+                }
+#if defined (ENABLE_LUA)
+                else if (script->script_type == SCRIPT_LUA
+                    && script->lang->IsCallbackPresent(data.name))
+                {
+                    const boost::any result = script->lang->Call(data.name,
+                        data.callback.types, 0, std::forward<Args>(args)...);
+                    if (!result.empty())
+                    {
+                        if (result.type() != typeid(bool))
+                            throw std::runtime_error(std::string(data.name)
+                                + " must return a boolean or nil");
+                        if (!boost::any_cast<bool>(result))
+                            allowed = false;
+                    }
+                }
+#endif
+            }
+            catch (const std::exception& exception)
+            {
+                LOG_MESSAGE_SIMPLE(TimedLog::LOG_ERROR, "%s", exception.what());
+                if constexpr (I != CallbackIdentity("OnServerScriptCrash"))
+                {
+                    try
+                    {
+                        Script::Call<Script::CallbackIdentity("OnServerScriptCrash")>(
+                            exception.what());
+                    }
+                    catch (const std::exception& crashException)
+                    {
+                        LOG_MESSAGE_SIMPLE(TimedLog::LOG_ERROR,
+                            "OnServerScriptCrash failed: %s", crashException.what());
+                    }
+                    catch (...)
+                    {
+                        LOG_MESSAGE_SIMPLE(TimedLog::LOG_ERROR,
+                            "%s", "OnServerScriptCrash failed with an unknown exception");
+                    }
+                }
+                if (!mwmp::Networking::getPtr()->getScriptErrorIgnoringState())
+                    throw;
+                allowed = false;
+            }
+            catch (...)
+            {
+                LOG_MESSAGE_SIMPLE(TimedLog::LOG_ERROR, "%s",
+                    "Unknown exception in boolean script callback");
+                if (!mwmp::Networking::getPtr()->getScriptErrorIgnoringState())
+                    throw;
+                allowed = false;
+            }
+        }
+        return allowed;
     }
 };
 

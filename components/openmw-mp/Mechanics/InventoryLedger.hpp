@@ -78,6 +78,8 @@ namespace mwmp::mechanics
 
         explicit InventoryLedger(std::size_t maximumOwners = 8192);
 
+        InventoryResult preview(InventoryOwner owner, InventoryAction action,
+            const std::vector<InventoryItem>& items) const;
         InventoryResult apply(InventoryOwner owner, InventoryAction action,
             const std::vector<InventoryItem>& items);
         InventoryResult transfer(InventoryOwner from, InventoryOwner to,

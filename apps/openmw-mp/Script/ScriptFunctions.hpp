@@ -171,6 +171,8 @@ public:
             {"OnPlayerBounty",           Callback<unsigned short>()},
             {"OnPlayerReputation",       Callback<unsigned short>()},
             {"OnPlayerEquipment",        Callback<unsigned short>()},
+            {"OnPlayerInventoryIntent",  Callback<unsigned short>()},
+            {"OnPlayerInventoryIntentRejected", Callback<unsigned short>()},
             {"OnPlayerInventory",        Callback<unsigned short>()},
             {"OnPlayerJournal",          Callback<unsigned short>()},
             {"OnPlayerFaction",          Callback<unsigned short>()},
