@@ -33,13 +33,13 @@ namespace
         SpellDefinition definition;
         definition.id = "fireball";
         definition.displayName = "Fireball";
-        definition.range = SpellRange::Target;
         definition.magickaCost = 10;
         definition.baseSuccessChance = 0.75;
-        definition.maximumRange = 1024;
         definition.effects = {
-            { "fire damage", {}, SpellEffectKind::DamageHealth, 10, 20, 0 },
-            { "weakness to fire", {}, SpellEffectKind::Timed, 20, 20, 5 },
+            { "fire damage", {}, SpellEffectKind::DamageHealth,
+                SpellRange::Target, 10, 20, 0, 1024 },
+            { "weakness to fire", {}, SpellEffectKind::Timed,
+                SpellRange::Target, 20, 20, 5, 1024 },
         };
         return definition;
     }
@@ -61,10 +61,71 @@ namespace
         EXPECT(result.targetHealth == 0);
         EXPECT(result.targetDied);
         EXPECT(result.activeSpell.has_value());
+        EXPECT(result.applications.size() == 1);
+        EXPECT(result.applications[0].target == target);
         EXPECT(result.activeSpell->effects.size() == 1);
         EXPECT(result.activeSpell->effects[0].magnitude == 20);
         EXPECT(resolver.findCombatant(caster)->magicka == 40);
         EXPECT(!resolver.findCombatant(target)->alive);
+    }
+
+    void testMixedRangesApplyToCanonicalTargets()
+    {
+        SpellResolver resolver;
+        const CombatantId caster{ CombatantKind::Player, 1, {} };
+        const CombatantId target{ CombatantKind::Player, 2, {} };
+        EXPECT(resolver.upsertCombatant(caster, combatant(50, 50, {})));
+        EXPECT(resolver.upsertCombatant(target, combatant(50, 50, { 10, 0, 0 })));
+
+        SpellDefinition mixed;
+        mixed.id = "mixed";
+        mixed.displayName = "Mixed";
+        mixed.magickaCost = 5;
+        mixed.alwaysSucceeds = true;
+        mixed.effects = {
+            { "restore health", {}, SpellEffectKind::RestoreHealth,
+                SpellRange::Self, 5, 5, 0, 0 },
+            { "damage health", {}, SpellEffectKind::DamageHealth,
+                SpellRange::Touch, 7, 7, 0, 64 },
+        };
+        SpellCombatantState wounded = *resolver.findCombatant(caster);
+        wounded.health = 40;
+        EXPECT(resolver.upsertCombatant(caster, wounded));
+        EXPECT(resolver.upsertDefinition(mixed));
+
+        const SpellResult result = resolver.resolve(
+            { caster, target, "mixed", 1 }, 0, 0);
+        EXPECT(result.decision == SpellDecision::Applied);
+        EXPECT(result.applications.size() == 2);
+        EXPECT(resolver.findCombatant(caster)->health == 45);
+        EXPECT(resolver.findCombatant(target)->health == 43);
+    }
+
+    void testItemChargeIsCanonicalResource()
+    {
+        SpellResolver resolver;
+        const CombatantId caster{ CombatantKind::Player, 1, {} };
+        EXPECT(resolver.upsertCombatant(caster, combatant(50, 0, {})));
+
+        SpellDefinition item;
+        item.id = "ring_of_healing";
+        item.displayName = "Ring of Healing";
+        item.sourceKind = SpellSourceKind::Item;
+        item.itemChargeCost = 12;
+        item.alwaysSucceeds = true;
+        item.effects = {
+            { "restore health", {}, SpellEffectKind::RestoreHealth,
+                SpellRange::Self, 10, 10, 0, 0 },
+        };
+        EXPECT(resolver.upsertDefinition(item));
+        EXPECT(resolver.resolve(
+            { caster, std::nullopt, item.id, 1, 11 }, 0, 0).decision
+            == SpellDecision::InsufficientItemCharge);
+        const SpellResult result = resolver.resolve(
+            { caster, std::nullopt, item.id, 1, 12 }, 0, 0);
+        EXPECT(result.decision == SpellDecision::Applied);
+        EXPECT(result.itemChargeSpent == 12);
+        EXPECT(result.magickaSpent == 0);
     }
 
     void testFailureConsumesOnlyCanonicalCost()
@@ -136,6 +197,8 @@ int runSpellTests()
     testServerOwnsSuccessAndEffects();
     testFailureConsumesOnlyCanonicalCost();
     testRangeTargetAndResourceValidation();
+    testMixedRangesApplyToCanonicalTargets();
+    testItemChargeIsCanonicalResource();
     testDefinitionsAndCapacityFailClosed();
     return sFailures;
 }

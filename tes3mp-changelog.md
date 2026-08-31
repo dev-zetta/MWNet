@@ -87,7 +87,7 @@ This is the first hardening milestone for the major OpenMW 0.52 compatibility an
 * Validate player and actor active-effect changes before Lua, persistence, or relay and keep legacy callbacks as post-commit notifications
 * Add a rendering-independent cast-intent validator for canonical caster/target identities, bounded source IDs and finite projectile geometry
 * Validate player and authority-leased actor cast presentation intents before relay, including reported player transforms, and expose allow/deny Lua hooks
-* Add a deterministic server-side spell outcome resolver with canonical sequence, magicka, range, success, health/death and timed-effect results
+* Add a deterministic server-side spell outcome resolver with canonical sequence, magicka or item charge, per-effect self/touch/target range, success, health/death and timed-effect results
 * Record bounded server tick and serialization p99 samples, persistence queue depth, per-connection traffic and resident memory, with periodic typed metric reports
 * Add a canonical justice ledger with server-owned bounty reductions and bounded, ID-tracked jail sentences
 * Treat player bounty packets as increase-only intents, preserve legacy validators before canonical commit, and reserve bounty reductions for server scripts

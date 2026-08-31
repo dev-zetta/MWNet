@@ -94,16 +94,19 @@ namespace mwmp::mechanics
         }
 
         const SpellDefinition& definition = definitionIt->second;
-        SpellCombatantState* target = nullptr;
-        CombatantId targetId = intent.caster;
-        if (definition.range == SpellRange::Self)
+        const bool requiresTarget = std::ranges::any_of(definition.effects,
+            [](const SpellEffectDefinition& effect) {
+                return effect.range != SpellRange::Self;
+            });
+        SpellCombatantState* externalTarget = nullptr;
+        CombatantId externalTargetId = intent.caster;
+        if (!requiresTarget)
         {
             if (intent.target && *intent.target != intent.caster)
             {
                 result.decision = SpellDecision::UnexpectedTarget;
                 return result;
             }
-            target = &caster;
         }
         else
         {
@@ -112,42 +115,63 @@ namespace mwmp::mechanics
                 result.decision = SpellDecision::MissingTarget;
                 return result;
             }
-            targetId = *intent.target;
-            const auto targetIt = mCombatants.find(targetId);
+            externalTargetId = *intent.target;
+            const auto targetIt = mCombatants.find(externalTargetId);
             if (targetIt == mCombatants.end())
             {
                 result.decision = SpellDecision::InvalidEntity;
                 return result;
             }
-            target = &targetIt->second;
-            if (!validState(*target))
+            externalTarget = &targetIt->second;
+            if (!validState(*externalTarget))
             {
                 result.decision = SpellDecision::InvalidState;
                 return result;
             }
-            if (!target->alive || target->health <= 0)
+            if (!externalTarget->alive || externalTarget->health <= 0)
             {
                 result.decision = SpellDecision::TargetDead;
                 return result;
             }
-            if (distance(caster.position, target->position) > definition.maximumRange)
+            const double targetDistance
+                = distance(caster.position, externalTarget->position);
+            const bool outOfRange = std::ranges::any_of(definition.effects,
+                [targetDistance](const SpellEffectDefinition& effect) {
+                    return effect.range != SpellRange::Self
+                        && targetDistance > effect.maximumRange;
+                });
+            if (outOfRange)
             {
                 result.decision = SpellDecision::OutOfRange;
                 return result;
             }
         }
 
-        if (caster.magicka < definition.magickaCost)
+        if (definition.sourceKind == SpellSourceKind::Regular
+            && caster.magicka < definition.magickaCost)
         {
             result.decision = SpellDecision::InsufficientMagicka;
+            return result;
+        }
+        if (definition.sourceKind == SpellSourceKind::Item
+            && (!intent.availableItemCharge
+                || !std::isfinite(*intent.availableItemCharge)
+                || *intent.availableItemCharge < definition.itemChargeCost))
+        {
+            result.decision = SpellDecision::InsufficientItemCharge;
             return result;
         }
 
         // A syntactically and semantically valid cast consumes its sequence and
         // magicka even when the server's success roll fails.
         mSequences.insert_or_assign(intent.caster, intent.sequence);
-        caster.magicka -= definition.magickaCost;
-        result.magickaSpent = definition.magickaCost;
+        if (definition.sourceKind == SpellSourceKind::Regular)
+        {
+            caster.magicka -= definition.magickaCost;
+            result.magickaSpent = definition.magickaCost;
+        }
+        else
+            result.itemChargeSpent = definition.itemChargeCost;
         result.successChance = definition.alwaysSucceeds
             ? 1.0
             : std::clamp(definition.baseSuccessChance * caster.castingMultiplier,
@@ -155,44 +179,89 @@ namespace mwmp::mechanics
         if (!definition.alwaysSucceeds && successRoll >= result.successChance)
         {
             result.decision = SpellDecision::Failed;
-            result.targetHealth = target->health;
+            result.targetHealth = externalTarget != nullptr
+                ? externalTarget->health : caster.health;
             return result;
         }
 
-        CanonicalActiveSpell activeSpell;
-        activeSpell.id = definition.id;
-        activeSpell.displayName = definition.displayName;
-        activeSpell.stacking = definition.stacking;
-        activeSpell.caster = intent.caster;
-        double healthDelta = 0;
+        struct PendingApplication
+        {
+            CombatantId id;
+            SpellCombatantState* state = nullptr;
+            CanonicalActiveSpell activeSpell;
+            double healthDelta = 0;
+        };
+        PendingApplication selfApplication{ intent.caster, &caster, {}, 0 };
+        PendingApplication targetApplication{
+            externalTargetId, externalTarget, {}, 0 };
+        const auto initializeActiveSpell = [&definition, &intent](
+            CanonicalActiveSpell& spell) {
+            spell.id = definition.id;
+            spell.displayName = definition.displayName;
+            spell.stacking = definition.stacking;
+            spell.caster = intent.caster;
+        };
+        initializeActiveSpell(selfApplication.activeSpell);
+        initializeActiveSpell(targetApplication.activeSpell);
+
         for (const SpellEffectDefinition& effect : definition.effects)
         {
+            PendingApplication& application = effect.range == SpellRange::Self
+                ? selfApplication : targetApplication;
             const double magnitude = effect.minimumMagnitude
                 + (effect.maximumMagnitude - effect.minimumMagnitude) * magnitudeRoll;
             const double resistedMagnitude = effect.kind == SpellEffectKind::DamageHealth
-                ? magnitude * (1.0 - target->resistance)
+                ? magnitude * (1.0 - application.state->resistance)
                 : magnitude;
             if (effect.kind == SpellEffectKind::DamageHealth)
             {
-                healthDelta -= resistedMagnitude;
+                application.healthDelta -= resistedMagnitude;
                 continue;
             }
             if (effect.kind == SpellEffectKind::RestoreHealth)
             {
-                healthDelta += magnitude;
+                application.healthDelta += magnitude;
                 continue;
             }
-            activeSpell.effects.push_back({ effect.effectId, effect.argument,
+            application.activeSpell.effects.push_back({ effect.effectId, effect.argument,
                 resistedMagnitude, effect.duration, effect.duration });
         }
 
-        target->health = std::clamp(
-            target->health + healthDelta, 0.0, target->maximumHealth);
-        target->alive = target->health > 0;
-        result.targetHealth = target->health;
-        result.targetDied = !target->alive;
-        if (!activeSpell.effects.empty())
-            result.activeSpell = std::move(activeSpell);
+        const auto apply = [&result](PendingApplication& pending) {
+            if (pending.state == nullptr)
+                return;
+            if (pending.healthDelta == 0 && pending.activeSpell.effects.empty())
+                return;
+            pending.state->health = std::clamp(pending.state->health
+                + pending.healthDelta, 0.0, pending.state->maximumHealth);
+            pending.state->alive = pending.state->health > 0;
+            SpellApplication application;
+            application.target = pending.id;
+            application.health = pending.state->health;
+            application.died = !pending.state->alive;
+            if (!pending.activeSpell.effects.empty())
+                application.activeSpell = std::move(pending.activeSpell);
+            result.applications.push_back(std::move(application));
+        };
+        apply(selfApplication);
+        apply(targetApplication);
+
+        const SpellApplication* primary = nullptr;
+        if (requiresTarget)
+        {
+            const auto it = std::ranges::find(result.applications,
+                externalTargetId, &SpellApplication::target);
+            if (it != result.applications.end())
+                primary = &*it;
+        }
+        if (primary == nullptr && !result.applications.empty())
+            primary = &result.applications.front();
+        if (primary != nullptr)
+        {
+            result.targetHealth = primary->health;
+            result.targetDied = primary->died;
+            result.activeSpell = primary->activeSpell;
+        }
         result.decision = SpellDecision::Applied;
         return result;
     }
@@ -268,16 +337,18 @@ namespace mwmp::mechanics
         };
         if (!validString(definition.id) || !validString(definition.displayName)
             || !validNonNegative(definition.magickaCost, MaximumStatValue)
+            || !validNonNegative(definition.itemChargeCost, MaximumStatValue)
             || !validNonNegative(definition.baseSuccessChance, 1)
-            || !validNonNegative(definition.maximumRange, MaximumTargetRange)
             || definition.effects.empty()
             || definition.effects.size() > MaximumEffectsPerSpell)
         {
             return false;
         }
-        if (definition.range == SpellRange::Self && definition.maximumRange != 0)
+        if (definition.sourceKind == SpellSourceKind::Regular
+            && definition.itemChargeCost != 0)
             return false;
-        if (definition.range != SpellRange::Self && definition.maximumRange == 0)
+        if (definition.sourceKind == SpellSourceKind::Item
+            && definition.magickaCost != 0)
             return false;
         return std::ranges::all_of(definition.effects,
             [&validNonNegative](const SpellEffectDefinition& effect) {
@@ -287,9 +358,12 @@ namespace mwmp::mechanics
                     && validNonNegative(effect.maximumMagnitude, MaximumStatValue)
                     && effect.maximumMagnitude >= effect.minimumMagnitude
                     && validNonNegative(effect.duration, MaximumDurationSeconds)
+                    && validNonNegative(effect.maximumRange, MaximumTargetRange)
                     && (effect.kind != SpellEffectKind::Timed || effect.duration > 0)
                     && (effect.kind == SpellEffectKind::Timed
-                        || effect.duration == 0);
+                        || effect.duration == 0)
+                    && (effect.range == SpellRange::Self
+                        ? effect.maximumRange == 0 : effect.maximumRange > 0);
             });
     }
 
@@ -331,6 +405,7 @@ namespace mwmp::mechanics
             case SpellDecision::UnexpectedTarget: return "the self spell has an unexpected target";
             case SpellDecision::OutOfRange: return "the target is outside the server-approved spell range";
             case SpellDecision::InsufficientMagicka: return "the caster does not have enough magicka";
+            case SpellDecision::InsufficientItemCharge: return "the item does not have enough canonical charge";
             case SpellDecision::CapacityReached: return "the canonical spell state reached its capacity";
         }
         return "unknown spell decision";

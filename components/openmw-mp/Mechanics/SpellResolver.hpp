@@ -8,6 +8,7 @@
 #include <optional>
 #include <string>
 #include <unordered_map>
+#include <utility>
 #include <vector>
 
 namespace mwmp::mechanics
@@ -26,14 +27,22 @@ namespace mwmp::mechanics
         RestoreHealth,
     };
 
+    enum class SpellSourceKind : std::uint8_t
+    {
+        Regular,
+        Item,
+    };
+
     struct SpellEffectDefinition
     {
         std::string effectId;
         std::string argument;
         SpellEffectKind kind = SpellEffectKind::Timed;
+        SpellRange range = SpellRange::Self;
         double minimumMagnitude = 0;
         double maximumMagnitude = 0;
         double duration = 0;
+        double maximumRange = 0;
 
         bool operator==(const SpellEffectDefinition&) const = default;
     };
@@ -42,10 +51,10 @@ namespace mwmp::mechanics
     {
         std::string id;
         std::string displayName;
-        SpellRange range = SpellRange::Self;
+        SpellSourceKind sourceKind = SpellSourceKind::Regular;
         double magickaCost = 0;
+        double itemChargeCost = 0;
         double baseSuccessChance = 1;
-        double maximumRange = 0;
         bool alwaysSucceeds = false;
         bool stacking = false;
         std::vector<SpellEffectDefinition> effects;
@@ -69,10 +78,23 @@ namespace mwmp::mechanics
 
     struct SpellCastIntent
     {
+        SpellCastIntent(CombatantId casterId,
+            std::optional<CombatantId> targetId, std::string source,
+            std::uint64_t castSequence,
+            std::optional<double> itemCharge = std::nullopt)
+            : caster(std::move(casterId))
+            , target(std::move(targetId))
+            , sourceId(std::move(source))
+            , sequence(castSequence)
+            , availableItemCharge(itemCharge)
+        {
+        }
+
         CombatantId caster;
         std::optional<CombatantId> target;
         std::string sourceId;
         std::uint64_t sequence = 0;
+        std::optional<double> availableItemCharge;
 
         bool operator==(const SpellCastIntent&) const = default;
     };
@@ -93,7 +115,16 @@ namespace mwmp::mechanics
         UnexpectedTarget,
         OutOfRange,
         InsufficientMagicka,
+        InsufficientItemCharge,
         CapacityReached,
+    };
+
+    struct SpellApplication
+    {
+        CombatantId target;
+        double health = 0;
+        bool died = false;
+        std::optional<CanonicalActiveSpell> activeSpell;
     };
 
     struct SpellResult
@@ -102,9 +133,11 @@ namespace mwmp::mechanics
         std::uint64_t sequence = 0;
         double successChance = 0;
         double magickaSpent = 0;
+        double itemChargeSpent = 0;
         double targetHealth = 0;
         bool targetDied = false;
         std::optional<CanonicalActiveSpell> activeSpell;
+        std::vector<SpellApplication> applications;
 
         bool resolved() const noexcept
         {
