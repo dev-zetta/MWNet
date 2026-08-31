@@ -1,3 +1,4 @@
+#include <components/openmw-mp/Mechanics/InventoryAcknowledgementLedger.hpp>
 #include <components/openmw-mp/Mechanics/InventoryLedger.hpp>
 
 #include <iostream>
@@ -216,6 +217,60 @@ namespace
         EXPECT(!first.snapshot(owner).has_value());
         EXPECT(second.snapshot(owner)->front().count == 10);
     }
+
+    void testTransferAcknowledgements()
+    {
+        InventoryAcknowledgementLedger acknowledgements;
+        const auto now = InventoryAcknowledgementLedger::Clock::now();
+        const std::vector<InventoryItem> items{
+            item("diamond", 1), item("gold_001", 25) };
+
+        EXPECT(acknowledgements.expect(7, InventoryAction::Add, items, now));
+        EXPECT(acknowledgements.matches(7, InventoryAction::Add,
+            { item("gold_001", 25), item("diamond", 1) }, now));
+        EXPECT(!acknowledgements.matches(7, InventoryAction::Remove, items, now));
+        EXPECT(!acknowledgements.matches(7, InventoryAction::Add,
+            { item("diamond", 2), item("gold_001", 25) }, now));
+        EXPECT(acknowledgements.consume(7, InventoryAction::Add,
+            { item("gold_001", 25), item("diamond", 1) }, now));
+        EXPECT(acknowledgements.pending(7, now) == 0);
+        EXPECT(!acknowledgements.consume(7, InventoryAction::Add, items, now));
+
+        EXPECT(acknowledgements.expect(7, InventoryAction::Remove,
+            { item("gold_001", 25), item("diamond", 2) }, now));
+        EXPECT(acknowledgements.consume(7, InventoryAction::Remove,
+            { item("diamond", 1) }, now));
+        EXPECT(acknowledgements.pending(7, now) == 1);
+        EXPECT(!acknowledgements.matches(7, InventoryAction::Remove,
+            { item("diamond", 2) }, now));
+        EXPECT(acknowledgements.consume(7, InventoryAction::Remove,
+            { item("diamond", 1), item("gold_001", 25) }, now));
+        EXPECT(acknowledgements.pending(7, now) == 0);
+
+        EXPECT(acknowledgements.expect(7, InventoryAction::Remove, items, now));
+        EXPECT(acknowledgements.pending(7,
+            now + InventoryAcknowledgementLedger::AcknowledgementLifetime) == 0);
+        EXPECT(!acknowledgements.expect(0, InventoryAction::Add, items, now));
+        EXPECT(!acknowledgements.expect(7, InventoryAction::Add, {}, now));
+    }
+
+    void testTransferAcknowledgementLimit()
+    {
+        InventoryAcknowledgementLedger acknowledgements;
+        const auto now = InventoryAcknowledgementLedger::Clock::now();
+        for (std::size_t index = 0;
+             index < InventoryAcknowledgementLedger::MaximumPendingPerPlayer;
+             ++index)
+        {
+            EXPECT(acknowledgements.expect(4, InventoryAction::Add,
+                { item("item_" + std::to_string(index), 1) }, now));
+        }
+        EXPECT(!acknowledgements.canExpect(4, now));
+        EXPECT(!acknowledgements.expect(4, InventoryAction::Add,
+            { item("overflow", 1) }, now));
+        acknowledgements.erase(4);
+        EXPECT(acknowledgements.canExpect(4, now));
+    }
 }
 
 int runInventoryTests()
@@ -229,5 +284,7 @@ int runInventoryTests()
     testActorOwnersAreCellScoped();
     testBatchIsAtomic();
     testSwap();
+    testTransferAcknowledgements();
+    testTransferAcknowledgementLimit();
     return sFailures;
 }

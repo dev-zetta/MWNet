@@ -716,6 +716,8 @@ namespace
         mwmp::mechanics::InventoryDecision decision
             = mwmp::mechanics::InventoryDecision::InvalidAction;
         std::vector<mwmp::mechanics::InventoryOperation> operations;
+        std::optional<mwmp::mechanics::InventoryAction> playerAction;
+        std::vector<mwmp::mechanics::InventoryItem> playerItems;
     };
 
     ContainerOperations containerOperations(const mwmp::BaseObjectList& objectList,
@@ -736,6 +738,28 @@ namespace
         {
             return result;
         }
+
+        const bool takesFromContainer
+            = *action == mwmp::mechanics::InventoryAction::Remove
+            && (objectList.containerSubAction == mwmp::BaseObjectList::DRAG
+                || objectList.containerSubAction == mwmp::BaseObjectList::TAKE_ALL);
+        const bool putsInContainer
+            = *action == mwmp::mechanics::InventoryAction::Add
+            && objectList.containerSubAction == mwmp::BaseObjectList::DROP;
+        const bool hasTransferSubAction
+            = objectList.containerSubAction == mwmp::BaseObjectList::DRAG
+            || objectList.containerSubAction == mwmp::BaseObjectList::TAKE_ALL
+            || objectList.containerSubAction == mwmp::BaseObjectList::DROP;
+        if (!serverAuthored && hasTransferSubAction
+            && ((!takesFromContainer && !putsInContainer)
+                || objectList.packetOrigin != mwmp::CLIENT_GAMEPLAY))
+        {
+            return result;
+        }
+        if (!serverAuthored && takesFromContainer)
+            result.playerAction = mwmp::mechanics::InventoryAction::Add;
+        else if (!serverAuthored && putsInContainer)
+            result.playerAction = mwmp::mechanics::InventoryAction::Remove;
 
         std::unordered_set<mwmp::mechanics::InventoryOwner,
             mwmp::mechanics::InventoryOwnerHash> owners;
@@ -781,9 +805,13 @@ namespace
                     : static_cast<std::int64_t>(item.count);
                 operation.items.push_back({ item.refId, item.soul, item.charge,
                     item.enchantmentCharge, count });
+                if (result.playerAction)
+                    result.playerItems.push_back(operation.items.back());
             }
             result.operations.push_back(std::move(operation));
         }
+        if (result.playerAction && result.playerItems.empty())
+            return result;
         result.decision = mwmp::mechanics::InventoryDecision::Applied;
         return result;
     }
@@ -792,6 +820,11 @@ namespace
 bool Networking::validatePlayerInventory(Player& player, const BasePlayer& incoming)
 {
     const auto action = inventoryAction(incoming.inventoryChanges.action);
+    if (action && mInventoryAcknowledgements.matches(player.guid.value, *action,
+            inventoryItems(incoming.inventoryChanges)))
+    {
+        return true;
+    }
     mechanics::InventoryResult result{ mechanics::InventoryDecision::InvalidAction };
     mechanics::EquipmentResult equipmentResult{ mechanics::EquipmentDecision::Applied };
     std::vector<mechanics::InventoryItem> candidate;
@@ -816,6 +849,13 @@ bool Networking::validatePlayerInventory(Player& player, const BasePlayer& incom
     if (violations >= 5)
         disconnectTransport({ player.guid.value }, "repeated invalid inventory actions");
     return false;
+}
+
+bool Networking::isPlayerInventoryAcknowledgement(const Player& player)
+{
+    const auto action = inventoryAction(player.inventoryChanges.action);
+    return action && mInventoryAcknowledgements.matches(player.guid.value, *action,
+        inventoryItems(player.inventoryChanges));
 }
 
 bool Networking::validatePlayerItemUse(Player& player, const BasePlayer& incoming)
@@ -846,6 +886,11 @@ bool Networking::validatePlayerItemUse(Player& player, const BasePlayer& incomin
 bool Networking::commitPlayerInventory(Player& player)
 {
     const auto action = inventoryAction(player.inventoryChanges.action);
+    if (action && mInventoryAcknowledgements.consume(player.guid.value, *action,
+            inventoryItems(player.inventoryChanges)))
+    {
+        return true;
+    }
     mechanics::InventoryResult result{ mechanics::InventoryDecision::InvalidAction };
     mechanics::EquipmentResult equipmentResult{ mechanics::EquipmentDecision::Applied };
     std::vector<mechanics::InventoryItem> candidate;
@@ -1031,16 +1076,49 @@ bool Networking::validateContainerAction(Player& player, const BaseObjectList& i
 {
     const ContainerOperations operations = containerOperations(incoming, mInventoryLedger);
     mechanics::InventoryResult result{ operations.decision };
+    mechanics::EquipmentResult equipmentResult{ mechanics::EquipmentDecision::Applied };
     if (operations.decision == mechanics::InventoryDecision::Applied)
-        result = mInventoryLedger.previewBatch(operations.operations);
-    if (result.applied())
+    {
+        std::vector<mechanics::InventoryOperation> transaction = operations.operations;
+        bool canApply = true;
+        if (operations.playerAction)
+        {
+            canApply = mInventoryAcknowledgements.canExpect(player.guid.value);
+            if (canApply)
+            {
+                transaction.push_back({
+                    { mechanics::InventoryOwnerKind::Player, player.guid.value },
+                    *operations.playerAction, operations.playerItems });
+            }
+            else
+                result = { mechanics::InventoryDecision::InvalidAction };
+        }
+        if (canApply)
+        {
+            mechanics::InventoryLedger candidate = mInventoryLedger;
+            result = candidate.applyBatch(transaction);
+            if (result.applied() && operations.playerAction)
+            {
+                const auto inventory = candidate.snapshot(
+                    { mechanics::InventoryOwnerKind::Player, player.guid.value });
+                if (!inventory)
+                    result = { mechanics::InventoryDecision::InvalidOwner };
+                else
+                    equipmentResult = mEquipmentLedger.validateInventory(
+                        player.guid.value, *inventory);
+            }
+        }
+    }
+    if (result.applied() && equipmentResult.applied())
         return true;
 
     const unsigned int violations = ++mInventoryViolations[player.guid.value];
     LOG_MESSAGE_SIMPLE(TimedLog::LOG_WARN,
         "Rejected container action from connection %llu: %s (violation %u)",
         static_cast<unsigned long long>(player.guid.value),
-        mechanics::describe(result.decision), violations);
+        result.applied() ? mechanics::describe(equipmentResult.decision)
+                         : mechanics::describe(result.decision),
+        violations);
     if (violations >= 5)
         disconnectTransport({ player.guid.value }, "repeated invalid container actions");
     return false;
@@ -1050,16 +1128,60 @@ bool Networking::commitContainerAction(Player& player, const BaseObjectList& inc
 {
     const ContainerOperations operations = containerOperations(incoming, mInventoryLedger);
     mechanics::InventoryResult result{ operations.decision };
+    mechanics::EquipmentResult equipmentResult{ mechanics::EquipmentDecision::Applied };
     if (operations.decision == mechanics::InventoryDecision::Applied)
-        result = mInventoryLedger.applyBatch(operations.operations);
-    if (result.applied())
+    {
+        std::vector<mechanics::InventoryOperation> transaction = operations.operations;
+        bool canApply = true;
+        if (operations.playerAction)
+        {
+            canApply = mInventoryAcknowledgements.canExpect(player.guid.value);
+            if (canApply)
+            {
+                transaction.push_back({
+                    { mechanics::InventoryOwnerKind::Player, player.guid.value },
+                    *operations.playerAction, operations.playerItems });
+            }
+            else
+                result = { mechanics::InventoryDecision::InvalidAction };
+        }
+        if (canApply)
+        {
+            mechanics::InventoryLedger candidate = mInventoryLedger;
+            result = candidate.applyBatch(transaction);
+            if (result.applied() && operations.playerAction)
+            {
+                const auto inventory = candidate.snapshot(
+                    { mechanics::InventoryOwnerKind::Player, player.guid.value });
+                if (!inventory)
+                    result = { mechanics::InventoryDecision::InvalidOwner };
+                else
+                    equipmentResult = mEquipmentLedger.validateInventory(
+                        player.guid.value, *inventory);
+            }
+            if (result.applied() && equipmentResult.applied())
+            {
+                if (operations.playerAction
+                    && !mInventoryAcknowledgements.expect(player.guid.value,
+                        *operations.playerAction, operations.playerItems))
+                {
+                    result = { mechanics::InventoryDecision::InvalidAction };
+                }
+                else
+                    mInventoryLedger.swap(candidate);
+            }
+        }
+    }
+    if (result.applied() && equipmentResult.applied())
         return true;
 
     const unsigned int violations = ++mInventoryViolations[player.guid.value];
     LOG_MESSAGE_SIMPLE(TimedLog::LOG_WARN,
         "Rejected container intent at commit for connection %llu: %s (violation %u)",
         static_cast<unsigned long long>(player.guid.value),
-        mechanics::describe(result.decision), violations);
+        result.applied() ? mechanics::describe(equipmentResult.decision)
+                         : mechanics::describe(result.decision),
+        violations);
     if (violations >= 5)
         disconnectTransport({ player.guid.value }, "repeated invalid container actions");
     return false;
@@ -6049,6 +6171,7 @@ void Networking::disconnectPlayer(mwmp::transport::TransportConnectionId guid)
     mPlayerLifecycle.erase(guid.value);
     mLifecycleViolations.erase(guid.value);
     mEquipmentLedger.erase(guid.value);
+    mInventoryAcknowledgements.erase(guid.value);
     mInventoryLedger.erase({ mechanics::InventoryOwnerKind::Player, guid.value });
     mInventoryViolations.erase(guid.value);
     mSpellbookLedger.erase(guid.value);

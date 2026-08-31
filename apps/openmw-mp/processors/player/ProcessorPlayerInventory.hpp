@@ -23,6 +23,14 @@ namespace mwmp
         {
             DEBUG_PRINTF(strPacketID.c_str());
 
+            if (Networking::getPtr()->isPlayerInventoryAcknowledgement(player))
+            {
+                if (Networking::getPtr()->commitPlayerInventory(player))
+                    Script::Call<Script::CallbackIdentity(
+                        "OnPlayerInventory")>(player.getId());
+                return;
+            }
+
             const bool allowed = Script::CallBoolean<
                 Script::CallbackIdentity("OnPlayerInventoryIntent")>(player.getId());
             if (!allowed)

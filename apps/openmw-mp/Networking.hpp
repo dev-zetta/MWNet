@@ -9,6 +9,7 @@
 #include <components/openmw-mp/Packets/PacketPreInit.hpp>
 #include <components/openmw-mp/Mechanics/MovementValidator.hpp>
 #include <components/openmw-mp/Mechanics/PlayerLifecycle.hpp>
+#include <components/openmw-mp/Mechanics/InventoryAcknowledgementLedger.hpp>
 #include <components/openmw-mp/Mechanics/InventoryLedger.hpp>
 #include <components/openmw-mp/Mechanics/ItemUseValidator.hpp>
 #include <components/openmw-mp/Mechanics/EquipmentLedger.hpp>
@@ -124,6 +125,7 @@ namespace  mwmp
         bool beginPlayerRespawn(Player& player, std::uint32_t respawnType);
         bool acknowledgePlayerRespawn(Player& player, const BasePlayer& incoming);
         bool validatePlayerInventory(Player& player, const BasePlayer& incoming);
+        bool isPlayerInventoryAcknowledgement(const Player& player);
         bool validatePlayerItemUse(Player& player, const BasePlayer& incoming);
         bool commitPlayerInventory(Player& player);
         bool applyServerInventoryChanges(Player& player);
@@ -258,6 +260,7 @@ namespace  mwmp
         session::AuthorityLeaseManager mAuthorityLeases;
         mechanics::MovementValidator mMovementValidator;
         mechanics::PlayerLifecycle mPlayerLifecycle;
+        mechanics::InventoryAcknowledgementLedger mInventoryAcknowledgements;
         mechanics::InventoryLedger mInventoryLedger;
         mechanics::EquipmentLedger mEquipmentLedger;
         mechanics::CombatResolver mCombatResolver;
