@@ -97,7 +97,7 @@ set(PROCESSORS_PLAYER
         processors/player/ProcessorPlayerCast.hpp processors/player/ProcessorPlayerCellChange.hpp
         processors/player/ProcessorPlayerCellState.hpp processors/player/ProcessorPlayerCharClass.hpp
         processors/player/ProcessorPlayerCharGen.hpp processors/player/ProcessorPlayerCooldowns.hpp
-        processors/player/ProcessorPlayerDeath.hpp processors/player/ProcessorPlayerDisposition.hpp
+        processors/player/ProcessorPlayerDeath.hpp
         processors/player/ProcessorPlayerEquipment.hpp processors/player/ProcessorPlayerFaction.hpp
         processors/player/ProcessorPlayerInput.hpp processors/player/ProcessorPlayerInventory.hpp
         processors/player/ProcessorPlayerItemUse.hpp processors/player/ProcessorPlayerJournal.hpp

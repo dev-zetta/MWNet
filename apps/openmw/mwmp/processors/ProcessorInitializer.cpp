@@ -24,7 +24,6 @@
 #include "player/ProcessorPlayerCharGen.hpp"
 #include "player/ProcessorPlayerCooldowns.hpp"
 #include "player/ProcessorPlayerDeath.hpp"
-#include "player/ProcessorPlayerDisposition.hpp"
 #include "player/ProcessorPlayerEquipment.hpp"
 #include "player/ProcessorPlayerFaction.hpp"
 #include "player/ProcessorPlayerInput.hpp"
@@ -131,7 +130,6 @@ void ProcessorInitializer()
     PlayerProcessor::AddProcessor(new ProcessorPlayerCharGen());
     PlayerProcessor::AddProcessor(new ProcessorPlayerCooldowns());
     PlayerProcessor::AddProcessor(new ProcessorPlayerDeath());
-    PlayerProcessor::AddProcessor(new ProcessorPlayerDisposition());
     PlayerProcessor::AddProcessor(new ProcessorPlayerEquipment());
     PlayerProcessor::AddProcessor(new ProcessorPlayerFaction());
     PlayerProcessor::AddProcessor(new ProcessorPlayerInput());
