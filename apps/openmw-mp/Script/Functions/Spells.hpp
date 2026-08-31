@@ -375,7 +375,7 @@ public:
     *                           to the packet (false by default).
     * \return void
     */
-    static void SendSpellsActiveChanges(unsigned short pid, bool sendToOtherPlayers, bool skipAttachedPlayer) noexcept;
+    static void SendSpellsActiveChanges(unsigned short pid, bool sendToOtherPlayers, bool skipAttachedPlayer);
 
     /**
     * \brief Send a PlayerCooldowns packet with a player's recorded cooldown changes.

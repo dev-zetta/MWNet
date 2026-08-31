@@ -9,6 +9,7 @@
 #include <components/esm3/creaturestats.hpp>
 
 #include <chrono>
+#include <stdexcept>
 
 #include "Actors.hpp"
 
@@ -643,8 +644,11 @@ void ActorFunctions::SendActorEquipment(bool sendToOtherVisitors, bool skipAttac
     }
 }
 
-void ActorFunctions::SendActorSpellsActiveChanges(bool sendToOtherVisitors, bool skipAttachedPlayer) noexcept
+void ActorFunctions::SendActorSpellsActiveChanges(bool sendToOtherVisitors, bool skipAttachedPlayer)
 {
+    if (!mwmp::Networking::getPtr()->applyServerActorActiveEffects(writeActorList))
+        throw std::runtime_error("the server-authored actor active-effect change was rejected");
+
     mwmp::ActorPacket* actorPacket = mwmp::Networking::get().getActorPacketController()->GetPacket(ID_ACTOR_SPELLS_ACTIVE);
     actorPacket->setActorList(&writeActorList);
 

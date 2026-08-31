@@ -571,6 +571,319 @@ bool Networking::seedServerContainerInventory(const BaseObjectList& objectList)
 
 namespace
 {
+    std::optional<mwmp::mechanics::ActiveEffectAction> activeEffectAction(int action)
+    {
+        switch (action)
+        {
+            case mwmp::SpellsActiveChanges::SET:
+                return mwmp::mechanics::ActiveEffectAction::Set;
+            case mwmp::SpellsActiveChanges::ADD:
+                return mwmp::mechanics::ActiveEffectAction::Add;
+            case mwmp::SpellsActiveChanges::REMOVE:
+                return mwmp::mechanics::ActiveEffectAction::Remove;
+            default:
+                return std::nullopt;
+        }
+    }
+
+    std::uint64_t activeEffectReference(unsigned int refNum, unsigned int mpNum) noexcept
+    {
+        return (static_cast<std::uint64_t>(refNum) << 32)
+            | static_cast<std::uint64_t>(mpNum);
+    }
+
+    bool canonicalActiveSpells(const mwmp::SpellsActiveChanges& changes,
+        std::string_view actorScope,
+        std::vector<mwmp::mechanics::CanonicalActiveSpell>& result)
+    {
+        result.clear();
+        result.reserve(changes.activeSpells.size());
+        for (const mwmp::ActiveSpell& spell : changes.activeSpells)
+        {
+            mwmp::mechanics::CanonicalActiveSpell canonical;
+            canonical.id = spell.id;
+            canonical.displayName = spell.params.mDisplayName;
+            canonical.stacking = spell.isStackingSpell;
+            canonical.timestampDay = spell.timestampDay;
+            canonical.timestampHour = spell.timestampHour;
+
+            if (spell.caster.isPlayer)
+            {
+                if (spell.caster.guid.g == 0)
+                    return false;
+                canonical.caster = mwmp::mechanics::CombatantId{
+                    mwmp::mechanics::CombatantKind::Player, spell.caster.guid.g, {} };
+            }
+            else
+            {
+                const bool hasRefNum = spell.caster.refNum != 0;
+                const bool hasMpNum = spell.caster.mpNum != 0;
+                if (hasRefNum && hasMpNum)
+                    return false;
+                if (hasRefNum || hasMpNum)
+                {
+                    if (actorScope.empty())
+                        return false;
+                    canonical.caster = mwmp::mechanics::CombatantId{
+                        mwmp::mechanics::CombatantKind::Actor,
+                        activeEffectReference(spell.caster.refNum, spell.caster.mpNum),
+                        std::string(actorScope) };
+                }
+                else if (!spell.caster.refId.empty())
+                    return false;
+            }
+
+            canonical.effects.reserve(spell.params.mEffects.size());
+            for (const ESM::ActiveEffect& effect : spell.params.mEffects)
+            {
+                mwmp::mechanics::CanonicalEffect canonicalEffect;
+                canonicalEffect.effectId = effect.mEffectId.getRefIdString();
+                if (const ESM::RefId* argument = std::get_if<ESM::RefId>(&effect.mArg))
+                    canonicalEffect.argument = argument->getRefIdString();
+                else
+                {
+                    const ESM::FormId& formArgument
+                        = std::get<ESM::FormId>(effect.mArg);
+                    canonicalEffect.argument = std::to_string(formArgument.mContentFile)
+                        + ":" + std::to_string(formArgument.mIndex);
+                }
+                canonicalEffect.magnitude = effect.mMagnitude;
+                canonicalEffect.duration = effect.mDuration;
+                canonicalEffect.timeLeft = effect.mTimeLeft;
+                canonical.effects.push_back(std::move(canonicalEffect));
+            }
+            result.push_back(std::move(canonical));
+        }
+        return true;
+    }
+
+    struct ActiveEffectOperations
+    {
+        mwmp::mechanics::ActiveEffectDecision decision
+            = mwmp::mechanics::ActiveEffectDecision::InvalidAction;
+        std::vector<mwmp::mechanics::ActiveEffectOperation> operations;
+    };
+
+    ActiveEffectOperations actorActiveEffectOperations(
+        const mwmp::BaseActorList& actorList)
+    {
+        ActiveEffectOperations result;
+        const std::string cellDescription = actorList.cell.getShortDescription();
+        if (cellDescription.empty()
+            || actorList.count != actorList.baseActors.size())
+            return result;
+
+        result.operations.reserve(actorList.baseActors.size());
+        for (const mwmp::BaseActor& actor : actorList.baseActors)
+        {
+            const bool hasRefNum = actor.refNum != 0;
+            const bool hasMpNum = actor.mpNum != 0;
+            const auto action = activeEffectAction(actor.spellsActiveChanges.action);
+            if (hasRefNum == hasMpNum || !action)
+            {
+                result.decision = mwmp::mechanics::ActiveEffectDecision::InvalidOwner;
+                return result;
+            }
+
+            mwmp::mechanics::ActiveEffectOperation operation;
+            operation.owner = { mwmp::mechanics::CombatantKind::Actor,
+                activeEffectReference(actor.refNum, actor.mpNum), cellDescription };
+            operation.action = *action;
+            if (!canonicalActiveSpells(actor.spellsActiveChanges, cellDescription,
+                    operation.spells))
+            {
+                result.decision = mwmp::mechanics::ActiveEffectDecision::InvalidSpell;
+                return result;
+            }
+            result.operations.push_back(std::move(operation));
+        }
+        result.decision = mwmp::mechanics::ActiveEffectDecision::Applied;
+        return result;
+    }
+}
+
+bool Networking::validatePlayerActiveEffects(Player& player, const BasePlayer& incoming)
+{
+    const auto action = activeEffectAction(incoming.spellsActiveChanges.action);
+    std::vector<mechanics::CanonicalActiveSpell> spells;
+    mechanics::ActiveEffectResult result{
+        mechanics::ActiveEffectDecision::InvalidAction };
+    if (action && canonicalActiveSpells(incoming.spellsActiveChanges,
+            player.cell.getShortDescription(), spells))
+    {
+        result = mActiveEffectLedger.preview(
+            { mechanics::CombatantKind::Player, player.guid.g, {} }, *action, spells);
+    }
+    else if (action)
+        result.decision = mechanics::ActiveEffectDecision::InvalidSpell;
+
+    if (result.applied())
+        return true;
+    const unsigned int violations = ++mActiveEffectViolations[player.guid.g];
+    LOG_MESSAGE_SIMPLE(TimedLog::LOG_WARN,
+        "Rejected active-effect change from connection %llu: %s (violation %u)",
+        static_cast<unsigned long long>(player.guid.g),
+        mechanics::describe(result.decision), violations);
+    if (violations >= 5)
+        disconnectTransport({ player.guid.g }, "repeated invalid active-effect changes");
+    return false;
+}
+
+bool Networking::commitPlayerActiveEffects(Player& player)
+{
+    const auto action = activeEffectAction(player.spellsActiveChanges.action);
+    std::vector<mechanics::CanonicalActiveSpell> spells;
+    mechanics::ActiveEffectResult result{
+        mechanics::ActiveEffectDecision::InvalidAction };
+    mechanics::ActiveEffectOperation operation;
+    operation.owner = { mechanics::CombatantKind::Player, player.guid.g, {} };
+    if (action && canonicalActiveSpells(player.spellsActiveChanges,
+            player.cell.getShortDescription(), spells))
+    {
+        operation.action = *action;
+        operation.spells = spells;
+        result = mActiveEffectLedger.apply(
+            operation.owner, operation.action, operation.spells);
+    }
+    else if (action)
+        result.decision = mechanics::ActiveEffectDecision::InvalidSpell;
+
+    if (result.applied())
+    {
+        mAcceptedPlayerActiveEffectIntents.insert_or_assign(
+            player.guid.g, std::move(operation));
+        mRelayedPlayerActiveEffectIntents.erase(player.guid.g);
+        return true;
+    }
+    const unsigned int violations = ++mActiveEffectViolations[player.guid.g];
+    LOG_MESSAGE_SIMPLE(TimedLog::LOG_WARN,
+        "Rejected modified active-effect intent from connection %llu: %s (violation %u)",
+        static_cast<unsigned long long>(player.guid.g),
+        mechanics::describe(result.decision), violations);
+    if (violations >= 5)
+        disconnectTransport({ player.guid.g }, "repeated invalid active-effect changes");
+    return false;
+}
+
+bool Networking::applyServerPlayerActiveEffects(Player& player)
+{
+    const auto action = activeEffectAction(player.spellsActiveChanges.action);
+    std::vector<mechanics::CanonicalActiveSpell> spells;
+    mechanics::ActiveEffectResult result{
+        mechanics::ActiveEffectDecision::InvalidAction };
+    mechanics::ActiveEffectOperation operation;
+    operation.owner = { mechanics::CombatantKind::Player, player.guid.g, {} };
+    if (action && canonicalActiveSpells(player.spellsActiveChanges,
+            player.cell.getShortDescription(), spells))
+    {
+        operation.action = *action;
+        operation.spells = std::move(spells);
+        const auto accepted = mAcceptedPlayerActiveEffectIntents.find(player.guid.g);
+        if (accepted != mAcceptedPlayerActiveEffectIntents.end()
+            && accepted->second == operation)
+        {
+            mRelayedPlayerActiveEffectIntents.insert(player.guid.g);
+            return true;
+        }
+        result = mActiveEffectLedger.apply(
+            operation.owner, operation.action, operation.spells);
+    }
+    else if (action)
+        result.decision = mechanics::ActiveEffectDecision::InvalidSpell;
+    if (!result.applied())
+    {
+        LOG_MESSAGE_SIMPLE(TimedLog::LOG_ERROR,
+            "Rejected server-authored active-effect change for connection %llu: %s",
+            static_cast<unsigned long long>(player.guid.g),
+            mechanics::describe(result.decision));
+    }
+    return result.applied();
+}
+
+bool Networking::finishPlayerActiveEffectIntent(Player& player) noexcept
+{
+    mAcceptedPlayerActiveEffectIntents.erase(player.guid.g);
+    return mRelayedPlayerActiveEffectIntents.erase(player.guid.g) != 0;
+}
+
+bool Networking::validateActorActiveEffects(Player& player,
+    const BaseActorList& incoming)
+{
+    const ActiveEffectOperations operations = actorActiveEffectOperations(incoming);
+    mechanics::ActiveEffectResult result{ operations.decision };
+    if (operations.decision == mechanics::ActiveEffectDecision::Applied)
+        result = mActiveEffectLedger.previewBatch(operations.operations);
+    if (result.applied())
+        return true;
+
+    const unsigned int violations = ++mActiveEffectViolations[player.guid.g];
+    LOG_MESSAGE_SIMPLE(TimedLog::LOG_WARN,
+        "Rejected actor active-effect change from connection %llu: %s (violation %u)",
+        static_cast<unsigned long long>(player.guid.g),
+        mechanics::describe(result.decision), violations);
+    if (violations >= 5)
+        disconnectTransport({ player.guid.g }, "repeated invalid actor active-effect changes");
+    return false;
+}
+
+bool Networking::commitActorActiveEffects(Player& player,
+    const BaseActorList& incoming)
+{
+    ActiveEffectOperations operations = actorActiveEffectOperations(incoming);
+    mechanics::ActiveEffectResult result{ operations.decision };
+    if (operations.decision == mechanics::ActiveEffectDecision::Applied)
+        result = mActiveEffectLedger.applyBatch(operations.operations);
+    if (result.applied())
+    {
+        mAcceptedActorActiveEffectIntents.insert_or_assign(player.guid.g,
+            std::move(operations.operations));
+        mRelayedActorActiveEffectIntents.erase(player.guid.g);
+        return true;
+    }
+
+    const unsigned int violations = ++mActiveEffectViolations[player.guid.g];
+    LOG_MESSAGE_SIMPLE(TimedLog::LOG_WARN,
+        "Rejected modified actor active-effect intent from connection %llu: %s (violation %u)",
+        static_cast<unsigned long long>(player.guid.g),
+        mechanics::describe(result.decision), violations);
+    if (violations >= 5)
+        disconnectTransport({ player.guid.g }, "repeated invalid actor active-effect changes");
+    return false;
+}
+
+bool Networking::applyServerActorActiveEffects(const BaseActorList& actorList)
+{
+    const ActiveEffectOperations operations = actorActiveEffectOperations(actorList);
+    mechanics::ActiveEffectResult result{ operations.decision };
+    if (operations.decision == mechanics::ActiveEffectDecision::Applied)
+    {
+        const auto accepted = mAcceptedActorActiveEffectIntents.find(actorList.guid.g);
+        if (accepted != mAcceptedActorActiveEffectIntents.end()
+            && accepted->second == operations.operations)
+        {
+            mRelayedActorActiveEffectIntents.insert(actorList.guid.g);
+            return true;
+        }
+        result = mActiveEffectLedger.applyBatch(operations.operations);
+    }
+    if (!result.applied())
+    {
+        LOG_MESSAGE_SIMPLE(TimedLog::LOG_ERROR,
+            "Rejected server-authored actor active-effect change for %s: %s",
+            actorList.cell.getShortDescription().c_str(),
+            mechanics::describe(result.decision));
+    }
+    return result.applied();
+}
+
+bool Networking::finishActorActiveEffectIntent(Player& player) noexcept
+{
+    mAcceptedActorActiveEffectIntents.erase(player.guid.g);
+    return mRelayedActorActiveEffectIntents.erase(player.guid.g) != 0;
+}
+
+namespace
+{
     constexpr double maximumCanonicalStat =
         mwmp::mechanics::CombatResolver::MaximumStatValue;
 
@@ -1655,6 +1968,12 @@ void Networking::disconnectPlayer(RakNet::RakNetGUID guid)
     mInventoryViolations.erase(guid.g);
     mCombatResolver.erase({ mechanics::CombatantKind::Player, guid.g, {} });
     mCombatViolations.erase(guid.g);
+    mActiveEffectLedger.erase({ mechanics::CombatantKind::Player, guid.g, {} });
+    mActiveEffectViolations.erase(guid.g);
+    mAcceptedPlayerActiveEffectIntents.erase(guid.g);
+    mRelayedPlayerActiveEffectIntents.erase(guid.g);
+    mAcceptedActorActiveEffectIntents.erase(guid.g);
+    mRelayedActorActiveEffectIntents.erase(guid.g);
     Players::deletePlayer(guid);
 }
 

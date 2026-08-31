@@ -11,6 +11,7 @@
 #include <components/openmw-mp/Mechanics/PlayerLifecycle.hpp>
 #include <components/openmw-mp/Mechanics/InventoryLedger.hpp>
 #include <components/openmw-mp/Mechanics/CombatResolver.hpp>
+#include <components/openmw-mp/Mechanics/ActiveEffectLedger.hpp>
 #include <components/openmw-mp/Persistence/PersistenceService.hpp>
 #include <components/openmw-mp/Security/ServerAuthenticationService.hpp>
 #include <components/openmw-mp/Session/AuthorityLease.hpp>
@@ -26,6 +27,7 @@
 #include <string_view>
 #include <unordered_map>
 #include <unordered_set>
+#include <vector>
 
 namespace  mwmp
 {
@@ -106,6 +108,14 @@ namespace  mwmp
         bool validateContainerAction(Player& player, const BaseObjectList& incoming);
         bool commitContainerAction(Player& player, const BaseObjectList& incoming);
         bool seedServerContainerInventory(const BaseObjectList& objectList);
+        bool validatePlayerActiveEffects(Player& player, const BasePlayer& incoming);
+        bool commitPlayerActiveEffects(Player& player);
+        bool applyServerPlayerActiveEffects(Player& player);
+        bool finishPlayerActiveEffectIntent(Player& player) noexcept;
+        bool validateActorActiveEffects(Player& player, const BaseActorList& incoming);
+        bool commitActorActiveEffects(Player& player, const BaseActorList& incoming);
+        bool applyServerActorActiveEffects(const BaseActorList& actorList);
+        bool finishActorActiveEffectIntent(Player& player) noexcept;
         bool validatePlayerStats(Player& player, const BasePlayer& incoming);
         bool reconcilePlayerStats(Player& player);
         bool applyServerPlayerStats(Player& player);
@@ -155,12 +165,20 @@ namespace  mwmp
         mechanics::PlayerLifecycle mPlayerLifecycle;
         mechanics::InventoryLedger mInventoryLedger;
         mechanics::CombatResolver mCombatResolver;
+        mechanics::ActiveEffectLedger mActiveEffectLedger;
         std::unordered_set<std::uint64_t> mAuthenticatedConnections;
         std::unordered_map<std::uint64_t, unsigned int> mAuthorityViolations;
         std::unordered_map<std::uint64_t, unsigned int> mMovementViolations;
         std::unordered_map<std::uint64_t, unsigned int> mLifecycleViolations;
         std::unordered_map<std::uint64_t, unsigned int> mInventoryViolations;
         std::unordered_map<std::uint64_t, unsigned int> mCombatViolations;
+        std::unordered_map<std::uint64_t, unsigned int> mActiveEffectViolations;
+        std::unordered_map<std::uint64_t, mechanics::ActiveEffectOperation>
+            mAcceptedPlayerActiveEffectIntents;
+        std::unordered_set<std::uint64_t> mRelayedPlayerActiveEffectIntents;
+        std::unordered_map<std::uint64_t,
+            std::vector<mechanics::ActiveEffectOperation>> mAcceptedActorActiveEffectIntents;
+        std::unordered_set<std::uint64_t> mRelayedActorActiveEffectIntents;
         std::unordered_set<std::string> mBannedAddresses;
         unsigned int mMaximumConnections;
         unsigned short mPort;

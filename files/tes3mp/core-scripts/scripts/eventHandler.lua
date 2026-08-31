@@ -1,5 +1,7 @@
 local eventHandler = {}
 local pendingPlayerInventoryEvents = {}
+local pendingPlayerSpellsActiveEvents = {}
+local pendingActorSpellsActiveEvents = {}
 local pendingContainerEvents = {}
 local pendingContainerRestocks = {}
 
@@ -1025,19 +1027,58 @@ eventHandler.OnPlayerQuickKeys = function(pid)
 end
 
 eventHandler.OnPlayerSpellsActive = function(pid)
-    if Players[pid] ~= nil and Players[pid]:IsLoggedIn() then
-        local playerPacket = packetReader.GetPlayerPacketTables(pid, "PlayerSpellsActive")
-
-        local eventStatus = customEventHooks.triggerValidators("OnPlayerSpellsActive", {pid, playerPacket})
-        if eventStatus.validDefaultHandler then
-            Players[pid]:SaveSpellsActive(playerPacket)
-
-            -- Send this PlayerSpellsActive packet to other players (sendToOthersPlayers is true),
-            -- but skip sending it to the player we got it from (skipAttachedPlayer is true)
-            tes3mp.SendSpellsActiveChanges(pid, true, true)
-        end
-        customEventHooks.triggerHandlers("OnPlayerSpellsActive", eventStatus, {pid, playerPacket})
+    local pendingEvent = pendingPlayerSpellsActiveEvents[pid]
+    pendingPlayerSpellsActiveEvents[pid] = nil
+    if pendingEvent == nil then
+        return
     end
+
+    if Players[pid] ~= nil and Players[pid]:IsLoggedIn() then
+        Players[pid]:SaveSpellsActive(pendingEvent.playerPacket)
+
+        -- Native validation has committed the complete change before this
+        -- compatibility callback. Relay only that accepted change.
+        tes3mp.SendSpellsActiveChanges(pid, true, true)
+        customEventHooks.triggerHandlers("OnPlayerSpellsActive", pendingEvent.eventStatus,
+            {pid, pendingEvent.playerPacket})
+    end
+end
+
+eventHandler.OnPlayerSpellsActiveIntent = function(pid)
+    pendingPlayerSpellsActiveEvents[pid] = nil
+    if Players[pid] == nil or not Players[pid]:IsLoggedIn() then
+        return false
+    end
+
+    local playerPacket = packetReader.GetPlayerPacketTables(pid, "PlayerSpellsActive")
+    local eventStatus = customEventHooks.triggerValidators("OnPlayerSpellsActive",
+        {pid, playerPacket})
+    if not eventStatus.validDefaultHandler then
+        customEventHooks.triggerHandlers("OnPlayerSpellsActive", eventStatus,
+            {pid, playerPacket})
+        return false
+    end
+
+    pendingPlayerSpellsActiveEvents[pid] = {
+        eventStatus = eventStatus,
+        playerPacket = playerPacket
+    }
+    return true
+end
+
+eventHandler.OnPlayerSpellsActiveIntentRejected = function(pid, reason)
+    local pendingEvent = pendingPlayerSpellsActiveEvents[pid]
+    pendingPlayerSpellsActiveEvents[pid] = nil
+    if pendingEvent == nil then
+        return
+    end
+
+    tes3mp.LogAppend(enumerations.log.WARN,
+        "- Rejected PlayerSpellsActive after script validation: " .. reason)
+    local eventStatus = customEventHooks.makeEventStatus(false,
+        pendingEvent.eventStatus.validCustomHandlers)
+    customEventHooks.triggerHandlers("OnPlayerSpellsActive", eventStatus,
+        {pid, pendingEvent.playerPacket})
 end
 
 eventHandler.OnPlayerCellChange = function(pid)
@@ -1381,7 +1422,82 @@ eventHandler.OnActorEquipment = function(pid, cellDescription)
 end
 
 eventHandler.OnActorSpellsActive = function(pid, cellDescription)
-    eventHandler.OnGenericActorEvent(pid, cellDescription, "ActorSpellsActive")
+    local pendingByCell = pendingActorSpellsActiveEvents[pid]
+    local pendingEvent = nil
+    if pendingByCell ~= nil then
+        pendingEvent = pendingByCell[cellDescription]
+        pendingByCell[cellDescription] = nil
+        if next(pendingByCell) == nil then
+            pendingActorSpellsActiveEvents[pid] = nil
+        end
+    end
+    if pendingEvent == nil then
+        return
+    end
+
+    if Players[pid] ~= nil and Players[pid]:IsLoggedIn() and
+        LoadedCells[cellDescription] ~= nil then
+        LoadedCells[cellDescription]:SaveActorsByPacketType("ActorSpellsActive",
+            pendingEvent.actors)
+        customEventHooks.triggerHandlers("OnActorSpellsActive", pendingEvent.eventStatus,
+            {pid, cellDescription, pendingEvent.actors})
+    end
+end
+
+eventHandler.OnActorSpellsActiveIntent = function(pid, cellDescription)
+    if pendingActorSpellsActiveEvents[pid] == nil then
+        pendingActorSpellsActiveEvents[pid] = {}
+    end
+    pendingActorSpellsActiveEvents[pid][cellDescription] = nil
+
+    if Players[pid] == nil or not Players[pid]:IsLoggedIn() or
+        LoadedCells[cellDescription] == nil then
+        if next(pendingActorSpellsActiveEvents[pid]) == nil then
+            pendingActorSpellsActiveEvents[pid] = nil
+        end
+        return false
+    end
+
+    tes3mp.ReadReceivedActorList()
+    local actors = packetReader.GetActorPacketTables("ActorSpellsActive").actors
+    local eventStatus = customEventHooks.triggerValidators("OnActorSpellsActive",
+        {pid, cellDescription, actors})
+    if not eventStatus.validDefaultHandler then
+        customEventHooks.triggerHandlers("OnActorSpellsActive", eventStatus,
+            {pid, cellDescription, actors})
+        if next(pendingActorSpellsActiveEvents[pid]) == nil then
+            pendingActorSpellsActiveEvents[pid] = nil
+        end
+        return false
+    end
+
+    pendingActorSpellsActiveEvents[pid][cellDescription] = {
+        eventStatus = eventStatus,
+        actors = actors
+    }
+    return true
+end
+
+eventHandler.OnActorSpellsActiveIntentRejected = function(pid, cellDescription, reason)
+    local pendingByCell = pendingActorSpellsActiveEvents[pid]
+    if pendingByCell == nil then
+        return
+    end
+    local pendingEvent = pendingByCell[cellDescription]
+    pendingByCell[cellDescription] = nil
+    if next(pendingByCell) == nil then
+        pendingActorSpellsActiveEvents[pid] = nil
+    end
+    if pendingEvent == nil then
+        return
+    end
+
+    tes3mp.LogAppend(enumerations.log.WARN,
+        "- Rejected ActorSpellsActive after script validation: " .. reason)
+    local eventStatus = customEventHooks.makeEventStatus(false,
+        pendingEvent.eventStatus.validCustomHandlers)
+    customEventHooks.triggerHandlers("OnActorSpellsActive", eventStatus,
+        {pid, cellDescription, pendingEvent.actors})
 end
 
 eventHandler.OnActorAI = function(pid, cellDescription)

@@ -2,6 +2,7 @@
 #define OPENMW_PROCESSORPLAYERSPELLSACTIVE_HPP
 
 #include "../PlayerProcessor.hpp"
+#include "apps/openmw-mp/Networking.hpp"
 
 namespace mwmp
 {
@@ -13,11 +14,40 @@ namespace mwmp
             BPP_INIT(ID_PLAYER_SPELLS_ACTIVE)
         }
 
+        bool Validate(Player& player, const BasePlayer& incoming) override
+        {
+            return Networking::getPtr()->validatePlayerActiveEffects(player, incoming);
+        }
+
         void Do(PlayerPacket &packet, Player &player) override
         {
             DEBUG_PRINTF(strPacketID.c_str());
 
-            Script::Call<Script::CallbackIdentity("OnPlayerSpellsActive")>(player.getId());
+            const bool allowed = Script::CallBoolean<Script::CallbackIdentity(
+                "OnPlayerSpellsActiveIntent")>(player.getId());
+            if (!allowed)
+                return;
+
+            if (!Networking::getPtr()->commitPlayerActiveEffects(player))
+            {
+                const char* reason = "canonical active-effect validation failed";
+                Script::Call<Script::CallbackIdentity(
+                    "OnPlayerSpellsActiveIntentRejected")>(player.getId(), reason);
+                return;
+            }
+
+            Networking* networking = Networking::getPtr();
+            try
+            {
+                Script::Call<Script::CallbackIdentity("OnPlayerSpellsActive")>(player.getId());
+            }
+            catch (...)
+            {
+                networking->finishPlayerActiveEffectIntent(player);
+                throw;
+            }
+            if (!networking->finishPlayerActiveEffectIntent(player))
+                player.sendToLoaded(&packet);
         }
     };
 }

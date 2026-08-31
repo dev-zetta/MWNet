@@ -70,6 +70,8 @@ namespace mwmp::mechanics
         CombatantId owner;
         ActiveEffectAction action = ActiveEffectAction::Set;
         std::vector<CanonicalActiveSpell> spells;
+
+        bool operator==(const ActiveEffectOperation&) const = default;
     };
 
     class ActiveEffectLedger

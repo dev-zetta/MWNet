@@ -503,6 +503,14 @@ function OnPlayerSpellsActive(pid)
     eventHandler.OnPlayerSpellsActive(pid)
 end
 
+function OnPlayerSpellsActiveIntent(pid)
+    return eventHandler.OnPlayerSpellsActiveIntent(pid)
+end
+
+function OnPlayerSpellsActiveIntentRejected(pid, reason)
+    eventHandler.OnPlayerSpellsActiveIntentRejected(pid, reason)
+end
+
 function OnPlayerCooldowns(pid)
     tes3mp.LogMessage(enumerations.log.INFO, "Called \"OnPlayerCooldowns\" for " .. logicHandler.GetChatName(pid))
     eventHandler.OnPlayerCooldowns(pid)
@@ -612,6 +620,14 @@ function OnActorSpellsActive(pid, cellDescription)
     tes3mp.LogMessage(enumerations.log.INFO, "Called \"OnActorSpellsActive\" for " .. logicHandler.GetChatName(pid) ..
         " and cell " .. cellDescription)
     eventHandler.OnActorSpellsActive(pid, cellDescription)
+end
+
+function OnActorSpellsActiveIntent(pid, cellDescription)
+    return eventHandler.OnActorSpellsActiveIntent(pid, cellDescription)
+end
+
+function OnActorSpellsActiveIntentRejected(pid, cellDescription, reason)
+    eventHandler.OnActorSpellsActiveIntentRejected(pid, cellDescription, reason)
 end
 
 function OnActorCellChange(pid, cellDescription)

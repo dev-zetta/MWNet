@@ -983,7 +983,7 @@ public:
     *
     * \return void
     */
-    static void SendActorSpellsActiveChanges(bool sendToOtherVisitors, bool skipAttachedPlayer) noexcept;
+    static void SendActorSpellsActiveChanges(bool sendToOtherVisitors, bool skipAttachedPlayer);
 
     /**
     * \brief Send an ActorSpeech packet.
