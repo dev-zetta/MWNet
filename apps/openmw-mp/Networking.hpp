@@ -117,6 +117,7 @@ namespace  mwmp
         bool resolveActorAttack(Player& player, BaseActorList& actorList,
             std::size_t actorIndex, std::optional<BaseActor>& actorDeath,
             std::string& rejectionReason);
+        void rejectActorDeathClaims(Player& player, const BaseActorList& incoming);
         persistence::QueueDecision queuePersistenceWrite(
             std::filesystem::path path, std::string_view contents);
         void flushPersistence();

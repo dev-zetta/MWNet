@@ -1169,6 +1169,36 @@ bool Networking::resolveActorAttack(Player& player, BaseActorList& actorList,
     return true;
 }
 
+void Networking::rejectActorDeathClaims(Player& player,
+    const BaseActorList& incoming)
+{
+    bool duplicateCanonicalDeath = !incoming.baseActors.empty();
+    for (const BaseActor& actor : incoming.baseActors)
+    {
+        const mechanics::CombatantId id = actorCombatantId(incoming.cell, actor);
+        const auto state = mCombatResolver.find(id);
+        if (!state || state->alive || state->health > 0)
+        {
+            duplicateCanonicalDeath = false;
+            break;
+        }
+    }
+    if (duplicateCanonicalDeath)
+    {
+        LOG_MESSAGE_SIMPLE(TimedLog::LOG_VERBOSE,
+            "Ignored duplicate canonical actor death acknowledgement from connection %llu",
+            static_cast<unsigned long long>(player.guid.g));
+        return;
+    }
+
+    const unsigned int violations = ++mCombatViolations[player.guid.g];
+    LOG_MESSAGE_SIMPLE(TimedLog::LOG_WARN,
+        "Rejected client-claimed actor death from connection %llu (violation %u)",
+        static_cast<unsigned long long>(player.guid.g), violations);
+    if (violations >= 5)
+        disconnectTransport({ player.guid.g }, "repeated client-claimed actor deaths");
+}
+
 persistence::QueueDecision Networking::queuePersistenceWrite(
     std::filesystem::path path, std::string_view contents)
 {

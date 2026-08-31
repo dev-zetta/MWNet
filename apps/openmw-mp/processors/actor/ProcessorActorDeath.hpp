@@ -2,6 +2,7 @@
 #define OPENMW_PROCESSORACTORDEATH_HPP
 
 #include "../ActorProcessor.hpp"
+#include "apps/openmw-mp/Networking.hpp"
 
 namespace mwmp
 {
@@ -13,17 +14,10 @@ namespace mwmp
             BPP_INIT(ID_ACTOR_DEATH)
         }
 
-        void Do(ActorPacket &packet, Player &player, BaseActorList &actorList) override
+        bool Validate(Player& player, const BaseActorList& incoming) override
         {
-            // Send only to players who have the cell loaded
-            Cell *serverCell = CellController::get()->getCell(&actorList.cell);
-
-            if (serverCell != nullptr && *serverCell->getAuthority() == actorList.guid)
-            {
-                Script::Call<Script::CallbackIdentity("OnActorDeath")>(player.getId(), actorList.cell.getShortDescription().c_str());
-
-                serverCell->sendToLoaded(&packet, &actorList);
-            }
+            Networking::getPtr()->rejectActorDeathClaims(player, incoming);
+            return false;
         }
     };
 }
