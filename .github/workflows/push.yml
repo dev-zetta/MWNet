@@ -28,6 +28,9 @@ jobs:
     - name: Check CMake formatting
       run: CI/check_cmake_format.sh
 
+    - name: Check TES3MP 0.8.1 Lua API compatibility
+      run: CI/check_tes3mp_lua_api.sh
+
   ProtocolLinux:
     name: protocol-${{ matrix.compiler }}-${{ matrix.sanitizer }}
     runs-on: ubuntu-latest
