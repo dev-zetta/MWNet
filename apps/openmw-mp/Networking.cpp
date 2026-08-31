@@ -254,6 +254,17 @@ bool Networking::acceptPlayerDeath(Player& player)
         return false;
     }
 
+    const mechanics::PlayerLifeState lifeState
+        = mPlayerLifecycle.state(player.guid.g);
+    if (lifeState == mechanics::PlayerLifeState::Dead
+        || lifeState == mechanics::PlayerLifeState::Respawning)
+    {
+        LOG_MESSAGE_SIMPLE(TimedLog::LOG_VERBOSE,
+            "Ignored duplicate death acknowledgement from connection %llu",
+            static_cast<unsigned long long>(player.guid.g));
+        return false;
+    }
+
     const mechanics::PlayerLifeTransition transition
         = mPlayerLifecycle.reportDeath(player.guid.g);
     if (transition.applied())
@@ -267,6 +278,31 @@ bool Networking::acceptPlayerDeath(Player& player)
     if (violations >= 5)
         disconnectTransport({ player.guid.g }, "repeated invalid death intents");
     return false;
+}
+
+bool Networking::publishCanonicalPlayerDeath(Player& player, const Target& killer)
+{
+    const mechanics::PlayerLifeTransition transition
+        = mPlayerLifecycle.reportDeath(player.guid.g);
+    if (!transition.applied())
+    {
+        if (transition.decision == mechanics::PlayerLifeDecision::AlreadyDead)
+            return false;
+        LOG_MESSAGE_SIMPLE(TimedLog::LOG_WARN,
+            "Failed to publish canonical death for connection %llu: %s",
+            static_cast<unsigned long long>(player.guid.g),
+            mechanics::describe(transition.decision));
+        return false;
+    }
+
+    player.creatureStats.mDead = true;
+    player.killer = killer;
+    PlayerPacket* deathPacket = playerPacketController->GetPacket(ID_PLAYER_DEATH);
+    deathPacket->setPlayer(&player);
+    deathPacket->Send(player.guid);
+    player.sendToLoaded(deathPacket);
+    Script::Call<Script::CallbackIdentity("OnPlayerDeath")>(player.getId());
+    return true;
 }
 
 bool Networking::beginPlayerRespawn(Player& player, std::uint32_t respawnType)
@@ -847,6 +883,13 @@ bool Networking::resolvePlayerAttack(Player& player, std::string& rejectionReaso
         statsPacket->setPlayer(targetPlayer);
         statsPacket->Send(targetPlayer->guid);
         targetPlayer->sendToLoaded(statsPacket);
+        if (result.targetDied)
+        {
+            Target killer;
+            killer.isPlayer = true;
+            killer.guid = player.guid;
+            publishCanonicalPlayerDeath(*targetPlayer, killer);
+        }
     }
     else
     {
@@ -1093,6 +1136,15 @@ bool Networking::resolveActorAttack(Player& player, BaseActorList& actorList,
         statsPacket->setPlayer(targetPlayer);
         statsPacket->Send(targetPlayer->guid);
         targetPlayer->sendToLoaded(statsPacket);
+        if (result.targetDied)
+        {
+            Target killer;
+            killer.refId = attackerActor->refId;
+            killer.refNum = attackerActor->refNum;
+            killer.mpNum = attackerActor->mpNum;
+            killer.name = attackerActor->refId;
+            publishCanonicalPlayerDeath(*targetPlayer, killer);
+        }
     }
     else
     {

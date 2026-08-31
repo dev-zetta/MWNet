@@ -97,6 +97,7 @@ namespace  mwmp
         bool authorizePlayerMovement(const Player& player, double tolerance = 128.0);
         void resetPlayerMovement(std::uint64_t connection) noexcept;
         bool acceptPlayerDeath(Player& player);
+        bool publishCanonicalPlayerDeath(Player& player, const Target& killer);
         bool beginPlayerRespawn(Player& player, std::uint32_t respawnType);
         bool acknowledgePlayerRespawn(Player& player, const BasePlayer& incoming);
         bool validatePlayerInventory(Player& player, const BasePlayer& incoming);
