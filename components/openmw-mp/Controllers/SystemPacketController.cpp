@@ -3,22 +3,23 @@
 #include "SystemPacketController.hpp"
 
 template <typename T>
-inline void AddPacket(mwmp::SystemPacketController::packets_t *packets, RakNet::RakPeerInterface *peer)
+inline void AddPacket(mwmp::SystemPacketController::packets_t *packets)
 {
-    T *packet = new T(peer);
-    typedef mwmp::SystemPacketController::packets_t::value_type value_t;
-    packets->insert(value_t(packet->GetPacketID(), value_t::second_type(packet)));
+    auto packet = std::make_unique<T>();
+    const auto id = packet->GetPacketID();
+    packets->emplace(id, std::move(packet));
 }
 
-mwmp::SystemPacketController::SystemPacketController(RakNet::RakPeerInterface *peer)
+mwmp::SystemPacketController::SystemPacketController()
 {
-    AddPacket<PacketSystemHandshake>(&packets, peer);
+    AddPacket<PacketSystemHandshake>(&packets);
 }
 
 
 mwmp::SystemPacket *mwmp::SystemPacketController::GetPacket(RakNet::MessageID id)
 {
-    return packets[(unsigned char)id].get();
+    const auto packet = packets.find(static_cast<unsigned char>(id));
+    return packet == packets.end() ? nullptr : packet->second.get();
 }
 
 void mwmp::SystemPacketController::SetStream(RakNet::BitStream *inStream, RakNet::BitStream *outStream)
@@ -36,10 +37,5 @@ void mwmp::SystemPacketController::SetApplicationPacketDispatcher(
 
 bool mwmp::SystemPacketController::ContainsPacket(RakNet::MessageID id)
 {
-    for(const auto &packet : packets)
-    {
-        if (packet.first == id)
-            return true;
-    }
-    return false;
+    return packets.find(static_cast<unsigned char>(id)) != packets.end();
 }

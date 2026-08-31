@@ -8,7 +8,7 @@ namespace mwmp
     class PacketPlayerJournal : public PlayerPacket
     {
     public:
-        PacketPlayerJournal(RakNet::RakPeerInterface *peer);
+        PacketPlayerJournal();
 
         virtual void Packet(RakNet::BitStream *newBitstream, bool send);
     };

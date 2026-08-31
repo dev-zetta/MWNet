@@ -3,7 +3,7 @@
 
 using namespace mwmp;
 
-PacketPlayerMomentum::PacketPlayerMomentum(RakNet::RakPeerInterface *peer) : PlayerPacket(peer)
+PacketPlayerMomentum::PacketPlayerMomentum() : PlayerPacket()
 {
     packetID = ID_PLAYER_MOMENTUM;
     priority = MEDIUM_PRIORITY;

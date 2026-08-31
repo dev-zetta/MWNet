@@ -8,7 +8,7 @@ namespace mwmp
     class PacketActorCellChange : public ActorPacket
     {
     public:
-        PacketActorCellChange(RakNet::RakPeerInterface *peer);
+        PacketActorCellChange();
 
         virtual void Actor(BaseActor &actor, bool send);
     };

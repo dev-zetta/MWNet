@@ -8,7 +8,7 @@ namespace mwmp
     class PacketObjectTrap : public ObjectPacket
     {
     public:
-        PacketObjectTrap(RakNet::RakPeerInterface *peer);
+        PacketObjectTrap();
 
         virtual void Object(BaseObject &baseObject, bool send);
     };

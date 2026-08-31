@@ -8,7 +8,7 @@ namespace mwmp
     class PacketDoorState : public ObjectPacket
     {
     public:
-        PacketDoorState(RakNet::RakPeerInterface *peer);
+        PacketDoorState();
 
         virtual void Object(BaseObject &baseObject, bool send);
     };

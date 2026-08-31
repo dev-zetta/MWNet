@@ -2,7 +2,6 @@
 #define OPENMW_SYSTEMPACKETCONTROLLER_HPP
 
 
-#include <RakPeerInterface.h>
 #include "../Packets/System/SystemPacket.hpp"
 #include <unordered_map>
 #include <memory>
@@ -13,7 +12,7 @@ namespace mwmp
     class SystemPacketController
     {
     public:
-        SystemPacketController(RakNet::RakPeerInterface *peer);
+        SystemPacketController();
         SystemPacket *GetPacket(RakNet::MessageID id);
         void SetStream(RakNet::BitStream *inStream, RakNet::BitStream *outStream);
         void SetApplicationPacketDispatcher(transport::ApplicationPacketDispatcher* dispatcher);

@@ -2,7 +2,7 @@
 #include "PacketPlayerCellChange.hpp"
 
 
-mwmp::PacketPlayerCellChange::PacketPlayerCellChange(RakNet::RakPeerInterface *peer) : PlayerPacket(peer)
+mwmp::PacketPlayerCellChange::PacketPlayerCellChange() : PlayerPacket()
 {
     packetID = ID_PLAYER_CELL_CHANGE;
     priority = IMMEDIATE_PRIORITY;

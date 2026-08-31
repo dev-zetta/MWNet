@@ -18,36 +18,37 @@
 #include "ActorPacketController.hpp"
 
 template <typename T>
-inline void AddPacket(mwmp::ActorPacketController::packets_t *packets, RakNet::RakPeerInterface *peer)
+inline void AddPacket(mwmp::ActorPacketController::packets_t *packets)
 {
-    T *packet = new T(peer);
-    typedef mwmp::ActorPacketController::packets_t::value_type value_t;
-    packets->insert(value_t(packet->GetPacketID(), value_t::second_type(packet)));
+    auto packet = std::make_unique<T>();
+    const auto id = packet->GetPacketID();
+    packets->emplace(id, std::move(packet));
 }
 
-mwmp::ActorPacketController::ActorPacketController(RakNet::RakPeerInterface *peer)
+mwmp::ActorPacketController::ActorPacketController()
 {
-    AddPacket<PacketActorList>(&packets, peer);
-    AddPacket<PacketActorAuthority>(&packets, peer);
-    AddPacket<PacketActorTest>(&packets, peer);
-    AddPacket<PacketActorAI>(&packets, peer);
-    AddPacket<PacketActorAnimFlags>(&packets, peer);
-    AddPacket<PacketActorAnimPlay>(&packets, peer);
-    AddPacket<PacketActorAttack>(&packets, peer);
-    AddPacket<PacketActorCast>(&packets, peer);
-    AddPacket<PacketActorCellChange>(&packets, peer);
-    AddPacket<PacketActorDeath>(&packets, peer);
-    AddPacket<PacketActorEquipment>(&packets, peer);
-    AddPacket<PacketActorPosition>(&packets, peer);
-    AddPacket<PacketActorSpeech>(&packets, peer);
-    AddPacket<PacketActorSpellsActive>(&packets, peer);
-    AddPacket<PacketActorStatsDynamic>(&packets, peer);
+    AddPacket<PacketActorList>(&packets);
+    AddPacket<PacketActorAuthority>(&packets);
+    AddPacket<PacketActorTest>(&packets);
+    AddPacket<PacketActorAI>(&packets);
+    AddPacket<PacketActorAnimFlags>(&packets);
+    AddPacket<PacketActorAnimPlay>(&packets);
+    AddPacket<PacketActorAttack>(&packets);
+    AddPacket<PacketActorCast>(&packets);
+    AddPacket<PacketActorCellChange>(&packets);
+    AddPacket<PacketActorDeath>(&packets);
+    AddPacket<PacketActorEquipment>(&packets);
+    AddPacket<PacketActorPosition>(&packets);
+    AddPacket<PacketActorSpeech>(&packets);
+    AddPacket<PacketActorSpellsActive>(&packets);
+    AddPacket<PacketActorStatsDynamic>(&packets);
 }
 
 
 mwmp::ActorPacket *mwmp::ActorPacketController::GetPacket(RakNet::MessageID id)
 {
-    return packets[(unsigned char)id].get();
+    const auto packet = packets.find(static_cast<unsigned char>(id));
+    return packet == packets.end() ? nullptr : packet->second.get();
 }
 
 void mwmp::ActorPacketController::SetStream(RakNet::BitStream *inStream, RakNet::BitStream *outStream)
@@ -65,10 +66,5 @@ void mwmp::ActorPacketController::SetApplicationPacketDispatcher(
 
 bool mwmp::ActorPacketController::ContainsPacket(RakNet::MessageID id)
 {
-    for(const auto &packet : packets)
-    {
-        if (packet.first == id)
-            return true;
-    }
-    return false;
+    return packets.find(static_cast<unsigned char>(id)) != packets.end();
 }

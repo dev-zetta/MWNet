@@ -3,7 +3,7 @@
 
 using namespace mwmp;
 
-PacketObjectAnimPlay::PacketObjectAnimPlay(RakNet::RakPeerInterface *peer) : ObjectPacket(peer)
+PacketObjectAnimPlay::PacketObjectAnimPlay() : ObjectPacket()
 {
     packetID = ID_OBJECT_ANIM_PLAY;
     hasCellData = true;

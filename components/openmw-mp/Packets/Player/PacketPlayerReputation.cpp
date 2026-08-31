@@ -3,7 +3,7 @@
 
 using namespace mwmp;
 
-PacketPlayerReputation::PacketPlayerReputation(RakNet::RakPeerInterface *peer) : PlayerPacket(peer)
+PacketPlayerReputation::PacketPlayerReputation() : PlayerPacket()
 {
     packetID = ID_PLAYER_REPUTATION;
 }

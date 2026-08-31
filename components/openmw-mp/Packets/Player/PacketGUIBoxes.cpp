@@ -3,7 +3,7 @@
 
 using namespace mwmp;
 
-PacketGUIBoxes::PacketGUIBoxes(RakNet::RakPeerInterface *peer) : PlayerPacket(peer)
+PacketGUIBoxes::PacketGUIBoxes() : PlayerPacket()
 {
     packetID = ID_GUI_MESSAGEBOX;
     orderChannel = CHANNEL_SYSTEM;

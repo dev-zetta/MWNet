@@ -14,7 +14,7 @@ namespace mwmp
     class PlayerPacket : public BasePacket
     {
     public:
-        PlayerPacket(RakNet::RakPeerInterface *peer);
+        PlayerPacket();
 
         ~PlayerPacket();
 

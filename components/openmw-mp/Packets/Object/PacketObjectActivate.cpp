@@ -3,7 +3,7 @@
 
 using namespace mwmp;
 
-PacketObjectActivate::PacketObjectActivate(RakNet::RakPeerInterface *peer) : ObjectPacket(peer)
+PacketObjectActivate::PacketObjectActivate() : ObjectPacket()
 {
     packetID = ID_OBJECT_ACTIVATE;
     hasCellData = true;

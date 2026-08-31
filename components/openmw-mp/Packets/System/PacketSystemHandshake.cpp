@@ -3,7 +3,7 @@
 
 using namespace mwmp;
 
-PacketSystemHandshake::PacketSystemHandshake(RakNet::RakPeerInterface *peer) : SystemPacket(peer)
+PacketSystemHandshake::PacketSystemHandshake() : SystemPacket()
 {
     packetID = ID_SYSTEM_HANDSHAKE;
     orderChannel = CHANNEL_SYSTEM;

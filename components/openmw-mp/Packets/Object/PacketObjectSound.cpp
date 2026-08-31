@@ -3,7 +3,7 @@
 
 using namespace mwmp;
 
-PacketObjectSound::PacketObjectSound(RakNet::RakPeerInterface *peer) : ObjectPacket(peer)
+PacketObjectSound::PacketObjectSound() : ObjectPacket()
 {
     packetID = ID_OBJECT_SOUND;
     hasCellData = true;

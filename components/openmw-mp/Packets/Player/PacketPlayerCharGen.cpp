@@ -1,7 +1,7 @@
 #include <components/openmw-mp/NetworkMessages.hpp>
 #include "PacketPlayerCharGen.hpp"
 
-mwmp::PacketPlayerCharGen::PacketPlayerCharGen(RakNet::RakPeerInterface *peer) : PlayerPacket(peer)
+mwmp::PacketPlayerCharGen::PacketPlayerCharGen() : PlayerPacket()
 {
     packetID = ID_PLAYER_CHARGEN;
 }

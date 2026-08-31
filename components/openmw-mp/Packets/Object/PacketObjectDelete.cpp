@@ -3,7 +3,7 @@
 
 using namespace mwmp;
 
-PacketObjectDelete::PacketObjectDelete(RakNet::RakPeerInterface *peer) : ObjectPacket(peer)
+PacketObjectDelete::PacketObjectDelete() : ObjectPacket()
 {
     packetID = ID_OBJECT_DELETE;
     hasCellData = true;

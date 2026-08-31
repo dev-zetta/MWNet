@@ -8,7 +8,7 @@ namespace mwmp
     class PacketObjectSound : public ObjectPacket
     {
     public:
-        PacketObjectSound(RakNet::RakPeerInterface *peer);
+        PacketObjectSound();
 
         virtual void Packet(RakNet::BitStream *newBitstream, bool send);
     };

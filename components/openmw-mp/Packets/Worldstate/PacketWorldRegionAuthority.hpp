@@ -8,7 +8,7 @@ namespace mwmp
     class PacketWorldRegionAuthority : public WorldstatePacket
     {
     public:
-        PacketWorldRegionAuthority(RakNet::RakPeerInterface *peer);
+        PacketWorldRegionAuthority();
 
         virtual void Packet(RakNet::BitStream *newBitstream, bool send);
     };

@@ -8,7 +8,7 @@ namespace mwmp
     class PacketObjectSpawn : public ObjectPacket
     {
     public:
-        PacketObjectSpawn(RakNet::RakPeerInterface *peer);
+        PacketObjectSpawn();
 
         virtual void Object(BaseObject &baseObject, bool send);
     };

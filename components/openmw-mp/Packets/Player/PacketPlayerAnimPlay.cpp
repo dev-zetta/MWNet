@@ -1,7 +1,7 @@
 #include <components/openmw-mp/NetworkMessages.hpp>
 #include "PacketPlayerAnimPlay.hpp"
 
-mwmp::PacketPlayerAnimPlay::PacketPlayerAnimPlay(RakNet::RakPeerInterface *peer) : PlayerPacket(peer)
+mwmp::PacketPlayerAnimPlay::PacketPlayerAnimPlay() : PlayerPacket()
 {
     packetID = ID_PLAYER_ANIM_PLAY;
 }

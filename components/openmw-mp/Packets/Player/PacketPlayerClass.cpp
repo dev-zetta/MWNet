@@ -19,7 +19,7 @@ namespace
 
 }
 
-mwmp::PacketPlayerClass::PacketPlayerClass(RakNet::RakPeerInterface *peer) : PlayerPacket(peer)
+mwmp::PacketPlayerClass::PacketPlayerClass() : PlayerPacket()
 {
     packetID = ID_PLAYER_CHARCLASS;
 }

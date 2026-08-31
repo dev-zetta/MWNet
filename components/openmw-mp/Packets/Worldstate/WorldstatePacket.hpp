@@ -14,7 +14,7 @@ namespace mwmp
     class WorldstatePacket : public BasePacket
     {
     public:
-        WorldstatePacket(RakNet::RakPeerInterface *peer);
+        WorldstatePacket();
 
         ~WorldstatePacket();
 

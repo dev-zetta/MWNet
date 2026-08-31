@@ -8,7 +8,7 @@ namespace mwmp
     class PacketMusicPlay : public ObjectPacket
     {
     public:
-        PacketMusicPlay(RakNet::RakPeerInterface *peer);
+        PacketMusicPlay();
 
         virtual void Object(BaseObject &baseObject, bool send);
     };

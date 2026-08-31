@@ -4,7 +4,7 @@
 
 using namespace mwmp;
 
-PlayerPacket::PlayerPacket(RakNet::RakPeerInterface *peer) : BasePacket(peer)
+PlayerPacket::PlayerPacket() : BasePacket()
 {
     packetID = 0;
     priority = HIGH_PRIORITY;

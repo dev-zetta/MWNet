@@ -8,7 +8,7 @@ namespace mwmp
     class PacketObjectRestock : public ObjectPacket
     {
     public:
-        PacketObjectRestock(RakNet::RakPeerInterface *peer);
+        PacketObjectRestock();
     };
 }
 

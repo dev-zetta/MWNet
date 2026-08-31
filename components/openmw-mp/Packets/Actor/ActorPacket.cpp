@@ -4,7 +4,7 @@
 
 using namespace mwmp;
 
-ActorPacket::ActorPacket(RakNet::RakPeerInterface *peer) : BasePacket(peer)
+ActorPacket::ActorPacket() : BasePacket()
 {
     packetID = 0;
     priority = HIGH_PRIORITY;

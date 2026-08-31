@@ -8,7 +8,7 @@ namespace mwmp
     class PacketConsoleCommand : public ObjectPacket
     {
     public:
-        PacketConsoleCommand(RakNet::RakPeerInterface *peer);
+        PacketConsoleCommand();
 
         virtual void Packet(RakNet::BitStream *newBitstream, bool send);
     };

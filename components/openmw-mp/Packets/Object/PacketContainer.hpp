@@ -8,7 +8,7 @@ namespace mwmp
     class PacketContainer : public ObjectPacket
     {
     public:
-        PacketContainer(RakNet::RakPeerInterface *peer);
+        PacketContainer();
 
         virtual void Packet(RakNet::BitStream *newBitstream, bool send);
     };

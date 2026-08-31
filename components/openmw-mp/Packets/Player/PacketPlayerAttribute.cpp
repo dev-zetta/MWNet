@@ -5,7 +5,7 @@
 
 using namespace mwmp;
 
-PacketPlayerAttribute::PacketPlayerAttribute(RakNet::RakPeerInterface *peer) : PlayerPacket(peer)
+PacketPlayerAttribute::PacketPlayerAttribute() : PlayerPacket()
 {
     packetID = ID_PLAYER_ATTRIBUTE;
 }

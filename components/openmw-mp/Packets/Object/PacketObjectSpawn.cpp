@@ -3,7 +3,7 @@
 
 using namespace mwmp;
 
-PacketObjectSpawn::PacketObjectSpawn(RakNet::RakPeerInterface *peer) : ObjectPacket(peer)
+PacketObjectSpawn::PacketObjectSpawn() : ObjectPacket()
 {
     packetID = ID_OBJECT_SPAWN;
     hasCellData = true;

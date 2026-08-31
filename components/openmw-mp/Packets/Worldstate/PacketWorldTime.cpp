@@ -3,7 +3,7 @@
 
 using namespace mwmp;
 
-PacketWorldTime::PacketWorldTime(RakNet::RakPeerInterface *peer) : WorldstatePacket(peer)
+PacketWorldTime::PacketWorldTime() : WorldstatePacket()
 {
     packetID = ID_WORLD_TIME;
     orderChannel = CHANNEL_WORLDSTATE;

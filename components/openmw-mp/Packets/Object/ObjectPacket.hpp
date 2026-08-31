@@ -15,7 +15,7 @@ namespace mwmp
     class ObjectPacket : public BasePacket
     {
     public:
-        ObjectPacket(RakNet::RakPeerInterface *peer);
+        ObjectPacket();
 
         ~ObjectPacket();
 

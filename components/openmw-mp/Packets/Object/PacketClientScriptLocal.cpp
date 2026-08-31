@@ -3,7 +3,7 @@
 
 using namespace mwmp;
 
-PacketClientScriptLocal::PacketClientScriptLocal(RakNet::RakPeerInterface *peer) : ObjectPacket(peer)
+PacketClientScriptLocal::PacketClientScriptLocal() : ObjectPacket()
 {
     packetID = ID_CLIENT_SCRIPT_LOCAL;
     hasCellData = true;

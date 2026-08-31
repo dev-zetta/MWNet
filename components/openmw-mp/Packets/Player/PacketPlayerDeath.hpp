@@ -8,7 +8,7 @@ namespace mwmp
     class PacketPlayerDeath: public PlayerPacket
     {
     public:
-        PacketPlayerDeath(RakNet::RakPeerInterface *peer);
+        PacketPlayerDeath();
 
         virtual void Packet(RakNet::BitStream *newBitstream, bool send);
     };

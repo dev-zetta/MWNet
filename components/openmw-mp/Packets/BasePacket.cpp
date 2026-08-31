@@ -6,7 +6,7 @@
 
 using namespace mwmp;
 
-BasePacket::BasePacket(RakNet::RakPeerInterface*)
+BasePacket::BasePacket()
     : packetID(0)
     , reliability(RELIABLE_ORDERED)
     , priority(HIGH_PRIORITY)

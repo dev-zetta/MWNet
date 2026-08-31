@@ -8,7 +8,7 @@ namespace mwmp
     class PacketObjectMiscellaneous : public ObjectPacket
     {
     public:
-        PacketObjectMiscellaneous(RakNet::RakPeerInterface *peer);
+        PacketObjectMiscellaneous();
 
         virtual void Object(BaseObject &obj, bool send);
     };

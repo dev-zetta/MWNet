@@ -1,7 +1,7 @@
 #include <components/openmw-mp/NetworkMessages.hpp>
 #include "PacketWorldRegionAuthority.hpp"
 
-mwmp::PacketWorldRegionAuthority::PacketWorldRegionAuthority(RakNet::RakPeerInterface *peer) : PlayerPacket(peer)
+mwmp::PacketWorldRegionAuthority::PacketWorldRegionAuthority() : PlayerPacket()
 {
     packetID = ID_WORLD_REGION_AUTHORITY;
     priority = IMMEDIATE_PRIORITY;

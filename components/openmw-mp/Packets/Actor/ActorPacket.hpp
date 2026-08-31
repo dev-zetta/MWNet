@@ -15,7 +15,7 @@ namespace mwmp
     class ActorPacket : public BasePacket
     {
     public:
-        ActorPacket(RakNet::RakPeerInterface *peer);
+        ActorPacket();
 
         ~ActorPacket();
 

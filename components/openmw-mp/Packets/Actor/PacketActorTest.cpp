@@ -4,7 +4,7 @@
 
 using namespace mwmp;
 
-PacketActorTest::PacketActorTest(RakNet::RakPeerInterface *peer) : ActorPacket(peer)
+PacketActorTest::PacketActorTest() : ActorPacket()
 {
     packetID = ID_ACTOR_TEST;
 }

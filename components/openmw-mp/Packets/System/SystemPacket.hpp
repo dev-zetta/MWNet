@@ -14,7 +14,7 @@ namespace mwmp
     class SystemPacket : public BasePacket
     {
     public:
-        SystemPacket(RakNet::RakPeerInterface *peer);
+        SystemPacket();
 
         ~SystemPacket();
 

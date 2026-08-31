@@ -4,7 +4,7 @@
 
 using namespace mwmp;
 
-ObjectPacket::ObjectPacket(RakNet::RakPeerInterface *peer) : BasePacket(peer)
+ObjectPacket::ObjectPacket() : BasePacket()
 {
     hasCellData = false;
     packetID = 0;

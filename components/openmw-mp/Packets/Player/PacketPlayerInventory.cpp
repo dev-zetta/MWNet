@@ -3,7 +3,7 @@
 
 using namespace mwmp;
 
-PacketPlayerInventory::PacketPlayerInventory(RakNet::RakPeerInterface *peer) : PlayerPacket(peer)
+PacketPlayerInventory::PacketPlayerInventory() : PlayerPacket()
 {
     packetID = ID_PLAYER_INVENTORY;
 }

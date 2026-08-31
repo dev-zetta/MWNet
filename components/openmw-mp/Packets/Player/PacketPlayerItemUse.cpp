@@ -3,7 +3,7 @@
 
 using namespace mwmp;
 
-PacketPlayerItemUse::PacketPlayerItemUse(RakNet::RakPeerInterface *peer) : PlayerPacket(peer)
+PacketPlayerItemUse::PacketPlayerItemUse() : PlayerPacket()
 {
     packetID = ID_PLAYER_ITEM_USE;
 }

@@ -8,7 +8,7 @@ namespace mwmp
     class PacketClientScriptLocal : public ObjectPacket
     {
     public:
-        PacketClientScriptLocal(RakNet::RakPeerInterface *peer);
+        PacketClientScriptLocal();
 
         virtual void Object(BaseObject &obj, bool send);
     };

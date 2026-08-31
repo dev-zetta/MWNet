@@ -8,7 +8,7 @@ namespace mwmp
     class PacketPlayerCellChange : public PlayerPacket
     {
     public:
-        PacketPlayerCellChange(RakNet::RakPeerInterface *peer);
+        PacketPlayerCellChange();
 
         virtual void Packet(RakNet::BitStream *newBitstream, bool send);
     };

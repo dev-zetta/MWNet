@@ -1,7 +1,7 @@
 #include <components/openmw-mp/NetworkMessages.hpp>
 #include "PacketPlayerAlly.hpp"
 
-mwmp::PacketPlayerAlly::PacketPlayerAlly(RakNet::RakPeerInterface *peer) : PlayerPacket(peer)
+mwmp::PacketPlayerAlly::PacketPlayerAlly() : PlayerPacket()
 {
     packetID = ID_PLAYER_ALLY;
 }

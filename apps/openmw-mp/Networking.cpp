@@ -67,11 +67,11 @@ Networking::Networking(transport::Protocol11Endpoint& endpoint,
 
     CellController::create();
 
-    systemPacketController = std::make_unique<SystemPacketController>(nullptr);
-    playerPacketController = std::make_unique<PlayerPacketController>(nullptr);
-    actorPacketController = std::make_unique<ActorPacketController>(nullptr);
-    objectPacketController = std::make_unique<ObjectPacketController>(nullptr);
-    worldstatePacketController = std::make_unique<WorldstatePacketController>(nullptr);
+    systemPacketController = std::make_unique<SystemPacketController>();
+    playerPacketController = std::make_unique<PlayerPacketController>();
+    actorPacketController = std::make_unique<ActorPacketController>();
+    objectPacketController = std::make_unique<ObjectPacketController>();
+    worldstatePacketController = std::make_unique<WorldstatePacketController>();
 
     // Set send stream
     systemPacketController->SetStream(0, &bsOut);
@@ -4126,7 +4126,7 @@ bool Networking::preInit(RakNet::Packet *packet, RakNet::BitStream &bsIn)
         static_cast<unsigned long long>(packet->guid.g));
     PacketPreInit::PluginContainer dataFiles;
 
-    PacketPreInit packetPreInit(nullptr);
+    PacketPreInit packetPreInit;
     packetPreInit.SetReadStream(&bsIn);
     packetPreInit.setChecksums(&dataFiles);
     packetPreInit.Read();

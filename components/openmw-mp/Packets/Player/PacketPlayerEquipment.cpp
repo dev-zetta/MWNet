@@ -4,7 +4,7 @@
 
 using namespace mwmp;
 
-PacketPlayerEquipment::PacketPlayerEquipment(RakNet::RakPeerInterface *peer) : PlayerPacket(peer)
+PacketPlayerEquipment::PacketPlayerEquipment() : PlayerPacket()
 {
     packetID = ID_PLAYER_EQUIPMENT;
 }

@@ -8,7 +8,7 @@ namespace mwmp
     class PacketPlayerReputation : public PlayerPacket
     {
     public:
-        PacketPlayerReputation(RakNet::RakPeerInterface *peer);
+        PacketPlayerReputation();
 
         virtual void Packet(RakNet::BitStream *newBitstream, bool send);
     };

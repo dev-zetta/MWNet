@@ -1,7 +1,7 @@
 #include <components/openmw-mp/NetworkMessages.hpp>
 #include "PacketChatMessage.hpp"
 
-mwmp::PacketChatMessage::PacketChatMessage(RakNet::RakPeerInterface *peer) : PlayerPacket(peer)
+mwmp::PacketChatMessage::PacketChatMessage() : PlayerPacket()
 {
     packetID = ID_CHAT_MESSAGE;
     orderChannel = CHANNEL_SYSTEM;

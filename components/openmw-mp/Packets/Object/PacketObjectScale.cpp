@@ -3,7 +3,7 @@
 
 using namespace mwmp;
 
-PacketObjectScale::PacketObjectScale(RakNet::RakPeerInterface *peer) : ObjectPacket(peer)
+PacketObjectScale::PacketObjectScale() : ObjectPacket()
 {
     packetID = ID_OBJECT_SCALE;
     hasCellData = true;

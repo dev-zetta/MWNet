@@ -4,7 +4,7 @@
 
 using namespace mwmp;
 
-PacketActorSpeech::PacketActorSpeech(RakNet::RakPeerInterface *peer) : ActorPacket(peer)
+PacketActorSpeech::PacketActorSpeech() : ActorPacket()
 {
     packetID = ID_ACTOR_SPEECH;
 }

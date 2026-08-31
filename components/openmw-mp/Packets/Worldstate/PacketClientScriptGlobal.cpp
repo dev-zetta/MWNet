@@ -3,7 +3,7 @@
 
 using namespace mwmp;
 
-PacketClientScriptGlobal::PacketClientScriptGlobal(RakNet::RakPeerInterface *peer) : WorldstatePacket(peer)
+PacketClientScriptGlobal::PacketClientScriptGlobal() : WorldstatePacket()
 {
     packetID = ID_CLIENT_SCRIPT_GLOBAL;
     orderChannel = CHANNEL_WORLDSTATE;

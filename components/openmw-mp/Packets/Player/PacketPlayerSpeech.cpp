@@ -1,7 +1,7 @@
 #include <components/openmw-mp/NetworkMessages.hpp>
 #include "PacketPlayerSpeech.hpp"
 
-mwmp::PacketPlayerSpeech::PacketPlayerSpeech(RakNet::RakPeerInterface *peer) : PlayerPacket(peer)
+mwmp::PacketPlayerSpeech::PacketPlayerSpeech() : PlayerPacket()
 {
     packetID = ID_PLAYER_SPEECH;
 }

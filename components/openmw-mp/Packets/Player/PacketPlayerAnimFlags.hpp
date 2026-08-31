@@ -8,7 +8,7 @@ namespace mwmp
     class PacketPlayerAnimFlags : public PlayerPacket
     {
     public:
-        PacketPlayerAnimFlags(RakNet::RakPeerInterface *peer);
+        PacketPlayerAnimFlags();
 
         virtual void Packet(RakNet::BitStream *newBitstream, bool send);
     };

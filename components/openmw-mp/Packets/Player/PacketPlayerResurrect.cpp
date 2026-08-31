@@ -4,7 +4,7 @@
 
 using namespace mwmp;
 
-PacketPlayerResurrect::PacketPlayerResurrect(RakNet::RakPeerInterface *peer) : PlayerPacket(peer)
+PacketPlayerResurrect::PacketPlayerResurrect() : PlayerPacket()
 {
     packetID = ID_PLAYER_RESURRECT;
 }

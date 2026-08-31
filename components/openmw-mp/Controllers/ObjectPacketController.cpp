@@ -29,48 +29,49 @@
 #include "ObjectPacketController.hpp"
 
 template <typename T>
-inline void AddPacket(mwmp::ObjectPacketController::packets_t *packets, RakNet::RakPeerInterface *peer)
+inline void AddPacket(mwmp::ObjectPacketController::packets_t *packets)
 {
-    T *packet = new T(peer);
-    typedef mwmp::ObjectPacketController::packets_t::value_type value_t;
-    packets->insert(value_t(packet->GetPacketID(), value_t::second_type(packet)));
+    auto packet = std::make_unique<T>();
+    const auto id = packet->GetPacketID();
+    packets->emplace(id, std::move(packet));
 }
 
-mwmp::ObjectPacketController::ObjectPacketController(RakNet::RakPeerInterface *peer)
+mwmp::ObjectPacketController::ObjectPacketController()
 {
-    AddPacket<PacketObjectActivate>(&packets, peer);
-    AddPacket<PacketObjectAnimPlay>(&packets, peer);
-    AddPacket<PacketObjectAttach>(&packets, peer);
-    AddPacket<PacketObjectDelete>(&packets, peer);
-    AddPacket<PacketObjectDialogueChoice>(&packets, peer);
-    AddPacket<PacketObjectHit>(&packets, peer);
-    AddPacket<PacketObjectLock>(&packets, peer);
-    AddPacket<PacketObjectMiscellaneous>(&packets, peer);
-    AddPacket<PacketObjectMove>(&packets, peer);
-    AddPacket<PacketObjectPlace>(&packets, peer);
-    AddPacket<PacketObjectRestock>(&packets, peer);
-    AddPacket<PacketObjectRotate>(&packets, peer);
-    AddPacket<PacketObjectScale>(&packets, peer);
-    AddPacket<PacketObjectSound>(&packets, peer);
-    AddPacket<PacketObjectSpawn>(&packets, peer);
-    AddPacket<PacketObjectState>(&packets, peer);
-    AddPacket<PacketObjectTrap>(&packets, peer);
+    AddPacket<PacketObjectActivate>(&packets);
+    AddPacket<PacketObjectAnimPlay>(&packets);
+    AddPacket<PacketObjectAttach>(&packets);
+    AddPacket<PacketObjectDelete>(&packets);
+    AddPacket<PacketObjectDialogueChoice>(&packets);
+    AddPacket<PacketObjectHit>(&packets);
+    AddPacket<PacketObjectLock>(&packets);
+    AddPacket<PacketObjectMiscellaneous>(&packets);
+    AddPacket<PacketObjectMove>(&packets);
+    AddPacket<PacketObjectPlace>(&packets);
+    AddPacket<PacketObjectRestock>(&packets);
+    AddPacket<PacketObjectRotate>(&packets);
+    AddPacket<PacketObjectScale>(&packets);
+    AddPacket<PacketObjectSound>(&packets);
+    AddPacket<PacketObjectSpawn>(&packets);
+    AddPacket<PacketObjectState>(&packets);
+    AddPacket<PacketObjectTrap>(&packets);
     
-    AddPacket<PacketContainer>(&packets, peer);
-    AddPacket<PacketDoorDestination>(&packets, peer);
-    AddPacket<PacketDoorState>(&packets, peer);
-    AddPacket<PacketMusicPlay>(&packets, peer);
-    AddPacket<PacketVideoPlay>(&packets, peer);
+    AddPacket<PacketContainer>(&packets);
+    AddPacket<PacketDoorDestination>(&packets);
+    AddPacket<PacketDoorState>(&packets);
+    AddPacket<PacketMusicPlay>(&packets);
+    AddPacket<PacketVideoPlay>(&packets);
 
-    AddPacket<PacketConsoleCommand>(&packets, peer);
-    AddPacket<PacketClientScriptLocal>(&packets, peer);
-    AddPacket<PacketScriptMemberShort>(&packets, peer);
+    AddPacket<PacketConsoleCommand>(&packets);
+    AddPacket<PacketClientScriptLocal>(&packets);
+    AddPacket<PacketScriptMemberShort>(&packets);
 }
 
 
 mwmp::ObjectPacket *mwmp::ObjectPacketController::GetPacket(RakNet::MessageID id)
 {
-    return packets[(unsigned char)id].get();
+    const auto packet = packets.find(static_cast<unsigned char>(id));
+    return packet == packets.end() ? nullptr : packet->second.get();
 }
 
 void mwmp::ObjectPacketController::SetStream(RakNet::BitStream *inStream, RakNet::BitStream *outStream)
@@ -88,10 +89,5 @@ void mwmp::ObjectPacketController::SetApplicationPacketDispatcher(
 
 bool mwmp::ObjectPacketController::ContainsPacket(RakNet::MessageID id)
 {
-    for(const auto &packet : packets)
-    {
-        if (packet.first == id)
-            return true;
-    }
-    return false;
+    return packets.find(static_cast<unsigned char>(id)) != packets.end();
 }

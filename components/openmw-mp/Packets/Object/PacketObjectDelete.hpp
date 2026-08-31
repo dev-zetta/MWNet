@@ -8,7 +8,7 @@ namespace mwmp
     class PacketObjectDelete : public ObjectPacket
     {
     public:
-        PacketObjectDelete(RakNet::RakPeerInterface *peer);
+        PacketObjectDelete();
     };
 }
 

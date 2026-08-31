@@ -3,7 +3,7 @@
 
 using namespace mwmp;
 
-PacketPlayerCooldowns::PacketPlayerCooldowns(RakNet::RakPeerInterface *peer) : PlayerPacket(peer)
+PacketPlayerCooldowns::PacketPlayerCooldowns() : PlayerPacket()
 {
     packetID = ID_PLAYER_COOLDOWNS;
 }

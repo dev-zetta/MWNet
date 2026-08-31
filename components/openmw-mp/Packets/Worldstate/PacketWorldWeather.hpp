@@ -8,7 +8,7 @@ namespace mwmp
     class PacketWorldWeather : public WorldstatePacket
     {
     public:
-        PacketWorldWeather(RakNet::RakPeerInterface *peer);
+        PacketWorldWeather();
 
         virtual void Packet(RakNet::BitStream *newBitstream, bool send);
     };

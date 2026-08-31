@@ -208,11 +208,11 @@ std::string listComparison(PacketPreInit::PluginContainer checksums, PacketPreIn
 
 Networking::Networking()
     : receiver(transport::ApplicationPacketFlow::ServerToClient)
-    , systemPacketController(nullptr)
-    , playerPacketController(nullptr)
-    , actorPacketController(nullptr)
-    , objectPacketController(nullptr)
-    , worldstatePacketController(nullptr)
+    , systemPacketController()
+    , playerPacketController()
+    , actorPacketController()
+    , objectPacketController()
+    , worldstatePacketController()
 {
     Files::ConfigurationManager configuration;
     std::string error;
@@ -375,7 +375,7 @@ bool Networking::preInit(std::vector<std::string>& content, Files::Collections& 
         }
     }
 
-    PacketPreInit packetPreInit(nullptr);
+    PacketPreInit packetPreInit;
     RakNet::BitStream bs;
     packetPreInit.setChecksums(&checksums);
     packetPreInit.setGUID(RakNet::RakNetGUID(serverConnection.value));

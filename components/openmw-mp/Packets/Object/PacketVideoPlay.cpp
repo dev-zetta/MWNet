@@ -3,7 +3,7 @@
 
 using namespace mwmp;
 
-PacketVideoPlay::PacketVideoPlay(RakNet::RakPeerInterface *peer) : ObjectPacket(peer)
+PacketVideoPlay::PacketVideoPlay() : ObjectPacket()
 {
     packetID = ID_VIDEO_PLAY;
 }

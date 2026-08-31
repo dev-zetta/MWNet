@@ -3,7 +3,7 @@
 
 using namespace mwmp;
 
-PacketPlayerDeath::PacketPlayerDeath(RakNet::RakPeerInterface *peer) : PlayerPacket(peer)
+PacketPlayerDeath::PacketPlayerDeath() : PlayerPacket()
 {
     packetID = ID_PLAYER_DEATH;
 }

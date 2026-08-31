@@ -8,7 +8,7 @@ namespace mwmp
     class PacketWorldTime : public WorldstatePacket
     {
     public:
-        PacketWorldTime(RakNet::RakPeerInterface *peer);
+        PacketWorldTime();
 
         virtual void Packet(RakNet::BitStream *newBitstream, bool send);
     };

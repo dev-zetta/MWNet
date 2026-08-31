@@ -3,7 +3,7 @@
 
 using namespace mwmp;
 
-PacketPlayerBaseInfo::PacketPlayerBaseInfo(RakNet::RakPeerInterface *peer) : PlayerPacket(peer)
+PacketPlayerBaseInfo::PacketPlayerBaseInfo() : PlayerPacket()
 {
     packetID = ID_PLAYER_BASEINFO;
 }

@@ -3,7 +3,7 @@
 
 using namespace mwmp;
 
-PacketPlayerShapeshift::PacketPlayerShapeshift(RakNet::RakPeerInterface *peer) : PlayerPacket(peer)
+PacketPlayerShapeshift::PacketPlayerShapeshift() : PlayerPacket()
 {
     packetID = ID_PLAYER_SHAPESHIFT;
 }

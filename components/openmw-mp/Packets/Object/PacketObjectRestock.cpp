@@ -3,7 +3,7 @@
 
 using namespace mwmp;
 
-PacketObjectRestock::PacketObjectRestock(RakNet::RakPeerInterface *peer) : ObjectPacket(peer)
+PacketObjectRestock::PacketObjectRestock() : ObjectPacket()
 {
     packetID = ID_OBJECT_RESTOCK;
     hasCellData = true;

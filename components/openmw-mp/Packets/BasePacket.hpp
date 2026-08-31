@@ -30,7 +30,7 @@ namespace mwmp
     class BasePacket
     {
     public:
-        explicit BasePacket(RakNet::RakPeerInterface *peer);
+        explicit BasePacket();
 
         virtual ~BasePacket() = default;
 

@@ -4,7 +4,7 @@
 
 using namespace mwmp;
 
-PacketActorSpellsActive::PacketActorSpellsActive(RakNet::RakPeerInterface *peer) : ActorPacket(peer)
+PacketActorSpellsActive::PacketActorSpellsActive() : ActorPacket()
 {
     packetID = ID_ACTOR_SPELLS_ACTIVE;
 }

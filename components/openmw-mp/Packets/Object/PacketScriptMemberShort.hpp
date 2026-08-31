@@ -8,7 +8,7 @@ namespace mwmp
     class PacketScriptMemberShort : public ObjectPacket
     {
     public:
-        PacketScriptMemberShort(RakNet::RakPeerInterface *peer);
+        PacketScriptMemberShort();
 
         virtual void Object(BaseObject &obj, bool send);
     };

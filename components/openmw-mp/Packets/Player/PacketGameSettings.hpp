@@ -9,7 +9,7 @@ namespace mwmp
     class PacketGameSettings: public PlayerPacket
     {
     public:
-        PacketGameSettings(RakNet::RakPeerInterface *peer);
+        PacketGameSettings();
 
         virtual void Packet(RakNet::BitStream *newBitstream, bool send);
     };

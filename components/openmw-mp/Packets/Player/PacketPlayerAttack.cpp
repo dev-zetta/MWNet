@@ -3,7 +3,7 @@
 
 using namespace mwmp;
 
-PacketPlayerAttack::PacketPlayerAttack(RakNet::RakPeerInterface *peer) : PlayerPacket(peer)
+PacketPlayerAttack::PacketPlayerAttack() : PlayerPacket()
 {
     packetID = ID_PLAYER_ATTACK;
 }

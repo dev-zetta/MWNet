@@ -3,7 +3,7 @@
 
 using namespace mwmp;
 
-PacketObjectRotate::PacketObjectRotate(RakNet::RakPeerInterface *peer) : ObjectPacket(peer)
+PacketObjectRotate::PacketObjectRotate() : ObjectPacket()
 {
     packetID = ID_OBJECT_ROTATE;
     hasCellData = true;

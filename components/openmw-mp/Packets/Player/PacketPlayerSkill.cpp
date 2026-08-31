@@ -6,7 +6,7 @@
 
 using namespace mwmp;
 
-PacketPlayerSkill::PacketPlayerSkill(RakNet::RakPeerInterface *peer) : PlayerPacket(peer)
+PacketPlayerSkill::PacketPlayerSkill() : PlayerPacket()
 {
     packetID = ID_PLAYER_SKILL;
 }

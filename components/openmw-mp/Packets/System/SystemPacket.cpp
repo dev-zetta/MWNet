@@ -4,7 +4,7 @@
 
 using namespace mwmp;
 
-SystemPacket::SystemPacket(RakNet::RakPeerInterface *peer) : BasePacket(peer)
+SystemPacket::SystemPacket() : BasePacket()
 {
     packetID = 0;
     priority = HIGH_PRIORITY;

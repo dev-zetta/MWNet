@@ -8,7 +8,7 @@ namespace mwmp
     class PacketActorDeath : public ActorPacket
     {
     public:
-        PacketActorDeath(RakNet::RakPeerInterface *peer);
+        PacketActorDeath();
 
         virtual void Actor(BaseActor &actor, bool send);
     };

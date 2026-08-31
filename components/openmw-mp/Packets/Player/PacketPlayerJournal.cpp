@@ -3,7 +3,7 @@
 
 using namespace mwmp;
 
-PacketPlayerJournal::PacketPlayerJournal(RakNet::RakPeerInterface *peer) : PlayerPacket(peer)
+PacketPlayerJournal::PacketPlayerJournal() : PlayerPacket()
 {
     packetID = ID_PLAYER_JOURNAL;
 }

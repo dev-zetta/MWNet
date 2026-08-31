@@ -3,7 +3,7 @@
 
 using namespace mwmp;
 
-PacketCellReset::PacketCellReset(RakNet::RakPeerInterface *peer) : WorldstatePacket(peer)
+PacketCellReset::PacketCellReset() : WorldstatePacket()
 {
     packetID = ID_CELL_RESET;
     orderChannel = CHANNEL_SYSTEM;

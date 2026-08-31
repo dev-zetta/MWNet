@@ -3,7 +3,7 @@
 
 using namespace mwmp;
 
-PacketWorldCollisionOverride::PacketWorldCollisionOverride(RakNet::RakPeerInterface *peer) : WorldstatePacket(peer)
+PacketWorldCollisionOverride::PacketWorldCollisionOverride() : WorldstatePacket()
 {
     packetID = ID_WORLD_COLLISION_OVERRIDE;
     orderChannel = CHANNEL_WORLDSTATE;

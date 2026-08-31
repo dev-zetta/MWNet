@@ -3,7 +3,7 @@
 
 using namespace mwmp;
 
-PacketPlayerSpellbook::PacketPlayerSpellbook(RakNet::RakPeerInterface *peer) : PlayerPacket(peer)
+PacketPlayerSpellbook::PacketPlayerSpellbook() : PlayerPacket()
 {
     packetID = ID_PLAYER_SPELLBOOK;
 }

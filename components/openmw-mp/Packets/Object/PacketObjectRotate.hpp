@@ -8,7 +8,7 @@ namespace mwmp
     class PacketObjectRotate : public ObjectPacket
     {
     public:
-        PacketObjectRotate(RakNet::RakPeerInterface *peer);
+        PacketObjectRotate();
 
         virtual void Object(BaseObject &baseObject, bool send);
     };

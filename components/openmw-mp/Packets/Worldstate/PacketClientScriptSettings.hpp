@@ -8,7 +8,7 @@ namespace mwmp
     class PacketClientScriptSettings : public WorldstatePacket
     {
     public:
-        PacketClientScriptSettings(RakNet::RakPeerInterface *peer);
+        PacketClientScriptSettings();
 
         virtual void Packet(RakNet::BitStream *newBitstream, bool send);
     };

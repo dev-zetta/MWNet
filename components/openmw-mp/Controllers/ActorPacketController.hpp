@@ -2,7 +2,6 @@
 #define OPENMW_ACTORPACKETCONTROLLER_HPP
 
 
-#include <RakPeerInterface.h>
 #include "../Packets/Actor/ActorPacket.hpp"
 #include <unordered_map>
 #include <memory>
@@ -13,7 +12,7 @@ namespace mwmp
     class ActorPacketController
     {
     public:
-        ActorPacketController(RakNet::RakPeerInterface *peer);
+        ActorPacketController();
         ActorPacket *GetPacket(RakNet::MessageID id);
         void SetStream(RakNet::BitStream *inStream, RakNet::BitStream *outStream);
         void SetApplicationPacketDispatcher(transport::ApplicationPacketDispatcher* dispatcher);

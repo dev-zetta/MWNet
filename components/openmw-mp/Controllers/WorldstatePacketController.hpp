@@ -2,7 +2,6 @@
 #define OPENMW_WORLDSTATEPACKETCONTROLLER_HPP
 
 
-#include <RakPeerInterface.h>
 #include "../Packets/Worldstate/WorldstatePacket.hpp"
 #include <unordered_map>
 #include <memory>
@@ -13,7 +12,7 @@ namespace mwmp
     class WorldstatePacketController
     {
     public:
-        WorldstatePacketController(RakNet::RakPeerInterface *peer);
+        WorldstatePacketController();
         WorldstatePacket *GetPacket(RakNet::MessageID id);
         void SetStream(RakNet::BitStream *inStream, RakNet::BitStream *outStream);
         void SetApplicationPacketDispatcher(transport::ApplicationPacketDispatcher* dispatcher);
