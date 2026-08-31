@@ -223,10 +223,15 @@ namespace mwmp::mechanics
         const auto finiteRange = [](double value) {
             return std::isfinite(value) && value >= 0 && value <= MaximumStatValue;
         };
+        const double expectedFatigueRatio = state.maximumFatigue == 0
+            ? 1.0 : state.fatigue / state.maximumFatigue;
         return finiteRange(state.health) && finiteRange(state.maximumHealth)
             && state.health <= state.maximumHealth
+            && finiteRange(state.fatigue) && finiteRange(state.maximumFatigue)
+            && state.fatigue <= state.maximumFatigue
             && std::isfinite(state.fatigueRatio) && state.fatigueRatio >= 0
             && state.fatigueRatio <= 1
+            && std::abs(state.fatigueRatio - expectedFatigueRatio) <= 0.000001
             && std::isfinite(state.accuracy) && std::isfinite(state.evasion)
             && state.accuracy >= -MaximumStatValue && state.accuracy <= MaximumStatValue
             && state.evasion >= -MaximumStatValue && state.evasion <= MaximumStatValue

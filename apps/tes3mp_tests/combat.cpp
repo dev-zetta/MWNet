@@ -26,6 +26,8 @@ namespace
         CombatantState result;
         result.health = health;
         result.maximumHealth = health;
+        result.fatigue = 100;
+        result.maximumFatigue = 100;
         result.fatigueRatio = 1;
         result.accuracy = 0.8;
         result.evasion = 0.1;
@@ -89,6 +91,10 @@ namespace
 
         CombatantState invalid = state(10, {});
         invalid.health = std::numeric_limits<double>::quiet_NaN();
+        EXPECT(!resolver.upsert(first, invalid));
+        invalid = state(10, {});
+        invalid.fatigue = 25;
+        invalid.fatigueRatio = 1;
         EXPECT(!resolver.upsert(first, invalid));
         EXPECT(resolver.resolve({ first, second, 0, AttackKind::Melee, 1 }, 0)
             .decision == CombatDecision::InvalidSequence);

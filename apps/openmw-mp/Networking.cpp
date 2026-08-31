@@ -56,7 +56,7 @@ namespace
     mwmp::mechanics::CombatantState actorCombatState(
         const mwmp::BaseActor& actor, const mwmp::BaseActor* cachedActor,
         const std::optional<mwmp::mechanics::CombatantState>& existing,
-        bool replaceHealth);
+        bool replaceResources);
     mwmp::mechanics::CombatantId actorCombatantId(
         const ESM::Cell& cell, const mwmp::BaseActor& actor);
     void applyCanonicalHealth(
@@ -2511,31 +2511,33 @@ namespace
         const Player& player,
         const mwmp::mechanics::CombatantState& combat,
         const std::optional<std::vector<mwmp::mechanics::CanonicalActiveSpell>>& effects,
-        double fatigueBase, double fatigueMultiplier)
+        double fatigueBase, double fatigueMultiplier,
+        const std::optional<mwmp::mechanics::SpellCombatantState>& existing
+            = std::nullopt,
+        bool replaceResources = false)
     {
-        mwmp::mechanics::SpellCombatantState state;
+        mwmp::mechanics::SpellCombatantState state = existing.value_or(
+            mwmp::mechanics::SpellCombatantState{});
         state.health = combat.health;
         state.maximumHealth = combat.maximumHealth;
         state.position = combat.position;
         state.alive = combat.alive;
-        state.magicka = std::clamp(
-            static_cast<double>(player.creatureStats.mDynamic[1].mCurrent),
-            0.0, mwmp::mechanics::SpellResolver::MaximumStatValue);
-        state.maximumMagicka = dynamicMaximum(player.creatureStats.mDynamic[1]);
+        if (!existing || replaceResources)
+        {
+            state.magicka = std::clamp(
+                static_cast<double>(player.creatureStats.mDynamic[1].mCurrent),
+                0.0, mwmp::mechanics::SpellResolver::MaximumStatValue);
+            state.maximumMagicka = dynamicMaximum(
+                player.creatureStats.mDynamic[1]);
+        }
         state.willpower = currentStat(
             player.creatureStats.mAttributes, ESM::Attribute::Willpower);
         state.luck = currentStat(
             player.creatureStats.mAttributes, ESM::Attribute::Luck);
         state.enchantSkill = currentStat(
             player.npcStats.mSkills, ESM::Skill::Enchant);
-        const double fatigueMaximum = dynamicMaximum(
-            player.creatureStats.mDynamic[2]);
-        const double fatigue = std::max(0.0,
-            static_cast<double>(player.creatureStats.mDynamic[2].mCurrent));
-        const double normalizedFatigue = std::floor(fatigueMaximum) == 0
-            ? 1.0 : fatigue / fatigueMaximum;
         state.fatigueTerm = std::max(0.0, fatigueBase
-            - fatigueMultiplier * (1.0 - normalizedFatigue));
+            - fatigueMultiplier * (1.0 - combat.fatigueRatio));
         for (int index = 0; index < ESM::MagicSchool::Length; ++index)
         {
             const ESM::RefId skillId = ESM::MagicSchool::indexToSkillRefId(index);
@@ -2550,15 +2552,23 @@ namespace
     mwmp::mechanics::SpellCombatantState actorTargetSpellState(
         const mwmp::BaseActor& actor,
         const mwmp::mechanics::CombatantState& combat,
-        const std::optional<std::vector<mwmp::mechanics::CanonicalActiveSpell>>& effects)
+        const std::optional<std::vector<mwmp::mechanics::CanonicalActiveSpell>>& effects,
+        const std::optional<mwmp::mechanics::SpellCombatantState>& existing
+            = std::nullopt,
+        bool replaceResources = false)
     {
-        mwmp::mechanics::SpellCombatantState state;
+        mwmp::mechanics::SpellCombatantState state = existing.value_or(
+            mwmp::mechanics::SpellCombatantState{});
         state.health = combat.health;
         state.maximumHealth = combat.maximumHealth;
-        state.magicka = std::clamp(
-            static_cast<double>(actor.creatureStats.mDynamic[1].mCurrent),
-            0.0, mwmp::mechanics::SpellResolver::MaximumStatValue);
-        state.maximumMagicka = dynamicMaximum(actor.creatureStats.mDynamic[1]);
+        if (!existing || replaceResources)
+        {
+            state.magicka = std::clamp(
+                static_cast<double>(actor.creatureStats.mDynamic[1].mCurrent),
+                0.0, mwmp::mechanics::SpellResolver::MaximumStatValue);
+            state.maximumMagicka = dynamicMaximum(
+                actor.creatureStats.mDynamic[1]);
+        }
         state.position = combat.position;
         state.alive = combat.alive;
         applyMagicDefences(state, effects);
@@ -2570,28 +2580,30 @@ namespace
         const mwmp::mechanics::ActorMagicTemplate& actorTemplate,
         const mwmp::mechanics::CombatantState& combat,
         const std::optional<std::vector<mwmp::mechanics::CanonicalActiveSpell>>& effects,
-        double fatigueBase, double fatigueMultiplier)
+        double fatigueBase, double fatigueMultiplier,
+        const std::optional<mwmp::mechanics::SpellCombatantState>& existing
+            = std::nullopt,
+        bool replaceResources = false)
     {
-        mwmp::mechanics::SpellCombatantState state;
+        mwmp::mechanics::SpellCombatantState state = existing.value_or(
+            mwmp::mechanics::SpellCombatantState{});
         state.health = combat.health;
         state.maximumHealth = combat.maximumHealth;
-        state.magicka = std::clamp(
-            static_cast<double>(actor.creatureStats.mDynamic[1].mCurrent),
-            0.0, actorTemplate.maximumMagicka);
-        state.maximumMagicka = actorTemplate.maximumMagicka;
+        if (!existing || replaceResources)
+        {
+            state.magicka = std::clamp(
+                static_cast<double>(actor.creatureStats.mDynamic[1].mCurrent),
+                0.0, actorTemplate.maximumMagicka);
+            state.maximumMagicka = actorTemplate.maximumMagicka;
+        }
         state.position = combat.position;
         state.alive = combat.alive;
         state.willpower = actorTemplate.willpower;
         state.luck = actorTemplate.luck;
         state.enchantSkill = actorTemplate.enchantSkill;
         state.magicSkills = actorTemplate.magicSkills;
-        const double fatigueMaximum = std::max(1.0,
-            actorTemplate.maximumFatigue);
-        const double fatigue = std::clamp(
-            static_cast<double>(actor.creatureStats.mDynamic[2].mCurrent),
-            0.0, fatigueMaximum);
         state.fatigueTerm = std::max(0.0, fatigueBase
-            - fatigueMultiplier * (1.0 - fatigue / fatigueMaximum));
+            - fatigueMultiplier * (1.0 - combat.fatigueRatio));
         applyMagicDefences(state, effects);
         return state;
     }
@@ -2767,7 +2779,8 @@ bool Networking::resolvePlayerCast(Player& player, std::string& rejectionReason)
     mechanics::SpellResolver spells = mSpellResolver;
     if (!spells.upsertCombatant(casterId, playerSpellState(player,
             *casterCombat, mActiveEffectLedger.snapshot(casterId),
-            mSpellFatigueBase, mSpellFatigueMultiplier)))
+            mSpellFatigueBase, mSpellFatigueMultiplier,
+            spells.findCombatant(casterId))))
     {
         rejectionReason = "the canonical caster magic state is invalid";
         return false;
@@ -2810,7 +2823,8 @@ bool Networking::resolvePlayerCast(Player& player, std::string& rejectionReason)
             if (!spells.upsertCombatant(*presentationIntent.target,
                     playerSpellState(*targetPlayer, *targetCombat,
                         mActiveEffectLedger.snapshot(*presentationIntent.target),
-                        mSpellFatigueBase, mSpellFatigueMultiplier)))
+                        mSpellFatigueBase, mSpellFatigueMultiplier,
+                        spells.findCombatant(*presentationIntent.target))))
             {
                 rejectionReason = "the canonical target magic state is invalid";
                 return false;
@@ -2851,7 +2865,8 @@ bool Networking::resolvePlayerCast(Player& player, std::string& rejectionReason)
             }
             if (!spells.upsertCombatant(*presentationIntent.target,
                     actorTargetSpellState(*targetActor, *targetCombat,
-                        mActiveEffectLedger.snapshot(*presentationIntent.target))))
+                        mActiveEffectLedger.snapshot(*presentationIntent.target),
+                        spells.findCombatant(*presentationIntent.target))))
             {
                 rejectionReason = "the canonical target magic state is invalid";
                 return false;
@@ -3385,7 +3400,8 @@ bool Networking::resolveActorCast(Player& player, BaseActorList& actorList,
     mechanics::SpellResolver spells = mSpellResolver;
     if (!spells.upsertCombatant(casterId, actorCasterSpellState(*casterActor,
             *actorTemplate, *casterCombat, mActiveEffectLedger.snapshot(casterId),
-            mSpellFatigueBase, mSpellFatigueMultiplier)))
+            mSpellFatigueBase, mSpellFatigueMultiplier,
+            spells.findCombatant(casterId))))
     {
         rejectionReason = "the canonical actor magic state is invalid";
         return false;
@@ -3419,7 +3435,8 @@ bool Networking::resolveActorCast(Player& player, BaseActorList& actorList,
                 || !spells.upsertCombatant(*presentationIntent.target,
                     playerSpellState(*targetPlayer, *targetCombat,
                         mActiveEffectLedger.snapshot(*presentationIntent.target),
-                        mSpellFatigueBase, mSpellFatigueMultiplier)))
+                        mSpellFatigueBase, mSpellFatigueMultiplier,
+                        spells.findCombatant(*presentationIntent.target))))
             {
                 rejectionReason = "the canonical target player state is invalid";
                 return false;
@@ -3464,7 +3481,8 @@ bool Networking::resolveActorCast(Player& player, BaseActorList& actorList,
             if (!combat.upsert(*presentationIntent.target, *targetCombat)
                 || !spells.upsertCombatant(*presentationIntent.target,
                     actorTargetSpellState(*targetActor, *targetCombat,
-                        mActiveEffectLedger.snapshot(*presentationIntent.target))))
+                        mActiveEffectLedger.snapshot(*presentationIntent.target),
+                        spells.findCombatant(*presentationIntent.target))))
             {
                 rejectionReason = "the canonical target actor state is invalid";
                 return false;
@@ -3966,20 +3984,14 @@ namespace
             static_cast<double>(stat.mMod), static_cast<double>(stat.mCurrent) });
     }
 
-    double fatigueRatio(const ESM::StatState<float>& stat) noexcept
-    {
-        const double maximum = dynamicMaximum(stat);
-        return std::clamp(static_cast<double>(stat.mCurrent) / maximum, 0.0, 1.0);
-    }
-
     mwmp::mechanics::CombatantState playerCombatState(const Player& player,
         const std::optional<mwmp::mechanics::CombatantState>& existing,
-        bool replaceHealth)
+        bool replaceResources)
     {
         mwmp::mechanics::CombatantState state = existing.value_or(
             mwmp::mechanics::CombatantState{});
         const auto& health = player.creatureStats.mDynamic[0];
-        if (!existing || replaceHealth)
+        if (!existing || replaceResources)
         {
             state.health = std::clamp(static_cast<double>(health.mCurrent),
                 0.0, maximumCanonicalStat);
@@ -3988,7 +4000,16 @@ namespace
         }
         else
             state.maximumHealth = std::max(state.maximumHealth, state.health);
-        state.fatigueRatio = fatigueRatio(player.creatureStats.mDynamic[2]);
+        if (!existing || replaceResources)
+        {
+            state.maximumFatigue = dynamicMaximum(
+                player.creatureStats.mDynamic[2]);
+            state.fatigue = std::clamp(
+                static_cast<double>(player.creatureStats.mDynamic[2].mCurrent),
+                0.0, state.maximumFatigue);
+            state.fatigueRatio = state.maximumFatigue == 0
+                ? 1.0 : state.fatigue / state.maximumFatigue;
+        }
         state.accuracy = 0.75;
         state.evasion = 0.10;
         state.armorRating = 0;
@@ -4013,6 +4034,28 @@ namespace
         player.creatureStats.mDead = !state.alive;
     }
 
+    void applyCanonicalMagicka(Player& player,
+        const mwmp::mechanics::SpellCombatantState& state) noexcept
+    {
+        auto& magicka = player.creatureStats.mDynamic[1];
+        magicka.mBase = static_cast<float>(state.maximumMagicka);
+        magicka.mMod = static_cast<float>(state.maximumMagicka);
+        magicka.mCurrent = static_cast<float>(state.magicka);
+        magicka.mDamage = 0;
+        magicka.mProgress = 0;
+    }
+
+    void applyCanonicalFatigue(Player& player,
+        const mwmp::mechanics::CombatantState& state) noexcept
+    {
+        auto& fatigue = player.creatureStats.mDynamic[2];
+        fatigue.mBase = static_cast<float>(state.maximumFatigue);
+        fatigue.mMod = static_cast<float>(state.maximumFatigue);
+        fatigue.mCurrent = static_cast<float>(state.fatigue);
+        fatigue.mDamage = 0;
+        fatigue.mProgress = 0;
+    }
+
     std::uint64_t actorReferenceValue(const mwmp::BaseActor& actor) noexcept
     {
         return (static_cast<std::uint64_t>(actor.refNum) << 32)
@@ -4029,12 +4072,12 @@ namespace
     mwmp::mechanics::CombatantState actorCombatState(const mwmp::BaseActor& actor,
         const mwmp::BaseActor* cachedActor,
         const std::optional<mwmp::mechanics::CombatantState>& existing,
-        bool replaceHealth)
+        bool replaceResources)
     {
         mwmp::mechanics::CombatantState state = existing.value_or(
             mwmp::mechanics::CombatantState{});
         const auto& health = actor.creatureStats.mDynamic[0];
-        if (!existing || replaceHealth)
+        if (!existing || replaceResources)
         {
             state.health = std::clamp(static_cast<double>(health.mCurrent),
                 0.0, maximumCanonicalStat);
@@ -4043,7 +4086,16 @@ namespace
         }
         else
             state.maximumHealth = std::max(state.maximumHealth, state.health);
-        state.fatigueRatio = fatigueRatio(actor.creatureStats.mDynamic[2]);
+        if (!existing || replaceResources)
+        {
+            state.maximumFatigue = dynamicMaximum(
+                actor.creatureStats.mDynamic[2]);
+            state.fatigue = std::clamp(
+                static_cast<double>(actor.creatureStats.mDynamic[2].mCurrent),
+                0.0, state.maximumFatigue);
+            state.fatigueRatio = state.maximumFatigue == 0
+                ? 1.0 : state.fatigue / state.maximumFatigue;
+        }
         state.accuracy = 0.70;
         state.evasion = 0.10;
         state.armorRating = 0;
@@ -4067,6 +4119,28 @@ namespace
         health.mDamage = 0;
         health.mProgress = 0;
         actor.creatureStats.mDead = !state.alive;
+    }
+
+    void applyCanonicalMagicka(mwmp::BaseActor& actor,
+        const mwmp::mechanics::SpellCombatantState& state) noexcept
+    {
+        auto& magicka = actor.creatureStats.mDynamic[1];
+        magicka.mBase = static_cast<float>(state.maximumMagicka);
+        magicka.mMod = static_cast<float>(state.maximumMagicka);
+        magicka.mCurrent = static_cast<float>(state.magicka);
+        magicka.mDamage = 0;
+        magicka.mProgress = 0;
+    }
+
+    void applyCanonicalFatigue(mwmp::BaseActor& actor,
+        const mwmp::mechanics::CombatantState& state) noexcept
+    {
+        auto& fatigue = actor.creatureStats.mDynamic[2];
+        fatigue.mBase = static_cast<float>(state.maximumFatigue);
+        fatigue.mMod = static_cast<float>(state.maximumFatigue);
+        fatigue.mCurrent = static_cast<float>(state.fatigue);
+        fatigue.mDamage = 0;
+        fatigue.mProgress = 0;
     }
 }
 
@@ -4614,7 +4688,12 @@ bool Networking::reconcilePlayerStats(Player& player)
     const auto existing = mCombatResolver.find(id);
     mechanics::CombatantState state = playerCombatState(player, existing, false);
     if (existing)
+    {
         applyCanonicalHealth(player, state);
+        applyCanonicalFatigue(player, state);
+    }
+    if (const auto magic = mSpellResolver.findCombatant(id))
+        applyCanonicalMagicka(player, *magic);
     if (mCombatResolver.upsert(id, state))
         return true;
 
@@ -4632,7 +4711,11 @@ bool Networking::applyServerPlayerStats(Player& player)
     const mechanics::CombatantId id{ mechanics::CombatantKind::Player, player.guid.value, {} };
     mechanics::CombatantState state = playerCombatState(
         player, mCombatResolver.find(id), true);
-    if (!mCombatResolver.upsert(id, state))
+    mechanics::SpellCombatantState magic = playerSpellState(player, state,
+        mActiveEffectLedger.snapshot(id), mSpellFatigueBase,
+        mSpellFatigueMultiplier, mSpellResolver.findCombatant(id), true);
+    if (!mCombatResolver.upsert(id, state)
+        || !mSpellResolver.upsertCombatant(id, magic))
     {
         LOG_MESSAGE_SIMPLE(TimedLog::LOG_ERROR,
             "Rejected server-authored dynamic stats for connection %llu",
@@ -4640,6 +4723,8 @@ bool Networking::applyServerPlayerStats(Player& player)
         return false;
     }
     applyCanonicalHealth(player, state);
+    applyCanonicalMagicka(player, magic);
+    applyCanonicalFatigue(player, state);
     return true;
 }
 
@@ -4680,7 +4765,12 @@ bool Networking::reconcileActorStats(Player& player, BaseActorList& incoming)
         mechanics::CombatantState state = actorCombatState(
             actor, cachedActor, existing, false);
         if (existing)
+        {
             applyCanonicalHealth(actor, state);
+            applyCanonicalFatigue(actor, state);
+        }
+        if (const auto magic = mSpellResolver.findCombatant(id))
+            applyCanonicalMagicka(actor, *magic);
         if (!mCombatResolver.upsert(id, state))
         {
             const unsigned int violations = ++mCombatViolations[player.guid.value];
@@ -4715,9 +4805,27 @@ bool Networking::applyServerActorStats(BaseActorList& actorList)
         const BaseActor* cachedActor = serverCell->getActor(actor.refNum, actor.mpNum);
         mechanics::CombatantState state = actorCombatState(
             actor, cachedActor, mCombatResolver.find(id), true);
-        if (!mCombatResolver.upsert(id, state))
+        const auto actorTemplate = mActorMagicRegistry.find(
+            Misc::StringUtils::lowerCase(actor.refId));
+        mechanics::SpellCombatantState magic;
+        const bool hasTemplate = actorTemplate.has_value();
+        if (hasTemplate)
+        {
+            magic = actorCasterSpellState(actor, *actorTemplate, state,
+                mActiveEffectLedger.snapshot(id), mSpellFatigueBase,
+                mSpellFatigueMultiplier, mSpellResolver.findCombatant(id), true);
+        }
+        else
+        {
+            magic = actorTargetSpellState(actor, state,
+                mActiveEffectLedger.snapshot(id), mSpellResolver.findCombatant(id), true);
+        }
+        if (!mCombatResolver.upsert(id, state)
+            || !mSpellResolver.upsertCombatant(id, magic))
             return false;
         applyCanonicalHealth(actor, state);
+        applyCanonicalMagicka(actor, magic);
+        applyCanonicalFatigue(actor, state);
     }
     serverCell->readActorList(ID_ACTOR_STATS_DYNAMIC, &actorList);
     return true;

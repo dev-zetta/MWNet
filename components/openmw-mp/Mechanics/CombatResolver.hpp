@@ -38,6 +38,8 @@ namespace mwmp::mechanics
     {
         double health = 0;
         double maximumHealth = 0;
+        double fatigue = 0;
+        double maximumFatigue = 0;
         double fatigueRatio = 1;
         double accuracy = 0.5;
         double evasion = 0;
