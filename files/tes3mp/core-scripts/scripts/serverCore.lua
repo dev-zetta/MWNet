@@ -690,6 +690,14 @@ function OnActorCellChange(pid, cellDescription)
     eventHandler.OnActorCellChange(pid, cellDescription)
 end
 
+function OnActorCellChangeIntent(pid, cellDescription)
+    return eventHandler.OnActorCellChangeIntent(pid, cellDescription)
+end
+
+function OnActorCellChangeIntentRejected(pid, cellDescription, reason)
+    eventHandler.OnActorCellChangeIntentRejected(pid, cellDescription, reason)
+end
+
 function OnObjectActivate(pid, cellDescription)
     tes3mp.LogMessage(enumerations.log.INFO, "Called \"OnObjectActivate\" for " .. logicHandler.GetChatName(pid) ..
         " and cell " .. cellDescription)

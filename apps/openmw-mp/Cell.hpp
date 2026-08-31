@@ -5,6 +5,7 @@
 #include <deque>
 #include <string>
 #include <unordered_map>
+#include <vector>
 #include <components/esm/records.hpp>
 #include <components/openmw-mp/Base/BaseActor.hpp>
 #include <components/openmw-mp/Base/BaseObject.hpp>
@@ -22,6 +23,12 @@ public:
     using TPlayers = std::deque<Player*>;
     using Iterator = TPlayers::const_iterator;
 
+    struct PreparedActorRoster
+    {
+        std::vector<mwmp::BaseActor> actors;
+        std::unordered_map<std::uint64_t, std::size_t> indexes;
+    };
+
     Iterator begin() const;
     Iterator end() const;
 
@@ -32,6 +39,9 @@ public:
     bool containsActor(int refNum, int mpNum) const;
     mwmp::BaseActor *getActor(int refNum, int mpNum);
     void removeActors(const mwmp::BaseActorList *newActorList);
+    PreparedActorRoster prepareActorRoster(
+        std::vector<mwmp::BaseActor> actors) const;
+    void commitActorRoster(PreparedActorRoster&& roster) noexcept;
 
     RakNet::RakNetGUID *getAuthority();
     void setAuthority(const RakNet::RakNetGUID& guid, std::uint64_t leaseId);

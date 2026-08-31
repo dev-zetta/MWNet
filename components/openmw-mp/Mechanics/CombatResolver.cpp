@@ -193,6 +193,13 @@ namespace mwmp::mechanics
         return mCombatants.erase(id) != 0;
     }
 
+    void CombatResolver::swap(CombatResolver& other) noexcept
+    {
+        std::swap(mMaximumCombatants, other.mMaximumCombatants);
+        mCombatants.swap(other.mCombatants);
+        mSequences.swap(other.mSequences);
+    }
+
     void CombatResolver::clear() noexcept
     {
         mSequences.clear();

@@ -134,6 +134,12 @@ namespace mwmp::mechanics
         return mActiveEffects.erase(owner) != 0;
     }
 
+    void ActiveEffectLedger::swap(ActiveEffectLedger& other) noexcept
+    {
+        std::swap(mMaximumOwners, other.mMaximumOwners);
+        mActiveEffects.swap(other.mActiveEffects);
+    }
+
     void ActiveEffectLedger::clear() noexcept
     {
         mActiveEffects.clear();

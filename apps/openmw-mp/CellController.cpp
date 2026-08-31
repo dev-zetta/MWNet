@@ -35,7 +35,7 @@ CellController *CellController::get()
     return sThis;
 }
 
-Cell *CellController::getCell(ESM::Cell *esmCell)
+Cell *CellController::getCell(const ESM::Cell *esmCell)
 {
     if (esmCell->isExterior())
         return getCellByXY(esmCell->mData.mX, esmCell->mData.mY);

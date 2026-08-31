@@ -125,6 +125,7 @@ namespace mwmp::mechanics
 
         std::optional<CombatantState> find(CombatantId id) const;
         bool erase(CombatantId id) noexcept;
+        void swap(CombatResolver& other) noexcept;
         void clear() noexcept;
         std::size_t size() const noexcept;
 

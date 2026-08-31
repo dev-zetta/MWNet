@@ -4,6 +4,7 @@
 
 #include <algorithm>
 #include <iostream>
+#include <stdexcept>
 #include <unordered_set>
 #include <vector>
 #include "Networking.hpp"
@@ -200,6 +201,28 @@ void Cell::removeActors(const mwmp::BaseActorList *newActorList)
 
     cellActorList.count = cellActorList.baseActors.size();
     rebuildActorIndex();
+}
+
+Cell::PreparedActorRoster Cell::prepareActorRoster(
+    std::vector<mwmp::BaseActor> actors) const
+{
+    PreparedActorRoster result;
+    result.actors = std::move(actors);
+    result.indexes.reserve(result.actors.size());
+    for (std::size_t index = 0; index < result.actors.size(); ++index)
+    {
+        const mwmp::BaseActor& actor = result.actors[index];
+        if (!result.indexes.emplace(actorKey(actor.refNum, actor.mpNum), index).second)
+            throw std::invalid_argument("actor roster contains a duplicate identity");
+    }
+    return result;
+}
+
+void Cell::commitActorRoster(PreparedActorRoster&& roster) noexcept
+{
+    cellActorList.baseActors.swap(roster.actors);
+    actorIndexes.swap(roster.indexes);
+    cellActorList.count = static_cast<unsigned int>(cellActorList.baseActors.size());
 }
 
 std::uint64_t Cell::actorKey(std::uint32_t refNum, std::uint32_t mpNum) noexcept

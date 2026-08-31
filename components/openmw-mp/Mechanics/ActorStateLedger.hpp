@@ -144,6 +144,7 @@ namespace mwmp::mechanics
         bool contains(const ActorIdentity& identity) const noexcept;
         std::vector<ActorIdentity> identities(const std::string& cell) const;
         std::size_t eraseCell(const std::string& cell) noexcept;
+        void swap(ActorStateLedger& other) noexcept;
         void clear() noexcept;
         std::size_t size() const noexcept;
 

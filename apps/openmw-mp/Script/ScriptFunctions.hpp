@@ -244,6 +244,8 @@ public:
             {"OnActorSpellsActiveIntent", Callback<unsigned short, const char*>()},
             {"OnActorSpellsActiveIntentRejected", Callback<unsigned short, const char*, const char*>()},
             {"OnActorSpellsActive",      Callback<unsigned short, const char*>()},
+            {"OnActorCellChangeIntent",  Callback<unsigned short, const char*>()},
+            {"OnActorCellChangeIntentRejected", Callback<unsigned short, const char*, const char*>()},
             {"OnActorCellChange",        Callback<unsigned short, const char*>()},
             {"OnActorTest",              Callback<unsigned short, const char*>()},
             {"OnPlayerSendMessage",      Callback<unsigned short, const char*>()},

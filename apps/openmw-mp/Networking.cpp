@@ -450,6 +450,52 @@ namespace
         return result;
     }
 
+    std::vector<mwmp::mechanics::ActorCellChangeUpdate> actorCellChangeUpdates(
+        const mwmp::BaseActorList& actorList, std::uint64_t sequence)
+    {
+        std::vector<mwmp::mechanics::ActorCellChangeUpdate> result;
+        const std::string sourceCell = actorList.cell.getShortDescription();
+        result.reserve(actorList.baseActors.size());
+        for (const mwmp::BaseActor& actor : actorList.baseActors)
+        {
+            mwmp::mechanics::ActorCellChangeUpdate update;
+            update.source = { sourceCell, actor.refNum, actor.mpNum };
+            update.destinationCell = actor.cell.getShortDescription();
+            update.transform.position = { actor.position.pos[0], actor.position.pos[1],
+                actor.position.pos[2] };
+            update.transform.rotation = { actor.position.rot[0], actor.position.rot[1],
+                actor.position.rot[2] };
+            update.transform.direction = { actor.direction.pos[0], actor.direction.pos[1],
+                actor.direction.pos[2] };
+            update.transform.directionRotation = { actor.direction.rot[0],
+                actor.direction.rot[1], actor.direction.rot[2] };
+            update.sequence = sequence;
+            result.push_back(std::move(update));
+        }
+        return result;
+    }
+
+    std::vector<mwmp::mechanics::CombatantRelocation> actorRelocations(
+        const std::vector<mwmp::mechanics::ActorCellChangeUpdate>& changes)
+    {
+        std::vector<mwmp::mechanics::CombatantRelocation> result;
+        result.reserve(changes.size());
+        for (const mwmp::mechanics::ActorCellChangeUpdate& change : changes)
+        {
+            const std::uint64_t reference
+                = (static_cast<std::uint64_t>(change.source.refNum) << 32)
+                | static_cast<std::uint64_t>(change.source.mpNum);
+            result.push_back({
+                { mwmp::mechanics::CombatantKind::Actor, reference,
+                    change.source.cell },
+                { mwmp::mechanics::CombatantKind::Actor, reference,
+                    change.destinationCell },
+                change.transform.position,
+            });
+        }
+        return result;
+    }
+
     std::optional<mwmp::mechanics::ActorRosterAction> actorRosterAction(
         unsigned char action)
     {
@@ -1793,6 +1839,206 @@ bool Networking::commitActorPositions(Player& player, BaseActorList& actorList)
         mechanics::describe(result.decision), violations);
     if (violations >= mMovementViolationLimit)
         disconnectTransport({ player.guid.g }, "repeated invalid actor movement samples");
+    return false;
+}
+
+bool Networking::validateActorCellChanges(Player& player,
+    const BaseActorList& incoming)
+{
+    mechanics::ActorStateResult result{
+        mechanics::ActorStateDecision::InvalidBatch };
+    Cell* sourceCell = CellController::get()->getCell(&incoming.cell);
+    if (incoming.count == incoming.baseActors.size()
+        && sourceCell != nullptr
+        && *sourceCell->getAuthority() == player.guid
+        && sourceCell->getAuthorityLeaseId() == incoming.authorityLeaseId)
+    {
+        const auto changes = actorCellChangeUpdates(
+            incoming, mCurrentApplicationSequence);
+        const auto relocations = actorRelocations(changes);
+        result = mActorStateLedger.previewCellChanges(changes);
+        if (result.applied()
+            && mCombatResolver.previewRelocations(relocations)
+            && mActiveEffectLedger.previewRelocations(relocations))
+        {
+            for (const BaseActor& actor : incoming.baseActors)
+            {
+                if (!sourceCell->containsActor(actor.refNum, actor.mpNum))
+                {
+                    result.decision = mechanics::ActorStateDecision::UnknownActor;
+                    break;
+                }
+                if (Cell* destinationCell
+                    = CellController::get()->getCell(&actor.cell);
+                    destinationCell != nullptr
+                    && destinationCell->containsActor(actor.refNum, actor.mpNum))
+                {
+                    result.decision
+                        = mechanics::ActorStateDecision::DestinationOccupied;
+                    break;
+                }
+            }
+            if (result.applied())
+                return true;
+        }
+        else if (result.applied())
+            result.decision = mechanics::ActorStateDecision::DestinationOccupied;
+    }
+
+    const unsigned int violations = ++mActorStateViolations[player.guid.g];
+    LOG_MESSAGE_SIMPLE(TimedLog::LOG_WARN,
+        "Rejected actor cell change from connection %llu for %s: %s (violation %u)",
+        static_cast<unsigned long long>(player.guid.g),
+        incoming.cell.getShortDescription().c_str(),
+        mechanics::describe(result.decision), violations);
+    if (violations >= 5)
+        disconnectTransport({ player.guid.g },
+            "repeated invalid actor cell changes");
+    return false;
+}
+
+bool Networking::commitActorCellChanges(Player& player, BaseActorList& actorList)
+{
+    mechanics::ActorStateResult result{
+        mechanics::ActorStateDecision::InvalidBatch };
+    Cell* sourceCell = CellController::get()->getCell(&actorList.cell);
+    if (actorList.count != actorList.baseActors.size()
+        || sourceCell == nullptr
+        || *sourceCell->getAuthority() != player.guid
+        || sourceCell->getAuthorityLeaseId() != actorList.authorityLeaseId)
+    {
+        goto reject;
+    }
+
+    try
+    {
+        const auto changes = actorCellChangeUpdates(
+            actorList, mCurrentApplicationSequence);
+        const auto relocations = actorRelocations(changes);
+        result = mActorStateLedger.previewCellChanges(changes);
+        if (!result.applied()
+            || !mCombatResolver.previewRelocations(relocations)
+            || !mActiveEffectLedger.previewRelocations(relocations))
+        {
+            if (result.applied())
+                result.decision = mechanics::ActorStateDecision::DestinationOccupied;
+            goto reject;
+        }
+
+        std::unordered_set<std::uint64_t> movedReferences;
+        movedReferences.reserve(actorList.baseActors.size());
+        for (const BaseActor& actor : actorList.baseActors)
+        {
+            if (!sourceCell->containsActor(actor.refNum, actor.mpNum))
+            {
+                result.decision = mechanics::ActorStateDecision::UnknownActor;
+                goto reject;
+            }
+            movedReferences.insert(
+                (static_cast<std::uint64_t>(actor.refNum) << 32)
+                    | static_cast<std::uint64_t>(actor.mpNum));
+        }
+
+        std::vector<BaseActor> sourceActors
+            = sourceCell->getActorList()->baseActors;
+        std::erase_if(sourceActors,
+            [&movedReferences](const BaseActor& actor) {
+                const std::uint64_t reference
+                    = (static_cast<std::uint64_t>(actor.refNum) << 32)
+                    | static_cast<std::uint64_t>(actor.mpNum);
+                return movedReferences.contains(reference);
+            });
+        Cell::PreparedActorRoster preparedSource
+            = sourceCell->prepareActorRoster(std::move(sourceActors));
+
+        struct DestinationRoster
+        {
+            Cell* cell = nullptr;
+            std::vector<BaseActor> actors;
+            std::optional<Cell::PreparedActorRoster> prepared;
+        };
+        std::vector<DestinationRoster> destinations;
+        for (const BaseActor& actor : actorList.baseActors)
+        {
+            Cell* destinationCell = CellController::get()->getCell(&actor.cell);
+            if (destinationCell == nullptr)
+                continue;
+            if (destinationCell->containsActor(actor.refNum, actor.mpNum))
+            {
+                result.decision
+                    = mechanics::ActorStateDecision::DestinationOccupied;
+                goto reject;
+            }
+
+            auto destination = std::find_if(destinations.begin(), destinations.end(),
+                [destinationCell](const DestinationRoster& entry) {
+                    return entry.cell == destinationCell;
+                });
+            if (destination == destinations.end())
+            {
+                destinations.push_back({ destinationCell,
+                    destinationCell->getActorList()->baseActors, std::nullopt });
+                destination = std::prev(destinations.end());
+            }
+
+            BaseActor moved = *sourceCell->getActor(actor.refNum, actor.mpNum);
+            moved.cell = actor.cell;
+            moved.position = actor.position;
+            moved.direction = actor.direction;
+            moved.isFollowerCellChange = actor.isFollowerCellChange;
+            moved.hasPositionData = true;
+            destination->actors.push_back(std::move(moved));
+        }
+        for (DestinationRoster& destination : destinations)
+        {
+            destination.prepared
+                = destination.cell->prepareActorRoster(std::move(destination.actors));
+        }
+
+        mechanics::ActorStateLedger actors = mActorStateLedger;
+        mechanics::CombatResolver combat = mCombatResolver;
+        mechanics::ActiveEffectLedger activeEffects = mActiveEffectLedger;
+        result = actors.applyCellChanges(changes,
+            mechanics::ActorStateLedger::Clock::now());
+        if (!result.applied() || !combat.applyRelocations(relocations)
+            || !activeEffects.applyRelocations(relocations))
+        {
+            if (result.applied())
+                result.decision = mechanics::ActorStateDecision::DestinationOccupied;
+            goto reject;
+        }
+
+        mActorStateLedger.swap(actors);
+        mCombatResolver.swap(combat);
+        mActiveEffectLedger.swap(activeEffects);
+        sourceCell->commitActorRoster(std::move(preparedSource));
+        for (DestinationRoster& destination : destinations)
+            destination.cell->commitActorRoster(std::move(*destination.prepared));
+        return true;
+    }
+    catch (const std::exception& exception)
+    {
+        LOG_MESSAGE_SIMPLE(TimedLog::LOG_ERROR,
+            "Failed to prepare actor cell change for %s: %s",
+            actorList.cell.getShortDescription().c_str(), exception.what());
+    }
+    catch (...)
+    {
+        LOG_MESSAGE_SIMPLE(TimedLog::LOG_ERROR,
+            "Failed to prepare actor cell change for %s: unknown error",
+            actorList.cell.getShortDescription().c_str());
+    }
+
+reject:
+    const unsigned int violations = ++mActorStateViolations[player.guid.g];
+    LOG_MESSAGE_SIMPLE(TimedLog::LOG_WARN,
+        "Rejected modified actor cell change from connection %llu for %s: %s (violation %u)",
+        static_cast<unsigned long long>(player.guid.g),
+        actorList.cell.getShortDescription().c_str(),
+        mechanics::describe(result.decision), violations);
+    if (violations >= 5)
+        disconnectTransport({ player.guid.g },
+            "repeated invalid actor cell changes");
     return false;
 }
 

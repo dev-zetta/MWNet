@@ -100,6 +100,7 @@ namespace mwmp::mechanics
 
         std::optional<std::vector<CanonicalActiveSpell>> snapshot(CombatantId owner) const;
         bool erase(CombatantId owner) noexcept;
+        void swap(ActiveEffectLedger& other) noexcept;
         void clear() noexcept;
         std::size_t size() const noexcept;
 

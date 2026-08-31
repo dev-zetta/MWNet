@@ -211,6 +211,12 @@ namespace mwmp::mechanics
         return erased;
     }
 
+    void ActorStateLedger::swap(ActorStateLedger& other) noexcept
+    {
+        std::swap(mMaximumActors, other.mMaximumActors);
+        mActors.swap(other.mActors);
+    }
+
     void ActorStateLedger::clear() noexcept
     {
         mActors.clear();

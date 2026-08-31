@@ -5,6 +5,7 @@ local pendingPlayerSpellsActiveEvents = {}
 local pendingActorSpellsActiveEvents = {}
 local pendingActorEquipmentEvents = {}
 local pendingActorListEvents = {}
+local pendingActorCellChangeEvents = {}
 local pendingPlayerBountyEvents = {}
 local pendingObjectPlaceEvents = {}
 local pendingObjectMutationEvents = {}
@@ -1872,25 +1873,76 @@ eventHandler.OnActorDeath = function(pid, cellDescription)
     end
 end
 
+eventHandler.OnActorCellChangeIntent = function(pid, cellDescription)
+    if pendingActorCellChangeEvents[pid] == nil then
+        pendingActorCellChangeEvents[pid] = {}
+    end
+    pendingActorCellChangeEvents[pid][cellDescription] = nil
+
+    if Players[pid] == nil or not Players[pid]:IsLoggedIn() or
+        LoadedCells[cellDescription] == nil then
+        if next(pendingActorCellChangeEvents[pid]) == nil then
+            pendingActorCellChangeEvents[pid] = nil
+        end
+        return false
+    end
+
+    local eventStatus = customEventHooks.triggerValidators("OnActorCellChange",
+        {pid, cellDescription})
+    if not eventStatus.validDefaultHandler then
+        customEventHooks.triggerHandlers("OnActorCellChange", eventStatus,
+            {pid, cellDescription})
+        if next(pendingActorCellChangeEvents[pid]) == nil then
+            pendingActorCellChangeEvents[pid] = nil
+        end
+        return false
+    end
+
+    pendingActorCellChangeEvents[pid][cellDescription] = eventStatus
+    return true
+end
+
+eventHandler.OnActorCellChangeIntentRejected = function(pid, cellDescription, reason)
+    local pendingByCell = pendingActorCellChangeEvents[pid]
+    if pendingByCell == nil then
+        return
+    end
+    local eventStatus = pendingByCell[cellDescription]
+    pendingByCell[cellDescription] = nil
+    if next(pendingByCell) == nil then
+        pendingActorCellChangeEvents[pid] = nil
+    end
+    if eventStatus == nil then
+        return
+    end
+
+    tes3mp.LogAppend(enumerations.log.WARN,
+        "- Rejected ActorCellChange: " .. reason)
+    eventStatus = customEventHooks.makeEventStatus(false,
+        eventStatus.validCustomHandlers)
+    customEventHooks.triggerHandlers("OnActorCellChange", eventStatus,
+        {pid, cellDescription})
+end
+
 eventHandler.OnActorCellChange = function(pid, cellDescription)
-    if Players[pid] ~= nil and Players[pid]:IsLoggedIn() then
-        local isCellLoaded = LoadedCells[cellDescription] ~= nil
-
-        if not isCellLoaded then
-            logicHandler.LoadCell(cellDescription)
+    local pendingByCell = pendingActorCellChangeEvents[pid]
+    local eventStatus = nil
+    if pendingByCell ~= nil then
+        eventStatus = pendingByCell[cellDescription]
+        pendingByCell[cellDescription] = nil
+        if next(pendingByCell) == nil then
+            pendingActorCellChangeEvents[pid] = nil
         end
+    end
+    if eventStatus == nil then
+        return
+    end
 
-        local eventStatus = customEventHooks.triggerValidators("OnActorCellChange", {pid, cellDescription})
-        if eventStatus.validDefaultHandler then
-            LoadedCells[cellDescription]:SaveActorCellChanges(pid)
-        end
-        customEventHooks.triggerHandlers("OnActorCellChange", eventStatus, {pid, cellDescription})
-
-        if not isCellLoaded then
-            logicHandler.UnloadCell(cellDescription)
-        end
-    else
-        tes3mp.Kick(pid)
+    if Players[pid] ~= nil and Players[pid]:IsLoggedIn() and
+        LoadedCells[cellDescription] ~= nil then
+        LoadedCells[cellDescription]:SaveActorCellChanges(pid)
+        customEventHooks.triggerHandlers("OnActorCellChange", eventStatus,
+            {pid, cellDescription})
     end
 end
 

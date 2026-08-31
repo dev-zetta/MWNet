@@ -2,6 +2,7 @@
 #define OPENMW_PROCESSORACTORCELLCHANGE_HPP
 
 #include "../ActorProcessor.hpp"
+#include "apps/openmw-mp/Networking.hpp"
 
 namespace mwmp
 {
@@ -13,46 +14,42 @@ namespace mwmp
             BPP_INIT(ID_ACTOR_CELL_CHANGE)
         }
 
+        bool Validate(Player& player, const BaseActorList& incoming) override
+        {
+            return Networking::getPtr()->validateActorCellChanges(player, incoming);
+        }
+
         void Do(ActorPacket &packet, Player &player, BaseActorList &actorList) override
         {
-            bool isAccepted = false;
-            Cell *serverCell = CellController::get()->getCell(&actorList.cell);
-
-            if (serverCell != nullptr)
+            const std::string sourceCell = actorList.cell.getShortDescription();
+            const bool allowed = Script::CallBoolean<
+                Script::CallbackIdentity("OnActorCellChangeIntent")>(
+                    player.getId(), sourceCell.c_str());
+            if (!allowed)
             {
-                bool isFollowerCellChange = false;
-
-                // TODO: Move this check on the Lua side
-                for (unsigned int i = 0; i < actorList.count; i++)
-                {
-                    if (actorList.baseActors.at(i).isFollowerCellChange)
-                    {
-                        isFollowerCellChange = true;
-                        break;
-                    }
-                }
-
-                // If the cell is loaded, only accept regular cell changes from a cell's authority, but accept follower
-                // cell changes from other players
-                if (*serverCell->getAuthority() == actorList.guid || isFollowerCellChange)
-                {
-                    serverCell->removeActors(&actorList);
-                    isAccepted = true;
-                }
-            }
-            // If the cell isn't loaded, the packet must be from dialogue or a script, so accept it
-            else
-            {
-                isAccepted = true;
+                const char* reason = "denied by script";
+                Script::Call<Script::CallbackIdentity(
+                    "OnActorCellChangeIntentRejected")>(player.getId(),
+                        sourceCell.c_str(), reason);
+                return;
             }
 
-            if (isAccepted)
+            if (!Networking::getPtr()->commitActorCellChanges(player, actorList))
             {
-                Script::Call<Script::CallbackIdentity("OnActorCellChange")>(player.getId(), actorList.cell.getShortDescription().c_str());
-
-                // Send this to everyone
-                packet.Send(true);
+                const char* reason = "canonical cell transition rejected";
+                Script::Call<Script::CallbackIdentity(
+                    "OnActorCellChangeIntentRejected")>(player.getId(),
+                        sourceCell.c_str(), reason);
+                return;
             }
+
+            Script::Call<Script::CallbackIdentity("OnActorCellChange")>(
+                player.getId(), sourceCell.c_str());
+
+            // Cell changes are relevant to visitors of the source and destination.
+            // The packet layer de-duplicates recipients while retaining legacy relay
+            // behavior for scripts that observe the post-commit callback.
+            packet.Send(true);
         }
     };
 }
