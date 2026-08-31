@@ -23,3 +23,18 @@ BaseWorldstate *WorldstatePacket::getWorldstate()
 {
     return worldstate;
 }
+
+bool WorldstatePacket::beginDecodeTransaction()
+{
+    return mDecodeTransaction.begin(worldstate);
+}
+
+void WorldstatePacket::commitDecodeTransaction() noexcept
+{
+    mDecodeTransaction.commit(worldstate);
+}
+
+void WorldstatePacket::rollbackDecodeTransaction() noexcept
+{
+    mDecodeTransaction.rollback(worldstate);
+}

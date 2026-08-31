@@ -1,4 +1,5 @@
 #include <components/openmw-mp/Protocol/EndpointSecurity.hpp>
+#include <components/openmw-mp/Protocol/DecodeTransaction.hpp>
 #include <components/openmw-mp/Protocol/PacketCodec.hpp>
 #include <components/openmw-mp/Protocol/RateLimits.hpp>
 
@@ -76,6 +77,42 @@ namespace
         EXPECT(!reader.readU8(second));
         EXPECT(second == 0xaa);
         EXPECT(reader.error() == CodecError::Truncated);
+    }
+
+    void testDecodeTransaction()
+    {
+        struct Model
+        {
+            std::uint32_t value = 0;
+            std::string text;
+        };
+
+        Model model{ 7, "original" };
+        Model* active = &model;
+        DecodeTransaction<Model> transaction;
+
+        EXPECT(transaction.begin(active));
+        EXPECT(transaction.active());
+        EXPECT(active != &model);
+        active->value = 42;
+        active->text = "rejected";
+        transaction.rollback(active);
+        EXPECT(!transaction.active());
+        EXPECT(active == &model);
+        EXPECT(model.value == 7);
+        EXPECT(model.text == "original");
+
+        EXPECT(transaction.begin(active));
+        active->value = 11;
+        active->text = "committed";
+        transaction.commit(active);
+        EXPECT(!transaction.active());
+        EXPECT(active == &model);
+        EXPECT(model.value == 11);
+        EXPECT(model.text == "committed");
+
+        Model* missing = nullptr;
+        EXPECT(!transaction.begin(missing));
     }
 
     void testStrings()
@@ -205,6 +242,7 @@ int runProtocolTests()
 {
     testPrimitiveRoundTrip();
     testReadFailureIsStickyAndNonMutating();
+    testDecodeTransaction();
     testStrings();
     testEnvelopeRoundTripAndTruncation();
     testEnvelopeLimits();

@@ -23,3 +23,18 @@ BaseSystem *SystemPacket::getSystem()
 {
     return system;
 }
+
+bool SystemPacket::beginDecodeTransaction()
+{
+    return mDecodeTransaction.begin(system);
+}
+
+void SystemPacket::commitDecodeTransaction() noexcept
+{
+    mDecodeTransaction.commit(system);
+}
+
+void SystemPacket::rollbackDecodeTransaction() noexcept
+{
+    mDecodeTransaction.rollback(system);
+}

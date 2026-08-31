@@ -53,6 +53,57 @@ namespace ESM
 
     namespace AiSequence
     {
+        AiPackageContainer::AiPackageContainer(const AiPackageContainer& other)
+            : mType(other.mType)
+            , mPackage(other.mPackage ? other.mPackage->clone() : nullptr)
+        {
+        }
+
+        AiPackageContainer& AiPackageContainer::operator=(const AiPackageContainer& other)
+        {
+            if (this == &other)
+                return *this;
+
+            AiPackageContainer copy(other);
+            *this = std::move(copy);
+            return *this;
+        }
+
+        std::unique_ptr<AiPackage> AiWander::clone() const
+        {
+            return std::make_unique<AiWander>(*this);
+        }
+
+        std::unique_ptr<AiPackage> AiTravel::clone() const
+        {
+            return std::make_unique<AiTravel>(*this);
+        }
+
+        std::unique_ptr<AiPackage> AiEscort::clone() const
+        {
+            return std::make_unique<AiEscort>(*this);
+        }
+
+        std::unique_ptr<AiPackage> AiFollow::clone() const
+        {
+            return std::make_unique<AiFollow>(*this);
+        }
+
+        std::unique_ptr<AiPackage> AiActivate::clone() const
+        {
+            return std::make_unique<AiActivate>(*this);
+        }
+
+        std::unique_ptr<AiPackage> AiCombat::clone() const
+        {
+            return std::make_unique<AiCombat>(*this);
+        }
+
+        std::unique_ptr<AiPackage> AiPursue::clone() const
+        {
+            return std::make_unique<AiPursue>(*this);
+        }
+
         void AiWander::load(ESMReader& esm)
         {
             esm.getNamedComposite("DATA", mData);

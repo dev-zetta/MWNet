@@ -3,6 +3,8 @@
 #include <components/openmw-mp/Transport/ApplicationPacketDispatcher.hpp>
 #include "BasePacket.hpp"
 
+#include <new>
+
 using namespace mwmp;
 
 BasePacket::BasePacket()
@@ -56,8 +58,44 @@ void BasePacket::Read(std::span<const std::byte> payload)
     codecError = protocol::CodecError::None;
     mWriter.reset();
     mReader.emplace(payload);
-    Packet(false);
-    finishRead();
+    try
+    {
+        if (!beginDecodeTransaction())
+        {
+            invalidate(protocol::CodecError::InvalidValue);
+            rollbackDecodeTransaction();
+            return;
+        }
+
+        Packet(false);
+        if (finishRead())
+            commitDecodeTransaction();
+        else
+            rollbackDecodeTransaction();
+    }
+    catch (const std::bad_alloc&)
+    {
+        invalidate(protocol::CodecError::AllocationFailed);
+        rollbackDecodeTransaction();
+    }
+    catch (...)
+    {
+        invalidate(protocol::CodecError::InvalidValue);
+        rollbackDecodeTransaction();
+    }
+}
+
+bool BasePacket::beginDecodeTransaction()
+{
+    return true;
+}
+
+void BasePacket::commitDecodeTransaction() noexcept
+{
+}
+
+void BasePacket::rollbackDecodeTransaction() noexcept
+{
 }
 
 bool BasePacket::Field(mwmp::transport::TransportConnectionId& value, bool compress)

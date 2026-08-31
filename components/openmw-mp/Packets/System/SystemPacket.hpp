@@ -19,7 +19,12 @@ namespace mwmp
         BaseSystem *getSystem();
 
     protected:
+        bool beginDecodeTransaction() override;
+        void commitDecodeTransaction() noexcept override;
+        void rollbackDecodeTransaction() noexcept override;
+
         BaseSystem *system = nullptr;
+        protocol::DecodeTransaction<BaseSystem> mDecodeTransaction;
 
     };
 }

@@ -19,7 +19,12 @@ namespace mwmp
         BaseWorldstate *getWorldstate();
 
     protected:
+        bool beginDecodeTransaction() override;
+        void commitDecodeTransaction() noexcept override;
+        void rollbackDecodeTransaction() noexcept override;
+
         BaseWorldstate *worldstate = nullptr;
+        protocol::DecodeTransaction<BaseWorldstate> mDecodeTransaction;
 
     };
 }

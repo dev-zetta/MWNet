@@ -19,6 +19,21 @@ void ActorPacket::setActorList(BaseActorList *newActorList)
     guid = actorList->guid;
 }
 
+bool ActorPacket::beginDecodeTransaction()
+{
+    return mDecodeTransaction.begin(actorList);
+}
+
+void ActorPacket::commitDecodeTransaction() noexcept
+{
+    mDecodeTransaction.commit(actorList);
+}
+
+void ActorPacket::rollbackDecodeTransaction() noexcept
+{
+    mDecodeTransaction.rollback(actorList);
+}
+
 void ActorPacket::Packet(bool send)
 {
     if (!PacketHeader(send))

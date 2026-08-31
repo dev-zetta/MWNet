@@ -37,6 +37,7 @@ namespace ESM
         struct AiPackage
         {
             virtual ~AiPackage() = default;
+            virtual std::unique_ptr<AiPackage> clone() const = 0;
         };
 
         struct AiWanderData
@@ -76,6 +77,7 @@ namespace ESM
 
             void load(ESMReader& esm);
             void save(ESMWriter& esm) const;
+            std::unique_ptr<AiPackage> clone() const override;
         };
 
         struct AiTravel : AiPackage
@@ -86,6 +88,7 @@ namespace ESM
 
             void load(ESMReader& esm);
             void save(ESMWriter& esm) const;
+            std::unique_ptr<AiPackage> clone() const override;
         };
 
         struct AiEscort : AiPackage
@@ -100,6 +103,7 @@ namespace ESM
 
             void load(ESMReader& esm);
             void save(ESMWriter& esm) const;
+            std::unique_ptr<AiPackage> clone() const override;
         };
 
         struct AiFollow : AiPackage
@@ -119,6 +123,7 @@ namespace ESM
 
             void load(ESMReader& esm);
             void save(ESMWriter& esm) const;
+            std::unique_ptr<AiPackage> clone() const override;
         };
 
         struct AiActivate : AiPackage
@@ -128,6 +133,7 @@ namespace ESM
 
             void load(ESMReader& esm);
             void save(ESMWriter& esm) const;
+            std::unique_ptr<AiPackage> clone() const override;
         };
 
         struct AiCombat : AiPackage
@@ -136,6 +142,7 @@ namespace ESM
 
             void load(ESMReader& esm);
             void save(ESMWriter& esm) const;
+            std::unique_ptr<AiPackage> clone() const override;
         };
 
         struct AiPursue : AiPackage
@@ -144,6 +151,7 @@ namespace ESM
 
             void load(ESMReader& esm);
             void save(ESMWriter& esm) const;
+            std::unique_ptr<AiPackage> clone() const override;
         };
 
         struct AiPackageContainer
@@ -151,6 +159,12 @@ namespace ESM
             int32_t mType;
 
             std::unique_ptr<AiPackage> mPackage;
+
+            AiPackageContainer() = default;
+            AiPackageContainer(const AiPackageContainer& other);
+            AiPackageContainer& operator=(const AiPackageContainer& other);
+            AiPackageContainer(AiPackageContainer&&) noexcept = default;
+            AiPackageContainer& operator=(AiPackageContainer&&) noexcept = default;
         };
 
         struct AiSequence
@@ -159,9 +173,11 @@ namespace ESM
             ActorIdConverter* mActorIdConverter = nullptr;
             int32_t mLastAiPackage = -1;
 
-            AiSequence() {}
-            AiSequence(const AiSequence&) = delete;
-            AiSequence& operator=(const AiSequence&) = delete;
+            AiSequence() = default;
+            AiSequence(const AiSequence&) = default;
+            AiSequence& operator=(const AiSequence&) = default;
+            AiSequence(AiSequence&&) noexcept = default;
+            AiSequence& operator=(AiSequence&&) noexcept = default;
 
             void load(ESMReader& esm);
             void save(ESMWriter& esm) const;

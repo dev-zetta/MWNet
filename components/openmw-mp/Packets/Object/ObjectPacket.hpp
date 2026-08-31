@@ -21,9 +21,14 @@ namespace mwmp
         virtual void Packet(bool send);
 
     protected:
+        bool beginDecodeTransaction() override;
+        void commitDecodeTransaction() noexcept override;
+        void rollbackDecodeTransaction() noexcept override;
+
         virtual void Object(BaseObject &baseObject, bool send);
         bool PacketHeader(bool send);
         BaseObjectList *objectList = nullptr;
+        protocol::DecodeTransaction<BaseObjectList> mDecodeTransaction;
         static const int maxObjects = 3000;
         bool hasCellData = false;
     };

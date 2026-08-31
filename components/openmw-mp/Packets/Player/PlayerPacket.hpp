@@ -19,7 +19,12 @@ namespace mwmp
         BasePlayer *getPlayer();
 
     protected:
+        bool beginDecodeTransaction() override;
+        void commitDecodeTransaction() noexcept override;
+        void rollbackDecodeTransaction() noexcept override;
+
         BasePlayer *player = nullptr;
+        protocol::DecodeTransaction<BasePlayer> mDecodeTransaction;
 
     };
 }

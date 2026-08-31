@@ -20,6 +20,21 @@ void ObjectPacket::setObjectList(BaseObjectList *newObjectList)
     guid = objectList->guid;
 }
 
+bool ObjectPacket::beginDecodeTransaction()
+{
+    return mDecodeTransaction.begin(objectList);
+}
+
+void ObjectPacket::commitDecodeTransaction() noexcept
+{
+    mDecodeTransaction.commit(objectList);
+}
+
+void ObjectPacket::rollbackDecodeTransaction() noexcept
+{
+    mDecodeTransaction.rollback(objectList);
+}
+
 void ObjectPacket::Packet(bool send)
 {
     if (!PacketHeader(send))

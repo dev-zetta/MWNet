@@ -20,9 +20,14 @@ namespace mwmp
 
         virtual void Packet(bool send);
     protected:
+        bool beginDecodeTransaction() override;
+        void commitDecodeTransaction() noexcept override;
+        void rollbackDecodeTransaction() noexcept override;
+
         bool PacketHeader(bool send);
         virtual void Actor(BaseActor &actor, bool send);
         BaseActorList *actorList = nullptr;
+        protocol::DecodeTransaction<BaseActorList> mDecodeTransaction;
         static const int maxActors = 3000;
     };
 }

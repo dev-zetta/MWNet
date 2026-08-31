@@ -23,3 +23,18 @@ BasePlayer *PlayerPacket::getPlayer()
 {
     return player;
 }
+
+bool PlayerPacket::beginDecodeTransaction()
+{
+    return mDecodeTransaction.begin(player);
+}
+
+void PlayerPacket::commitDecodeTransaction() noexcept
+{
+    mDecodeTransaction.commit(player);
+}
+
+void PlayerPacket::rollbackDecodeTransaction() noexcept
+{
+    mDecodeTransaction.rollback(player);
+}

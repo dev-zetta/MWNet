@@ -14,6 +14,7 @@
 #include <components/esm/refid.hpp>
 #include <components/esm3/loadcell.hpp>
 #include <components/esm3/statstate.hpp>
+#include <components/openmw-mp/Protocol/DecodeTransaction.hpp>
 #include <components/openmw-mp/Protocol/PacketCodec.hpp>
 #include <components/openmw-mp/Transport/ITransport.hpp>
 
@@ -407,6 +408,9 @@ namespace mwmp
         bool finishRead();
         bool prepareWrite();
         bool isWriting() const noexcept { return mWriter.has_value(); }
+        virtual bool beginDecodeTransaction();
+        virtual void commitDecodeTransaction() noexcept;
+        virtual void rollbackDecodeTransaction() noexcept;
         std::size_t unreadPayloadBytes() const noexcept;
         std::span<const std::byte> writePayload() const noexcept;
         uint32_t dispatchRequest(mwmp::transport::TransportConnectionId targetGuid);
