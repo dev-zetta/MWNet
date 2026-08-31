@@ -472,6 +472,14 @@ function OnPlayerEquipment(pid)
     eventHandler.OnPlayerEquipment(pid)
 end
 
+function OnPlayerEquipmentIntent(pid)
+    return eventHandler.OnPlayerEquipmentIntent(pid)
+end
+
+function OnPlayerEquipmentIntentRejected(pid)
+    eventHandler.OnPlayerEquipmentIntentRejected(pid)
+end
+
 function OnPlayerInventory(pid)
     tes3mp.LogMessage(enumerations.log.INFO, "Called \"OnPlayerInventory\" for " .. logicHandler.GetChatName(pid))
     eventHandler.OnPlayerInventory(pid)

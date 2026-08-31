@@ -10,6 +10,7 @@
 #include <components/openmw-mp/Mechanics/MovementValidator.hpp>
 #include <components/openmw-mp/Mechanics/PlayerLifecycle.hpp>
 #include <components/openmw-mp/Mechanics/InventoryLedger.hpp>
+#include <components/openmw-mp/Mechanics/EquipmentLedger.hpp>
 #include <components/openmw-mp/Mechanics/CombatResolver.hpp>
 #include <components/openmw-mp/Mechanics/ActiveEffectLedger.hpp>
 #include <components/openmw-mp/Mechanics/CastIntentValidator.hpp>
@@ -108,6 +109,9 @@ namespace  mwmp
         bool validatePlayerInventory(Player& player, const BasePlayer& incoming);
         bool commitPlayerInventory(Player& player);
         bool applyServerInventoryChanges(Player& player);
+        bool validatePlayerEquipment(Player& player, const BasePlayer& incoming);
+        bool commitPlayerEquipment(Player& player);
+        bool applyServerPlayerEquipment(Player& player);
         bool validateContainerAction(Player& player, const BaseObjectList& incoming);
         bool commitContainerAction(Player& player, const BaseObjectList& incoming);
         bool seedServerContainerInventory(const BaseObjectList& objectList);
@@ -192,6 +196,7 @@ namespace  mwmp
         mechanics::MovementValidator mMovementValidator;
         mechanics::PlayerLifecycle mPlayerLifecycle;
         mechanics::InventoryLedger mInventoryLedger;
+        mechanics::EquipmentLedger mEquipmentLedger;
         mechanics::CombatResolver mCombatResolver;
         mechanics::ActiveEffectLedger mActiveEffectLedger;
         mechanics::CastIntentValidator mCastIntentValidator;

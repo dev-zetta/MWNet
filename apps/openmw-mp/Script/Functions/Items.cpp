@@ -57,10 +57,13 @@ void ItemFunctions::SetInventoryChangesAction(unsigned short pid, unsigned char 
 }
 
 void ItemFunctions::EquipItem(unsigned short pid, unsigned short slot, const char *refId, unsigned int count,
-    int charge, double enchantmentCharge) noexcept
+    int charge, double enchantmentCharge)
 {
     Player *player;
     GET_PLAYER(pid, player,);
+
+    if (slot >= mwmp::mechanics::EquipmentLedger::SlotCount)
+        throw std::out_of_range("equipment slot is outside the valid range");
 
     player->equipmentItems[slot].refId = refId;
     player->equipmentItems[slot].count = count;
@@ -71,7 +74,7 @@ void ItemFunctions::EquipItem(unsigned short pid, unsigned short slot, const cha
         player->equipmentIndexChanges.push_back(slot);
 }
 
-void ItemFunctions::UnequipItem(unsigned short pid, unsigned short slot) noexcept
+void ItemFunctions::UnequipItem(unsigned short pid, unsigned short slot)
 {
     Player *player;
     GET_PLAYER(pid, player, );
@@ -233,10 +236,13 @@ const char *ItemFunctions::GetUsedItemSoul(unsigned short pid) noexcept
     return player->usedItem.soul.c_str();
 }
 
-void ItemFunctions::SendEquipment(unsigned short pid) noexcept
+void ItemFunctions::SendEquipment(unsigned short pid)
 {
     Player *player;
     GET_PLAYER(pid, player, );
+
+    if (!mwmp::Networking::getPtr()->applyServerPlayerEquipment(*player))
+        throw std::runtime_error("the server-authored equipment action was rejected");
 
     mwmp::PlayerPacket *packet = mwmp::Networking::get().getPlayerPacketController()->GetPacket(ID_PLAYER_EQUIPMENT);
     packet->setPlayer(player);

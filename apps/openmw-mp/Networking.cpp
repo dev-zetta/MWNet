@@ -367,6 +367,43 @@ namespace
         return result;
     }
 
+    std::vector<mwmp::mechanics::EquipmentChange> equipmentChanges(
+        const mwmp::BasePlayer& player)
+    {
+        std::vector<mwmp::mechanics::EquipmentChange> result;
+        if (player.exchangeFullInfo)
+        {
+            result.reserve(mwmp::mechanics::EquipmentLedger::SlotCount);
+            for (std::size_t slot = 0;
+                 slot < mwmp::mechanics::EquipmentLedger::SlotCount; ++slot)
+            {
+                const mwmp::Item& item = player.equipmentItems[slot];
+                result.push_back({ slot,
+                    { item.refId, item.count, item.charge,
+                        item.enchantmentCharge } });
+            }
+            return result;
+        }
+
+        result.reserve(player.equipmentIndexChanges.size());
+        for (const int slot : player.equipmentIndexChanges)
+        {
+            if (slot < 0
+                || static_cast<std::size_t>(slot)
+                    >= mwmp::mechanics::EquipmentLedger::SlotCount)
+            {
+                result.push_back(
+                    { mwmp::mechanics::EquipmentLedger::SlotCount, {} });
+                continue;
+            }
+            const mwmp::Item& item = player.equipmentItems[slot];
+            result.push_back({ static_cast<std::size_t>(slot),
+                { item.refId, item.count, item.charge,
+                    item.enchantmentCharge } });
+        }
+        return result;
+    }
+
     struct ContainerOperations
     {
         mwmp::mechanics::InventoryDecision decision
@@ -507,6 +544,62 @@ bool Networking::applyServerInventoryChanges(Player& player)
             mechanics::describe(result.decision));
     }
     return result.applied();
+}
+
+bool Networking::validatePlayerEquipment(Player& player, const BasePlayer& incoming)
+{
+    mechanics::EquipmentResult result{ mechanics::EquipmentDecision::MissingInventory };
+    const auto inventory = mInventoryLedger.snapshot(
+        { mechanics::InventoryOwnerKind::Player, player.guid.g });
+    if (inventory)
+    {
+        result = mEquipmentLedger.preview(player.guid.g, incoming.exchangeFullInfo,
+            equipmentChanges(incoming), *inventory);
+    }
+    if (result.applied())
+        return true;
+
+    const unsigned int violations = ++mInventoryViolations[player.guid.g];
+    LOG_MESSAGE_SIMPLE(TimedLog::LOG_WARN,
+        "Rejected equipment action from connection %llu: %s (violation %u)",
+        static_cast<unsigned long long>(player.guid.g),
+        mechanics::describe(result.decision), violations);
+    if (violations >= 5)
+        disconnectTransport({ player.guid.g }, "repeated invalid equipment actions");
+    return false;
+}
+
+bool Networking::commitPlayerEquipment(Player& player)
+{
+    mechanics::EquipmentResult result{ mechanics::EquipmentDecision::MissingInventory };
+    const auto inventory = mInventoryLedger.snapshot(
+        { mechanics::InventoryOwnerKind::Player, player.guid.g });
+    if (inventory)
+    {
+        result = mEquipmentLedger.apply(player.guid.g, player.exchangeFullInfo,
+            equipmentChanges(player), *inventory);
+    }
+    if (result.applied())
+        return true;
+
+    const unsigned int violations = ++mInventoryViolations[player.guid.g];
+    LOG_MESSAGE_SIMPLE(TimedLog::LOG_WARN,
+        "Rejected modified equipment intent from connection %llu: %s (violation %u)",
+        static_cast<unsigned long long>(player.guid.g),
+        mechanics::describe(result.decision), violations);
+    if (violations >= 5)
+        disconnectTransport({ player.guid.g }, "repeated invalid equipment actions");
+    return false;
+}
+
+bool Networking::applyServerPlayerEquipment(Player& player)
+{
+    const auto inventory = mInventoryLedger.snapshot(
+        { mechanics::InventoryOwnerKind::Player, player.guid.g });
+    if (!inventory)
+        return false;
+    return mEquipmentLedger.apply(player.guid.g, player.exchangeFullInfo,
+        equipmentChanges(player), *inventory).applied();
 }
 
 bool Networking::validateContainerAction(Player& player, const BaseObjectList& incoming)
@@ -2807,6 +2900,7 @@ void Networking::disconnectPlayer(RakNet::RakNetGUID guid)
     resetPlayerMovement(guid.g);
     mPlayerLifecycle.erase(guid.g);
     mLifecycleViolations.erase(guid.g);
+    mEquipmentLedger.erase(guid.g);
     mInventoryLedger.erase({ mechanics::InventoryOwnerKind::Player, guid.g });
     mInventoryViolations.erase(guid.g);
     mCombatResolver.erase({ mechanics::CombatantKind::Player, guid.g, {} });

@@ -111,7 +111,7 @@ public:
     * \return void
     */
     static void EquipItem(unsigned short pid, unsigned short slot, const char* refId, unsigned int count, int charge,
-        double enchantmentCharge = -1) noexcept;
+        double enchantmentCharge = -1);
     
     /**
     * \brief Unequip the item in a certain slot of the equipment of a player.
@@ -120,7 +120,7 @@ public:
     * \param slot The equipment slot.
     * \return void
     */
-    static void UnequipItem(unsigned short pid, unsigned short slot) noexcept;
+    static void UnequipItem(unsigned short pid, unsigned short slot);
 
     /**
     * \brief Add an item change to a player's inventory changes.
@@ -290,7 +290,7 @@ public:
     * \param pid The player ID whose equipment should be sent.
     * \return void
     */
-    static void SendEquipment(unsigned short pid) noexcept;
+    static void SendEquipment(unsigned short pid);
 
     /**
     * \brief Send a PlayerInventory packet with a player's recorded inventory changes.

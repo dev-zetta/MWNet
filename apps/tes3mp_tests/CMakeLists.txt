@@ -3,6 +3,7 @@ add_executable(tes3mp-tests
     authority.cpp
     cast.cpp
     combat.cpp
+    equipment.cpp
     inventory.cpp
     justice.cpp
     main.cpp

@@ -173,6 +173,8 @@ public:
             {"OnPlayerBountyIntentRejected", Callback<unsigned short, const char*>()},
             {"OnPlayerJailComplete",     Callback<unsigned short, unsigned long long>()},
             {"OnPlayerReputation",       Callback<unsigned short>()},
+            {"OnPlayerEquipmentIntent",  Callback<unsigned short>()},
+            {"OnPlayerEquipmentIntentRejected", Callback<unsigned short>()},
             {"OnPlayerEquipment",        Callback<unsigned short>()},
             {"OnPlayerInventoryIntent",  Callback<unsigned short>()},
             {"OnPlayerInventoryIntentRejected", Callback<unsigned short>()},

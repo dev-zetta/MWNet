@@ -1,5 +1,6 @@
 local eventHandler = {}
 local pendingPlayerInventoryEvents = {}
+local pendingPlayerEquipmentEvents = {}
 local pendingPlayerSpellsActiveEvents = {}
 local pendingActorSpellsActiveEvents = {}
 local pendingPlayerBountyEvents = {}
@@ -945,7 +946,55 @@ eventHandler.OnPlayerShapeshift = function(pid)
 end
 
 eventHandler.OnPlayerEquipment = function(pid)
-    eventHandler.OnGenericPlayerEvent(pid, "PlayerEquipment")
+    local pendingEvent = pendingPlayerEquipmentEvents[pid]
+    pendingPlayerEquipmentEvents[pid] = nil
+
+    if pendingEvent == nil then
+        eventHandler.OnGenericPlayerEvent(pid, "PlayerEquipment")
+        return
+    end
+
+    if Players[pid] ~= nil and Players[pid]:IsLoggedIn() then
+        Players[pid]:SaveDataByPacketType("PlayerEquipment", pendingEvent.playerPacket)
+        customEventHooks.triggerHandlers("OnPlayerEquipment", pendingEvent.eventStatus,
+            {pid, pendingEvent.playerPacket})
+    end
+end
+
+eventHandler.OnPlayerEquipmentIntent = function(pid)
+    pendingPlayerEquipmentEvents[pid] = nil
+
+    if Players[pid] == nil or not Players[pid]:IsLoggedIn() then
+        return false
+    end
+
+    local playerPacket = packetReader.GetPlayerPacketTables(pid, "PlayerEquipment")
+    local eventStatus = customEventHooks.triggerValidators("OnPlayerEquipment",
+        {pid, playerPacket})
+    if not eventStatus.validDefaultHandler then
+        customEventHooks.triggerHandlers("OnPlayerEquipment", eventStatus,
+            {pid, playerPacket})
+        return false
+    end
+
+    pendingPlayerEquipmentEvents[pid] = {
+        eventStatus = eventStatus,
+        playerPacket = playerPacket
+    }
+    return true
+end
+
+eventHandler.OnPlayerEquipmentIntentRejected = function(pid)
+    local pendingEvent = pendingPlayerEquipmentEvents[pid]
+    pendingPlayerEquipmentEvents[pid] = nil
+    if pendingEvent == nil then
+        return
+    end
+
+    local eventStatus = customEventHooks.makeEventStatus(false,
+        pendingEvent.eventStatus.validCustomHandlers)
+    customEventHooks.triggerHandlers("OnPlayerEquipment", eventStatus,
+        {pid, pendingEvent.playerPacket})
 end
 
 eventHandler.OnPlayerInventory = function(pid)
