@@ -19,6 +19,7 @@
 #include <components/openmw-mp/Mechanics/ObjectStateLedger.hpp>
 #include <components/openmw-mp/Mechanics/PlayerProgressionLedger.hpp>
 #include <components/openmw-mp/Mechanics/ShapeshiftLedger.hpp>
+#include <components/openmw-mp/Mechanics/SpellResolver.hpp>
 #include <components/openmw-mp/Metrics/ServerMetrics.hpp>
 #include <components/openmw-mp/Persistence/PersistenceService.hpp>
 #include <components/openmw-mp/Security/ServerAuthenticationService.hpp>
@@ -97,6 +98,9 @@ namespace  mwmp
         bool setServerPassword(std::string_view password, std::string& error);
         bool setServerPasswordHash(std::string passwordHash, std::string& error);
         bool isPassworded() const;
+        bool installSpellDefinitions(
+            const std::vector<mechanics::SpellDefinition>& definitions);
+        void setConsumableMagicItems(std::unordered_set<std::string> itemIds);
 
         std::optional<session::AuthorityLease> assignActorAuthority(
             const ESM::Cell& cell, mwmp::transport::TransportConnectionId owner);
@@ -251,6 +255,8 @@ namespace  mwmp
         mechanics::ObjectStateLedger mObjectStateLedger;
         mechanics::PlayerProgressionLedger mProgressionLedger;
         mechanics::ShapeshiftLedger mShapeshiftLedger;
+        mechanics::SpellResolver mSpellResolver;
+        std::unordered_set<std::string> mConsumableMagicItems;
         std::unordered_set<std::uint64_t> mAuthenticatedConnections;
         std::unordered_map<std::uint64_t, unsigned int> mAuthorityViolations;
         std::unordered_map<std::uint64_t, unsigned int> mMovementViolations;

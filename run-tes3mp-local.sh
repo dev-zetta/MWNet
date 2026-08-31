@@ -209,6 +209,14 @@ fi
 
 printf '%s\n' "$data_dir" > "$DATA_PATH_FILE"
 
+content_files="Morrowind.esm"
+if [[ -f "$data_dir/Tribunal.esm" || -f "$data_dir/tribunal.esm" ]]; then
+    content_files+=",Tribunal.esm"
+fi
+if [[ -f "$data_dir/Bloodmoon.esm" || -f "$data_dir/bloodmoon.esm" ]]; then
+    content_files+=",Bloodmoon.esm"
+fi
+
 if [[ ! -f "$CLIENT_CONFIG/tes3mp-client.cfg" ]]; then
     {
         printf '%s\n' \
@@ -260,6 +268,7 @@ if [[ -n "$server_pid" ]]; then
 else
     printf 'Starting local TES3MP server...\n'
     TES3MP_TEST_ROOT="$TEST_ROOT" TES3MP_SERVER_PROFILE="$server_profile" \
+        TES3MP_CONTENT_DATA_DIR="$data_dir" TES3MP_CONTENT_FILES="$content_files" \
         "$REPO_ROOT/run-tes3mp-server.sh" > "$SERVER_LOG" 2>&1 &
     server_pid=$!
     server_started=true

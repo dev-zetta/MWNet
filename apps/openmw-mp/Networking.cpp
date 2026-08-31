@@ -4018,6 +4018,23 @@ bool Networking::isPassworded() const
     return mAuthentication.requiresAccessPassword();
 }
 
+bool Networking::installSpellDefinitions(
+    const std::vector<mechanics::SpellDefinition>& definitions)
+{
+    for (const mechanics::SpellDefinition& definition : definitions)
+    {
+        if (!mSpellResolver.upsertDefinition(definition))
+            return false;
+    }
+    return true;
+}
+
+void Networking::setConsumableMagicItems(
+    std::unordered_set<std::string> itemIds)
+{
+    mConsumableMagicItems = std::move(itemIds);
+}
+
 void Networking::processSystemPacket(const transport::ReceivedApplicationPacket& packet)
 {
     Player *player = Players::getPlayer(mwmp::transport::TransportConnectionId(packet.sender.value));

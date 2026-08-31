@@ -22,6 +22,7 @@ namespace mwmp::mechanics
 
     enum class SpellEffectKind : std::uint8_t
     {
+        Instant,
         Timed,
         DamageHealth,
         RestoreHealth,
@@ -57,7 +58,7 @@ namespace mwmp::mechanics
 
         std::string effectId;
         std::string argument;
-        SpellEffectKind kind = SpellEffectKind::Timed;
+        SpellEffectKind kind = SpellEffectKind::Instant;
         SpellRange range = SpellRange::Self;
         double minimumMagnitude = 0;
         double maximumMagnitude = 0;

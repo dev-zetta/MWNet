@@ -260,6 +260,8 @@ namespace mwmp::mechanics
                 application.healthDelta += magnitude;
                 continue;
             }
+            if (effect.kind == SpellEffectKind::Instant)
+                continue;
             application.activeSpell.effects.push_back({ effect.effectId, effect.argument,
                 resistedMagnitude, effect.duration, effect.duration });
         }
@@ -407,9 +409,8 @@ namespace mwmp::mechanics
                     && effect.maximumMagnitude >= effect.minimumMagnitude
                     && validNonNegative(effect.duration, MaximumDurationSeconds)
                     && validNonNegative(effect.maximumRange, MaximumTargetRange)
-                    && (effect.kind != SpellEffectKind::Timed || effect.duration > 0)
                     && (effect.kind == SpellEffectKind::Timed
-                        || effect.duration == 0)
+                        ? effect.duration > 0 : effect.duration == 0)
                     && (effect.range == SpellRange::Self
                         ? effect.maximumRange == 0 : effect.maximumRange > 0);
             });

@@ -1,6 +1,8 @@
 #include <cmath>
+#include <cstdlib>
 #include <iostream>
 #include <limits>
+#include <optional>
 
 #include <boost/filesystem/fstream.hpp>
 #include <boost/iostreams/concepts.hpp>
@@ -32,6 +34,7 @@
 
 #include "Player.hpp"
 #include "Networking.hpp"
+#include "MagicContent.hpp"
 #include "Utils.hpp"
 
 #include <apps/openmw-mp/Script/Script.hpp>
@@ -277,6 +280,15 @@ int main(int argc, char *argv[])
     int port = mgr.getInt("port", "General");
     const double movementMaximumSpeed = mgr.getDouble("movementMaximumSpeed", "Security");
     const int movementViolationLimit = mgr.getInt("movementViolationLimit", "Security");
+    std::string contentData = mgr.getString("data", "Content");
+    std::string contentFilesSetting = mgr.getString("files", "Content");
+    const std::string contentEncoding = mgr.getString("encoding", "Content");
+    const double maximumTouchRange = mgr.getDouble("maximumTouchRange", "Content");
+    const double maximumTargetRange = mgr.getDouble("maximumTargetRange", "Content");
+    if (const char* value = std::getenv("TES3MP_CONTENT_DATA_DIR"))
+        contentData = value;
+    if (const char* value = std::getenv("TES3MP_CONTENT_FILES"))
+        contentFilesSetting = value;
 
     std::string passwordHash = mgr.getString("passwordHash", "General");
 
@@ -352,10 +364,36 @@ int main(int argc, char *argv[])
                 "Server identity fingerprint: %s", fingerprint->c_str());
 
         const std::filesystem::path serverData(dataDirectory);
+        std::optional<CanonicalMagicContent> magicContent;
+        if (!contentData.empty())
+        {
+            MagicContentOptions contentOptions;
+            contentOptions.dataDirectories.emplace_back(contentData);
+            contentOptions.contentFiles = Utils::split(contentFilesSetting, ',');
+            contentOptions.encoding = contentEncoding;
+            contentOptions.maximumTouchRange = maximumTouchRange;
+            contentOptions.maximumTargetRange = maximumTargetRange;
+            magicContent = loadCanonicalMagicContent(contentOptions);
+            LOG_MESSAGE_SIMPLE(TimedLog::LOG_INFO,
+                "Loaded %llu canonical spell and enchanted-item definitions",
+                static_cast<unsigned long long>(magicContent->definitions.size()));
+        }
+        else
+        {
+            LOG_MESSAGE_SIMPLE(TimedLog::LOG_WARN, "%s",
+                "Content/data is unset; spell casts will fail closed until canonical content is configured");
+        }
         Networking networking(*endpoint, serverData / "account",
             serverData / "player", static_cast<unsigned int>(players),
             static_cast<unsigned short>(port), movementMaximumSpeed,
             static_cast<unsigned int>(movementViolationLimit));
+        if (magicContent)
+        {
+            if (!networking.installSpellDefinitions(magicContent->definitions))
+                throw std::runtime_error("Canonical magic definitions exceed server limits or are invalid");
+            networking.setConsumableMagicItems(
+                std::move(magicContent->consumableItems));
+        }
         std::string passwordError;
         if (!networking.setServerPasswordHash(std::move(passwordHash), passwordError))
             throw std::runtime_error("Invalid General/passwordHash: " + passwordError);

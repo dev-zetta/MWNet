@@ -46,6 +46,7 @@ set(SERVER
     main.cpp
     Player.cpp
     Networking.cpp
+    MagicContent.cpp
     Cell.cpp
     CellController.cpp
     Utils.cpp
@@ -69,6 +70,7 @@ set(SERVER
 )
 
 set(SERVER_HEADER
+        MagicContent.hpp
         Script/Types.hpp Script/Script.hpp Script/SystemInterface.hpp
         Script/ScriptFunction.hpp Script/Platform.hpp Script/Language.hpp
         Script/ScriptFunctions.hpp Script/API/TimerAPI.hpp Script/API/PublicFnAPI.hpp
