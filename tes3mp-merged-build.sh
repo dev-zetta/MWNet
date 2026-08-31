@@ -22,7 +22,7 @@ Modes of operation:
 Options:
   -s, --server-only              Only build the server
   -j, --cores N                  Use N cores for building (default: all available)
-  --skip-deps                    Skip building external dependencies (no-op: CrabNet is now vendored)
+  --skip-deps                    Use installed dependencies instead of the pinned fetch fallback
   --skip-pkgs                    Skip package installation
   --cmake-local                  Tell CMake to look in /usr/local/ for libraries
 
@@ -106,7 +106,6 @@ echo -e "\nUsing $CORES CPU cores for compilation"
 BASE="$PROJECT_DIR"
 CODE="$BASE"
 BUILD_DIR="$BASE/build"
-DEPENDENCIES="$BASE/dependencies"
 
 # Distro identification
 if command -v lsb_release &> /dev/null; then
@@ -167,7 +166,11 @@ if [[ $INSTALL == true && $SKIP_PACKAGE_INSTALL == false ]]; then
         libyaml-cpp-dev \
         libcollada-dom-dev \
         libsqlite3-dev \
-        libqt5svg5-dev
+        libqt5svg5-dev \
+        libsodium-dev \
+        libssl-dev \
+        libprotobuf-dev \
+        protobuf-compiler
       ;;
     
     arch|manjaro)
@@ -188,7 +191,10 @@ if [[ $INSTALL == true && $SKIP_PACKAGE_INSTALL == false ]]; then
         lz4 \
         luajit \
         ncurses \
-        tinyxml
+        tinyxml \
+        libsodium \
+        openssl \
+        protobuf
       ;;
     
     fedora|rhel|centos)
@@ -209,7 +215,11 @@ if [[ $INSTALL == true && $SKIP_PACKAGE_INSTALL == false ]]; then
         lz4-devel \
         luajit-devel \
         ncurses-devel \
-        tinyxml-devel
+        tinyxml-devel \
+        libsodium-devel \
+        openssl-devel \
+        protobuf-devel \
+        protobuf-compiler
       ;;
     
     *)
@@ -218,8 +228,6 @@ if [[ $INSTALL == true && $SKIP_PACKAGE_INSTALL == false ]]; then
       ;;
   esac
 fi
-
-# CrabNet is now vendored in extern/crabnet and built automatically by CMake
 
 # Build TES3MP
 if [ $INSTALL == true ] || [ $REBUILD == true ]; then
@@ -233,6 +241,10 @@ if [ $INSTALL == true ] || [ $REBUILD == true ]; then
       -DCMAKE_BUILD_TYPE=RelWithDebInfo \
       -DCMAKE_CXX_STANDARD=20 \
       -DBUILD_OPENCS=OFF"
+
+  if [ "$SKIP_DEPS" = false ]; then
+    CMAKE_PARAMS="$CMAKE_PARAMS -DTES3MP_FETCH_DEPS=ON"
+  fi
   
   if [ "$SERVER_ONLY" = true ]; then
     echo -e "Building server-only configuration"

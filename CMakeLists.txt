@@ -112,13 +112,6 @@ set(OPENMW_VERSION_COMMITHASH "")
 set(OPENMW_VERSION_TAGHASH "")
 set(OPENMW_VERSION_COMMITDATE "")
 
-# TES3MP: commit hash used in the RakNet connection password for server authentication.
-# Must match the hash the server was built with. Leave empty to match original TES3MP 0.8.1
-# public servers (which shipped with OPENMW_VERSION_COMMITHASH="").
-# Set to a specific hash to connect to custom servers built from a known commit.
-set(TES3MP_COMPAT_COMMITHASH "68954091c54d0596037c4fb54d2812313b7582a1" CACHE STRING "Commit hash used in TES3MP connection password (must match the server build; tes3mp-0.8.1 tag = 68954091c54d0596037c4fb54d2812313b7582a1)")
-add_compile_definitions(TES3MP_COMPAT_COMMITHASH="${TES3MP_COMPAT_COMMITHASH}")
-
 set(OPENMW_VERSION "${OPENMW_VERSION_MAJOR}.${OPENMW_VERSION_MINOR}.${OPENMW_VERSION_RELEASE}")
 
 set(OPENMW_DOC_BASEURL "https://openmw.readthedocs.io/en/")
@@ -289,14 +282,6 @@ endif()
 if(MSVC)
     add_compile_options("/utf-8")
 endif()
-
-set(CRABNET_ENABLE_DLL OFF CACHE BOOL "" FORCE)
-set(CRABNET_ENABLE_SAMPLES OFF CACHE BOOL "" FORCE)
-set(CRABNET_ENABLE_STATIC ON CACHE BOOL "" FORCE)
-add_subdirectory(extern/crabnet)
-set(RakNet_LIBRARY RakNetLibStatic)
-set(RakNet_INCLUDES ${CMAKE_SOURCE_DIR}/extern/crabnet/include/raknet)
-include_directories(${RakNet_INCLUDES})
 
 # Dependencies
 if (APPLE)

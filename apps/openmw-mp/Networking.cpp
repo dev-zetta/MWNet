@@ -1,6 +1,5 @@
 #include "Player.hpp"
 #include "processors/ProcessorInitializer.hpp"
-#include <Kbhit.h>
 
 #include <components/misc/stringops.hpp>
 #include <components/openmw-mp/NetworkMessages.hpp>
@@ -24,6 +23,13 @@
 #include <csignal>
 #include <utility>
 
+#ifdef _WIN32
+#include <conio.h>
+#else
+#include <poll.h>
+#include <unistd.h>
+#endif
+
 #include "Networking.hpp"
 #include "Cell.hpp"
 #include "CellController.hpp"
@@ -40,6 +46,28 @@ static int currentMpNum = 0;
 static bool dataFileEnforcementState = true;
 static bool scriptErrorIgnoringState = false;
 bool killLoop = false;
+
+namespace
+{
+    bool stdinHasInput() noexcept
+    {
+#ifdef _WIN32
+        return _kbhit() != 0;
+#else
+        pollfd descriptor{ STDIN_FILENO, POLLIN, 0 };
+        return poll(&descriptor, 1, 0) > 0 && (descriptor.revents & POLLIN) != 0;
+#endif
+    }
+
+    int readStdinCharacter()
+    {
+#ifdef _WIN32
+        return _getch();
+#else
+        return std::cin.get();
+#endif
+    }
+}
 
 Networking::Networking(transport::Protocol11Endpoint& endpoint,
     const std::filesystem::path& credentialDirectory,
@@ -4413,8 +4441,12 @@ int Networking::mainLoop()
         sigaction(SIGTERM, &sigIntHandler, NULL);
         sigaction(SIGINT, &sigIntHandler, NULL);
 #endif
-        if (kbhit() && getch() == '\n')
-            break;
+        if (stdinHasInput())
+        {
+            const int character = readStdinCharacter();
+            if (character == '\n' || character == '\r')
+                break;
+        }
         if (auto event = mEndpoint.poll(std::chrono::milliseconds(1)))
             processTransportEvent(std::move(*event));
         TimerAPI::Tick();

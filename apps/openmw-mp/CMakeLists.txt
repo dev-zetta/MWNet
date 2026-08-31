@@ -177,7 +177,6 @@ endif()
 target_link_libraries(tes3mp-server
     Boost::filesystem
     Boost::program_options
-    ${RakNet_LIBRARY}
     components
     smhasher
     ${LuaJit_LIBRARIES}

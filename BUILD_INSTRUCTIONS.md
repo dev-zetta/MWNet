@@ -1,10 +1,10 @@
-# Building TES3MP 1.0.0 (OpenMW 0.52)
+# Building TES3MP 1.0.0-alpha.1 (OpenMW 0.52)
 
-This document provides build instructions for TES3MP 1.0.0, based on OpenMW 0.52.
+This document provides build instructions for the in-progress TES3MP 1.0.0 release, based on OpenMW 0.52.
 
 ## Project Information
 
-- **TES3MP Version:** 1.0.0
+- **TES3MP Version:** 1.0.0-alpha.1
 - **OpenMW Base:** 0.52.0
 - **Branch:** tes3mp_merged
 - **C++ Standard:** C++20
@@ -68,7 +68,7 @@ chmod +x tes3mp-merged-build.sh
 
 **Features:**
 - Automatically detects your Linux distribution and installs dependencies
-- Builds CrabNet (TES3MP's networking library)
+- Resolves the pinned GameNetworkingSockets transport and system libsodium dependency
 - Configures CMake with correct parameters for the merged branch
 - Uses the C++20 standard required by the current OpenMW base
 - Saves build log to `build.log`
@@ -79,7 +79,7 @@ chmod +x tes3mp-merged-build.sh
 # Skip package installation (if dependencies already installed)
 ./tes3mp-merged-build.sh --install --skip-pkgs
 
-# Skip CrabNet build (if already built)
+# Require already installed dependencies instead of using the pinned fetch fallback
 ./tes3mp-merged-build.sh --install --skip-deps
 ```
 
@@ -129,10 +129,13 @@ Core libraries:
 - RecastNavigation
 
 TES3MP-specific:
-- **CrabNet** (TES3MP's fork of RakNet - networking library for multiplayer functionality)
-  - Repository: https://github.com/TES3MP/CrabNet
-  - Already cloned to `dependencies/crabnet/`
-  - Requires CMake 3.5+ and C++11
+- **GameNetworkingSockets v1.5.1** for the encrypted transport. Install a CMake
+  package or use `-DTES3MP_FETCH_DEPS=ON` to fetch the revision recorded in
+  `DEPENDENCIES.md`.
+- **libsodium 1.0.18 or newer** for server identities, authenticated sessions
+  and Argon2id password hashing.
+- OpenSSL and Protobuf are required when building the pinned
+  GameNetworkingSockets fallback.
 
 **On Debian/Ubuntu:**
 
@@ -151,27 +154,9 @@ sudo apt install -y \
   libunshield-dev \
   liblz4-dev \
   libluajit-5.1-dev \
-  librecast-dev
+  librecast-dev \
+  libsodium-dev libssl-dev libprotobuf-dev protobuf-compiler
 ```
-
-**CrabNet (RakNet) Installation:**
-
-CrabNet is already cloned to `dependencies/crabnet/`. To build it manually:
-
-```bash
-cd dependencies/crabnet
-mkdir -p build && cd build
-
-cmake -DCMAKE_BUILD_TYPE=Release \
-      -DCRABNET_ENABLE_DLL=OFF \
-      -DCRABNET_ENABLE_SAMPLES=OFF \
-      -DCRABNET_ENABLE_STATIC=ON \
-      ..
-
-make -j$(nproc)
-```
-
-The static library will be built at: `dependencies/crabnet/build/lib/libRakNetLibStatic.a`
 
 #### Build Steps
 
@@ -198,12 +183,10 @@ cmake .. \
   -DBUILD_OPENMW_MP=ON \
   -DBUILD_LAUNCHER=ON \
   -DBUILD_OPENCS=ON \
-  -DRakNet_INCLUDES=/home/gmax/dev/TES3MP/dependencies/crabnet/include \
-  -DRakNet_LIBRARY_DEBUG=/home/gmax/dev/TES3MP/dependencies/crabnet/build/lib/libRakNetLibStatic.a \
-  -DRakNet_LIBRARY_RELEASE=/home/gmax/dev/TES3MP/dependencies/crabnet/build/lib/libRakNetLibStatic.a
+  -DTES3MP_FETCH_DEPS=ON
 ```
 
-**Note:** The CrabNet (RakNet) paths are required for TES3MP's multiplayer functionality.
+Omit `TES3MP_FETCH_DEPS` when an approved GameNetworkingSockets CMake package is installed.
 
 **Available CMake Options:**
 
@@ -220,6 +203,9 @@ cmake .. \
 | `BUILD_ESMTOOL` | ON | Build ESM file inspector |
 | `BUILD_COMPONENTS_TESTS` | OFF | Build component tests |
 | `BUILD_BENCHMARKS` | OFF | Build benchmarks |
+| `BUILD_TES3MP_TESTS` | OFF | Build TES3MP protocol, transport and server tests |
+| `BUILD_TES3MP_FUZZERS` | OFF | Build TES3MP libFuzzer targets |
+| `TES3MP_FETCH_DEPS` | OFF | Fetch the pinned GameNetworkingSockets revision when no package is installed |
 
 **Build Types:**
 - `Debug` - No optimization, full debug symbols
@@ -292,7 +278,10 @@ The original integration updated TES3MP's code to the OpenMW 0.50 APIs. The curr
 
 ### Potential Build Issues
 
-1. **Missing CrabNet:** TES3MP requires CrabNet for networking. Ensure it's properly installed and linked.
+1. **Missing transport dependencies:** Install GameNetworkingSockets and libsodium,
+   or enable the pinned GameNetworkingSockets fallback with
+   `-DTES3MP_FETCH_DEPS=ON`. The fallback still requires libsodium, OpenSSL and
+   Protobuf development packages.
 
 2. **API Mismatches:** Watch for compilation errors related to:
    - Type conversions between `std::string` and `ESM::RefId`

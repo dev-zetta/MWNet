@@ -9,7 +9,7 @@ This is the first hardening milestone for the major OpenMW 0.52 compatibility an
 * Bind new alpha servers to loopback, require an explicit `publicListen` opt-in for non-loopback addresses, and disable legacy public master announcements by default
 * Restore a clean dedicated-server-only build and enforce it in CI alongside the full client/server build
 * Add the fail-closed protocol 11 envelope and codec with fixed-width little-endian fields, sticky decode errors, UTF-8 validation, allocation limits, traffic limits, unit tests and a decoder fuzz target
-* Harden the transitional CrabNet packet boundary with initialized state, checked collection and string limits, transactional field reads, exact pre-initialization sizing, malformed-message rejection and decode gates before gameplay or Lua processing
+* Harden the packet boundary during the protocol-11 cutover with initialized state, checked collection and string limits, transactional field reads, exact pre-initialization sizing, malformed-message rejection and decode gates before gameplay or Lua processing
 * Stop logging attempted server passwords and prevent partially encoded or oversized packets from being sent
 * Introduce the transport-neutral connection, message, delivery-mode and lane API with bounded event queues, 64-bit snapshot sequences and stale-update rejection
 * Pin GameNetworkingSockets v1.5.1 for full TES3MP builds and make libsodium a required identity, authentication and secret-handling dependency
@@ -22,7 +22,7 @@ This is the first hardening milestone for the major OpenMW 0.52 compatibility an
 * Add a transport-independent application-packet bridge and bounded connection dispatcher with direction-specific intent/result routing, fixed lane assignment and sequenced unreliable movement snapshots for the live runtime cutover
 * Update the multiplayer client, dedicated server and tools onto OpenMW 0.52, including its current rendering, input, Lua, navigation and content APIs
 * Port TES3MP-specific code to C++20, Qt 6 and the current `ESM::RefId`, settings, resource and world APIs
-* Vendor CrabNet in `extern/crabnet` so client and server builds no longer depend on a separately cloned networking repository
+* Remove CrabNet, its packet adapter, legacy Lua type marker, build integration and vendored source after switching every runtime caller to GameNetworkingSockets
 * Replace the server's LuaBridge binding layer with sol2 and retain the existing TES3MP Lua API surface
 * Bundle the TES3MP CoreScripts with the source tree and update their server-version requirement to 1.0.0
 * Add build, Docker, quick-start and OpenMW porting documentation plus convenience launch scripts

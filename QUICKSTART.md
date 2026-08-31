@@ -20,11 +20,9 @@ This guide will help you quickly build and run TES3MP 1.0.0, based on OpenMW 0.5
 
 This will:
 - Install all required system dependencies
-- Build CrabNet (TES3MP's RakNet fork - networking library)
+- Resolve GameNetworkingSockets at the pinned revision and use the system libsodium
 - Build TES3MP client and server
 - Save build log to `build.log`
-
-**Note:** CrabNet is vendored in `extern/crabnet/` and is built automatically.
 
 ### 2. Run a Local Multiplayer Test
 
@@ -107,19 +105,16 @@ To start fresh:
    ./tes3mp-merged-build.sh --rebuild
    ```
 
-### CrabNet (RakNet) Build Fails
+### GameNetworkingSockets Is Not Found
 
 ```bash
-# Rebuild CrabNet manually
-cd dependencies/crabnet/build
-rm -rf *
-cmake -DCMAKE_BUILD_TYPE=Release \
-      -DCRABNET_ENABLE_DLL=OFF \
-      -DCRABNET_ENABLE_SAMPLES=OFF \
-      -DCRABNET_ENABLE_STATIC=ON \
-      ..
-make -j$(nproc)
+# Use the reviewed pinned source fallback
+cmake -S . -B build -DTES3MP_FETCH_DEPS=ON
+cmake --build build
 ```
+
+The fallback requires Git, OpenSSL and Protobuf development packages. libsodium
+is always a required system or toolchain dependency.
 
 ### CMake Configuration Errors
 
@@ -168,7 +163,7 @@ After successful build, you'll have:
 ## Merge Information
 
 This build combines:
-- **TES3MP 1.0.0**: Multiplayer client, dedicated server, server browser and scripting API
+- **TES3MP 1.0.0-alpha.1**: Multiplayer client, dedicated server, direct connect and scripting API
 - **OpenMW 0.52**: Current engine base with modern Lua, navigation, rendering and content APIs
 
 The original OpenMW 0.50 integration resolved 237 merge conflicts while preserving TES3MP's multiplayer features; the codebase was subsequently advanced to OpenMW 0.52.

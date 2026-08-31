@@ -239,7 +239,6 @@ target_link_libraries(openmw-lib
     oics
     components
     tes3mp-protocol11-endpoint
-    ${RakNet_LIBRARY}
     ICU::uc
     ICU::i18n
     ICU::data

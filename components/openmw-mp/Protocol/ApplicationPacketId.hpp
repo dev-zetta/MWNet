@@ -7,9 +7,8 @@ namespace mwmp::protocol
 {
     // Protocol 11 assigns TES3MP application packet identifiers independently
     // from any transport library. The values intentionally match the final
-    // protocol-10 application range so packet implementations can be migrated
-    // incrementally without keeping CrabNet's MessageIdentifiers.h as their
-    // source of truth.
+    // protocol-10 application range only to keep the protocol-11 migration
+    // reviewable. These values are TES3MP-owned and transport-independent.
     enum class ApplicationPacketId : std::uint16_t
     {
         UserMyId = 136,

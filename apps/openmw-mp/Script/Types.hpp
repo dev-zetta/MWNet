@@ -5,7 +5,6 @@
 #include <cstddef>
 #include <cstdint>
 #include <type_traits>
-#include <RakNetTypes.h>
 #include "Utils.hpp"
 
 #ifdef _WIN32
@@ -26,7 +25,6 @@ template<typename T, size_t t> struct TypeChar { static_assert(!t, "Unsupported 
 template<> struct TypeChar<bool, sizeof(bool)> { enum { value = 'b' }; };
 template<typename T> struct TypeChar<T*, sizeof(void*)> { enum { value = 'p' }; };
 template<> struct TypeChar<double*, sizeof(double*)> { enum { value = 'd' }; };
-template<> struct TypeChar<RakNet::NetworkID**, sizeof(RakNet::NetworkID**)> { enum { value = 'n' }; };
 template<typename T> struct TypeChar<T, sizeof(uint8_t)> { enum { value = std::is_signed<T>::value ? 'q' : 'i' }; };
 template<typename T> struct TypeChar<T, sizeof(uint16_t)> { enum { value = std::is_signed<T>::value ? 'q' : 'i' }; };
 template<typename T> struct TypeChar<T, sizeof(uint32_t)> { enum { value = std::is_signed<T>::value ? 'q' : 'i' }; };
@@ -40,7 +38,6 @@ template<const char t> struct CharType { static_assert(!t, "Unsupported type in 
 template<> struct CharType<'b'> { typedef bool type; };
 template<> struct CharType<'p'> { typedef void* type; };
 template<> struct CharType<'d'> { typedef double* type; };
-template<> struct CharType<'n'> { typedef RakNet::NetworkID** type; };
 template<> struct CharType<'q'> { typedef signed int type; };
 template<> struct CharType<'i'> { typedef unsigned int type; };
 template<> struct CharType<'w'> { typedef signed long long type; };

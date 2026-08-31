@@ -116,7 +116,7 @@ docker run --rm \
 
 Remove the build directory and rebuild:
 ```bash
-rm -rf build dependencies/crabnet/build
+rm -rf build
 docker run --rm -v "$(pwd)":/tes3mp:Z tes3mp-merged:latest
 ```
 
@@ -143,7 +143,7 @@ docker rmi tes3mp-merged:latest
 
 ### Remove Build Artifacts
 ```bash
-rm -rf build dependencies/crabnet/build
+rm -rf build
 ```
 
 ## Comparison: Docker vs Native Build
