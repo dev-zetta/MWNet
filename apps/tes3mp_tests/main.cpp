@@ -26,7 +26,9 @@ int runSessionTests();
 int runShapeshiftTests();
 int runSpellTests();
 int runSpellbookTests();
+#if defined(TES3MP_HAS_TIMED_LOG_TESTS)
 int runTimedLogTests();
+#endif
 int runTransportTests();
 #if defined(TES3MP_HAS_GNS_TRANSPORT)
 int runAuthenticationTests();
@@ -52,8 +54,11 @@ int main()
         + runMetricsTests()
         + runObjectStateTests() + runOwnershipTests() + runLuaPolicyTests()
         + runLifecycleTests() + runPersistenceTests() + runProgressionTests()
-        + runSessionTests() + runShapeshiftTests() + runTimedLogTests()
+        + runSessionTests() + runShapeshiftTests()
         + runSpellTests() + runSpellbookTests() + runTransportTests();
+#if defined(TES3MP_HAS_TIMED_LOG_TESTS)
+    failures += runTimedLogTests();
+#endif
 #if defined(TES3MP_HAS_GNS_TRANSPORT)
     failures += runAuthenticationTests();
     failures += runGameNetworkingSocketsTests();

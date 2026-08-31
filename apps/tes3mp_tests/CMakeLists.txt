@@ -23,14 +23,19 @@ add_executable(tes3mp-tests
     shapeshift.cpp
     spell.cpp
     spellbook.cpp
-    timed_log.cpp
     transport.cpp
-    ../../components/openmw-mp/TimedLog.cpp
 )
 
 target_include_directories(tes3mp-tests PRIVATE ${CMAKE_SOURCE_DIR})
 target_link_libraries(tes3mp-tests PRIVATE tes3mp-mechanics tes3mp-metrics tes3mp-persistence
     tes3mp-protocol-codec tes3mp-session tes3mp-transport)
+
+if (NOT TES3MP_TESTS_ONLY)
+    target_sources(tes3mp-tests PRIVATE
+        timed_log.cpp
+        ../../components/openmw-mp/TimedLog.cpp)
+    target_compile_definitions(tes3mp-tests PRIVATE TES3MP_HAS_TIMED_LOG_TESTS=1)
+endif()
 
 if (TARGET tes3mp-gns-transport)
     target_sources(tes3mp-tests PRIVATE authentication.cpp gns_transport.cpp security.cpp)
