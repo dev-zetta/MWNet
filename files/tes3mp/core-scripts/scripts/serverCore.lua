@@ -462,6 +462,14 @@ function OnPlayerShapeshift(pid)
     eventHandler.OnPlayerShapeshift(pid)
 end
 
+function OnPlayerShapeshiftIntent(pid)
+    return eventHandler.OnPlayerShapeshiftIntent(pid)
+end
+
+function OnPlayerShapeshiftIntentRejected(pid, reason)
+    eventHandler.OnPlayerShapeshiftIntentRejected(pid, reason)
+end
+
 function OnPlayerCellChange(pid)
     tes3mp.LogMessage(enumerations.log.INFO, "Called \"OnPlayerCellChange\" for " .. logicHandler.GetChatName(pid))
     eventHandler.OnPlayerCellChange(pid)

@@ -190,6 +190,8 @@ public:
             {"OnPlayerJournal",          Callback<unsigned short>()},
             {"OnPlayerFaction",          Callback<unsigned short>()},
             {"OnPlayerShapeshift",       Callback<unsigned short>()},
+            {"OnPlayerShapeshiftIntent", Callback<unsigned short>()},
+            {"OnPlayerShapeshiftIntentRejected", Callback<unsigned short, const char*>()},
             {"OnPlayerSpellbook",        Callback<unsigned short>()},
             {"OnPlayerSpellsActiveIntent", Callback<unsigned short>()},
             {"OnPlayerSpellsActiveIntentRejected", Callback<unsigned short, const char*>()},

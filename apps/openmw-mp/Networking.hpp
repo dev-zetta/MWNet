@@ -17,6 +17,7 @@
 #include <components/openmw-mp/Mechanics/CastIntentValidator.hpp>
 #include <components/openmw-mp/Mechanics/JusticeLedger.hpp>
 #include <components/openmw-mp/Mechanics/ObjectStateLedger.hpp>
+#include <components/openmw-mp/Mechanics/ShapeshiftLedger.hpp>
 #include <components/openmw-mp/Persistence/PersistenceService.hpp>
 #include <components/openmw-mp/Security/ServerAuthenticationService.hpp>
 #include <components/openmw-mp/Session/AuthorityLease.hpp>
@@ -163,6 +164,11 @@ namespace  mwmp
         bool validatePlayerJailCompletion(
             Player& player, const BasePlayer& incoming);
         bool completePlayerJail(Player& player);
+        bool validatePlayerShapeshift(Player& player, const BasePlayer& incoming);
+        bool commitPlayerShapeshift(Player& player);
+        bool applyServerPlayerShapeshift(Player& player);
+        bool isPlayerShapeshiftIntentPending(const Player& player) const noexcept;
+        void cancelPlayerShapeshiftIntent(Player& player) noexcept;
         bool validatePlayerStats(Player& player, const BasePlayer& incoming);
         bool reconcilePlayerStats(Player& player);
         bool applyServerPlayerStats(Player& player);
@@ -223,6 +229,7 @@ namespace  mwmp
         mechanics::CastIntentValidator mCastIntentValidator;
         mechanics::JusticeLedger mJusticeLedger;
         mechanics::ObjectStateLedger mObjectStateLedger;
+        mechanics::ShapeshiftLedger mShapeshiftLedger;
         std::unordered_set<std::uint64_t> mAuthenticatedConnections;
         std::unordered_map<std::uint64_t, unsigned int> mAuthorityViolations;
         std::unordered_map<std::uint64_t, unsigned int> mMovementViolations;
@@ -235,6 +242,8 @@ namespace  mwmp
         std::unordered_map<std::uint64_t, unsigned int> mJusticeViolations;
         std::unordered_map<std::uint64_t, unsigned int> mObjectViolations;
         std::unordered_map<std::uint64_t, std::int64_t> mPendingPlayerBounties;
+        std::unordered_set<std::uint64_t> mPendingPlayerShapeshifts;
+        std::unordered_map<std::uint64_t, unsigned int> mShapeshiftViolations;
         struct PendingPlayerCellChange
         {
             ESM::Cell cell;

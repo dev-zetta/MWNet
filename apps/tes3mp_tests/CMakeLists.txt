@@ -15,6 +15,7 @@ add_executable(tes3mp-tests
     persistence.cpp
     protocol.cpp
     session.cpp
+    shapeshift.cpp
     transport.cpp
 )
 

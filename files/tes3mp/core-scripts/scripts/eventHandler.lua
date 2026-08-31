@@ -8,6 +8,7 @@ local pendingActorEquipmentEvents = {}
 local pendingActorListEvents = {}
 local pendingActorCellChangeEvents = {}
 local pendingPlayerBountyEvents = {}
+local pendingPlayerShapeshiftEvents = {}
 local pendingObjectPlaceEvents = {}
 local pendingObjectMutationEvents = {}
 local pendingContainerEvents = {}
@@ -946,7 +947,53 @@ eventHandler.OnPlayerLevel = function(pid)
 end
 
 eventHandler.OnPlayerShapeshift = function(pid)
-    eventHandler.OnGenericPlayerEvent(pid, "PlayerShapeshift")
+    local pendingEvent = pendingPlayerShapeshiftEvents[pid]
+    pendingPlayerShapeshiftEvents[pid] = nil
+    if pendingEvent == nil then
+        return
+    end
+
+    if Players[pid] ~= nil and Players[pid]:IsLoggedIn() then
+        Players[pid]:SaveDataByPacketType("PlayerShapeshift", pendingEvent.playerPacket)
+        customEventHooks.triggerHandlers("OnPlayerShapeshift", pendingEvent.eventStatus,
+            {pid, pendingEvent.playerPacket})
+    end
+end
+
+eventHandler.OnPlayerShapeshiftIntent = function(pid)
+    pendingPlayerShapeshiftEvents[pid] = nil
+    if Players[pid] == nil or not Players[pid]:IsLoggedIn() then
+        return false
+    end
+
+    local playerPacket = packetReader.GetPlayerPacketTables(pid, "PlayerShapeshift")
+    local eventStatus = customEventHooks.triggerValidators("OnPlayerShapeshift",
+        {pid, playerPacket})
+    if not eventStatus.validDefaultHandler then
+        customEventHooks.triggerHandlers("OnPlayerShapeshift", eventStatus,
+            {pid, playerPacket})
+        return false
+    end
+
+    pendingPlayerShapeshiftEvents[pid] = {
+        eventStatus = eventStatus,
+        playerPacket = playerPacket
+    }
+    return true
+end
+
+eventHandler.OnPlayerShapeshiftIntentRejected = function(pid, reason)
+    local pendingEvent = pendingPlayerShapeshiftEvents[pid]
+    pendingPlayerShapeshiftEvents[pid] = nil
+    if pendingEvent ~= nil then
+        local eventStatus = customEventHooks.makeEventStatus(false,
+            pendingEvent.eventStatus.validCustomHandlers)
+        customEventHooks.triggerHandlers("OnPlayerShapeshift", eventStatus,
+            {pid, pendingEvent.playerPacket})
+    end
+    local rejectionStatus = customEventHooks.makeEventStatus(false, true)
+    customEventHooks.triggerHandlers("OnPlayerShapeshiftIntentRejected", rejectionStatus,
+        {pid, reason})
 end
 
 eventHandler.OnPlayerEquipment = function(pid)

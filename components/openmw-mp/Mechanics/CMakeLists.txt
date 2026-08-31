@@ -9,6 +9,7 @@ add_library(tes3mp-mechanics STATIC
     MovementValidator.cpp
     ObjectStateLedger.cpp
     PlayerLifecycle.cpp
+    ShapeshiftLedger.cpp
 )
 
 target_include_directories(tes3mp-mechanics PUBLIC ${CMAKE_SOURCE_DIR})

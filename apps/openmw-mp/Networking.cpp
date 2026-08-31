@@ -57,6 +57,7 @@ Networking::Networking(RakNet::RakPeerInterface *peer,
     , mMovementValidator(maximumConnections)
     , mPlayerLifecycle(maximumConnections)
     , mInventoryLedger(maximumConnections * 2U)
+    , mShapeshiftLedger(maximumConnections)
     , mMaximumConnections(maximumConnections)
     , mPort(port)
     , mMovementMaximumSpeed(movementMaximumSpeed)
@@ -2629,6 +2630,102 @@ namespace
     }
 }
 
+bool Networking::validatePlayerShapeshift(
+    Player& player, const BasePlayer& incoming)
+{
+    if (!mShapeshiftLedger.find(player.guid.g))
+    {
+        const mechanics::ShapeshiftResult seeded = mShapeshiftLedger.set(
+            player.guid.g, { player.scale, player.isWerewolf,
+                player.displayCreatureName, player.creatureRefId });
+        if (!seeded.applied())
+        {
+            LOG_MESSAGE_SIMPLE(TimedLog::LOG_ERROR,
+                "Failed to seed shapeshift state for connection %llu: %s",
+                static_cast<unsigned long long>(player.guid.g),
+                mechanics::describe(seeded.decision));
+            return false;
+        }
+    }
+
+    const mechanics::ShapeshiftResult result
+        = mShapeshiftLedger.previewClientIntent(player.guid.g,
+            { incoming.scale, incoming.isWerewolf,
+                incoming.displayCreatureName, incoming.creatureRefId });
+    if (result.applied())
+    {
+        mPendingPlayerShapeshifts.insert(player.guid.g);
+        return true;
+    }
+
+    const unsigned int violations = ++mShapeshiftViolations[player.guid.g];
+    LOG_MESSAGE_SIMPLE(TimedLog::LOG_WARN,
+        "Rejected shapeshift intent from connection %llu: %s (violation %u)",
+        static_cast<unsigned long long>(player.guid.g),
+        mechanics::describe(result.decision), violations);
+    if (violations >= 5)
+        disconnectTransport({ player.guid.g }, "repeated invalid shapeshift intents");
+    return false;
+}
+
+bool Networking::commitPlayerShapeshift(Player& player)
+{
+    if (mPendingPlayerShapeshifts.erase(player.guid.g) == 0)
+        return false;
+
+    const mechanics::ShapeshiftResult result
+        = mShapeshiftLedger.applyClientIntent(player.guid.g,
+            { player.scale, player.isWerewolf,
+                player.displayCreatureName, player.creatureRefId });
+    if (result.applied())
+        return true;
+
+    cancelPlayerShapeshiftIntent(player);
+    const unsigned int violations = ++mShapeshiftViolations[player.guid.g];
+    LOG_MESSAGE_SIMPLE(TimedLog::LOG_WARN,
+        "Rejected modified shapeshift intent from connection %llu: %s (violation %u)",
+        static_cast<unsigned long long>(player.guid.g),
+        mechanics::describe(result.decision), violations);
+    if (violations >= 5)
+        disconnectTransport({ player.guid.g }, "repeated invalid shapeshift intents");
+    return false;
+}
+
+bool Networking::applyServerPlayerShapeshift(Player& player)
+{
+    if (mPendingPlayerShapeshifts.contains(player.guid.g))
+        return false;
+    const mechanics::ShapeshiftResult result = mShapeshiftLedger.set(
+        player.guid.g, { player.scale, player.isWerewolf,
+            player.displayCreatureName, player.creatureRefId });
+    if (!result.applied())
+    {
+        LOG_MESSAGE_SIMPLE(TimedLog::LOG_ERROR,
+            "Rejected server-authored shapeshift state for connection %llu: %s",
+            static_cast<unsigned long long>(player.guid.g),
+            mechanics::describe(result.decision));
+    }
+    return result.applied();
+}
+
+bool Networking::isPlayerShapeshiftIntentPending(
+    const Player& player) const noexcept
+{
+    return mPendingPlayerShapeshifts.contains(player.guid.g);
+}
+
+void Networking::cancelPlayerShapeshiftIntent(Player& player) noexcept
+{
+    mPendingPlayerShapeshifts.erase(player.guid.g);
+    if (const auto canonical = mShapeshiftLedger.find(player.guid.g))
+    {
+        player.scale = canonical->scale;
+        player.isWerewolf = canonical->isWerewolf;
+        player.displayCreatureName = canonical->displayCreatureName;
+        player.creatureRefId = canonical->creatureRefId;
+    }
+}
+
 bool Networking::validatePlayerStats(Player& player, const BasePlayer& incoming)
 {
     bool valid = true;
@@ -3602,6 +3699,9 @@ void Networking::disconnectPlayer(RakNet::RakNetGUID guid)
     mJusticeLedger.erase(guid.g);
     mJusticeViolations.erase(guid.g);
     mPendingPlayerBounties.erase(guid.g);
+    mShapeshiftLedger.erase(guid.g);
+    mShapeshiftViolations.erase(guid.g);
+    mPendingPlayerShapeshifts.erase(guid.g);
     mObjectViolations.erase(guid.g);
     mPendingObjectPlacements.erase(guid.g);
     mPendingObjectMutations.erase(guid.g);

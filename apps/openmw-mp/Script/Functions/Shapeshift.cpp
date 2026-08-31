@@ -7,6 +7,7 @@
 #include <apps/openmw-mp/Networking.hpp>
 
 #include <iostream>
+#include <stdexcept>
 
 double ShapeshiftFunctions::GetScale(unsigned short pid)
 {
@@ -76,6 +77,12 @@ void ShapeshiftFunctions::SendShapeshift(unsigned short pid)
 {
     Player *player;
     GET_PLAYER(pid, player, );
+
+    if (mwmp::Networking::getPtr()->isPlayerShapeshiftIntentPending(*player))
+        throw std::runtime_error(
+            "a pending shapeshift intent cannot be sent before canonical commit");
+    if (!mwmp::Networking::getPtr()->applyServerPlayerShapeshift(*player))
+        throw std::runtime_error("the server-authored shapeshift state was rejected");
 
     mwmp::PlayerPacket *packet = mwmp::Networking::get().getPlayerPacketController()->GetPacket(ID_PLAYER_SHAPESHIFT);
     packet->setPlayer(player);
