@@ -2,7 +2,9 @@
 
 #include <components/openmw-mp/NetworkMessages.hpp>
 
+#include <algorithm>
 #include <iostream>
+#include <unordered_set>
 #include "Networking.hpp"
 #include "Player.hpp"
 #include "Script/Script.hpp"
@@ -116,62 +118,60 @@ void Cell::readActorList(unsigned char packetID, const mwmp::BaseActorList *newA
             }
         }
         else
+        {
             cellActorList.baseActors.push_back(newActor);
+            actorIndexes.insert_or_assign(actorKey(newActor.refNum, newActor.mpNum),
+                cellActorList.baseActors.size() - 1);
+        }
     }
 
     cellActorList.count = cellActorList.baseActors.size();
 }
 
-bool Cell::containsActor(int refNum, int mpNum)
+bool Cell::containsActor(int refNum, int mpNum) const
 {
-    for (unsigned int i = 0; i < cellActorList.baseActors.size(); i++)
-    {
-        mwmp::BaseActor actor = cellActorList.baseActors.at(i);
-
-        if (actor.refNum == refNum && actor.mpNum == mpNum)
-            return true;
-    }
-    return false;
+    return actorIndexes.contains(actorKey(refNum, mpNum));
 }
 
 mwmp::BaseActor *Cell::getActor(int refNum, int mpNum)
 {
-    for (unsigned int i = 0; i < cellActorList.baseActors.size(); i++)
-    {
-        mwmp::BaseActor *actor = &cellActorList.baseActors.at(i);
-
-        if (actor->refNum == refNum && actor->mpNum == mpNum)
-            return actor;
-    }
-    return nullptr;
+    const auto found = actorIndexes.find(actorKey(refNum, mpNum));
+    if (found == actorIndexes.end() || found->second >= cellActorList.baseActors.size())
+        return nullptr;
+    return &cellActorList.baseActors[found->second];
 }
 
 void Cell::removeActors(const mwmp::BaseActorList *newActorList)
 {
-    for (auto it = cellActorList.baseActors.begin(); it != cellActorList.baseActors.end();)
-    {
-        int refNum = it->refNum;
-        int mpNum = it->mpNum;
+    std::unordered_set<std::uint64_t> removals;
+    removals.reserve(newActorList->baseActors.size());
+    for (const mwmp::BaseActor& actor : newActorList->baseActors)
+        removals.insert(actorKey(actor.refNum, actor.mpNum));
 
-        bool foundActor = false;
-
-        for (unsigned int i = 0; i < newActorList->count; i++)
-        {
-            mwmp::BaseActor newActor = newActorList->baseActors.at(i);
-
-            if (newActor.refNum == refNum && newActor.mpNum == mpNum)
-            {
-                it = cellActorList.baseActors.erase(it);
-                foundActor = true;
-                break;
-            }
-        }
-
-        if (!foundActor)
-            it++;
-    }
+    std::erase_if(cellActorList.baseActors,
+        [&removals](const mwmp::BaseActor& actor) {
+            return removals.contains(actorKey(actor.refNum, actor.mpNum));
+        });
 
     cellActorList.count = cellActorList.baseActors.size();
+    rebuildActorIndex();
+}
+
+std::uint64_t Cell::actorKey(std::uint32_t refNum, std::uint32_t mpNum) noexcept
+{
+    return (static_cast<std::uint64_t>(refNum) << 32)
+        | static_cast<std::uint64_t>(mpNum);
+}
+
+void Cell::rebuildActorIndex()
+{
+    actorIndexes.clear();
+    actorIndexes.reserve(cellActorList.baseActors.size());
+    for (std::size_t index = 0; index < cellActorList.baseActors.size(); ++index)
+    {
+        const mwmp::BaseActor& actor = cellActorList.baseActors[index];
+        actorIndexes.insert_or_assign(actorKey(actor.refNum, actor.mpNum), index);
+    }
 }
 
 RakNet::RakNetGUID *Cell::getAuthority()

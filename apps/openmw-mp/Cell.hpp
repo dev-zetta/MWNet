@@ -4,6 +4,7 @@
 #include <cstdint>
 #include <deque>
 #include <string>
+#include <unordered_map>
 #include <components/esm/records.hpp>
 #include <components/openmw-mp/Base/BaseActor.hpp>
 #include <components/openmw-mp/Base/BaseObject.hpp>
@@ -28,7 +29,7 @@ public:
     void removePlayer(Player *player, bool cleanPlayer = true);
 
     void readActorList(unsigned char packetID, const mwmp::BaseActorList *newActorList);
-    bool containsActor(int refNum, int mpNum);
+    bool containsActor(int refNum, int mpNum) const;
     mwmp::BaseActor *getActor(int refNum, int mpNum);
     void removeActors(const mwmp::BaseActorList *newActorList);
 
@@ -46,12 +47,16 @@ public:
 
 
 private:
+    static std::uint64_t actorKey(std::uint32_t refNum, std::uint32_t mpNum) noexcept;
+    void rebuildActorIndex();
+
     TPlayers players;
     ESM::Cell cell;
 
     RakNet::RakNetGUID authorityGuid{};
     std::uint64_t authorityLeaseId = 0;
     mwmp::BaseActorList cellActorList;
+    std::unordered_map<std::uint64_t, std::size_t> actorIndexes;
 };
 
 
