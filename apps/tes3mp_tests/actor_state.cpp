@@ -128,6 +128,52 @@ namespace
         EXPECT(ledger.previewPositions({ position("Balmora", 1, 376, 3) }, -1,
                    start + 2s).decision == ActorStateDecision::InvalidSpeed);
     }
+
+    ActorRosterUpdate rosterActor(const char* cell, std::uint32_t refNum,
+        const char* refId)
+    {
+        return { { cell, refNum, 0 }, refId };
+    }
+
+    void testAtomicRosterUpdates()
+    {
+        ActorStateLedger ledger(2);
+        const std::vector<ActorRosterUpdate> initial{
+            rosterActor("Balmora", 1, "guard"),
+            rosterActor("Balmora", 2, "rat"),
+        };
+        EXPECT(ledger.previewRoster(ActorRosterAction::Set, "Balmora", initial)
+            .applied());
+        EXPECT(ledger.size() == 0);
+        EXPECT(ledger.applyRoster(ActorRosterAction::Set, "Balmora", initial)
+            .applied());
+        EXPECT(*ledger.refId({ "Balmora", 1, 0 }) == "guard");
+        EXPECT(ledger.previewRoster(ActorRosterAction::Add, "Balmora",
+                   { rosterActor("Balmora", 3, "scrib") }).decision
+            == ActorStateDecision::ActorLimitReached);
+        EXPECT(ledger.previewRoster(ActorRosterAction::Add, "Balmora",
+                   { rosterActor("Ald-ruhn", 3, "scrib") }).decision
+            == ActorStateDecision::InvalidIdentity);
+        EXPECT(ledger.previewRoster(ActorRosterAction::Add, "Balmora",
+                   { rosterActor("Balmora", 1, "") }).decision
+            == ActorStateDecision::InvalidRefId);
+        EXPECT(ledger.previewRoster(ActorRosterAction::Remove, "Balmora",
+                   { rosterActor("Balmora", 3, "") }).decision
+            == ActorStateDecision::UnknownActor);
+
+        EXPECT(ledger.applyRoster(ActorRosterAction::Remove, "Balmora",
+                   { rosterActor("Balmora", 2, "") }).applied());
+        EXPECT(!ledger.refId({ "Balmora", 2, 0 }));
+        EXPECT(ledger.applyRoster(ActorRosterAction::Add, "Balmora",
+                   { rosterActor("Balmora", 3, "scrib") }).applied());
+        EXPECT(ledger.applyRoster(ActorRosterAction::Set, "Balmora",
+                   { rosterActor("Balmora", 3, "kwama") }).applied());
+        EXPECT(ledger.size() == 1);
+        EXPECT(!ledger.refId({ "Balmora", 1, 0 }));
+        EXPECT(*ledger.refId({ "Balmora", 3, 0 }) == "kwama");
+        EXPECT(ledger.applyRoster(ActorRosterAction::Set, "Balmora", {}).applied());
+        EXPECT(ledger.size() == 0);
+    }
 }
 
 int runActorStateTests()
@@ -136,5 +182,6 @@ int runActorStateTests()
     testIdentityAndLimits();
     testCleanup();
     testAtomicPositionUpdates();
+    testAtomicRosterUpdates();
     return sFailures;
 }

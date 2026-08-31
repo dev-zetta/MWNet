@@ -63,6 +63,49 @@ namespace mwmp::mechanics
         return { ActorStateDecision::Applied, mActors.size() };
     }
 
+    ActorStateResult ActorStateLedger::previewRoster(ActorRosterAction action,
+        const std::string& cell,
+        const std::vector<ActorRosterUpdate>& updates) const
+    {
+        return validateRoster(action, cell, updates);
+    }
+
+    ActorStateResult ActorStateLedger::applyRoster(ActorRosterAction action,
+        const std::string& cell,
+        const std::vector<ActorRosterUpdate>& updates)
+    {
+        const ActorStateResult result = validateRoster(action, cell, updates);
+        if (!result.applied())
+            return result;
+
+        if (action == ActorRosterAction::Set)
+        {
+            std::unordered_set<ActorIdentity, ActorIdentityHash> replacement;
+            replacement.reserve(updates.size());
+            for (const ActorRosterUpdate& update : updates)
+                replacement.insert(update.identity);
+            for (auto actor = mActors.begin(); actor != mActors.end();)
+            {
+                if (actor->first.cell == cell && !replacement.contains(actor->first))
+                    actor = mActors.erase(actor);
+                else
+                    ++actor;
+            }
+        }
+
+        if (action == ActorRosterAction::Remove)
+        {
+            for (const ActorRosterUpdate& update : updates)
+                mActors.erase(update.identity);
+        }
+        else
+        {
+            for (const ActorRosterUpdate& update : updates)
+                mActors.try_emplace(update.identity).first->second.refId = update.refId;
+        }
+        return { ActorStateDecision::Applied, mActors.size() };
+    }
+
     std::optional<EquipmentLedger::Equipment> ActorStateLedger::equipment(
         const ActorIdentity& identity) const
     {
@@ -79,6 +122,15 @@ namespace mwmp::mechanics
         if (found == mActors.end() || !found->second.movement)
             return std::nullopt;
         return found->second.movement->transform;
+    }
+
+    std::optional<std::string> ActorStateLedger::refId(
+        const ActorIdentity& identity) const
+    {
+        const auto found = mActors.find(identity);
+        if (found == mActors.end() || found->second.refId.empty())
+            return std::nullopt;
+        return found->second.refId;
     }
 
     std::size_t ActorStateLedger::eraseCell(const std::string& cell) noexcept
@@ -181,6 +233,56 @@ namespace mwmp::mechanics
         return { ActorStateDecision::Applied, mActors.size() + newActors };
     }
 
+    ActorStateResult ActorStateLedger::validateRoster(ActorRosterAction action,
+        const std::string& cell,
+        const std::vector<ActorRosterUpdate>& updates) const
+    {
+        if (cell.empty() || cell.size() > MaximumCellBytes)
+            return { ActorStateDecision::InvalidIdentity, mActors.size() };
+        if (updates.size() > MaximumChanges
+            || (updates.empty() && action != ActorRosterAction::Set))
+            return { ActorStateDecision::InvalidBatch, mActors.size() };
+
+        std::unordered_set<ActorIdentity, ActorIdentityHash> identities;
+        std::size_t newActors = 0;
+        for (const ActorRosterUpdate& update : updates)
+        {
+            if (!validIdentity(update.identity) || update.identity.cell != cell)
+                return { ActorStateDecision::InvalidIdentity, mActors.size() };
+            if (!identities.insert(update.identity).second)
+                return { ActorStateDecision::DuplicateActor, mActors.size() };
+            if (action != ActorRosterAction::Remove
+                && (update.refId.empty() || update.refId.size() > MaximumRefIdBytes))
+                return { ActorStateDecision::InvalidRefId, mActors.size() };
+            if (action == ActorRosterAction::Remove)
+            {
+                if (!mActors.contains(update.identity))
+                    return { ActorStateDecision::UnknownActor, mActors.size() };
+            }
+            else if (!mActors.contains(update.identity))
+                ++newActors;
+        }
+
+        std::size_t resultingSize = mActors.size();
+        if (action == ActorRosterAction::Set)
+        {
+            const std::size_t currentCellActors = std::count_if(mActors.begin(),
+                mActors.end(), [&cell](const auto& actor) {
+                    return actor.first.cell == cell;
+                });
+            resultingSize -= currentCellActors;
+            resultingSize += updates.size();
+        }
+        else if (action == ActorRosterAction::Add)
+            resultingSize += newActors;
+        else
+            resultingSize -= updates.size();
+
+        if (resultingSize > mMaximumActors)
+            return { ActorStateDecision::ActorLimitReached, mActors.size() };
+        return { ActorStateDecision::Applied, resultingSize };
+    }
+
     bool ActorStateLedger::validIdentity(const ActorIdentity& identity) noexcept
     {
         return !identity.cell.empty() && identity.cell.size() <= MaximumCellBytes
@@ -255,6 +357,12 @@ namespace mwmp::mechanics
                 return "the actor movement sequence is stale";
             case ActorStateDecision::SpeedExceeded:
                 return "the actor movement exceeds the theoretical speed bound";
+            case ActorStateDecision::InvalidRosterAction:
+                return "the actor roster action is invalid";
+            case ActorStateDecision::InvalidRefId:
+                return "an actor record identifier is invalid";
+            case ActorStateDecision::UnknownActor:
+                return "the actor is not present in canonical state";
             case ActorStateDecision::ActorLimitReached:
                 return "the canonical actor limit was reached";
         }

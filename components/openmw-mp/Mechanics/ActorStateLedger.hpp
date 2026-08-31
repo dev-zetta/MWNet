@@ -49,6 +49,19 @@ namespace mwmp::mechanics
         std::uint64_t sequence = 0;
     };
 
+    enum class ActorRosterAction : std::uint8_t
+    {
+        Set,
+        Add,
+        Remove,
+    };
+
+    struct ActorRosterUpdate
+    {
+        ActorIdentity identity;
+        std::string refId;
+    };
+
     enum class ActorStateDecision : std::uint8_t
     {
         Applied,
@@ -61,6 +74,9 @@ namespace mwmp::mechanics
         InvalidSequence,
         StaleSequence,
         SpeedExceeded,
+        InvalidRosterAction,
+        InvalidRefId,
+        UnknownActor,
         ActorLimitReached,
     };
 
@@ -82,6 +98,7 @@ namespace mwmp::mechanics
     public:
         static constexpr std::size_t MaximumChanges = 3000;
         static constexpr std::size_t MaximumCellBytes = 4096;
+        static constexpr std::size_t MaximumRefIdBytes = 4096;
         static constexpr std::size_t DefaultMaximumActors = 100'000;
         static constexpr double DistanceMultiplier = 1.5;
         static constexpr std::chrono::milliseconds LatencyAllowance{ 250 };
@@ -100,9 +117,16 @@ namespace mwmp::mechanics
         ActorStateResult applyPositions(
             const std::vector<ActorPositionUpdate>& updates,
             double theoreticalMaximumSpeed, Clock::time_point now);
+        ActorStateResult previewRoster(ActorRosterAction action,
+            const std::string& cell,
+            const std::vector<ActorRosterUpdate>& updates) const;
+        ActorStateResult applyRoster(ActorRosterAction action,
+            const std::string& cell,
+            const std::vector<ActorRosterUpdate>& updates);
         std::optional<EquipmentLedger::Equipment> equipment(
             const ActorIdentity& identity) const;
         std::optional<ActorTransform> position(const ActorIdentity& identity) const;
+        std::optional<std::string> refId(const ActorIdentity& identity) const;
         std::size_t eraseCell(const std::string& cell) noexcept;
         void clear() noexcept;
         std::size_t size() const noexcept;
@@ -113,6 +137,9 @@ namespace mwmp::mechanics
         ActorStateResult validatePositions(
             const std::vector<ActorPositionUpdate>& updates,
             double theoreticalMaximumSpeed, Clock::time_point now) const;
+        ActorStateResult validateRoster(ActorRosterAction action,
+            const std::string& cell,
+            const std::vector<ActorRosterUpdate>& updates) const;
         static bool validIdentity(const ActorIdentity& identity) noexcept;
         static bool validEquipment(const EquipmentLedger::Equipment& equipment) noexcept;
         static bool validTransform(const ActorTransform& transform) noexcept;
@@ -127,6 +154,7 @@ namespace mwmp::mechanics
 
         struct ActorState
         {
+            std::string refId;
             std::optional<EquipmentLedger::Equipment> equipment;
             std::optional<ActorMovementState> movement;
         };
