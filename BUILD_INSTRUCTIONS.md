@@ -205,6 +205,8 @@ Omit `TES3MP_FETCH_DEPS` when an approved GameNetworkingSockets CMake package is
 | `BUILD_BENCHMARKS` | OFF | Build benchmarks |
 | `BUILD_TES3MP_TESTS` | OFF | Build TES3MP protocol, transport and server tests |
 | `BUILD_TES3MP_FUZZERS` | OFF | Build TES3MP libFuzzer targets |
+| `TES3MP_TESTS_ONLY` | OFF | Configure the dependency-light protocol and server test tree only |
+| `TES3MP_TESTS_WITH_SECURITY` | OFF | Add libsodium and Boost-based authentication and handshake coverage to a tests-only build |
 | `TES3MP_FETCH_DEPS` | OFF | Fetch the pinned GameNetworkingSockets revision when no package is installed |
 
 **Build Types:**
@@ -261,7 +263,17 @@ ctest --test-dir build-protocol --output-on-failure
 
 A full dependency build with `BUILD_TES3MP_TESTS=ON` also provides `tes3mp-headless-integration`, which exercises the authenticated protocol over real encrypted loopback connections, and `tes3mp-persistence-fault`, which kills a writer process at every atomic-save stage.
 
-The release-budget fuzz campaign requires a Clang/libFuzzer build with `BUILD_TES3MP_FUZZERS=ON`. It runs the protocol, transport, authentication and secure-handshake targets concurrently and retains their corpora, logs and failures:
+The release-budget fuzz campaign requires Clang/libFuzzer, libsodium and the Boost headers. A minimal build of all four targets can be configured without the OpenMW client dependencies:
+
+```bash
+CC=clang CXX=clang++ cmake -S . -B build-fuzz \
+    -DTES3MP_TESTS_ONLY=ON \
+    -DTES3MP_TESTS_WITH_SECURITY=ON \
+    -DBUILD_TES3MP_FUZZERS=ON
+cmake --build build-fuzz --parallel
+```
+
+The campaign runs the protocol, transport, authentication and secure-handshake targets concurrently and retains their corpora, logs and failures:
 
 ```bash
 CI/run_tes3mp_fuzz_campaign.sh --release-budget

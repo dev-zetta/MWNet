@@ -100,11 +100,15 @@ jobs:
       run: ctest --test-dir build-protocol -C Debug --output-on-failure
 
   FuzzSmoke:
-    name: protocol-fuzz-smoke
+    name: protocol-security-fuzz-smoke
     runs-on: ubuntu-latest
 
     steps:
     - uses: actions/checkout@v6
+    - name: Install security dependency
+      run: >
+        sudo apt-get update &&
+        sudo apt-get install -y --no-install-recommends libsodium-dev libboost-dev
     - name: Configure fuzz smoke targets
       env:
         CC: clang
@@ -112,13 +116,18 @@ jobs:
       run: >
         cmake -S . -B build-fuzz
         -D TES3MP_TESTS_ONLY=ON
+        -D TES3MP_TESTS_WITH_SECURITY=ON
         -D BUILD_TES3MP_FUZZERS=ON
         -D CMAKE_BUILD_TYPE=Debug
     - name: Build fuzz smoke targets
       run: >
         cmake --build build-fuzz
-        --target tes3mp-packet-fuzz tes3mp-transport-fuzz
+        --target tes3mp-tests tes3mp-persistence-fault
+        tes3mp-packet-fuzz tes3mp-transport-fuzz
+        tes3mp-authentication-fuzz tes3mp-handshake-fuzz
         --parallel 2
+    - name: Run protocol and security unit tests
+      run: ctest --test-dir build-fuzz --output-on-failure
     - name: Run protocol codec fuzzer
       run: |
         mkdir -p fuzz-corpus/packet fuzz-artifacts/packet
@@ -129,6 +138,16 @@ jobs:
         mkdir -p fuzz-corpus/transport fuzz-artifacts/transport
         build-fuzz/apps/tes3mp_fuzz/tes3mp-transport-fuzz \
           -runs=10000 -artifact_prefix=fuzz-artifacts/transport/ fuzz-corpus/transport
+    - name: Run authentication fuzzer
+      run: |
+        mkdir -p fuzz-corpus/authentication fuzz-artifacts/authentication
+        build-fuzz/apps/tes3mp_fuzz/tes3mp-authentication-fuzz \
+          -runs=10000 -artifact_prefix=fuzz-artifacts/authentication/ fuzz-corpus/authentication
+    - name: Run secure handshake fuzzer
+      run: |
+        mkdir -p fuzz-corpus/handshake fuzz-artifacts/handshake
+        build-fuzz/apps/tes3mp_fuzz/tes3mp-handshake-fuzz \
+          -runs=10000 -artifact_prefix=fuzz-artifacts/handshake/ fuzz-corpus/handshake
     - name: Retain fuzz inputs and failures
       if: always()
       uses: actions/upload-artifact@v6

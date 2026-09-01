@@ -37,8 +37,14 @@ if (NOT TES3MP_TESTS_ONLY)
     target_compile_definitions(tes3mp-tests PRIVATE TES3MP_HAS_TIMED_LOG_TESTS=1)
 endif()
 
+if (TARGET tes3mp-security)
+    target_sources(tes3mp-tests PRIVATE authentication.cpp security.cpp)
+    target_link_libraries(tes3mp-tests PRIVATE tes3mp-security)
+    target_compile_definitions(tes3mp-tests PRIVATE TES3MP_HAS_SECURITY_TESTS=1)
+endif()
+
 if (TARGET tes3mp-gns-transport)
-    target_sources(tes3mp-tests PRIVATE authentication.cpp gns_transport.cpp security.cpp)
+    target_sources(tes3mp-tests PRIVATE gns_transport.cpp)
     target_link_libraries(tes3mp-tests PRIVATE tes3mp-gns-transport
         tes3mp-protocol11-endpoint tes3mp-security)
     target_compile_definitions(tes3mp-tests PRIVATE TES3MP_HAS_GNS_TRANSPORT=1)

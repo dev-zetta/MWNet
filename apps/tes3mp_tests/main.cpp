@@ -30,10 +30,12 @@ int runSpellbookTests();
 int runTimedLogTests();
 #endif
 int runTransportTests();
-#if defined(TES3MP_HAS_GNS_TRANSPORT)
+#if defined(TES3MP_HAS_SECURITY_TESTS)
 int runAuthenticationTests();
-int runGameNetworkingSocketsTests();
 int runSecurityTests();
+#endif
+#if defined(TES3MP_HAS_GNS_TRANSPORT)
+int runGameNetworkingSocketsTests();
 #endif
 
 int main()
@@ -59,10 +61,12 @@ int main()
 #if defined(TES3MP_HAS_TIMED_LOG_TESTS)
     failures += runTimedLogTests();
 #endif
-#if defined(TES3MP_HAS_GNS_TRANSPORT)
+#if defined(TES3MP_HAS_SECURITY_TESTS)
     failures += runAuthenticationTests();
-    failures += runGameNetworkingSocketsTests();
     failures += runSecurityTests();
+#endif
+#if defined(TES3MP_HAS_GNS_TRANSPORT)
+    failures += runGameNetworkingSocketsTests();
 #endif
     return failures == 0 ? 0 : 1;
 }
