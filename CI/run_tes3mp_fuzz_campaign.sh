@@ -7,6 +7,7 @@ corpus_root="$repo_root/fuzz-corpus"
 artifact_root="$repo_root/fuzz-artifacts"
 seconds=86400
 release_budget=false
+commit="$(git -C "$repo_root" rev-parse HEAD 2>/dev/null || printf unknown)"
 
 usage() {
     printf '%s\n' \
@@ -72,6 +73,26 @@ targets=(
 )
 
 mkdir -p "$corpus_root" "$artifact_root"
+metadata_file="$artifact_root/campaign-metadata.txt"
+campaign_status=failed
+printf '%s\n' \
+    'schema_version=1' \
+    "commit=$commit" \
+    "started_utc=$(date -u +%Y-%m-%dT%H:%M:%SZ)" \
+    "seconds_per_target=$seconds" \
+    "target_count=${#targets[@]}" \
+    "aggregate_target_seconds=$((seconds * ${#targets[@]}))" \
+    'sanitizers=address,undefined' \
+    >"$metadata_file"
+
+record_completion() {
+    printf '%s\n' \
+        "completed_utc=$(date -u +%Y-%m-%dT%H:%M:%SZ)" \
+        "status=$campaign_status" \
+        >>"$metadata_file"
+}
+trap record_completion EXIT
+
 pids=()
 names=()
 for target in "${targets[@]}"; do
@@ -110,5 +131,6 @@ if ((failed)); then
     exit 1
 fi
 
+campaign_status=passed
 printf 'All four campaigns completed (%s target-seconds).\n' \
     "$((seconds * ${#targets[@]}))"

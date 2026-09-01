@@ -13,6 +13,7 @@ This is the first hardening milestone for the major OpenMW 0.52 compatibility an
 * Cover every protocol-11 message and routable application packet, all exact field limits, signed-negative legacy lengths, byte-by-byte secure-handshake truncation and transactional decode failure in regression tests
 * Add dedicated libFuzzer entry points for protocol fields, transport framing, authentication and encrypted handshakes plus a release-budget campaign that retains corpora, logs and discovered failures
 * Add a lightweight libsodium-enabled test configuration and exercise all four protocol/security fuzz targets in routine CI instead of leaving authentication and handshake fuzzing compile-only
+* Record the exact commit, sanitizer profile, duration and terminal status alongside retained release fuzz artifacts
 * Replace the legacy bidirectional packet `RW` API with direction-safe field and collection operations backed exclusively by the active protocol-11 `PacketReader` or `PacketWriter`
 * Harden the packet boundary during the protocol-11 cutover with initialized state, checked collection and string limits, whole-model transactional decoding, exact pre-initialization sizing, malformed-message rejection and decode gates before gameplay or Lua processing
 * Stop logging attempted server passwords and prevent partially encoded or oversized packets from being sent

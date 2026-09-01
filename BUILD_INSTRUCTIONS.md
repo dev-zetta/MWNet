@@ -273,7 +273,7 @@ CC=clang CXX=clang++ cmake -S . -B build-fuzz \
 cmake --build build-fuzz --parallel
 ```
 
-The campaign runs the protocol, transport, authentication and secure-handshake targets concurrently and retains their corpora, logs and failures:
+The campaign runs the protocol, transport, authentication and secure-handshake targets concurrently and retains their corpora, logs, failures and an exact-commit campaign manifest:
 
 ```bash
 CI/run_tes3mp_fuzz_campaign.sh --release-budget
