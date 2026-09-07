@@ -6,7 +6,7 @@ TES3MP 1.0 is released sequentially. Passing a later implementation milestone do
 
 | Milestone | Required scope | Current status |
 | --- | --- | --- |
-| `1.0.0-alpha.1` | Clean out-of-tree builds, protocol 11 only, fail-closed codec, unit/fuzz targets, loopback default | Implementation present; release-candidate cross-platform evidence pending |
+| `1.0.0-alpha.1` | Clean out-of-tree builds, protocol 11 only, fail-closed codec, unit/fuzz targets, loopback default | Implementation, release fuzz campaign and Linux release soak passed; cross-platform and long-running sanitizer evidence pending |
 | `1.0.0-alpha.2` | GameNetworkingSockets, encrypted identity handshake, TOFU and Argon2id migration | Implementation present on the alpha branch; milestone is not released out of sequence |
 | `1.0.0-alpha.3` | Canonical authority, lifecycle gates, owned workers and atomic persistence | Implementation and automated encrypted integration/fault harnesses present; exact-candidate evidence pending |
 | `1.0.0-beta.1` | Sanitizer and fuzz gates, limited opt-in public test, independent security review | Blocked |
@@ -29,3 +29,10 @@ The source version remains `1.0.0-alpha.1` until the alpha.1 release candidate p
 - Specialist review of TES3MP's additional GPL terms and third-party notices. The project does not declare those terms compliant before that review.
 
 CI artifacts, fuzz corpora, soak logs, performance reports and review records must identify the tested commit. Human or time-based gates may not be replaced with an unverified checklist entry.
+
+## Recorded evidence
+
+- [`1.0.0-alpha.1` long-running validation](docs/release-evidence/1.0.0-alpha.1.md)
+  records the exact-commit four-target sanitizer fuzz campaign, 24-hour
+  eight-client release soak, alpha.1 performance baseline and the gates those
+  results do not close.
