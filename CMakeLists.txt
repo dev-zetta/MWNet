@@ -331,7 +331,7 @@ endif()
 # Start of tes3mp addition
 #
 # Don't require certain dependencies for the server
-IF(BUILD_OPENMW OR BUILD_OPENCS)
+IF(BUILD_OPENMW OR BUILD_OPENMW_TESTS OR BUILD_OPENCS OR BUILD_OPENCS_TESTS)
 # End of tes3mp addition
 set(USED_OSG_COMPONENTS
     osgAnimation
@@ -358,7 +358,7 @@ set(USED_OSG_PLUGINS
 # Start of tes3mp addition
 #
 # Don't require certain dependencies for the server
-ENDIF(BUILD_OPENMW OR BUILD_OPENCS)
+ENDIF(BUILD_OPENMW OR BUILD_OPENMW_TESTS OR BUILD_OPENCS OR BUILD_OPENCS_TESTS)
 # End of tes3mp addition
 
 option(OPENMW_USE_SYSTEM_ICU "Use system ICU library instead of internal. If disabled, requires autotools" ON)
@@ -389,7 +389,7 @@ add_subdirectory(extern)
 # Start of tes3mp addition
 #
 # Don't require certain dependencies for the server
-IF(BUILD_OPENMW OR BUILD_OPENCS)
+IF(BUILD_OPENMW OR BUILD_OPENMW_TESTS OR BUILD_OPENCS OR BUILD_OPENCS_TESTS)
 # End of tes3mp addition
 # Require at least ffmpeg 3.2 for now
 SET(FFVER_OK FALSE)
@@ -442,7 +442,7 @@ endif()
 # Start of tes3mp addition
 #
 # Don't require certain dependencies for the server
-ENDIF(BUILD_OPENMW OR BUILD_OPENCS)
+ENDIF(BUILD_OPENMW OR BUILD_OPENMW_TESTS OR BUILD_OPENCS OR BUILD_OPENCS_TESTS)
 # End of tes3mp addition
 
 # Platform specific
@@ -469,7 +469,7 @@ endif()
 # Start of tes3mp addition
 #
 # Don't require certain dependencies for the server
-IF(BUILD_OPENMW OR BUILD_OPENCS)
+IF(BUILD_OPENMW OR BUILD_OPENMW_TESTS OR BUILD_OPENCS OR BUILD_OPENCS_TESTS)
 # End of tes3mp addition
 if(OPENMW_USE_SYSTEM_BULLET)
     set(REQUIRED_BULLET_VERSION 286) # Bullet 286 required due to runtime bugfixes for btCapsuleShape
@@ -506,7 +506,7 @@ endif()
 # Start of tes3mp addition
 #
 # Don't require certain dependencies for the server
-ENDIF(BUILD_OPENMW OR BUILD_OPENCS)
+ENDIF(BUILD_OPENMW OR BUILD_OPENMW_TESTS OR BUILD_OPENCS OR BUILD_OPENCS_TESTS)
 # End of tes3mp addition
 
 if (NOT WIN32 AND BUILD_WIZARD) # windows users can just run the morrowind installer
@@ -531,7 +531,7 @@ endif()
 #
 # Don't require certain dependencies for the server
 # but keep OSG's headers (HACK)
-IF(BUILD_OPENMW OR BUILD_OPENCS)
+IF(BUILD_OPENMW OR BUILD_OPENMW_TESTS OR BUILD_OPENCS OR BUILD_OPENCS_TESTS)
 # End of tes3mp addition
 if(OPENMW_USE_SYSTEM_OSG)
     find_package(OpenSceneGraph 3.6.5 REQUIRED ${USED_OSG_COMPONENTS})  # Bump to 3.6.6 when released
@@ -562,9 +562,9 @@ endif()
 #
 # Don't require certain dependencies for the server
 # but keep OSG's headers (HACK)
-ELSE(BUILD_OPENMW OR BUILD_OPENCS)
+ELSE(BUILD_OPENMW OR BUILD_OPENMW_TESTS OR BUILD_OPENCS OR BUILD_OPENCS_TESTS)
     include_directories(${OPENSCENEGRAPH_INCLUDE_DIRS})
-ENDIF(BUILD_OPENMW OR BUILD_OPENCS)
+ENDIF(BUILD_OPENMW OR BUILD_OPENMW_TESTS OR BUILD_OPENCS OR BUILD_OPENCS_TESTS)
 # End of tes3mp addition
 
 include(cmake/CheckOsgMultiview.cmake)
@@ -580,7 +580,7 @@ find_package(ZLIB REQUIRED)
 # Start of tes3mp addition
 #
 # Don't require certain dependencies for the server
-IF(BUILD_OPENMW OR BUILD_OPENCS)
+IF(BUILD_OPENMW OR BUILD_OPENMW_TESTS OR BUILD_OPENCS OR BUILD_OPENCS_TESTS)
 # End of tes3mp addition
 find_package(SDL2 2.0.9 REQUIRED)
 
@@ -597,7 +597,7 @@ find_package(OpenAL REQUIRED)
 # Start of tes3mp addition
 #
 # Don't require certain dependencies for the server
-ENDIF(BUILD_OPENMW OR BUILD_OPENCS)
+ENDIF(BUILD_OPENMW OR BUILD_OPENMW_TESTS OR BUILD_OPENCS OR BUILD_OPENCS_TESTS)
 # End of tes3mp addition
 
 # Set Sol2/Sol3 include directories
@@ -719,28 +719,28 @@ endif()
 # Start of tes3mp addition
 #
 # Don't require certain dependencies for the server
-IF(BUILD_OPENMW OR BUILD_OPENCS)
+IF(BUILD_OPENMW OR BUILD_OPENMW_TESTS OR BUILD_OPENCS OR BUILD_OPENCS_TESTS)
 # End of tes3mp addition
 add_subdirectory (extern/osg-ffmpeg-videoplayer)
 add_subdirectory (extern/oics)
 # Start of tes3mp addition
 #
 # Don't require certain dependencies for the server
-ENDIF(BUILD_OPENMW OR BUILD_OPENCS)
+ENDIF(BUILD_OPENMW OR BUILD_OPENMW_TESTS OR BUILD_OPENCS OR BUILD_OPENCS_TESTS)
 # End of tes3mp addition
 add_subdirectory (extern/Base64)
 # Start of tes3mp addition
 #
 # Don't require certain dependencies for the server
-IF(BUILD_OPENMW OR BUILD_OPENCS)
+IF(BUILD_OPENMW OR BUILD_OPENMW_TESTS OR BUILD_OPENCS OR BUILD_OPENCS_TESTS)
 # End of tes3mp addition
-if (BUILD_OPENCS)
+if (BUILD_OPENCS OR BUILD_OPENCS_TESTS)
     add_subdirectory (extern/osgQt)
 endif()
 # Start of tes3mp addition
 #
 # Don't require certain dependencies for the server
-ENDIF(BUILD_OPENMW OR BUILD_OPENCS)
+ENDIF(BUILD_OPENMW OR BUILD_OPENMW_TESTS OR BUILD_OPENCS OR BUILD_OPENCS_TESTS)
 # End of tes3mp addition
 
 if (CMAKE_CXX_COMPILER_ID STREQUAL "MSVC" OR CMAKE_CXX_COMPILER_FRONTEND_VARIANT STREQUAL "MSVC")
@@ -774,7 +774,7 @@ if (OPENMW_CXX_FLAGS)
 endif()
 
 # Components
-if (BUILD_OPENMW_MP)
+if (BUILD_OPENMW OR BUILD_OPENMW_TESTS OR BUILD_OPENMW_MP)
     include(TES3MPDependencies)
 endif()
 
@@ -782,7 +782,7 @@ add_subdirectory(components/openmw-mp/Mechanics)
 add_subdirectory(components/openmw-mp/Metrics)
 add_subdirectory(components/openmw-mp/Protocol)
 add_subdirectory(components/openmw-mp/Persistence)
-if (BUILD_OPENMW_MP)
+if (BUILD_OPENMW OR BUILD_OPENMW_TESTS OR BUILD_OPENMW_MP)
     add_subdirectory(components/openmw-mp/Security)
 endif()
 add_subdirectory(components/openmw-mp/Transport)

@@ -756,46 +756,72 @@ namespace MWWorld
     */
     void World::updatePtrsWithRefId(ESM::RefId refId)
     {
+        struct PendingReplacement
+        {
+            MWWorld::Ptr mPtr;
+            CellStore* mCellStore;
+            ESM::Position mPosition;
+            unsigned int mRefNum;
+            unsigned int mMpNum;
+        };
+
+        std::vector<PendingReplacement> pendingReplacements;
+
         for (Scene::CellStoreCollection::const_iterator iter(mWorldScene->getActiveCells().begin());
             iter != mWorldScene->getActiveCells().end(); ++iter)
         {
             CellStore* cellStore = *iter;
 
-            for (auto &mergedRef : cellStore->getMergedRefs())
+            for (LiveCellRefBase* mergedRef : cellStore->getMergedRefs())
             {
                 if (Misc::StringUtils::ciEqual(refId.getRefIdString(), mergedRef->mRef.getRefId().getRefIdString()))
                 {
                     MWWorld::Ptr ptr(mergedRef, cellStore);
+                    pendingReplacements.push_back({ ptr, cellStore, ptr.getRefData().getPosition(),
+                        ptr.getCellRef().getRefNum().mIndex, ptr.getCellRef().getMpNum() });
+                }
+            }
+        }
 
-                    const ESM::Position* position = &ptr.getRefData().getPosition();
-                    const unsigned int refNum = ptr.getCellRef().getRefNum().mIndex;
-                    const unsigned int mpNum = ptr.getCellRef().getMpNum();
+        for (const PendingReplacement& replacement : pendingReplacements)
+        {
+            MWWorld::Ptr ptr = replacement.mPtr;
+            if (ptr == getPlayerPtr())
+                throw std::runtime_error("can not replace player object");
 
-                    deleteObject(ptr);
-                    ptr.getCellRef().unsetRefNum();
-                    ptr.getCellRef().setMpNum(0);
+            MWWorld::ManualRef reference(getStore(), refId, 1);
 
-                    MWWorld::ManualRef* reference = new MWWorld::ManualRef(getStore(), refId, 1);
-                    MWWorld::Ptr newPtr = placeObject(reference->getPtr(), cellStore, *position);
-                    newPtr.getCellRef().setRefNum(refNum);
-                    newPtr.getCellRef().setMpNum(mpNum);
+            ptr.getCellRef().unsetRefNum();
+            ptr.getCellRef().setMpNum(0);
+            deleteObject(ptr);
 
-                    // Update Ptrs for LocalActors and DedicatedActors
-                    if (newPtr.getClass().isActor())
-                    {
-                        if (mwmp::Main::get().getCellController()->isLocalActor(refNum, mpNum))
-                        {
-                            auto* la = mwmp::Main::get().getCellController()->getLocalActor(refNum, mpNum);
-                            if (la) la->setPtr(newPtr);
-                            else Log(Debug::Warning) << "worldimp: getLocalActor nullptr for " << refNum << "-" << mpNum;
-                        }
-                        else if (mwmp::Main::get().getCellController()->isDedicatedActor(refNum, mpNum))
-                        {
-                            auto* da = mwmp::Main::get().getCellController()->getDedicatedActor(refNum, mpNum);
-                            if (da) da->setPtr(newPtr);
-                            else Log(Debug::Warning) << "worldimp: getDedicatedActor nullptr for " << refNum << "-" << mpNum;
-                        }
-                    }
+            MWWorld::Ptr newPtr = placeObject(reference.getPtr(), replacement.mCellStore, replacement.mPosition);
+            newPtr.getCellRef().setRefNum(replacement.mRefNum);
+            newPtr.getCellRef().setMpNum(replacement.mMpNum);
+
+            // Update Ptrs for LocalActors and DedicatedActors
+            if (newPtr.getClass().isActor())
+            {
+                if (mwmp::Main::get().getCellController()->isLocalActor(replacement.mRefNum, replacement.mMpNum))
+                {
+                    auto* la = mwmp::Main::get().getCellController()->getLocalActor(
+                        replacement.mRefNum, replacement.mMpNum);
+                    if (la)
+                        la->setPtr(newPtr);
+                    else
+                        Log(Debug::Warning) << "worldimp: getLocalActor nullptr for " << replacement.mRefNum << "-"
+                                            << replacement.mMpNum;
+                }
+                else if (mwmp::Main::get().getCellController()->isDedicatedActor(
+                             replacement.mRefNum, replacement.mMpNum))
+                {
+                    auto* da = mwmp::Main::get().getCellController()->getDedicatedActor(
+                        replacement.mRefNum, replacement.mMpNum);
+                    if (da)
+                        da->setPtr(newPtr);
+                    else
+                        Log(Debug::Warning) << "worldimp: getDedicatedActor nullptr for " << replacement.mRefNum << "-"
+                                            << replacement.mMpNum;
                 }
             }
         }

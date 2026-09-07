@@ -6,6 +6,7 @@ This is the first hardening milestone for the major OpenMW 0.52 compatibility an
 ### Engine and build modernization
 
 * Restore the upstream OpenMW build and test options, remove duplicate target registration, add TES3MP test and fuzz targets, and modernize vendored dependency CMake policies
+* Make OpenMW and OpenMW-CS test-only builds resolve the same engine dependencies as their production targets, including the protocol 11 client endpoint
 * Keep clean `TES3MP_TESTS_ONLY` builds independent of the OpenMW client and Boost logging stack so protocol, persistence, mechanics and ownership tests can run in minimal GCC, Clang and sanitizer environments
 * Bind new alpha servers to loopback, require an explicit `publicListen` opt-in for non-loopback addresses, and disable legacy public master announcements by default
 * Restore a clean dedicated-server-only build and enforce it in CI alongside the full client/server build
@@ -61,6 +62,7 @@ This is the first hardening milestone for the major OpenMW 0.52 compatibility an
 
 * Restore stable interior and exterior cell identifiers throughout client, server, script and packet processing
 * Harden cell and actor lookup paths against missing cells, late packets, absent local authority and null actors instead of crashing on `map::at` or null dereferences
+* Replace active dynamic-record references from a stable snapshot, use cell-owned copies of temporary `ManualRef` templates, and defer cell mutation until reference discovery completes
 * Fix animation and blend-controller lookup crashes when synchronized actors or animation sources disappear
 * Initialize loaded cells with local actor authority so NPC AI can run and synchronize
 * Correct humanoid NPC attack-type selection and improve AI sequence diagnostics

@@ -116,7 +116,7 @@ add_component_dir (bgsm
 # Start of tes3mp change
 #
 # Don't include certain components in server-only builds
-IF (BUILD_OPENMW OR BUILD_OPENCS)
+IF (BUILD_OPENMW OR BUILD_OPENMW_TESTS OR BUILD_OPENCS OR BUILD_OPENCS_TESTS)
 # End of tes3mp change
 add_component_dir (bsa
     bsafile compressedbsafile ba2gnrlfile ba2dx10file ba2file memorystream
@@ -165,7 +165,7 @@ add_component_dir (nifbullet
 # Start of tes3mp change
 #
 # Don't include certain components in server-only builds
-ENDIF (BUILD_OPENMW OR BUILD_OPENCS)
+ENDIF (BUILD_OPENMW OR BUILD_OPENMW_TESTS OR BUILD_OPENCS OR BUILD_OPENCS_TESTS)
 # End of tes3mp change
 
 add_component_dir (toutf8
@@ -186,7 +186,7 @@ add_component_dir(esm attr common defs esmcommon records util luascripts format 
     exteriorcelllocation
     )
 
-if (BUILD_OPENMW OR BUILD_OPENCS)
+if (BUILD_OPENMW OR BUILD_OPENMW_TESTS OR BUILD_OPENCS OR BUILD_OPENCS_TESTS)
     add_component_dir(fx pass technique lexer lexertypes parseconstants widgets stateupdater)
     add_component_dir(std140 ubo)
 endif()
@@ -208,7 +208,7 @@ add_component_dir (esm3
 # Start of tes3mp change
 #
 # Don't include certain components in server-only builds
-IF (BUILD_OPENMW OR BUILD_OPENCS)
+IF (BUILD_OPENMW OR BUILD_OPENMW_TESTS OR BUILD_OPENCS OR BUILD_OPENCS_TESTS)
 # End of tes3mp change
 add_component_dir (esmterrain
     gridsampling
@@ -217,7 +217,7 @@ add_component_dir (esmterrain
 # Start of tes3mp change
 #
 # Don't include certain components in server-only builds
-ENDIF (BUILD_OPENMW OR BUILD_OPENCS)
+ENDIF (BUILD_OPENMW OR BUILD_OPENMW_TESTS OR BUILD_OPENCS OR BUILD_OPENCS_TESTS)
 # End of tes3mp change
 
 add_component_dir (esm4
@@ -384,7 +384,7 @@ add_component_dir (translation
 # Start of tes3mp addition
 #
 # Don't include certain components in server-only builds
-IF (BUILD_OPENMW OR BUILD_OPENCS)
+IF (BUILD_OPENMW OR BUILD_OPENMW_TESTS OR BUILD_OPENCS OR BUILD_OPENCS_TESTS)
 # End of tes3mp change
 add_component_dir (terrain
     storage world buffercache defs terraingrid material terraindrawable texturemanager chunkmanager compositemaprenderer
@@ -439,7 +439,7 @@ add_component_dir (sqlite3
 # Start of tes3mp change
 #
 # Don't include certain components in server-only builds
-ENDIF (BUILD_OPENMW OR BUILD_OPENCS)
+ENDIF (BUILD_OPENMW OR BUILD_OPENMW_TESTS OR BUILD_OPENCS OR BUILD_OPENCS_TESTS)
 # End of tes3mp change
 
 add_component_dir (version
@@ -519,7 +519,7 @@ add_component_dir (fallback
 #
 # Don't require the crashcatcher when building on platforms other than Windows or when building only the server,
 # as it causes compilation problems
-IF (BUILD_OPENMW OR BUILD_OPENCS)
+IF (BUILD_OPENMW OR BUILD_OPENMW_TESTS OR BUILD_OPENCS OR BUILD_OPENCS_TESTS)
     if(WIN32)
         add_component_dir (crashcatcher
             windowscrashcatcher
@@ -532,7 +532,7 @@ IF (BUILD_OPENMW OR BUILD_OPENCS)
             crashcatcher
         )
     endif()
-ENDIF (BUILD_OPENMW OR BUILD_OPENCS)
+ENDIF (BUILD_OPENMW OR BUILD_OPENMW_TESTS OR BUILD_OPENCS OR BUILD_OPENCS_TESTS)
 
 add_component_dir (navmeshtool
     protocol
@@ -542,7 +542,7 @@ add_component_dir (navmeshtool
 # Start of tes3mp change (major)
 #
 # Don't require the DetourNavigator when building the server
-IF (BUILD_OPENMW OR BUILD_OPENCS)
+IF (BUILD_OPENMW OR BUILD_OPENMW_TESTS OR BUILD_OPENCS OR BUILD_OPENCS_TESTS)
     add_component_dir(detournavigator
         agentbounds
         areatype
@@ -611,7 +611,7 @@ ELSE()
     add_component_dir(detournavigator
         collisionshapetype
         )
-ENDIF (BUILD_OPENMW OR BUILD_OPENCS)
+ENDIF (BUILD_OPENMW OR BUILD_OPENMW_TESTS OR BUILD_OPENCS OR BUILD_OPENCS_TESTS)
 # End of tes3mp change (major)
 
 add_component_dir(loadinglistener
@@ -621,7 +621,7 @@ add_component_dir(loadinglistener
 # Start of tes3mp change (major)
 #
 # Don't require Qt when building the server
-IF (BUILD_OPENMW OR BUILD_OPENCS)
+IF (BUILD_OPENMW OR BUILD_OPENMW_TESTS OR BUILD_OPENCS OR BUILD_OPENCS_TESTS)
 # End of tes3mp change
 if (USE_QT)
     add_component_qt_dir (contentselector
@@ -666,7 +666,7 @@ endif()
 # Start of tes3mp change (major)
 #
 # Don't require Qt when building the server
-ENDIF (BUILD_OPENMW OR BUILD_OPENCS)
+ENDIF (BUILD_OPENMW OR BUILD_OPENMW_TESTS OR BUILD_OPENCS OR BUILD_OPENCS_TESTS)
 # End of tes3mp change
 
 if (MSVC)
@@ -704,7 +704,7 @@ endif()
 # Start of tes3mp change (major)
 #
 # Don't require graphics related libs when building the server
-IF (BUILD_OPENMW OR BUILD_OPENCS)
+IF (BUILD_OPENMW OR BUILD_OPENMW_TESTS OR BUILD_OPENCS OR BUILD_OPENCS_TESTS)
 target_link_libraries(components
     # CMake's built-in OSG finder does not use pkgconfig, so we have to
     # manually ensure the order is correct for inter-library dependencies.
@@ -730,7 +730,7 @@ target_link_libraries(components
     ${LUA_LIBRARIES}
     LZ4::LZ4
     )
-ENDIF (BUILD_OPENMW OR BUILD_OPENCS)
+ENDIF (BUILD_OPENMW OR BUILD_OPENMW_TESTS OR BUILD_OPENCS OR BUILD_OPENCS_TESTS)
 target_link_libraries(components
     ${Boost_SYSTEM_LIBRARY}
     ${Boost_FILESYSTEM_LIBRARY}
@@ -750,7 +750,7 @@ endif()
 # Start of tes3mp change (major)
 #
 # Don't require RecastNavigation nor Bullet when building the server
-IF (BUILD_OPENMW OR BUILD_OPENCS)
+IF (BUILD_OPENMW OR BUILD_OPENMW_TESTS OR BUILD_OPENCS OR BUILD_OPENCS_TESTS)
     target_link_libraries(components
             RecastNavigation::DebugUtils
             RecastNavigation::Detour
@@ -758,7 +758,7 @@ IF (BUILD_OPENMW OR BUILD_OPENCS)
 
             ${BULLET_LIBRARIES}
             )
-ENDIF (BUILD_OPENMW OR BUILD_OPENCS)
+ENDIF (BUILD_OPENMW OR BUILD_OPENMW_TESTS OR BUILD_OPENCS OR BUILD_OPENCS_TESTS)
 target_link_libraries(components Base64 smhasher SQLite3::SQLite3 tes3mp-protocol-codec tes3mp-transport ${ICU_LIBRARIES} ZLIB::ZLIB)
 # End of tes3mp change (major)
 
@@ -771,7 +771,7 @@ endif()
 # Start of tes3mp change (major)
 #
 # Don't require Qt when building the server
-IF (BUILD_OPENMW OR BUILD_OPENCS)
+IF (BUILD_OPENMW OR BUILD_OPENMW_TESTS OR BUILD_OPENCS OR BUILD_OPENCS_TESTS)
 # End of tes3mp change
 if (USE_QT)
     add_library(components_qt STATIC ${COMPONENT_QT_FILES})
@@ -789,7 +789,7 @@ endif()
 # Start of tes3mp change (major)
 #
 # Don't require Qt when building the server
-ENDIF (BUILD_OPENMW OR BUILD_OPENCS)
+ENDIF (BUILD_OPENMW OR BUILD_OPENMW_TESTS OR BUILD_OPENCS OR BUILD_OPENCS_TESTS)
 # End of tes3mp change
 
 if (OSG_STATIC AND CMAKE_SYSTEM_NAME MATCHES "Linux")
