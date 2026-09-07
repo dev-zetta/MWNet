@@ -1,0 +1,43 @@
+ARG TES3MP_BUILD_IMAGE=tes3mp-build:alpha1-sanitizers
+FROM ${TES3MP_BUILD_IMAGE}
+
+ARG TES3MP_SOURCE_COMMIT=unknown
+LABEL org.opencontainers.image.revision="${TES3MP_SOURCE_COMMIT}"
+
+COPY . /tes3mp
+
+RUN cmake -S /tes3mp -B /tes3mp/build-sanitizer -G Ninja \
+        -D CMAKE_BUILD_TYPE=Debug \
+        -D CMAKE_C_COMPILER=clang \
+        -D CMAKE_CXX_COMPILER=clang++ \
+        -D CMAKE_CXX_SCAN_FOR_MODULES=OFF \
+        -D CMAKE_C_FLAGS="-fsanitize=address,undefined -fno-omit-frame-pointer" \
+        -D CMAKE_CXX_FLAGS="-fsanitize=address,undefined -fno-omit-frame-pointer" \
+        -D CMAKE_EXE_LINKER_FLAGS="-fsanitize=address,undefined -fno-omit-frame-pointer" \
+        -D BUILD_OPENMW=OFF \
+        -D BUILD_OPENMW_MP=ON \
+        -D BUILD_OPENCS=OFF \
+        -D BUILD_LAUNCHER=OFF \
+        -D BUILD_WIZARD=OFF \
+        -D BUILD_MWINIIMPORTER=OFF \
+        -D BUILD_ESSIMPORTER=OFF \
+        -D BUILD_BSATOOL=OFF \
+        -D BUILD_ESMTOOL=OFF \
+        -D BUILD_NIFTEST=OFF \
+        -D BUILD_NAVMESHTOOL=OFF \
+        -D BUILD_BULLETOBJECTTOOL=OFF \
+        -D BUILD_TES3MP_TESTS=ON \
+        -D TES3MP_FETCH_DEPS=ON \
+        -D TES3MP_GNS_UBSAN_COMPAT=ON \
+    && cmake --build /tes3mp/build-sanitizer \
+        --target tes3mp-headless-integration tes3mp-tests tes3mp-persistence-fault \
+        --parallel 8 \
+    && ASAN_OPTIONS=detect_leaks=1:halt_on_error=1 \
+        UBSAN_OPTIONS=print_stacktrace=1:halt_on_error=1 \
+        ctest --test-dir /tes3mp/build-sanitizer --output-on-failure
+
+ENV ASAN_OPTIONS=detect_leaks=1:halt_on_error=1
+ENV UBSAN_OPTIONS=print_stacktrace=1:halt_on_error=1
+ENV TES3MP_SOAK_COMMIT="${TES3MP_SOURCE_COMMIT}"
+
+ENTRYPOINT ["/tes3mp/CI/run_tes3mp_soak.sh", "--build-dir", "/tes3mp/build-sanitizer", "--artifacts-dir", "/artifacts"]

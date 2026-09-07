@@ -51,6 +51,7 @@ option(BUILD_TES3MP_FUZZERS     "Build TES3MP libFuzzer targets" OFF)
 option(TES3MP_TESTS_ONLY        "Configure only dependency-free TES3MP protocol tests" OFF)
 option(TES3MP_TESTS_WITH_SECURITY "Include security tests in TES3MP_TESTS_ONLY builds" OFF)
 option(TES3MP_FETCH_DEPS        "Fetch pinned TES3MP dependencies that are not installed" OFF)
+option(TES3MP_GNS_UBSAN_COMPAT  "Exclude pinned GNS sources from UBSan while retaining ASan" OFF)
 option(PRECOMPILE_HEADERS_WITH_MSVC "Precompile most common used headers with MSVC (alternative to ccache)" ON)
 
 set(OpenGL_GL_PREFERENCE LEGACY)  # Use LEGACY as we use GL2; GLNVD is for GL3 and up.

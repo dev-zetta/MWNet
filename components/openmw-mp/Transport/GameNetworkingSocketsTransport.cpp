@@ -8,6 +8,14 @@
 #include <components/openmw-mp/Protocol/RateLimits.hpp>
 
 #include <steam/steamnetworkingsockets.h>
+#if defined(__GNUC__)
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wnon-virtual-dtor"
+#endif
+#include <steam/steamnetworkingsockets_flat.h>
+#if defined(__GNUC__)
+#pragma GCC diagnostic pop
+#endif
 #include <steam/isteamnetworkingutils.h>
 
 #include <algorithm>
@@ -164,7 +172,17 @@ namespace mwmp::transport
             }
 
             interface = SteamNetworkingSockets();
-            pollGroup = interface->CreatePollGroup();
+            if (interface == nullptr)
+            {
+                error = { TransportErrorCode::Internal,
+                    "failed to obtain the GameNetworkingSockets interface" };
+                std::scoped_lock lock(sLibraryMutex);
+                if (sLibraryUsers > 0 && --sLibraryUsers == 0)
+                    GameNetworkingSockets_Kill();
+                return false;
+            }
+
+            pollGroup = SteamAPI_ISteamNetworkingSockets_CreatePollGroup(interface);
             if (pollGroup == k_HSteamNetPollGroup_Invalid)
             {
                 error = { TransportErrorCode::Internal, "failed to create a transport poll group" };
@@ -245,8 +263,8 @@ namespace mwmp::transport
             }
 
             auto settings = connectionOptions();
-            listenSocket = interface->CreateListenSocketIP(
-                address, static_cast<int>(settings.size()), settings.data());
+            listenSocket = SteamAPI_ISteamNetworkingSockets_CreateListenSocketIP(
+                interface, address, static_cast<int>(settings.size()), settings.data());
             if (listenSocket == k_HSteamListenSocket_Invalid)
             {
                 error = { TransportErrorCode::ConnectionFailed, "failed to create the listen socket" };
@@ -254,9 +272,10 @@ namespace mwmp::transport
             }
 
             SteamNetworkingIPAddr boundAddress;
-            if (!interface->GetListenSocketAddress(listenSocket, &boundAddress))
+            if (!SteamAPI_ISteamNetworkingSockets_GetListenSocketAddress(
+                    interface, listenSocket, &boundAddress))
             {
-                interface->CloseListenSocket(listenSocket);
+                SteamAPI_ISteamNetworkingSockets_CloseListenSocket(interface, listenSocket);
                 listenSocket = k_HSteamListenSocket_Invalid;
                 error = { TransportErrorCode::Internal, "failed to query the bound listen address" };
                 return false;
@@ -292,8 +311,8 @@ namespace mwmp::transport
 
             auto settings = connectionOptions();
             std::scoped_lock callbackLock(sCallbackMutex);
-            const HSteamNetConnection handle = interface->ConnectByIPAddress(
-                address, static_cast<int>(settings.size()), settings.data());
+            const HSteamNetConnection handle = SteamAPI_ISteamNetworkingSockets_ConnectByIPAddress(
+                interface, address, static_cast<int>(settings.size()), settings.data());
             if (handle == k_HSteamNetConnection_Invalid)
             {
                 error = { TransportErrorCode::ConnectionFailed, "failed to create the outbound connection" };
@@ -305,7 +324,8 @@ namespace mwmp::transport
                 std::scoped_lock lock(stateMutex);
                 if (stopping)
                 {
-                    interface->CloseConnection(handle, 0, "transport stopping", false);
+                    SteamAPI_ISteamNetworkingSockets_CloseConnection(
+                        interface, handle, 0, "transport stopping", false);
                     error = { TransportErrorCode::Closed, "transport is stopping" };
                     return false;
                 }
@@ -315,7 +335,7 @@ namespace mwmp::transport
                 std::scoped_lock registryLock(sRegistryMutex);
                 sConnectionOwners.emplace(handle, this);
             }
-            interface->SetConnectionPollGroup(handle, pollGroup);
+            SteamAPI_ISteamNetworkingSockets_SetConnectionPollGroup(interface, handle, pollGroup);
             result = connectionId(handle);
             return true;
         }
@@ -373,7 +393,7 @@ namespace mwmp::transport
             {
                 {
                     std::scoped_lock callbackLock(sCallbackMutex);
-                    interface->RunCallbacks();
+                    SteamAPI_ISteamNetworkingSockets_RunCallbacks(interface);
                 }
                 drainOutgoing();
                 receiveMessages();
@@ -407,8 +427,8 @@ namespace mwmp::transport
                     continue;
                 }
 
-                SteamNetworkingMessage_t* networkMessage
-                    = SteamNetworkingUtils()->AllocateMessage(static_cast<int>(encoded.size()));
+                SteamNetworkingMessage_t* networkMessage = SteamAPI_ISteamNetworkingUtils_AllocateMessage(
+                    SteamNetworkingUtils(), static_cast<int>(encoded.size()));
                 if (networkMessage == nullptr)
                 {
                     recordViolation(connectionHandle(pending.message.connection), "message allocation failed");
@@ -421,7 +441,8 @@ namespace mwmp::transport
                 networkMessage->m_idxLane = static_cast<std::uint16_t>(pending.message.lane);
 
                 int64 sendResult = 0;
-                interface->SendMessages(1, &networkMessage, &sendResult, true);
+                SteamAPI_ISteamNetworkingSockets_SendMessages(
+                    interface, 1, &networkMessage, &sendResult, true);
                 if (sendResult < 0)
                     recordViolation(connectionHandle(pending.message.connection), "network send rejected");
             }
@@ -432,7 +453,8 @@ namespace mwmp::transport
             for (std::size_t count = 0; count < 256; ++count)
             {
                 SteamNetworkingMessage_t* networkMessage = nullptr;
-                const int received = interface->ReceiveMessagesOnPollGroup(pollGroup, &networkMessage, 1);
+                const int received = SteamAPI_ISteamNetworkingSockets_ReceiveMessagesOnPollGroup(
+                    interface, pollGroup, &networkMessage, 1);
                 if (received <= 0)
                     return;
 
@@ -524,15 +546,19 @@ namespace mwmp::transport
                 std::scoped_lock lock(stateMutex);
                 if (stopping || connections.size() >= maximumConnections)
                 {
-                    interface->CloseConnection(info.m_hConn, 0, "server capacity reached", false);
+                    SteamAPI_ISteamNetworkingSockets_CloseConnection(
+                        interface, info.m_hConn, 0, "server capacity reached", false);
                     return;
                 }
             }
 
-            if (interface->AcceptConnection(info.m_hConn) != k_EResultOK
-                || !interface->SetConnectionPollGroup(info.m_hConn, pollGroup))
+            if (SteamAPI_ISteamNetworkingSockets_AcceptConnection(interface, info.m_hConn)
+                    != k_EResultOK
+                || !SteamAPI_ISteamNetworkingSockets_SetConnectionPollGroup(
+                    interface, info.m_hConn, pollGroup))
             {
-                interface->CloseConnection(info.m_hConn, 0, "failed to accept connection", false);
+                SteamAPI_ISteamNetworkingSockets_CloseConnection(
+                    interface, info.m_hConn, 0, "failed to accept connection", false);
                 return;
             }
 
@@ -551,8 +577,8 @@ namespace mwmp::transport
         {
             constexpr std::array<int, 5> priorities{ 0, 0, 0, 0, 0 };
             constexpr std::array<std::uint16_t, 5> weights{ 8, 4, 4, 4, 4 };
-            if (interface->ConfigureConnectionLanes(
-                    handle, static_cast<int>(priorities.size()), priorities.data(), weights.data())
+            if (SteamAPI_ISteamNetworkingSockets_ConfigureConnectionLanes(interface, handle,
+                    static_cast<int>(priorities.size()), priorities.data(), weights.data())
                 != k_EResultOK)
             {
                 closeConnection(handle, "failed to configure message lanes", false);
@@ -584,7 +610,7 @@ namespace mwmp::transport
                 std::scoped_lock registryLock(sRegistryMutex);
                 sConnectionOwners.erase(handle);
             }
-            interface->CloseConnection(handle, 0, nullptr, false);
+            SteamAPI_ISteamNetworkingSockets_CloseConnection(interface, handle, 0, nullptr, false);
 
             if (existed)
             {
@@ -630,7 +656,7 @@ namespace mwmp::transport
         void closeConnection(HSteamNetConnection handle, const char* reason, bool linger)
         {
             if (handle != k_HSteamNetConnection_Invalid && interface != nullptr)
-                interface->CloseConnection(handle, 0, reason, linger);
+                SteamAPI_ISteamNetworkingSockets_CloseConnection(interface, handle, 0, reason, linger);
         }
 
         void disconnect(TransportConnectionId id)
@@ -646,7 +672,7 @@ namespace mwmp::transport
             if (interface == nullptr || connections.find(handle) == connections.end())
                 return std::nullopt;
             SteamNetConnectionInfo_t information;
-            if (!interface->GetConnectionInfo(handle, &information))
+            if (!SteamAPI_ISteamNetworkingSockets_GetConnectionInfo(interface, handle, &information))
                 return std::nullopt;
             char address[SteamNetworkingIPAddr::k_cchMaxString]{};
             information.m_addrRemote.ToString(address, sizeof(address), false);
@@ -684,7 +710,8 @@ namespace mwmp::transport
                     connections.clear();
                 }
                 for (const HSteamNetConnection handle : handles)
-                    interface->CloseConnection(handle, 0, "transport shutdown", false);
+                    SteamAPI_ISteamNetworkingSockets_CloseConnection(
+                        interface, handle, 0, "transport shutdown", false);
 
                 {
                     std::scoped_lock registryLock(sRegistryMutex);
@@ -696,12 +723,12 @@ namespace mwmp::transport
 
                 if (listenSocket != k_HSteamListenSocket_Invalid)
                 {
-                    interface->CloseListenSocket(listenSocket);
+                    SteamAPI_ISteamNetworkingSockets_CloseListenSocket(interface, listenSocket);
                     listenSocket = k_HSteamListenSocket_Invalid;
                 }
                 if (pollGroup != k_HSteamNetPollGroup_Invalid)
                 {
-                    interface->DestroyPollGroup(pollGroup);
+                    SteamAPI_ISteamNetworkingSockets_DestroyPollGroup(interface, pollGroup);
                     pollGroup = k_HSteamNetPollGroup_Invalid;
                 }
             }

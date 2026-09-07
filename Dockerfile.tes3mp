@@ -9,6 +9,7 @@ ENV NPROC=4
 # Install build dependencies
 RUN apt-get update && apt-get install -y --no-install-recommends \
     build-essential \
+    clang \
     cmake \
     git \
     ca-certificates \
@@ -44,6 +45,13 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     ninja-build \
     libqt6svg6-dev \
     libfreetype-dev \
+    && rm -rf /var/lib/apt/lists/*
+
+# Ubuntu keeps Clang's sanitizer runtimes in a separate package when
+# recommendations are disabled.
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    libclang-rt-18-dev \
+    llvm \
     && rm -rf /var/lib/apt/lists/*
 
 # Set working directory

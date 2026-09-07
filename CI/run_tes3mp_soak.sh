@@ -10,7 +10,7 @@ clients=8
 latency_ms=75
 packet_loss_percent=2
 release_gates=false
-commit="$(git -C "$repo_root" rev-parse HEAD 2>/dev/null || printf unknown)"
+commit="${TES3MP_SOAK_COMMIT:-$(git -C "$repo_root" rev-parse HEAD 2>/dev/null || printf unknown)}"
 
 usage() {
     printf '%s\n' \
@@ -24,6 +24,7 @@ usage() {
         '  --clients N                  Concurrent clients (default: 8)' \
         '  --latency-ms N               Deterministic message latency (default: 75)' \
         '  --packet-loss-percent N      Unreliable snapshot loss (default: 2)' \
+        '  --commit HASH                Exact source commit recorded in metrics' \
         '  --release-gates              Reject values below the stable release gate' \
         '  --help                       Show this help'
 }
@@ -58,6 +59,10 @@ while (($#)); do
             packet_loss_percent="$2"
             shift 2
             ;;
+        --commit)
+            commit="$2"
+            shift 2
+            ;;
         --release-gates)
             release_gates=true
             shift
@@ -88,6 +93,10 @@ if [[ "$release_gates" == true ]]; then
     fi
     if ((latency_ms == 0 || packet_loss_percent == 0)); then
         printf '%s\n' 'Release soak requires non-zero simulated latency and packet loss.' >&2
+        exit 2
+    fi
+    if [[ ! "$commit" =~ ^[0-9a-fA-F]{40}$ ]]; then
+        printf '%s\n' 'Release soak requires an exact 40-character source commit.' >&2
         exit 2
     fi
 fi

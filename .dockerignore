@@ -1,0 +1,6 @@
+.git
+.tes3mp-test
+build
+build-*
+fuzz-artifacts
+fuzz-corpus

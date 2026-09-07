@@ -285,6 +285,27 @@ Run the mandatory connect/death cycles and 24-hour eight-client latency/loss soa
 CI/run_tes3mp_soak.sh --release-gates
 ```
 
+To run the same release soak under ASan, LeakSanitizer and UBSan in an isolated
+container, build the regular dependency image followed by the sanitizer target:
+
+```bash
+docker build -f Dockerfile.tes3mp -t tes3mp-build:alpha1-sanitizers .
+test -z "$(git status --porcelain)"
+source_commit="$(git rev-parse HEAD)"
+docker build --build-arg TES3MP_SOURCE_COMMIT="$source_commit" \
+    -f Dockerfile.tes3mp-sanitizer -t tes3mp-soak:alpha1-sanitizers .
+docker run --name tes3mp-alpha1-sanitizer-soak \
+    tes3mp-soak:alpha1-sanitizers --release-gates
+```
+
+Do not use `--rm`: the completed `/artifacts` directory must remain available
+for `docker cp` and review. The sanitizer image runs the unit, persistence-fault
+and encrypted headless tests while it is built, before the long soak can start.
+TES3MP calls the pinned GNS build through its flat ABI because GNS disables
+RTTI. The fetched GNS sources retain ASan but are excluded from UBSan because
+v1.5.1 deliberately erases callback types and uses unaligned packet-buffer
+access; TES3MP sources retain both ASan and UBSan.
+
 Compare like-for-like performance artifacts against the recorded alpha.1 baseline. A regression above five percent requires an explicit reviewed justification:
 
 ```bash

@@ -28,6 +28,15 @@ if (NOT TARGET GameNetworkingSockets::static AND NOT TARGET GameNetworkingSocket
         GIT_PROGRESS TRUE
     )
     FetchContent_MakeAvailable(GameNetworkingSockets)
+
+    # GNS v1.5.1 intentionally erases typed packet callback pointers through a
+    # void* adapter and performs unaligned integer access in its packet codec.
+    # Clang UBSan rejects both constructs. Keep ASan enabled for the dependency,
+    # while TES3MP itself remains fully ASan/UBSan instrumented.
+    if (TES3MP_GNS_UBSAN_COMPAT AND CMAKE_CXX_COMPILER_ID MATCHES "Clang")
+        target_compile_options(GameNetworkingSockets_s PRIVATE
+            $<$<COMPILE_LANGUAGE:CXX>:-fno-sanitize=undefined>)
+    endif()
 endif()
 
 if (TARGET GameNetworkingSockets::static)
