@@ -17,6 +17,7 @@ This is the first hardening milestone for the major OpenMW 0.52 compatibility an
 * Record the exact commit, sanitizer profile, duration and terminal status alongside retained release fuzz artifacts
 * Complete and document the exact-commit four-target sanitizer fuzz campaign and 24-hour eight-client latency/loss soak, retaining the alpha.1 release-profile performance baseline and keeping sanitizer-soak and cross-platform gates explicit
 * Add a reproducible ASan, LeakSanitizer and UBSan container target that must pass unit, persistence-fault and encrypted headless tests before running the 24-hour release soak
+* Release both client and server connection metrics on headless-soak disconnect, and check for retained records after every lifecycle cycle and final scenario
 * Use GameNetworkingSockets' flat ABI at the sanitizer boundary and retain ASan-only coverage for pinned GNS sources whose callback and packet-buffer implementation is intentionally incompatible with UBSan, while keeping TES3MP fully ASan/UBSan-instrumented
 * Replace the legacy bidirectional packet `RW` API with direction-safe field and collection operations backed exclusively by the active protocol-11 `PacketReader` or `PacketWriter`
 * Harden the packet boundary during the protocol-11 cutover with initialized state, checked collection and string limits, whole-model transactional decoding, exact pre-initialization sizing, malformed-message rejection and decode gates before gameplay or Lua processing

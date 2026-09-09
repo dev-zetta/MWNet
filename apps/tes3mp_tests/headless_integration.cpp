@@ -219,6 +219,8 @@ namespace
                 }
                 for (Peer& peer : peers)
                     disconnect(peer);
+                require(mMetrics.snapshot().connections.empty(),
+                    "disconnected peers retained connection metrics");
                 mMetrics.observeQueueDepth(0);
                 observeMemory();
                 mCompletedCycles = cycle + 1;
@@ -227,10 +229,12 @@ namespace
             verifyLegacyMigration();
             verifyAuthenticationLockout();
             verifyFingerprintMismatch();
+            require(mMetrics.snapshot().connections.empty(),
+                "final scenarios retained connection metrics");
             evaluateMemoryGrowth();
             writeMetrics();
             if (mOptions.failOnMemoryGrowth && mMonotonicMemoryGrowth)
-                fail("resident memory increased monotonically during the soak run");
+                fail("average resident memory grew by more than 1% after warm-up");
         }
 
     private:
@@ -615,6 +619,9 @@ namespace
             mInventory.erase({ mwmp::mechanics::InventoryOwnerKind::Player,
                 peer.serverConnection.value });
             mJustice.erase(peer.serverConnection.value);
+            // transmit() accounts for both endpoints using destination-local IDs.
+            // A client ID differs from its server ID and changes on every reconnect.
+            mMetrics.removeConnection(peer.clientConnection.value);
             mMetrics.removeConnection(peer.serverConnection.value);
         }
 
