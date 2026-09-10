@@ -11,6 +11,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     build-essential \
     clang \
     cmake \
+    python3 \
     git \
     ca-certificates \
     libboost-all-dev \

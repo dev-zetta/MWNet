@@ -279,30 +279,49 @@ The campaign runs the protocol, transport, authentication and secure-handshake t
 CI/run_tes3mp_fuzz_campaign.sh --release-budget
 ```
 
-Run the mandatory connect/death cycles and 24-hour eight-client latency/loss soak against an exact candidate with:
+Run the mandatory connect/death cycles and paired 24-hour eight-client latency/loss
+soak against an exact candidate with a native build in `build` and an ASan/UBSan
+build in `build-sanitizer`:
 
 ```bash
 CI/run_tes3mp_soak.sh --release-gates
 ```
 
-To run the same release soak under ASan, LeakSanitizer and UBSan in an isolated
-container, build the regular dependency image followed by the sanitizer target:
+The native process must pass the 1% post-warm-up RSS limit. The second process
+must finish the same workload with ASan, LeakSanitizer and UBSan enabled; its
+allocator and stack-history RSS is recorded separately. Both must pass.
+`--sanitizer-build-dir DIR` selects a different sanitizer build, and also enables
+paired shorter developer runs without `--release-gates`.
+
+To build both profiles and run the paired gate in one isolated container:
 
 ```bash
 docker build -f Dockerfile.tes3mp -t tes3mp-build:alpha1-sanitizers .
-test -z "$(git status --porcelain)"
+git diff --quiet HEAD --
 source_commit="$(git rev-parse HEAD)"
-docker build --build-arg TES3MP_SOURCE_COMMIT="$source_commit" \
-    -f Dockerfile.tes3mp-sanitizer -t tes3mp-soak:alpha1-sanitizers .
-docker run --name tes3mp-alpha1-sanitizer-soak \
+git archive --format=tar HEAD | docker build \
+    --build-arg TES3MP_SOURCE_COMMIT="$source_commit" \
+    -f Dockerfile.tes3mp-sanitizer -t tes3mp-soak:alpha1-sanitizers -
+docker run -d --name tes3mp-alpha1-sanitizer-soak \
+    --memory 2g --memory-swap 2g \
     tes3mp-soak:alpha1-sanitizers --release-gates
 ```
 
 Do not use `--rm`: the completed `/artifacts` directory must remain available
-for `docker cp` and review. The sanitizer image runs the unit, persistence-fault
-and encrypted headless tests while it is built, before the long soak can start.
+for `docker cp` and review. `/artifacts/manifest.json` records both exit codes,
+executable/artifact hashes and memory limits. Each profile retains its own
+`metrics.json`, `soak.log` and state under `native/` or `sanitizer/`. A failed
+process stops its sibling and the overall gate fails. The image runs unit,
+persistence-fault and encrypted headless tests for both builds before the
+long soak can start. The archive includes only committed candidate sources.
+
+Allow 2 GiB for the paired runtime; the runner rejects a lower cgroup limit for
+a release run. The observed individual peaks were about 734 MiB with ASan and
+269 MiB without it. Building the images requires additional memory. Python 3
+is required by the paired runner and is included in the dependency image.
 TES3MP calls the pinned GNS build through its flat ABI because GNS disables
-RTTI. The fetched GNS sources retain ASan but are excluded from UBSan because
+RTTI. In the sanitizer profile, fetched GNS sources retain ASan but are excluded
+from UBSan because
 v1.5.1 deliberately erases callback types and uses unaligned packet-buffer
 access; TES3MP sources retain both ASan and UBSan.
 

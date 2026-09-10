@@ -5,6 +5,7 @@ This is the first hardening milestone for the major OpenMW 0.52 compatibility an
 
 ### Engine and build modernization
 
+* Require paired native RSS and ASan/LeakSanitizer/UBSan soaks, preserve both verdicts, reject insufficient container limits, and stop the sibling process on failure
 * Restore the upstream OpenMW build and test options, remove duplicate target registration, add TES3MP test and fuzz targets, and modernize vendored dependency CMake policies
 * Make OpenMW and OpenMW-CS test-only builds resolve the same engine dependencies as their production targets, including the protocol 11 client endpoint
 * Keep clean `TES3MP_TESTS_ONLY` builds independent of the OpenMW client and Boost logging stack so protocol, persistence, mechanics and ownership tests can run in minimal GCC, Clang and sanitizer environments
@@ -18,6 +19,8 @@ This is the first hardening milestone for the major OpenMW 0.52 compatibility an
 * Complete and document the exact-commit four-target sanitizer fuzz campaign and 24-hour eight-client latency/loss soak, retaining the alpha.1 release-profile performance baseline and keeping sanitizer-soak and cross-platform gates explicit
 * Add a reproducible ASan, LeakSanitizer and UBSan container target that must pass unit, persistence-fault and encrypted headless tests before running the 24-hour release soak
 * Release both client and server connection metrics on headless-soak disconnect, and check for retained records after every lifecycle cycle and final scenario
+* Retire local transport connections immediately on disconnect or timeout, reject sends on closed handles, and cover reconnects without destroying transport workers
+* Reuse the eight soak clients across reconnects to bound sanitizer thread-history memory, and log live allocation and resident-memory progress
 * Use GameNetworkingSockets' flat ABI at the sanitizer boundary and retain ASan-only coverage for pinned GNS sources whose callback and packet-buffer implementation is intentionally incompatible with UBSan, while keeping TES3MP fully ASan/UBSan-instrumented
 * Replace the legacy bidirectional packet `RW` API with direction-safe field and collection operations backed exclusively by the active protocol-11 `PacketReader` or `PacketWriter`
 * Harden the packet boundary during the protocol-11 cutover with initialized state, checked collection and string limits, whole-model transactional decoding, exact pre-initialization sizing, malformed-message rejection and decode gates before gameplay or Lua processing

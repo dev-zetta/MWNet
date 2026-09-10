@@ -3,6 +3,7 @@ set -euo pipefail
 
 repo_root="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 build_dir="$repo_root/build"
+sanitizer_build_dir=""
 artifact_dir="$repo_root/build/tes3mp-soak-$(date -u +%Y%m%dT%H%M%SZ)"
 cycles=100
 duration_seconds=86400
@@ -18,6 +19,7 @@ usage() {
         '' \
         'Options:' \
         '  --build-dir DIR              Directory containing tes3mp-headless-integration' \
+        '  --sanitizer-build-dir DIR    Run a paired sanitizer workload alongside native RSS checks' \
         '  --artifacts-dir DIR          State, log and metrics output directory' \
         '  --cycles N                   Minimum complete lifecycle cycles (default: 100)' \
         '  --duration-seconds N         Minimum duration (default: 86400)' \
@@ -25,7 +27,7 @@ usage() {
         '  --latency-ms N               Deterministic message latency (default: 75)' \
         '  --packet-loss-percent N      Unreliable snapshot loss (default: 2)' \
         '  --commit HASH                Exact source commit recorded in metrics' \
-        '  --release-gates              Reject values below the stable release gate' \
+        '  --release-gates              Require both builds and the full stable release workload' \
         '  --help                       Show this help'
 }
 
@@ -33,6 +35,10 @@ while (($#)); do
     case "$1" in
         --build-dir)
             build_dir="$2"
+            shift 2
+            ;;
+        --sanitizer-build-dir)
+            sanitizer_build_dir="$2"
             shift 2
             ;;
         --artifacts-dir)
@@ -87,6 +93,7 @@ for value in "$cycles" "$duration_seconds" "$clients" "$latency_ms" "$packet_los
 done
 
 if [[ "$release_gates" == true ]]; then
+    sanitizer_build_dir="${sanitizer_build_dir:-$repo_root/build-sanitizer}"
     if ((cycles < 100 || duration_seconds < 86400 || clients != 8)); then
         printf '%s\n' 'Release soak requires at least 100 cycles, 86400 seconds and exactly 8 clients.' >&2
         exit 2
@@ -106,6 +113,21 @@ if [[ ! -x "$executable" ]]; then
     printf 'Missing headless integration executable: %s\n' "$executable" >&2
     printf '%s\n' 'Configure with BUILD_TES3MP_TESTS=ON and build tes3mp-headless-integration.' >&2
     exit 1
+fi
+
+if [[ -n "$sanitizer_build_dir" ]]; then
+    paired_options=()
+    if [[ "$release_gates" == true ]]; then
+        paired_options+=(--release-gates)
+    fi
+    exec python3 "$repo_root/CI/run_tes3mp_soak_pair.py" \
+        --native-executable "$executable" \
+        --sanitizer-executable "$sanitizer_build_dir/tes3mp-headless-integration" \
+        --artifacts-dir "$artifact_dir" \
+        --cycles "$cycles" --clients "$clients" \
+        --duration-seconds "$duration_seconds" --latency-ms "$latency_ms" \
+        --packet-loss-percent "$packet_loss_percent" --commit "$commit" \
+        "${paired_options[@]}"
 fi
 
 mkdir -p "$artifact_dir"

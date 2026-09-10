@@ -432,7 +432,32 @@ int runGameNetworkingSocketsTests()
     }
 
     client.disconnect(clientConnection);
+    const auto localDisconnected = client.poll(0ms);
+    EXPECT(localDisconnected && localDisconnected->type == TransportEventType::Disconnected
+        && localDisconnected->connection == clientConnection);
+    EXPECT(!client.send(outbound, error));
+    client.disconnect(clientConnection);
+    EXPECT(!client.poll(0ms));
     EXPECT(waitFor(server, TransportEventType::Disconnected).has_value());
+
+    // Reconnect on the same transports, then initiate closure from the server.
+    // Both local and remote closure must retire state without destroying workers.
+    EXPECT(client.connect(connect, clientConnection, error));
+    EXPECT(waitFor(client, TransportEventType::Connected).has_value());
+    const auto reconnected = waitFor(server, TransportEventType::Connected);
+    EXPECT(reconnected.has_value());
+    if (reconnected)
+    {
+        server.disconnect(reconnected->connection);
+        const auto closed = server.poll(0ms);
+        EXPECT(closed && closed->type == TransportEventType::Disconnected
+            && closed->connection == reconnected->connection);
+        outbound.connection = reconnected->connection;
+        EXPECT(!server.send(outbound, error));
+        server.disconnect(reconnected->connection);
+        EXPECT(!server.poll(0ms));
+        EXPECT(waitFor(client, TransportEventType::Disconnected).has_value());
+    }
     client.shutdown(1s);
     server.shutdown(1s);
     testSecureTransport();

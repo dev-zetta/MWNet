@@ -6,14 +6,23 @@ LABEL org.opencontainers.image.revision="${TES3MP_SOURCE_COMMIT}"
 
 COPY . /tes3mp
 
-RUN cmake -S /tes3mp -B /tes3mp/build-sanitizer -G Ninja \
-        -D CMAKE_BUILD_TYPE=Debug \
+# RSS is measured without sanitizer allocator/fake-stack retention. Both
+# profiles run the same candidate and both must finish the complete workload.
+RUN for profile in sanitizer soak-native; do \
+        build_type=Debug; sanitize_flags="-fsanitize=address,undefined -fno-omit-frame-pointer"; \
+        gns_ubsan_compat=ON; source_arg=; \
+        if [ "$profile" = soak-native ]; then \
+            build_type=RelWithDebInfo; sanitize_flags=; gns_ubsan_compat=OFF; \
+            source_arg=-DFETCHCONTENT_SOURCE_DIR_GAMENETWORKINGSOCKETS=/tes3mp/build-sanitizer/_deps/gamenetworkingsockets-src; \
+        fi; \
+        cmake -S /tes3mp -B "/tes3mp/build-$profile" -G Ninja \
+        -D CMAKE_BUILD_TYPE="$build_type" \
         -D CMAKE_C_COMPILER=clang \
         -D CMAKE_CXX_COMPILER=clang++ \
         -D CMAKE_CXX_SCAN_FOR_MODULES=OFF \
-        -D CMAKE_C_FLAGS="-fsanitize=address,undefined -fno-omit-frame-pointer" \
-        -D CMAKE_CXX_FLAGS="-fsanitize=address,undefined -fno-omit-frame-pointer" \
-        -D CMAKE_EXE_LINKER_FLAGS="-fsanitize=address,undefined -fno-omit-frame-pointer" \
+        -D CMAKE_C_FLAGS="$sanitize_flags" \
+        -D CMAKE_CXX_FLAGS="$sanitize_flags" \
+        -D CMAKE_EXE_LINKER_FLAGS="$sanitize_flags" \
         -D BUILD_OPENMW=OFF \
         -D BUILD_OPENMW_MP=ON \
         -D BUILD_OPENCS=OFF \
@@ -28,16 +37,18 @@ RUN cmake -S /tes3mp -B /tes3mp/build-sanitizer -G Ninja \
         -D BUILD_BULLETOBJECTTOOL=OFF \
         -D BUILD_TES3MP_TESTS=ON \
         -D TES3MP_FETCH_DEPS=ON \
-        -D TES3MP_GNS_UBSAN_COMPAT=ON \
-    && cmake --build /tes3mp/build-sanitizer \
-        --target tes3mp-headless-integration tes3mp-tests tes3mp-persistence-fault \
-        --parallel 8 \
-    && ASAN_OPTIONS=detect_leaks=1:halt_on_error=1 \
-        UBSAN_OPTIONS=print_stacktrace=1:halt_on_error=1 \
-        ctest --test-dir /tes3mp/build-sanitizer --output-on-failure
+        -D TES3MP_GNS_UBSAN_COMPAT="$gns_ubsan_compat" $source_arg \
+        && cmake --build "/tes3mp/build-$profile" \
+            --target tes3mp-headless-integration tes3mp-tests tes3mp-persistence-fault \
+            --parallel 4 \
+        && ASAN_OPTIONS=detect_leaks=1:halt_on_error=1 \
+            UBSAN_OPTIONS=print_stacktrace=1:halt_on_error=1 \
+            ctest --test-dir "/tes3mp/build-$profile" --output-on-failure \
+        || exit 1; \
+    done
 
 ENV ASAN_OPTIONS=detect_leaks=1:halt_on_error=1
 ENV UBSAN_OPTIONS=print_stacktrace=1:halt_on_error=1
 ENV TES3MP_SOAK_COMMIT="${TES3MP_SOURCE_COMMIT}"
 
-ENTRYPOINT ["/tes3mp/CI/run_tes3mp_soak.sh", "--build-dir", "/tes3mp/build-sanitizer", "--artifacts-dir", "/artifacts"]
+ENTRYPOINT ["/tes3mp/CI/run_tes3mp_soak.sh", "--build-dir", "/tes3mp/build-soak-native", "--sanitizer-build-dir", "/tes3mp/build-sanitizer", "--artifacts-dir", "/artifacts"]

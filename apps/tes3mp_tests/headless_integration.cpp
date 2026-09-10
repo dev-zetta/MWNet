@@ -29,6 +29,21 @@
 #include <utility>
 #include <vector>
 
+#if defined(__has_feature)
+#if __has_feature(address_sanitizer)
+#define TES3MP_SOAK_ASAN 1
+#endif
+#endif
+#if defined(__SANITIZE_ADDRESS__) && !defined(TES3MP_SOAK_ASAN)
+#define TES3MP_SOAK_ASAN 1
+#endif
+#if defined(TES3MP_SOAK_ASAN)
+#if __has_include(<sanitizer/allocator_interface.h>)
+#include <sanitizer/allocator_interface.h>
+#define TES3MP_SOAK_ALLOCATOR_STATS 1
+#endif
+#endif
+
 namespace
 {
     using mwmp::protocol::MessageType;
@@ -45,6 +60,11 @@ namespace
     using namespace std::chrono_literals;
 
     constexpr std::size_t sWireEnvelopeBytes = 28;
+#if defined(TES3MP_SOAK_ASAN)
+    constexpr bool sAddressSanitizerEnabled = true;
+#else
+    constexpr bool sAddressSanitizerEnabled = false;
+#endif
 
     struct Options
     {
@@ -201,6 +221,10 @@ namespace
             mInitialResidentMemory = mwmp::metrics::residentMemoryBytes();
             mPeakResidentMemory = mInitialResidentMemory;
 
+            // Reconnect the same clients. Recreating their worker threads every
+            // cycle measures sanitizer thread-history retention as well as the
+            // application's live state, unlike eight long-lived game clients.
+            std::vector<Peer> peers(mOptions.clients);
             const auto soakStarted = std::chrono::steady_clock::now();
             for (std::size_t cycle = 0;
                  cycle < mOptions.cycles
@@ -208,23 +232,27 @@ namespace
                         < std::chrono::seconds(mOptions.durationSeconds);
                  ++cycle)
             {
-                std::vector<Peer> peers;
-                peers.reserve(mOptions.clients);
                 for (std::size_t index = 0; index < mOptions.clients; ++index)
                 {
-                    peers.emplace_back(connect(index, cycle == 0));
-                    mMetrics.observeQueueDepth(peers.size());
-                    bootstrap(peers.back(), index, cycle);
-                    gameplay(peers.back(), index, cycle);
+                    peers[index] = connect(index, cycle == 0,
+                        std::move(peers[index].client));
+                    mMetrics.observeQueueDepth(index + 1);
+                    bootstrap(peers[index], index, cycle);
+                    gameplay(peers[index], index, cycle);
                 }
                 for (Peer& peer : peers)
-                    disconnect(peer);
+                    disconnect(peer, true);
                 require(mMetrics.snapshot().connections.empty(),
                     "disconnected peers retained connection metrics");
+                require(mCreatedClients == mOptions.clients,
+                    "reconnect recreated client instances instead of reusing them");
                 mMetrics.observeQueueDepth(0);
                 observeMemory();
                 mCompletedCycles = cycle + 1;
             }
+            for (Peer& peer : peers)
+                peer.client->shutdown(1s);
+            peers.clear();
 
             verifyLegacyMigration();
             verifyAuthenticationLockout();
@@ -288,7 +316,8 @@ namespace
             require(static_cast<bool>(output), "failed to write legacy account fixture");
         }
 
-        Peer connect(std::size_t index, bool expectFirstTrust)
+        Peer connect(std::size_t index, bool expectFirstTrust,
+            std::unique_ptr<Protocol11Endpoint> client = {})
         {
             Peer peer;
             peer.trustPath = mRoot / ("trusted-" + std::to_string(index) + ".json");
@@ -297,7 +326,13 @@ namespace
                                        : "headless password " + std::to_string(index);
 
             std::string errorText;
-            peer.client = Protocol11Endpoint::createClient(peer.trustPath, errorText);
+            if (client)
+                peer.client = std::move(client);
+            else
+            {
+                peer.client = Protocol11Endpoint::createClient(peer.trustPath, errorText);
+                ++mCreatedClients;
+            }
             require(peer.client != nullptr, "client trust store failed: " + errorText);
 
             mwmp::transport::ConnectOptions options;
@@ -606,13 +641,14 @@ namespace
                 peer.serverConnection.value, sequence);
         }
 
-        void disconnect(Peer& peer)
+        void disconnect(Peer& peer, bool reconnect = false)
         {
             peer.client->disconnect(peer.clientConnection);
             require(waitForEvent(*mServer, TransportEventType::Disconnected,
                     peer.serverConnection).has_value(),
                 "server did not observe client disconnect");
-            peer.client->shutdown(1s);
+            if (!reconnect)
+                peer.client->shutdown(1s);
             mLifecycle.erase(peer.serverConnection.value);
             mCombat.erase({ mwmp::mechanics::CombatantKind::Player,
                 peer.serverConnection.value, {} });
@@ -739,6 +775,17 @@ namespace
             const std::uint64_t current = mwmp::metrics::residentMemoryBytes();
             mResidentMemorySamples.push_back(current);
             mPeakResidentMemory = std::max(mPeakResidentMemory, current);
+            if (mResidentMemorySamples.size() % 100 == 0)
+            {
+                std::cout << "Soak progress: cycles=" << mResidentMemorySamples.size()
+                    << " residentBytes=" << current
+                    << " clientInstances=" << mCreatedClients;
+#if defined(TES3MP_SOAK_ALLOCATOR_STATS)
+                std::cout << " liveAllocatedBytes=" << __sanitizer_get_current_allocated_bytes()
+                    << " allocatorHeapBytes=" << __sanitizer_get_heap_size();
+#endif
+                std::cout << std::endl;
+            }
         }
 
         void evaluateMemoryGrowth()
@@ -796,6 +843,8 @@ namespace
             output
                 << "{\n"
                 << "  \"schemaVersion\": 1,\n"
+                << "  \"addressSanitizerEnabled\": "
+                << (sAddressSanitizerEnabled ? "true" : "false") << ",\n"
                 << "  \"commit\": \"" << jsonEscape(mOptions.commit) << "\",\n"
                 << "  \"cycles\": " << mCompletedCycles << ",\n"
                 << "  \"clients\": " << mOptions.clients << ",\n"
@@ -848,6 +897,7 @@ namespace
         std::uint64_t mLossSequence = 0;
         std::uint64_t mDroppedSnapshots = 0;
         std::size_t mCompletedCycles = 0;
+        std::size_t mCreatedClients = 0;
         std::uint64_t mInitialResidentMemory = 0;
         std::uint64_t mPeakResidentMemory = 0;
         bool mMonotonicMemoryGrowth = false;
@@ -860,6 +910,12 @@ int main(int argc, char** argv)
 {
     try
     {
+        if (argc == 2 && std::string_view(argv[1]) == "--build-info")
+        {
+            std::cout << "{\"addressSanitizerEnabled\":"
+                << (sAddressSanitizerEnabled ? "true" : "false") << "}\n";
+            return 0;
+        }
         Options options = parseOptions(argc, argv);
         const bool temporary = options.stateDirectory.empty();
         const std::filesystem::path root

@@ -599,7 +599,7 @@ namespace mwmp::transport
                 closeConnection(handle, "inbound transport queue is full", false);
         }
 
-        void markDisconnected(HSteamNetConnection handle, const char* detail)
+        void markDisconnected(HSteamNetConnection handle, const char* detail, bool linger = false)
         {
             bool existed = false;
             {
@@ -610,7 +610,8 @@ namespace mwmp::transport
                 std::scoped_lock registryLock(sRegistryMutex);
                 sConnectionOwners.erase(handle);
             }
-            SteamAPI_ISteamNetworkingSockets_CloseConnection(interface, handle, 0, nullptr, false);
+            if (handle != k_HSteamNetConnection_Invalid && interface != nullptr)
+                SteamAPI_ISteamNetworkingSockets_CloseConnection(interface, handle, 0, detail, linger);
 
             if (existed)
             {
@@ -655,8 +656,10 @@ namespace mwmp::transport
 
         void closeConnection(HSteamNetConnection handle, const char* reason, bool linger)
         {
-            if (handle != k_HSteamNetConnection_Invalid && interface != nullptr)
-                SteamAPI_ISteamNetworkingSockets_CloseConnection(interface, handle, 0, reason, linger);
+            // Local closure must not wait for a remote-close callback. Retire
+            // our state and emit the terminal event synchronously; otherwise
+            // expired handles survive reconnects.
+            markDisconnected(handle, reason, linger);
         }
 
         void disconnect(TransportConnectionId id)
