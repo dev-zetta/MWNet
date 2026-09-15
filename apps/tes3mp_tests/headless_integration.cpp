@@ -10,6 +10,8 @@
 #include <components/openmw-mp/Security/ServerAuthenticationService.hpp>
 #include <components/openmw-mp/Transport/Protocol11Endpoint.hpp>
 
+#include "SoakMemorySamples.hpp"
+
 #include <algorithm>
 #include <chrono>
 #include <cstddef>
@@ -19,7 +21,6 @@
 #include <fstream>
 #include <iostream>
 #include <iterator>
-#include <numeric>
 #include <memory>
 #include <optional>
 #include <stdexcept>
@@ -210,6 +211,7 @@ namespace
             , mRoot(std::move(root))
             , mAuthentication(mRoot / "accounts", mRoot / "players",
                 authenticationLimits())
+            , mResidentMemorySamples(mRoot / "resident-memory-samples.bin")
         {
         }
 
@@ -773,7 +775,7 @@ namespace
         void observeMemory()
         {
             const std::uint64_t current = mwmp::metrics::residentMemoryBytes();
-            mResidentMemorySamples.push_back(current);
+            mResidentMemorySamples.append(current);
             mPeakResidentMemory = std::max(mPeakResidentMemory, current);
             if (mResidentMemorySamples.size() % 100 == 0)
             {
@@ -790,28 +792,8 @@ namespace
 
         void evaluateMemoryGrowth()
         {
-            if (mResidentMemorySamples.size() < 20)
-                return;
-
-            const std::size_t warmup = mResidentMemorySamples.size() / 4;
-            const std::size_t window = std::max<std::size_t>(
-                5, mResidentMemorySamples.size() / 10);
-            const auto average = [this](std::size_t first, std::size_t count) {
-                const auto begin = mResidentMemorySamples.begin()
-                    + static_cast<std::ptrdiff_t>(first);
-                const auto end = begin + static_cast<std::ptrdiff_t>(count);
-                return std::accumulate(begin, end, 0.0L)
-                    / static_cast<long double>(count);
-            };
-            const long double early = average(warmup, window);
-            const long double late = average(
-                mResidentMemorySamples.size() - window, window);
-            if (early > 0)
-            {
-                mResidentMemoryGrowthPercent = static_cast<double>(
-                    (late - early) / early * 100.0L);
-                mMonotonicMemoryGrowth = mResidentMemoryGrowthPercent > 1.0;
-            }
+            mResidentMemoryGrowthPercent = mResidentMemorySamples.growthPercentAfterWarmup();
+            mMonotonicMemoryGrowth = mResidentMemoryGrowthPercent > 1.0;
         }
 
         static std::string jsonEscape(std::string_view value)
@@ -869,14 +851,9 @@ namespace
                 << (mMonotonicMemoryGrowth ? "true" : "false") << ",\n"
                 << "  \"residentMemoryGrowthPercentAfterWarmup\": "
                 << mResidentMemoryGrowthPercent << ",\n"
-                << "  \"residentMemorySamplesBytes\": [";
-            for (std::size_t index = 0; index < mResidentMemorySamples.size(); ++index)
-            {
-                if (index != 0)
-                    output << ", ";
-                output << mResidentMemorySamples[index];
-            }
-            output << "],\n"
+                << "  \"residentMemorySamplesBytes\": ";
+            mResidentMemorySamples.writeJsonArray(output);
+            output << ",\n"
                 << "  \"inboundBytes\": " << snapshot.inbound.bytes << ",\n"
                 << "  \"outboundBytes\": " << snapshot.outbound.bytes << "\n"
                 << "}\n";
@@ -902,7 +879,7 @@ namespace
         std::uint64_t mPeakResidentMemory = 0;
         bool mMonotonicMemoryGrowth = false;
         double mResidentMemoryGrowthPercent = 0;
-        std::vector<std::uint64_t> mResidentMemorySamples;
+        tes3mp::tests::SoakMemorySamples mResidentMemorySamples;
     };
 }
 
@@ -920,8 +897,10 @@ int main(int argc, char** argv)
         const bool temporary = options.stateDirectory.empty();
         const std::filesystem::path root
             = temporary ? uniqueTemporaryDirectory() : options.stateDirectory;
-        Scenario scenario(std::move(options), root);
-        scenario.run();
+        {
+            Scenario scenario(std::move(options), root);
+            scenario.run();
+        }
         if (temporary)
         {
             std::error_code error;

@@ -21,6 +21,7 @@ add_executable(tes3mp-tests
     progression.cpp
     session.cpp
     shapeshift.cpp
+    soak_memory.cpp
     spell.cpp
     spellbook.cpp
     transport.cpp

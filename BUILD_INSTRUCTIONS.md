@@ -290,6 +290,10 @@ CI/run_tes3mp_soak.sh --release-gates
 The native process must pass the 1% post-warm-up RSS limit. The second process
 must finish the same workload with ASan, LeakSanitizer and UBSan enabled; its
 allocator and stack-history RSS is recorded separately. Both must pass.
+RSS samples are buffered to each profile's `state/resident-memory-samples.bin`
+and streamed into the final JSON report, so the observer's memory does not
+grow with the run's cycle count. Keep artifact storage writable and allow
+eight bytes per cycle per profile for this internal journal.
 `--sanitizer-build-dir DIR` selects a different sanitizer build, and also enables
 paired shorter developer runs without `--release-gates`.
 

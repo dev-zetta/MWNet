@@ -17,6 +17,7 @@ int runItemUseTests();
 int runJusticeTests();
 int runMovementTests();
 int runMetricsTests();
+int runSoakMemoryTests();
 int runObjectStateTests();
 int runOwnershipTests();
 int runLifecycleTests();
@@ -54,6 +55,7 @@ int main()
         + runEquipmentTests() + runInventoryTests() + runItemUseTests()
         + runJusticeTests() + runMovementTests()
         + runMetricsTests()
+        + runSoakMemoryTests()
         + runObjectStateTests() + runOwnershipTests() + runLuaPolicyTests()
         + runLifecycleTests() + runPersistenceTests() + runProgressionTests()
         + runSessionTests() + runShapeshiftTests()

@@ -5,6 +5,7 @@ This is the first hardening milestone for the major OpenMW 0.52 compatibility an
 
 ### Engine and build modernization
 
+* Bound soak-observer memory by journaling RSS samples to disk, preserving every sample and the existing 1% growth gate
 * Require paired native RSS and ASan/LeakSanitizer/UBSan soaks, preserve both verdicts, reject insufficient container limits, and stop the sibling process on failure
 * Restore the upstream OpenMW build and test options, remove duplicate target registration, add TES3MP test and fuzz targets, and modernize vendored dependency CMake policies
 * Make OpenMW and OpenMW-CS test-only builds resolve the same engine dependencies as their production targets, including the protocol 11 client endpoint
