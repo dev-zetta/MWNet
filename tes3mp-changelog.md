@@ -5,6 +5,7 @@ This is the first hardening milestone for the major OpenMW 0.52 compatibility an
 
 ### Engine and build modernization
 
+* Avoid rewriting already-migrated legacy credentials on every login; preserve soak disconnect reasons, phase timing and incomplete metrics when a scenario fails
 * Bound soak-observer memory by journaling RSS samples to disk, preserving every sample and the existing 1% growth gate
 * Require paired native RSS and ASan/LeakSanitizer/UBSan soaks, preserve both verdicts, reject insufficient container limits, and stop the sibling process on failure
 * Restore the upstream OpenMW build and test options, remove duplicate target registration, add TES3MP test and fuzz targets, and modernize vendored dependency CMake policies

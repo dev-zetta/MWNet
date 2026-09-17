@@ -294,6 +294,10 @@ RSS samples are buffered to each profile's `state/resident-memory-samples.bin`
 and streamed into the final JSON report, so the observer's memory does not
 grow with the run's cycle count. Keep artifact storage writable and allow
 eight bytes per cycle per profile for this internal journal.
+Interrupted scenarios retain partial JSON with `status` and `scenariosComplete`;
+these reports are diagnostic and cannot pass the paired gate. On Linux hosts
+with both Docker Desktop and Docker Engine, `docker --context default` selects
+the native engine. Build/load and run the image in the same selected context.
 `--sanitizer-build-dir DIR` selects a different sanitizer build, and also enables
 paired shorter developer runs without `--release-gates`.
 

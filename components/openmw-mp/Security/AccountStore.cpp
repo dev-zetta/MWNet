@@ -174,8 +174,10 @@ namespace mwmp::security
             return depth == 0;
         }
 
-        bool replaceTopLevelLogin(std::string& json, std::string_view replacement)
+        bool replaceTopLevelLogin(std::string& json, std::string_view replacement,
+            bool& changed)
         {
+            changed = false;
             std::size_t position = 0;
             skipWhitespace(json, position);
             if (position >= json.size() || json[position++] != '{')
@@ -199,7 +201,10 @@ namespace mwmp::security
                 const std::size_t valueEnd = position;
                 if (json.substr(keyStart, keyEnd - keyStart) == "\"login\"")
                 {
+                    if (json.compare(valueStart, valueEnd - valueStart, replacement) == 0)
+                        return true;
                     json.replace(valueStart, valueEnd - valueStart, replacement);
+                    changed = true;
                     return true;
                 }
                 skipWhitespace(json, position);
@@ -455,11 +460,16 @@ namespace mwmp::security
             return false;
         const std::string replacement = "{\"name\":\"" + jsonEscape(accountName)
             + "\",\"schemaVersion\":1,\"passwordScheme\":\"argon2id-v1\"}";
-        if (!replaceTopLevelLogin(contents, replacement))
+        bool changed = false;
+        if (!replaceTopLevelLogin(contents, replacement, changed))
         {
             error = "legacy account record has no valid top-level login object";
             return false;
         }
+        // Migrated accounts are checked on every login. Avoid another durable
+        // write when the legacy credential material has already been removed.
+        if (!changed)
+            return true;
         auto options = mWriteOptions;
         options.maximumBytes = sMaximumLegacyPlayerBytes;
         return persistence::writeFileAtomically(path, bytes(contents), options, error);

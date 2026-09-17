@@ -191,9 +191,15 @@ namespace
         while (std::chrono::steady_clock::now() < deadline)
         {
             auto event = endpoint.poll(10ms);
-            if (!event || event->type != type)
+            if (!event)
                 continue;
             if (connection && event->connection != *connection)
+                continue;
+            if (event->type == TransportEventType::Disconnected
+                && type != TransportEventType::Disconnected)
+                fail("connection " + std::to_string(event->connection.value)
+                    + " disconnected while waiting for a protocol event: " + event->detail);
+            if (event->type != type)
                 continue;
             if (messageType && event->message.messageType
                     != static_cast<std::uint16_t>(*messageType))
@@ -217,6 +223,32 @@ namespace
 
         void run()
         {
+            mStarted = std::chrono::steady_clock::now();
+            setPhase("initialization");
+            try
+            {
+                runScenarios();
+            }
+            catch (const std::exception& error)
+            {
+                const std::string failure = failureContext() + ": " + error.what();
+                try
+                {
+                    evaluateMemoryGrowth();
+                    writeMetrics(mScenariosComplete ? "failed" : "incomplete", failure);
+                }
+                catch (const std::exception& reportError)
+                {
+                    std::cerr << "Failed to save partial soak metrics: "
+                        << reportError.what() << '\n';
+                }
+                fail(failure);
+            }
+        }
+
+    private:
+        void runScenarios()
+        {
             std::filesystem::create_directories(mRoot / "players");
             createLegacyPlayer();
             startServer(mRoot / "server-identity.key");
@@ -234,40 +266,81 @@ namespace
                         < std::chrono::seconds(mOptions.durationSeconds);
                  ++cycle)
             {
+                mCurrentCycle = cycle + 1;
                 for (std::size_t index = 0; index < mOptions.clients; ++index)
                 {
+                    mCurrentClient = index;
+                    setPhase("connect");
                     peers[index] = connect(index, cycle == 0,
                         std::move(peers[index].client));
                     mMetrics.observeQueueDepth(index + 1);
+                    setPhase("bootstrap");
                     bootstrap(peers[index], index, cycle);
+                    setPhase("gameplay");
                     gameplay(peers[index], index, cycle);
                 }
-                for (Peer& peer : peers)
-                    disconnect(peer, true);
+                setPhase("disconnect");
+                for (std::size_t index = 0; index < peers.size(); ++index)
+                {
+                    mCurrentClient = index;
+                    disconnect(peers[index], true);
+                }
                 require(mMetrics.snapshot().connections.empty(),
                     "disconnected peers retained connection metrics");
                 require(mCreatedClients == mOptions.clients,
                     "reconnect recreated client instances instead of reusing them");
                 mMetrics.observeQueueDepth(0);
+                setPhase("memory observation");
                 observeMemory();
                 mCompletedCycles = cycle + 1;
             }
+            setPhase("client shutdown");
             for (Peer& peer : peers)
                 peer.client->shutdown(1s);
             peers.clear();
 
+            setPhase("legacy migration verification");
             verifyLegacyMigration();
+            mCurrentClient = 1;
+            setPhase("authentication lockout verification");
             verifyAuthenticationLockout();
+            mCurrentClient = 0;
+            setPhase("fingerprint mismatch verification");
             verifyFingerprintMismatch();
             require(mMetrics.snapshot().connections.empty(),
                 "final scenarios retained connection metrics");
+            mScenariosComplete = true;
+            setPhase("memory evaluation");
             evaluateMemoryGrowth();
-            writeMetrics();
             if (mOptions.failOnMemoryGrowth && mMonotonicMemoryGrowth)
                 fail("average resident memory grew by more than 1% after warm-up");
+            writeMetrics("passed");
         }
 
-    private:
+        double elapsedSeconds() const
+        {
+            return std::chrono::duration<double>(
+                std::chrono::steady_clock::now() - mStarted).count();
+        }
+
+        void setPhase(std::string_view phase)
+        {
+            mPhase = phase;
+            mPhaseStarted = std::chrono::steady_clock::now();
+        }
+
+        std::string failureContext() const
+        {
+            return "elapsedSeconds=" + std::to_string(elapsedSeconds())
+                + " cycle=" + std::to_string(mCurrentCycle)
+                + " client=" + std::to_string(mCurrentClient)
+                + " phase=" + std::string(mPhase)
+                + " phaseElapsedSeconds=" + std::to_string(std::chrono::duration<double>(
+                    std::chrono::steady_clock::now() - mPhaseStarted).count())
+                + " lastAuthenticationSeconds=" + std::to_string(mLastAuthenticationSeconds)
+                + " maximumAuthenticationSeconds=" + std::to_string(mMaximumAuthenticationSeconds);
+        }
+
         static mwmp::security::AuthenticationLimits authenticationLimits()
         {
             mwmp::security::AuthenticationLimits limits;
@@ -415,20 +488,86 @@ namespace
             const std::size_t bytes = sWireEnvelopeBytes + message.payload.size();
             TransportError error;
             const auto started = std::chrono::steady_clock::now();
-            require(source.send(std::move(message), error),
-                "message rejected: " + std::string(mwmp::session::describe(
-                    source.state(sourceConnection).value_or(State::Disconnecting)))
-                    + ": " + error.detail);
+            if (!source.send(std::move(message), error))
+            {
+                const std::string context = transmissionContext(source, sourceConnection,
+                    destination, destinationConnection, type);
+                // Only inspect additional events after the operation has failed.
+                // Normal message delivery must not consume another peer's events.
+                const std::string sourceClose = queuedDisconnectDetails(source, sourceConnection);
+                const std::string destinationClose
+                    = queuedDisconnectDetails(destination, destinationConnection);
+                fail("message rejected: " + context + ": " + error.detail
+                    + "; source " + sourceClose + "; destination " + destinationClose);
+            }
             mMetrics.observeSerialization(std::chrono::steady_clock::now() - started);
             mMetrics.recordOutbound(destinationConnection.value, bytes);
 
             const auto tickStarted = std::chrono::steady_clock::now();
-            auto event = waitForEvent(destination, TransportEventType::Message,
-                destinationConnection, type);
+            std::optional<TransportEvent> event;
+            try
+            {
+                event = waitForEvent(destination, TransportEventType::Message,
+                    destinationConnection, type);
+            }
+            catch (const std::exception& receiveError)
+            {
+                fail(transmissionContext(source, sourceConnection,
+                    destination, destinationConnection, type) + ": " + receiveError.what());
+            }
             mMetrics.observeTick(std::chrono::steady_clock::now() - tickStarted);
-            require(event.has_value(), "timed out waiting for protocol message");
+            if (!event)
+                fail("timed out waiting for protocol message: " + transmissionContext(
+                    source, sourceConnection, destination, destinationConnection, type));
             mMetrics.recordInbound(destinationConnection.value, bytes);
             return std::move(*event);
+        }
+
+        static std::string transmissionContext(Protocol11Endpoint& source,
+            TransportConnectionId sourceConnection, Protocol11Endpoint& destination,
+            TransportConnectionId destinationConnection, MessageType type)
+        {
+            const auto describeEndpoint = [](Protocol11Endpoint& endpoint,
+                TransportConnectionId connection) {
+                const auto state = endpoint.state(connection);
+                return std::string(endpoint.role() == mwmp::session::Endpoint::Server
+                        ? "server" : "client")
+                    + " connection=" + std::to_string(connection.value)
+                    + " state=" + (state ? mwmp::session::describe(*state) : "absent");
+            };
+            return "messageType=" + std::to_string(static_cast<std::uint16_t>(type))
+                + " source={" + describeEndpoint(source, sourceConnection)
+                + "} destination={" + describeEndpoint(destination, destinationConnection) + "}";
+        }
+
+        static std::string queuedDisconnectDetails(Protocol11Endpoint& endpoint,
+            TransportConnectionId connection)
+        {
+            // Failure diagnostics have a fixed bound even if messages are queued.
+            for (std::size_t count = 0; count < 64; ++count)
+            {
+                const auto event = endpoint.poll(0ms);
+                if (!event)
+                    break;
+                if (event->connection == connection
+                    && event->type == TransportEventType::Disconnected)
+                    return "disconnect=" + event->detail;
+            }
+            return "disconnect reason unavailable in queued events";
+        }
+
+        mwmp::security::ServerAuthenticationResult authenticate(
+            mwmp::security::AuthenticationRequest request)
+        {
+            const std::string_view previousPhase = mPhase;
+            setPhase("authentication");
+            auto result = mAuthentication.authenticate(std::move(request), "127.0.0.1");
+            mLastAuthenticationSeconds = std::chrono::duration<double>(
+                std::chrono::steady_clock::now() - mPhaseStarted).count();
+            mMaximumAuthenticationSeconds = std::max(
+                mMaximumAuthenticationSeconds, mLastAuthenticationSeconds);
+            setPhase(previousPhase);
+            return result;
         }
 
         void advance(Peer& peer, State state)
@@ -472,8 +611,7 @@ namespace
             require(static_cast<bool>(mwmp::security::decodeAuthenticationRequest(
                     requestEvent.message.payload, request)),
                 "server rejected a valid authentication request");
-            auto result = mAuthentication.authenticate(
-                std::move(request), "127.0.0.1");
+            auto result = authenticate(std::move(request));
             require(result.response.authenticated(),
                 "authentication failed: " + result.response.message);
             if (cycle == 0 && index == 0)
@@ -706,8 +844,7 @@ namespace
                 require(static_cast<bool>(mwmp::security::decodeAuthenticationRequest(
                         event.message.payload, request)),
                     "failed to decode lockout request");
-                const auto result = mAuthentication.authenticate(
-                    std::move(request), "127.0.0.1");
+                const auto result = authenticate(std::move(request));
                 const auto expected = attempt < 5
                     ? mwmp::security::AuthenticationResponseStatus::InvalidCredentials
                     : mwmp::security::AuthenticationResponseStatus::RateLimited;
@@ -780,8 +917,11 @@ namespace
             if (mResidentMemorySamples.size() % 100 == 0)
             {
                 std::cout << "Soak progress: cycles=" << mResidentMemorySamples.size()
+                    << " elapsedSeconds=" << elapsedSeconds()
                     << " residentBytes=" << current
-                    << " clientInstances=" << mCreatedClients;
+                    << " clientInstances=" << mCreatedClients
+                    << " lastAuthenticationSeconds=" << mLastAuthenticationSeconds
+                    << " maximumAuthenticationSeconds=" << mMaximumAuthenticationSeconds;
 #if defined(TES3MP_SOAK_ALLOCATOR_STATS)
                 std::cout << " liveAllocatedBytes=" << __sanitizer_get_current_allocated_bytes()
                     << " allocatorHeapBytes=" << __sanitizer_get_heap_size();
@@ -803,18 +943,27 @@ namespace
             {
                 if (character == '\\' || character == '"')
                     result.push_back('\\');
+                else if (static_cast<unsigned char>(character) < 0x20)
+                {
+                    constexpr std::string_view hex = "0123456789abcdef";
+                    result += "\\u00";
+                    result.push_back(hex[static_cast<unsigned char>(character) >> 4]);
+                    result.push_back(hex[static_cast<unsigned char>(character) & 15]);
+                    continue;
+                }
                 result.push_back(character);
             }
             return result;
         }
 
-        void writeMetrics()
+        void writeMetrics(std::string_view status, std::string_view failure = {})
         {
             mMetrics.setResidentMemoryBytes(mwmp::metrics::residentMemoryBytes());
             const auto snapshot = mMetrics.snapshot();
-            std::cout << "Headless protocol-11 scenarios passed: "
-                      << mCompletedCycles << " cycles, " << mOptions.clients
-                      << " clients, " << mDroppedSnapshots << " dropped snapshots.\n";
+            if (status == "passed")
+                std::cout << "Headless protocol-11 scenarios passed: "
+                          << mCompletedCycles << " cycles, " << mOptions.clients
+                          << " clients, " << mDroppedSnapshots << " dropped snapshots.\n";
             if (mOptions.metricsOutput.empty())
                 return;
             const auto parent = mOptions.metricsOutput.parent_path();
@@ -825,6 +974,15 @@ namespace
             output
                 << "{\n"
                 << "  \"schemaVersion\": 1,\n"
+                << "  \"status\": \"" << status << "\",\n"
+                << "  \"scenariosComplete\": " << (mScenariosComplete ? "true" : "false") << ",\n"
+                << "  \"failure\": \"" << jsonEscape(failure) << "\",\n"
+                << "  \"elapsedSeconds\": " << elapsedSeconds() << ",\n"
+                << "  \"currentCycle\": " << mCurrentCycle << ",\n"
+                << "  \"currentClient\": " << mCurrentClient << ",\n"
+                << "  \"phase\": \"" << mPhase << "\",\n"
+                << "  \"lastAuthenticationSeconds\": " << mLastAuthenticationSeconds << ",\n"
+                << "  \"maximumAuthenticationSeconds\": " << mMaximumAuthenticationSeconds << ",\n"
                 << "  \"addressSanitizerEnabled\": "
                 << (sAddressSanitizerEnabled ? "true" : "false") << ",\n"
                 << "  \"commit\": \"" << jsonEscape(mOptions.commit) << "\",\n"
@@ -873,6 +1031,14 @@ namespace
         mwmp::metrics::ServerMetrics mMetrics;
         std::uint64_t mLossSequence = 0;
         std::uint64_t mDroppedSnapshots = 0;
+        std::chrono::steady_clock::time_point mStarted;
+        std::chrono::steady_clock::time_point mPhaseStarted;
+        std::string_view mPhase = "not started";
+        std::size_t mCurrentCycle = 0;
+        std::size_t mCurrentClient = 0;
+        double mLastAuthenticationSeconds = 0;
+        double mMaximumAuthenticationSeconds = 0;
+        bool mScenariosComplete = false;
         std::size_t mCompletedCycles = 0;
         std::size_t mCreatedClients = 0;
         std::uint64_t mInitialResidentMemory = 0;

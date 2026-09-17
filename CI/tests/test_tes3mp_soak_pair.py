@@ -1,3 +1,4 @@
+import hashlib
 import json
 import os
 from pathlib import Path
@@ -27,7 +28,8 @@ if config.get("exit"):
     sys.exit(config["exit"])
 if config.get("missing_metrics"):
     sys.exit(0)
-metrics = {"commit": options["--commit"], "cycles": int(options["--cycles"]),
+metrics = {"status": "passed", "scenariosComplete": True,
+           "commit": options["--commit"], "cycles": int(options["--cycles"]),
            "clients": int(options["--clients"]),
            "simulatedLatencyMilliseconds": int(options["--latency-ms"]),
            "simulatedPacketLossPercent": int(options["--packet-loss-percent"]),
@@ -36,6 +38,7 @@ metrics = {"commit": options["--commit"], "cycles": int(options["--cycles"]),
            "residentMemoryGrowthPercentAfterWarmup": 42 if config["asan"] else 0.2}
 metrics.update(config.get("metrics", {}))
 pathlib.Path(options["--metrics-output"]).write_text(json.dumps(metrics))
+sys.exit(config.get("exit_after_metrics", 0))
 '''
 
 
@@ -92,6 +95,20 @@ class PairedSoakTests(unittest.TestCase):
         self.configure("native", asan=False, metrics={"residentMemoryGrowthPercentAfterWarmup": 2})
         self.assertNotEqual(self.run_pair().returncode, 0)
         self.assertIn("native RSS growth", self.manifest()["failure"])
+
+    def test_partial_report_rejects_even_a_zero_exit(self):
+        self.configure("native", asan=False,
+                       metrics={"status": "incomplete", "scenariosComplete": False})
+        self.assertNotEqual(self.run_pair().returncode, 0)
+        self.assertIn("incomplete or failed", self.manifest()["failure"])
+
+    def test_partial_report_is_hashed_on_child_failure(self):
+        self.configure("native", asan=False, exit_after_metrics=1,
+                       metrics={"status": "incomplete", "scenariosComplete": False})
+        self.assertNotEqual(self.run_pair().returncode, 0)
+        report = self.artifacts / "native" / "metrics.json"
+        self.assertEqual(self.manifest()["runs"]["native"]["metricsSha256"],
+                         hashlib.sha256(report.read_bytes()).hexdigest())
 
     def test_wrong_candidate_rejects_successful_processes(self):
         self.configure("sanitizer", asan=True, metrics={"commit": "b" * 40})

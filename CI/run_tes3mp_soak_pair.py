@@ -146,6 +146,8 @@ def run_pair(args):
                         "addressSanitizerEnabled": name == "sanitizer"}
             if any(metrics.get(key) != value for key, value in expected.items()):
                 raise ValueError(f"{name} metrics do not match the requested candidate/workload")
+            if metrics.get("status") != "passed" or metrics.get("scenariosComplete") is not True:
+                raise ValueError(f"{name} scenario report is incomplete or failed")
             if metrics.get("cycles", 0) < args.cycles:
                 raise ValueError(f"{name} did not complete the requested cycles")
             if manifest["runs"][name]["elapsedSeconds"] < args.duration_seconds:
@@ -180,6 +182,12 @@ def run_pair(args):
             (root / name / "exit-code.txt").write_text(f"{code}\n")
             streams[name].flush()
             result["logSha256"] = sha256(root / name / "soak.log")
+            metrics_path = root / name / "metrics.json"
+            if metrics_path.exists():
+                try:
+                    result["metricsSha256"] = sha256(metrics_path)
+                except OSError as error:
+                    result["metricsReadError"] = str(error)
         for stream in streams.values():
             stream.close()
         manifest["finishedAt"] = utc_now()

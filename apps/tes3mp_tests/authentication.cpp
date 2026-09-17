@@ -190,6 +190,7 @@ namespace
                 "  \"stats\":{\"level\":1,\"alive\":true}\n"
                 "}\n";
         }
+        const std::string originalLegacy = readFile(legacyPath);
         result = store.authenticate("manio", *password, false);
         EXPECT(result.status == AccountStoreStatus::AuthenticatedMigrated);
         EXPECT(result.authenticated());
@@ -200,6 +201,39 @@ namespace
         EXPECT(migrated.find("\"schemaVersion\":1") != std::string::npos);
         EXPECT(migrated.find("\"level\":1") != std::string::npos);
         EXPECT(migrated.find("\"alive\":true") != std::string::npos);
+
+        std::size_t writeAttempts = 0;
+        mwmp::persistence::AtomicWriteOptions rejectWrites;
+        rejectWrites.injectFailure = [&](mwmp::persistence::AtomicWriteStage stage) {
+            if (stage != mwmp::persistence::AtomicWriteStage::BeforeTemporaryOpen)
+                return false;
+            ++writeAttempts;
+            return true;
+        };
+        AccountStore alreadyMigrated(credentials, players, rejectWrites);
+        result = alreadyMigrated.authenticate("manio", *password, false);
+        EXPECT(result.authenticated());
+        EXPECT(result.legacyMaterialRemoved);
+        EXPECT(result.detail.empty());
+        EXPECT(writeAttempts == 0);
+        EXPECT(readFile(legacyPath) == migrated);
+
+        // Existing credentials must not cause a still-dirty legacy record to be
+        // skipped. Failed cleanup remains visible and a later login retries it.
+        {
+            std::ofstream legacy(legacyPath, std::ios::binary);
+            legacy << originalLegacy;
+        }
+        result = alreadyMigrated.authenticate("manio", *password, false);
+        EXPECT(result.authenticated());
+        EXPECT(!result.legacyMaterialRemoved);
+        EXPECT(!result.detail.empty());
+        EXPECT(writeAttempts == 1);
+        EXPECT(readFile(legacyPath) == originalLegacy);
+        result = store.authenticate("manio", *password, false);
+        EXPECT(result.authenticated());
+        EXPECT(result.legacyMaterialRemoved);
+        EXPECT(readFile(legacyPath) == migrated);
         EXPECT(store.authenticate("MANIO", *password, false).authenticated());
 
         mwmp::persistence::AtomicWriteOptions injected;
