@@ -1,0 +1,161 @@
+{
+  "manifest": {
+    "schemaVersion": 1,
+    "commit": "c978f30275afb3aacc6c0be24331dcbf64cbc24c",
+    "status": "passed",
+    "startedAt": "2026-09-17T17:44:33.608008+00:00",
+    "rssGrowthLimitPercent": 1,
+    "rssGateBuild": "native",
+    "releaseGates": true,
+    "memoryConstraintsAtStart": {
+      "memory.max": "2147483648",
+      "memory.swap.max": "0",
+      "memory.events": {
+        "low": 0,
+        "high": 0,
+        "max": 0,
+        "oom": 0,
+        "oom_kill": 0,
+        "oom_group_kill": 0,
+        "sock_throttled": 0
+      }
+    },
+    "sanitizerOptions": {
+      "ASAN_OPTIONS": "detect_leaks=1:halt_on_error=1",
+      "UBSAN_OPTIONS": "print_stacktrace=1:halt_on_error=1"
+    },
+    "runs": {
+      "native": {
+        "executableSha256": "2979e734b61e615e1d0c8b6e8896130da005ecfcd55332a3fdae5e9a44c80913",
+        "command": [
+          "/tes3mp/build-soak-native/tes3mp-headless-integration",
+          "--cycles",
+          "100",
+          "--clients",
+          "8",
+          "--duration-seconds",
+          "86400",
+          "--latency-ms",
+          "75",
+          "--packet-loss-percent",
+          "2",
+          "--state-dir",
+          "/artifacts/native/state",
+          "--metrics-output",
+          "/artifacts/native/metrics.json",
+          "--commit",
+          "c978f30275afb3aacc6c0be24331dcbf64cbc24c",
+          "--fail-on-memory-growth"
+        ],
+        "pid": 19,
+        "peakResidentBytes": 282394624,
+        "exitCode": 0,
+        "elapsedSeconds": 86406.160722117,
+        "metricsSha256": "2595dcf4aa43b516ec73e66fe5adc88126d2998fdab6f84c1e4f659e873fcef9",
+        "logSha256": "ae1567a1984f374b3780ae330f09ef236f0421a705b98b4dd7d58c94381161ff"
+      },
+      "sanitizer": {
+        "executableSha256": "e83bc0eca400e17835327ae8a6991e7d8b09c1a013824d62ae3641552c5fc8d5",
+        "command": [
+          "/tes3mp/build-sanitizer/tes3mp-headless-integration",
+          "--cycles",
+          "100",
+          "--clients",
+          "8",
+          "--duration-seconds",
+          "86400",
+          "--latency-ms",
+          "75",
+          "--packet-loss-percent",
+          "2",
+          "--state-dir",
+          "/artifacts/sanitizer/state",
+          "--metrics-output",
+          "/artifacts/sanitizer/metrics.json",
+          "--commit",
+          "c978f30275afb3aacc6c0be24331dcbf64cbc24c"
+        ],
+        "pid": 23,
+        "peakResidentBytes": 756850688,
+        "exitCode": 0,
+        "elapsedSeconds": 86417.65109963901,
+        "metricsSha256": "03f40f38665f49e685b6a2a26b85a0d27998ce9d161e335a18518707c54b40c8",
+        "logSha256": "6ac0a3c04017535923bc84d34e4818d5cd788d3a2f16e170f9aa8bd669aed806"
+      }
+    },
+    "finishedAt": "2026-09-18T17:44:51.287107+00:00",
+    "memoryConstraintsAtFinish": {
+      "memory.max": "2147483648",
+      "memory.swap.max": "max",
+      "memory.events": {
+        "low": 0,
+        "high": 0,
+        "max": 0,
+        "oom": 0,
+        "oom_kill": 0,
+        "oom_group_kill": 0,
+        "sock_throttled": 0
+      }
+    }
+  },
+  "scalarMetrics": {
+    "native": {
+      "schemaVersion": 1,
+      "status": "passed",
+      "scenariosComplete": true,
+      "failure": "",
+      "elapsedSeconds": 86405.9,
+      "currentCycle": 5641,
+      "currentClient": 0,
+      "phase": "memory evaluation",
+      "lastAuthenticationSeconds": 1.503e-05,
+      "maximumAuthenticationSeconds": 0.545672,
+      "addressSanitizerEnabled": false,
+      "commit": "c978f30275afb3aacc6c0be24331dcbf64cbc24c",
+      "cycles": 5641,
+      "clients": 8,
+      "simulatedLatencyMilliseconds": 75,
+      "simulatedPacketLossPercent": 2,
+      "droppedSnapshots": 897,
+      "tickP99Microseconds": 7257,
+      "serializationP99Microseconds": 15,
+      "maximumQueueDepth": 8,
+      "residentMemoryBytes": 13930496,
+      "initialResidentMemoryBytes": 11259904,
+      "peakResidentMemoryBytes": 13860864,
+      "monotonicMemoryGrowthDetected": false,
+      "residentMemoryGrowthPercentAfterWarmup": 0.164026,
+      "inboundBytes": 27667457,
+      "outboundBytes": 27667457
+    },
+    "sanitizer": {
+      "schemaVersion": 1,
+      "status": "passed",
+      "scenariosComplete": true,
+      "failure": "",
+      "elapsedSeconds": 86417.2,
+      "currentCycle": 5640,
+      "currentClient": 0,
+      "phase": "memory evaluation",
+      "lastAuthenticationSeconds": 3.3114e-05,
+      "maximumAuthenticationSeconds": 0.528443,
+      "addressSanitizerEnabled": true,
+      "commit": "c978f30275afb3aacc6c0be24331dcbf64cbc24c",
+      "cycles": 5640,
+      "clients": 8,
+      "simulatedLatencyMilliseconds": 75,
+      "simulatedPacketLossPercent": 2,
+      "droppedSnapshots": 897,
+      "tickP99Microseconds": 7349,
+      "serializationP99Microseconds": 104,
+      "maximumQueueDepth": 8,
+      "residentMemoryBytes": 403136512,
+      "initialResidentMemoryBytes": 29347840,
+      "peakResidentMemoryBytes": 488046592,
+      "monotonicMemoryGrowthDetected": false,
+      "residentMemoryGrowthPercentAfterWarmup": 0.531497,
+      "inboundBytes": 27662548,
+      "outboundBytes": 27662548
+    }
+  }
+}

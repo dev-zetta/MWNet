@@ -6,7 +6,7 @@ TES3MP 1.0 is released sequentially. Passing a later implementation milestone do
 
 | Milestone | Required scope | Current status |
 | --- | --- | --- |
-| `1.0.0-alpha.1` | Clean out-of-tree builds, protocol 11 only, fail-closed codec, unit/fuzz targets, loopback default | Implementation, release fuzz campaign and Linux release soak passed; cross-platform and long-running sanitizer evidence pending |
+| `1.0.0-alpha.1` | Clean out-of-tree builds, protocol 11 only, fail-closed codec, unit/fuzz targets, loopback default | Implementation and earlier fuzz campaign present; paired native/sanitizer Linux soak passed at c978f30275; Linux client/server preview built at 56fcea73f4; cross-platform and remaining candidate evidence pending |
 | `1.0.0-alpha.2` | GameNetworkingSockets, encrypted identity handshake, TOFU and Argon2id migration | Implementation present on the alpha branch; milestone is not released out of sequence |
 | `1.0.0-alpha.3` | Canonical authority, lifecycle gates, owned workers and atomic persistence | Implementation and automated encrypted integration/fault harnesses present; exact-candidate evidence pending |
 | `1.0.0-beta.1` | Sanitizer and fuzz gates, limited opt-in public test, independent security review | Blocked |
@@ -36,3 +36,8 @@ CI artifacts, fuzz corpora, soak logs, performance reports and review records mu
   records the exact-commit four-target sanitizer fuzz campaign, 24-hour
   eight-client release soak, alpha.1 performance baseline and the gates those
   results do not close.
+
+- [September 18 paired soak and Linux preparation](docs/release-evidence/2026-09-18-linux-candidate.md)
+  records the successful paired run at `c978f30275`, its resource caveat, and
+  the subsequent dedicated-server build fixes. The older soak does not certify
+  changes made while preparing the next candidate.

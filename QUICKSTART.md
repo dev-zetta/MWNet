@@ -1,6 +1,7 @@
-# TES3MP 1.0.0 - Quick Start Guide
+# TES3MP 1.0.0-alpha.1 - Quick Start Guide
 
-This guide will help you quickly build and run TES3MP 1.0.0, based on OpenMW 0.52.
+This guide covers the TES3MP 1.0.0-alpha.1 development candidate, based on OpenMW 0.52.
+It is not a stable release; see [release gates](RELEASE_GATES.md) for outstanding validation.
 
 ## Prerequisites
 
@@ -9,7 +10,7 @@ This guide will help you quickly build and run TES3MP 1.0.0, based on OpenMW 0.5
 - Sudo access (for installing dependencies)
 - At least 4GB RAM and 10GB free disk space
 
-## Quick Build (5 Minutes)
+## Build
 
 ### 1. Build Everything
 
