@@ -118,20 +118,12 @@ add_component_dir (bgsm
 # Don't include certain components in server-only builds
 IF (BUILD_OPENMW OR BUILD_OPENMW_TESTS OR BUILD_OPENCS OR BUILD_OPENCS_TESTS)
 # End of tes3mp change
-add_component_dir (bsa
-    bsafile compressedbsafile ba2gnrlfile ba2dx10file ba2file memorystream
-    )
-
 add_component_dir (bullethelpers
     collisionobject
     heightfield
     operators
     processtrianglecallback
     transformboundingbox
-    )
-
-add_component_dir (vfs
-    manager archive bsaarchive filesystemarchive pathutil registerarchives
     )
 
 add_component_dir (resource
@@ -426,11 +418,6 @@ add_component_dir (sdlutil
     vsyncmode
     )
 
-add_component_dir (esmloader
-    esmdata
-    load
-    )
-
 add_component_dir (sqlite3
     db
     statement
@@ -441,6 +428,19 @@ add_component_dir (sqlite3
 # Don't include certain components in server-only builds
 ENDIF (BUILD_OPENMW OR BUILD_OPENMW_TESTS OR BUILD_OPENCS OR BUILD_OPENCS_TESTS)
 # End of tes3mp change
+
+add_component_dir (bsa
+    bsafile compressedbsafile ba2gnrlfile ba2dx10file ba2file memorystream
+    )
+add_component_dir (vfs
+    manager archive bsaarchive filesystemarchive pathutil registerarchives
+    )
+
+# The dedicated server loads authoritative game settings and magic records too.
+add_component_dir (esmloader
+    esmdata
+    load
+    )
 
 add_component_dir (version
     version

@@ -139,7 +139,7 @@ struct LuaFunctionDispatcher {
     template <typename ReturnType, typename... Args>
     inline static ReturnType Dispatch(lua_State*&& lua, Args&&... args) {
         // Retrieve function data
-        constexpr ScriptFunctionData const& functionData = ScriptFunctions::functions[FunctionIndex];
+        constexpr ScriptFunctionMetadata const& functionData = ScriptFunctions::functions[FunctionIndex];
         // Retrieve argument from the Lua stack
         auto argument = sol::stack::get<typename CharType<functionData.func.types[ArgIndex - 1]>::type>(lua, ArgIndex);
         // Recursively dispatch the Lua function
@@ -155,7 +155,7 @@ struct LuaFunctionDispatcher<0, FunctionIndex> {
     template <typename ReturnType, typename... Args>
     inline static ReturnType Dispatch(lua_State*&&, Args&&... args) {
         // Retrieve function data
-        constexpr ScriptFunctionData const& functionData = ScriptFunctions::functions[FunctionIndex];
+        const ScriptFunctionData& functionData = ScriptFunctions::runtimeFunctions[FunctionIndex];
         // Call the C++ function using reinterpret_cast
         return reinterpret_cast<FunctionEllipsis<ReturnType>>(functionData.func.voidAddr())(std::forward<Args>(args)...);
     }

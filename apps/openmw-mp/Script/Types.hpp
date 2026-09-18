@@ -97,8 +97,20 @@ struct ScriptFunctionPointer : public ScriptIdentity
 {
     uintptr_t addr;
     template<typename R, typename... Types>
-    constexpr ScriptFunctionPointer(Function<R, Types...> a) : ScriptIdentity(a), addr(reinterpret_cast<uintptr_t>(a)) {}
+    ScriptFunctionPointer(Function<R, Types...> a) : ScriptIdentity(a), addr(reinterpret_cast<uintptr_t>(a)) {}
     void* voidAddr() const { return reinterpret_cast<void*>(addr); }
+};
+
+// Signatures remain usable by Lua's compile-time dispatcher. Function address
+// erasure belongs in the runtime table: reinterpret_cast is not constexpr.
+struct ScriptFunctionMetadata
+{
+    const char* name;
+    const ScriptIdentity func;
+
+    template<typename R, typename... Types>
+    constexpr ScriptFunctionMetadata(const char* name, Function<R, Types...> func)
+        : name(name), func(func) {}
 };
 
 struct ScriptFunctionData
@@ -106,7 +118,7 @@ struct ScriptFunctionData
     const char* name;
     const ScriptFunctionPointer func;
 
-    constexpr ScriptFunctionData(const char* name, ScriptFunctionPointer func) : name(name), func(func) {}
+    ScriptFunctionData(const char* name, ScriptFunctionPointer func) : name(name), func(func) {}
 };
 
 struct ScriptCallbackData

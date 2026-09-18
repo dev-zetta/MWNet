@@ -8,7 +8,10 @@
 
 template<typename... Types>
 constexpr char TypeString<Types...>::value[];
-constexpr ScriptFunctionData ScriptFunctions::functions[];
+constexpr ScriptFunctionMetadata ScriptFunctions::functions[];
+const ScriptFunctionData ScriptFunctions::runtimeFunctions[]{
+#include "Functions/ScriptFunctions.inc"
+};
 constexpr ScriptCallbackData ScriptFunctions::callbacks[];
 
 void ScriptFunctions::MakePublic(ScriptFunc _public, const char *name, char ret_type, const char *def)
