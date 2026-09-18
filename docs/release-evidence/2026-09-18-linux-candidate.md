@@ -132,6 +132,13 @@ The client version command exits zero but still reports the underlying
 `OpenMW version 0.52.0`. Client branding cleanup and graphical gameplay
 acceptance remain distinct from a successful compile/version check.
 
+## Subsequent gameplay result
+
+The [graphical gameplay test](2026-09-18-gameplay.md) exposed launcher setup,
+secure-message sequence, disconnect/crash and saved-player loading problems.
+The preview is blocked for gameplay acceptance; the successful package startup
+checks above do not close those issues.
+
 ## Open release work
 
 The private origin remains a backup and has not been pushed to or reconfigured.

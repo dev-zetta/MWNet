@@ -41,3 +41,7 @@ CI artifacts, fuzz corpora, soak logs, performance reports and review records mu
   records the successful paired run at `c978f30275`, its resource caveat, and
   the subsequent dedicated-server build fixes. The older soak does not certify
   changes made while preparing the next candidate.
+
+- [September 18 graphical gameplay test](docs/release-evidence/2026-09-18-gameplay.md)
+  records real-client failures after authentication. Gameplay acceptance is
+  blocked despite successful compilation, package smoke checks and earlier soak.
