@@ -3,6 +3,8 @@
 #include <components/openmw-mp/TimedLog.hpp>
 
 #include "../mwbase/environment.hpp"
+#include "../mwmechanics/aipackage.hpp"
+#include "../mwmechanics/movement.hpp"
 #include "../mwbase/mechanicsmanager.hpp"
 
 #include "../mwworld/class.hpp"
@@ -160,13 +162,31 @@ void Cell::readPositions(ActorList& actorList)
 {
     initializeDedicatedActors(actorList);
 
-    if (dedicatedActors.empty()) return;
     
     for (const auto &baseActor : actorList.baseActors)
     {
         std::string mapIndex = Main::get().getCellController()->generateMapIndex(baseActor);
 
-        if (dedicatedActors.count(mapIndex) > 0)
+        if (localActors.count(mapIndex) > 0)
+        {
+            // Server corrections also apply to the client simulating this NPC.
+            LocalActor* actor = getLocalActor(mapIndex);
+            MWWorld::Ptr ptr = actor->getPtr();
+            MWBase::World* world = MWBase::Environment::get().getWorld();
+            ptr = world->moveObject(ptr, store, baseActor.position.asVec3());
+            actor->setPtr(ptr);
+            world->rotateObject(ptr, osg::Vec3f(baseActor.position.rot[0], baseActor.position.rot[1], baseActor.position.rot[2]));
+            actor->position = baseActor.position;
+            actor->direction = {};
+            auto& movement = ptr.getClass().getMovementSettings(ptr);
+            for (int axis = 0; axis < 3; ++axis)
+                movement.mPosition[axis] = movement.mRotation[axis] = 0;
+            for (auto& package : ptr.getClass().getCreatureStats(ptr).getAiSequence())
+                package->reset();
+            LOG_MESSAGE_SIMPLE(TimedLog::LOG_INFO, "Applied server NPC position correction for %s in %s",
+                mapIndex.c_str(), getShortDescription().c_str());
+        }
+        else if (dedicatedActors.count(mapIndex) > 0)
         {
             DedicatedActor *actor = getDedicatedActor(mapIndex);
             actor->position = baseActor.position;
@@ -185,6 +205,8 @@ void Cell::readPositions(ActorList& actorList)
             }
         }
     }
+    if (hasLocalAuthority())
+        uninitializeDedicatedActors(actorList);
 }
 
 void Cell::readAnimFlags(ActorList& actorList)

@@ -468,7 +468,10 @@ bool Networking::acceptPlayerDeath(Player& player)
     const mechanics::PlayerLifeTransition transition
         = mPlayerLifecycle.reportDeath(player.guid.value);
     if (transition.applied())
+    {
+        clearPlayerTemporaryEffects(player);
         return true;
+    }
 
     const unsigned int violations = ++mLifecycleViolations[player.guid.value];
     LOG_MESSAGE_SIMPLE(TimedLog::LOG_WARN,
@@ -495,6 +498,7 @@ bool Networking::publishCanonicalPlayerDeath(Player& player, const Target& kille
         return false;
     }
 
+    clearPlayerTemporaryEffects(player);
     player.creatureStats.mDead = true;
     player.killer = killer;
     PlayerPacket* deathPacket = playerPacketController->GetPacket(ID_PLAYER_DEATH);
@@ -503,6 +507,19 @@ bool Networking::publishCanonicalPlayerDeath(Player& player, const Target& kille
     player.sendToLoaded(deathPacket);
     Script::Call<Script::CallbackIdentity("OnPlayerDeath")>(player.getId());
     return true;
+}
+
+void Networking::clearPlayerTemporaryEffects(Player& player)
+{
+    mActiveEffectLedger.erase({ mechanics::CombatantKind::Player, player.guid.value, {} });
+    player.spellsActiveChanges.action = SpellsActiveChanges::SET;
+    player.spellsActiveChanges.activeSpells.clear();
+    PlayerPacket* packet = playerPacketController->GetPacket(ID_PLAYER_SPELLS_ACTIVE);
+    packet->setPlayer(&player);
+    packet->Send(player.guid);
+    player.sendToLoaded(packet);
+    // Persist the empty set so reconnecting cannot restore the previous life.
+    Script::Call<Script::CallbackIdentity("OnPlayerSpellsActive")>(player.getId());
 }
 
 bool Networking::beginPlayerRespawn(Player& player, std::uint32_t respawnType)
@@ -520,6 +537,7 @@ bool Networking::beginPlayerRespawn(Player& player, std::uint32_t respawnType)
         = mPlayerLifecycle.beginRespawn(player.guid.value, respawnType);
     if (transition.applied())
     {
+        clearPlayerTemporaryEffects(player);
         // Authorize resource restoration on the server before accepting any
         // post-respawn client snapshots. Update both combat and spell state.
         applyCanonicalHealth(player, *restored);
@@ -2384,6 +2402,7 @@ void Networking::eraseRemovedActorState(
                 | static_cast<std::uint64_t>(actor.mpNum),
             actor.cell
         };
+        mActorRecovery.forget(actor);
         mCombatResolver.erase(id);
         mSpellResolver.eraseCombatant(id);
         mActiveEffectLedger.erase(id);
@@ -2395,6 +2414,39 @@ void Networking::eraseRemovedActorState(
 bool Networking::validateActorPositions(Player& player,
     const BaseActorList& incoming)
 {
+    // Old unreliable movement can arrive after a server relocation. Re-send
+    // only the canonical correction; never accept those positions as a baseline.
+    BaseActorList corrections;
+    corrections.cell = incoming.cell;
+    corrections.guid = incoming.guid;
+    corrections.authorityLeaseId = incoming.authorityLeaseId;
+    const auto now = mechanics::ActorRecovery::Clock::now();
+    for (const BaseActor& actor : incoming.baseActors)
+    {
+        const mechanics::ActorIdentity id{incoming.cell.getShortDescription(), actor.refNum, actor.mpNum};
+        if (const auto destination = mActorRecovery.pending(id,
+                {actor.position.pos[0], actor.position.pos[1], actor.position.pos[2]},
+                incoming.authorityLeaseId, now))
+        {
+            BaseActor corrected = actor;
+            corrected.position.pos[0] = destination->position.x;
+            corrected.position.pos[1] = destination->position.y;
+            corrected.position.pos[2] = destination->position.z;
+            corrected.position.rot[0] = destination->rotation.x;
+            corrected.position.rot[1] = destination->rotation.y;
+            corrected.position.rot[2] = destination->rotation.z;
+            corrected.direction = {};
+            corrections.baseActors.push_back(corrected);
+        }
+    }
+    if (!corrections.baseActors.empty())
+    {
+        ActorPacket* packet = getActorPacketController()->GetPacket(ID_ACTOR_POSITION);
+        packet->setActorList(&corrections);
+        packet->Send(player.guid);
+        packet->setActorList(&baseActorList);
+        return false;
+    }
     const mechanics::ActorStateResult result = mActorStateLedger.previewPositions(
         actorPositionUpdates(incoming, mCurrentApplicationSequence),
         mMovementMaximumSpeed, mechanics::ActorStateLedger::Clock::now());
@@ -2440,7 +2492,62 @@ bool Networking::commitActorPositions(Player& player, BaseActorList& actorList)
             mMovementMaximumSpeed, mechanics::ActorStateLedger::Clock::now());
         if (result.applied())
         {
+            const auto now = mechanics::ActorRecovery::Clock::now();
+            BaseActorList corrections;
+            corrections.cell = actorList.cell;
+            corrections.guid = actorList.guid;
+            corrections.authorityLeaseId = actorList.authorityLeaseId;
+            for (BaseActor& actor : actorList.baseActors)
+            {
+                const BaseActor* cached = serverCell->getActor(actor.refNum, actor.mpNum);
+                if (!cached)
+                    continue;
+                const auto combatId = actorCombatantId(actorList.cell, actor);
+                const auto combat = mCombatResolver.find(combatId);
+                bool mobile = combat && combat->alive && combat->health > 0 && !cached->isFlying;
+                if (const auto spells = mActiveEffectLedger.snapshot(combatId))
+                    for (const auto& spell : *spells)
+                        for (const auto& effect : spell.effects)
+                            if (effect.effectId == "paralyze" && effect.magnitude > 0)
+                                mobile = false;
+                const mechanics::ActorIdentity id{actorList.cell.getShortDescription(), actor.refNum, actor.mpNum};
+                const auto destination = mActorRecovery.observe(id, cached->refId,
+                    {actor.position.pos[0], actor.position.pos[1], actor.position.pos[2]},
+                    mobile && (actor.direction.pos[0] != 0 || actor.direction.pos[1] != 0),
+                    actorList.authorityLeaseId, now);
+                if (!destination || !mActorStateLedger.recoverPosition(id, *destination, now))
+                    continue;
+                actor.position.pos[0] = destination->position.x;
+                actor.position.pos[1] = destination->position.y;
+                actor.position.pos[2] = destination->position.z;
+                actor.position.rot[0] = destination->rotation.x;
+                actor.position.rot[1] = destination->rotation.y;
+                actor.position.rot[2] = destination->rotation.z;
+                actor.direction = {};
+                auto correctedCombat = *combat;
+                correctedCombat.position = destination->position;
+                mCombatResolver.upsert(combatId, correctedCombat);
+                if (auto spellState = mSpellResolver.findCombatant(combatId))
+                {
+                    spellState->position = destination->position;
+                    mSpellResolver.upsertCombatant(combatId, *spellState);
+                }
+                corrections.baseActors.push_back(actor);
+                LOG_MESSAGE_SIMPLE(TimedLog::LOG_WARN,
+                    "Recovered stalled NPC %s (%u-%u) in %s to canonical position %.1f %.1f %.1f",
+                    cached->refId.c_str(), actor.refNum, actor.mpNum, id.cell.c_str(),
+                    destination->position.x, destination->position.y, destination->position.z);
+            }
             serverCell->readActorList(ID_ACTOR_POSITION, &actorList);
+            if (!corrections.baseActors.empty())
+            {
+                ActorPacket* packet = getActorPacketController()->GetPacket(ID_ACTOR_POSITION);
+                packet->setActorList(&corrections);
+                packet->Send(player.guid);
+                packet->setActorList(&actorList);
+                const std::string cellDescription = actorList.cell.getShortDescription();
+                Script::Call<Script::CallbackIdentity("OnActorRecovered")>(player.getId(), cellDescription.c_str());
+            }
             return true;
         }
     }

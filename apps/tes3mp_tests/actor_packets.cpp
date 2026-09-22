@@ -100,6 +100,15 @@ namespace
             || receivedPlayer.spellsActiveChanges.activeSpells.size() != 1
             || !checkReceivedSpell(receivedPlayer.spellsActiveChanges.activeSpells.front()))
             return false;
+        // Death/respawn sends SET with no spells after a previous ADD. Reusing
+        // the decoder must replace the old payload, including queued instances.
+        mwmp::BasePlayer cleared;
+        cleared.spellsActiveChanges.action = mwmp::SpellsActiveChanges::SET;
+        playerDecoder.Read(playerEncoder.encode(cleared));
+        if (!playerDecoder.isPacketValid()
+            || receivedPlayer.spellsActiveChanges.action != mwmp::SpellsActiveChanges::SET
+            || !receivedPlayer.spellsActiveChanges.activeSpells.empty())
+            return false;
         mwmp::BaseActorList actors;
         actors.cell.blank();
         actors.authorityLeaseId = 1;

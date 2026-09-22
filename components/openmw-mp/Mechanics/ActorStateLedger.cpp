@@ -63,6 +63,17 @@ namespace mwmp::mechanics
         return { ActorStateDecision::Applied, mActors.size() };
     }
 
+    bool ActorStateLedger::recoverPosition(const ActorIdentity& identity,
+        const ActorTransform& transform, Clock::time_point now)
+    {
+        auto found = mActors.find(identity);
+        if (found == mActors.end() || !found->second.movement || !validTransform(transform))
+            return false;
+        found->second.movement->transform = transform;
+        found->second.movement->observedAt = now;
+        return true;
+    }
+
     ActorStateResult ActorStateLedger::previewCellChanges(
         const std::vector<ActorCellChangeUpdate>& updates) const
     {

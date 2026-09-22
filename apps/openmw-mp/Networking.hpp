@@ -17,6 +17,7 @@
 #include <components/openmw-mp/Mechanics/ActiveEffectLedger.hpp>
 #include <components/openmw-mp/Mechanics/ActorMagicRegistry.hpp>
 #include <components/openmw-mp/Mechanics/ActorStateLedger.hpp>
+#include <components/openmw-mp/Mechanics/ActorRecovery.hpp>
 #include <components/openmw-mp/Mechanics/CastIntentValidator.hpp>
 #include <components/openmw-mp/Mechanics/JusticeLedger.hpp>
 #include <components/openmw-mp/Mechanics/ObjectStateLedger.hpp>
@@ -106,6 +107,8 @@ namespace  mwmp
             const std::vector<mechanics::SpellDefinition>& definitions);
         bool installActorMagicTemplates(
             const std::vector<mechanics::ActorMagicTemplate>& actors);
+        bool installActorRecoveryAnchors(const std::vector<mechanics::ActorRecoveryAnchor>& anchors)
+        { return mActorRecovery.install(anchors); }
         void setConsumableMagicItems(std::unordered_set<std::string> itemIds);
         void setDirectConsumableMagicItems(std::unordered_set<std::string> itemIds);
         void setSpellFatigueFormula(double base, double multiplier);
@@ -125,6 +128,7 @@ namespace  mwmp
         bool acceptPlayerDeath(Player& player);
         bool publishCanonicalPlayerDeath(Player& player, const Target& killer);
         bool beginPlayerRespawn(Player& player, std::uint32_t respawnType);
+        void clearPlayerTemporaryEffects(Player& player);
         bool acknowledgePlayerRespawn(Player& player, const BasePlayer& incoming);
         bool validatePlayerInventory(Player& player, const BasePlayer& incoming);
         bool isPlayerInventoryAcknowledgement(const Player& player);
@@ -272,6 +276,7 @@ namespace  mwmp
         mechanics::ActiveEffectLedger mActiveEffectLedger;
         mechanics::ActorMagicRegistry mActorMagicRegistry;
         mechanics::ActorStateLedger mActorStateLedger;
+        mechanics::ActorRecovery mActorRecovery;
         mechanics::CastIntentValidator mCastIntentValidator;
         mechanics::JusticeLedger mJusticeLedger;
         mechanics::ObjectStateLedger mObjectStateLedger;

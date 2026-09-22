@@ -1,4 +1,5 @@
 #include <components/openmw-mp/Mechanics/ActorStateLedger.hpp>
+#include <components/openmw-mp/Mechanics/ActorRecovery.hpp>
 
 #include <chrono>
 #include <iostream>
@@ -31,6 +32,88 @@ namespace
         if (!item.empty())
             result.equipment[0] = { std::move(item), 1, -1, -1 };
         return result;
+    }
+
+    void testActorRecovery()
+    {
+        using namespace std::chrono_literals;
+        ActorRecovery recovery;
+        const ActorIdentity id{"Balmora", 1, 0};
+        ActorRecoveryAnchor anchor{id, "guard", {}};
+        anchor.transform.position = {1000, 0, 100};
+        EXPECT(recovery.install({anchor}));
+        const auto start = ActorRecovery::Clock::time_point{};
+        const Position3 stuck{0, 0, 100};
+        // Idle, ordinary travel, and another reference never build a stall window.
+        for (int i = 0; i < 30; ++i)
+        {
+            EXPECT(!recovery.observe(id, "guard", stuck, false, 1, start + i * 1s));
+            EXPECT(!recovery.observe({"other cell", 1, 0}, "guard", stuck, true, 1, start + i * 1s));
+        }
+        EXPECT(recovery.size() == 1);
+        recovery.forget(id);
+        for (int i = 0; i < 30; ++i)
+            EXPECT(!recovery.observe(id, "guard", {i * 100.0, 0, 100}, true, 1, start + i * 1s));
+        recovery.forget(id);
+        for (int i = 0; i < 20; ++i)
+            EXPECT(!recovery.observe(id, "guard", {double(i % 2) * 10, 0, 100}, true, 1, start + i * 1s));
+        auto destination = recovery.observe(id, "guard", stuck, true, 1, start + 20s);
+        EXPECT(destination && destination->position.x == 1000);
+        EXPECT(recovery.pending(id, stuck, 1, start + 21s).has_value());
+        EXPECT(!recovery.pending(id, stuck, 2, start + 21s));
+        EXPECT(!recovery.pending(id, anchor.transform.position, 1, start + 21s));
+        EXPECT(!recovery.pending(id, stuck, 1, start + 25s));
+        EXPECT(!recovery.observe(id, "guard", anchor.transform.position, false, 1, start + 21s));
+        for (int i = 22; i < 140; ++i)
+            EXPECT(!recovery.observe(id, "guard", stuck, true, 1, start + i * 1s));
+        for (int cycle = 1; cycle < 3; ++cycle)
+        {
+            const int base = cycle == 1 ? 140 : 300;
+            for (int i = base; i < base + 20; ++i)
+                EXPECT(!recovery.observe(id, "guard", stuck, true, 1, start + i * 1s));
+            EXPECT(recovery.observe(id, "guard", stuck, true, 1, start + (base + 20) * 1s).has_value());
+        }
+        for (int i = 450; i < 510; ++i)
+            EXPECT(!recovery.observe(id, "guard", stuck, true, 1, start + i * 1s));
+        recovery.forget(id);
+        // Long receive gaps and a new simulation authority restart the timer.
+        for (int i = 0; i < 20; ++i)
+            EXPECT(!recovery.observe(id, "guard", stuck, true, 1, start + i * 1s));
+        EXPECT(!recovery.observe(id, "guard", stuck, true, 1, start + 30s));
+        for (int i = 31; i < 49; ++i)
+            EXPECT(!recovery.observe(id, "guard", stuck, true, 1, start + i * 1s));
+        EXPECT(!recovery.observe(id, "guard", stuck, true, 2, start + 49s));
+        EXPECT(!recovery.observe(id, "other npc", stuck, true, 2, start + 70s));
+        recovery.forget(id);
+        for (int i = 0; i < 30; ++i)
+            EXPECT(!recovery.observe(id, "guard", {-5000, 0, 100}, true, 1, start + i * 1s));
+        EXPECT(!recovery.install({anchor, anchor}));
+        anchor.transform.rotation.x = std::numeric_limits<double>::quiet_NaN();
+        EXPECT(!recovery.install({anchor}));
+    }
+
+    void testRecoveryMovementBaseline()
+    {
+        using namespace std::chrono_literals;
+        ActorStateLedger ledger;
+        ActorPositionUpdate update;
+        update.identity = {"Balmora", 1, 0};
+        update.sequence = 10;
+        auto now = ActorStateLedger::Clock::now();
+        EXPECT(ledger.applyPositions({update}, 100, now).applied());
+        ActorTransform anchor;
+        anchor.position.x = 1000;
+        EXPECT(!ledger.recoverPosition({"Balmora", 2, 0}, anchor, now));
+        EXPECT(ledger.recoverPosition(update.identity, anchor, now));
+        update.transform = anchor;
+        EXPECT(ledger.previewPositions({update}, 100, now).decision == ActorStateDecision::StaleSequence);
+        update.sequence = 11;
+        EXPECT(ledger.applyPositions({update}, 100, now).applied());
+        update.sequence = 12;
+        update.transform.position.x = 0;
+        EXPECT(!ledger.previewPositions({update}, 100, now).applied());
+        update.transform.position.x = 1010;
+        EXPECT(ledger.previewPositions({update}, 100, now + 100ms).applied());
     }
 
     void testAtomicEquipmentUpdates()
@@ -279,6 +362,8 @@ namespace
 
 int runActorStateTests()
 {
+    testActorRecovery();
+    testRecoveryMovementBaseline();
     testAtomicEquipmentUpdates();
     testIdentityAndLimits();
     testCleanup();

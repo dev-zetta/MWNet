@@ -212,6 +212,7 @@ public:
             {"OnVideoPlay",              Callback<unsigned short, const char*>()},
             {"OnActorListIntent",        Callback<unsigned short, const char*>()},
             {"OnActorListIntentRejected", Callback<unsigned short, const char*>()},
+            {"OnActorRecovered",         Callback<unsigned short, const char*>()},
             {"OnActorList",              Callback<unsigned short, const char*>()},
             {"OnActorEquipmentIntent",   Callback<unsigned short, const char*>()},
             {"OnActorEquipmentIntentRejected", Callback<unsigned short, const char*>()},

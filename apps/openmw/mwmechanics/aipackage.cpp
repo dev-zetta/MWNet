@@ -86,6 +86,7 @@ bool MWMechanics::AiPackage::targetIs(const MWWorld::Ptr& ptr) const
 void MWMechanics::AiPackage::reset()
 {
     // reset all members
+    mMovementProgress.reset();
     mReaction.reset();
     mIsShortcutting = false;
     mShortcutProhibited = false;
@@ -124,6 +125,17 @@ bool MWMechanics::AiPackage::pathTo(const MWWorld::Ptr& actor, const osg::Vec3f&
     const float distToTarget = distance(position, dest);
     const bool isDestReached = (distToTarget <= destTolerance);
     const bool actorCanMoveByZ = canActorMoveByZAxis(actor);
+
+    const auto& previousMovement = actor.getClass().getMovementSettings(actor);
+    const bool tryingToMove = !isDestReached
+        && (previousMovement.mPosition[0] != 0 || previousMovement.mPosition[1] != 0);
+    if (mMovementProgress.update({ position.x(), position.y(), position.z() }, tryingToMove, duration))
+    {
+        mPathFinder.clearPath();
+        mObstacleCheck.clear();
+        mReaction.reset();
+        mMovementProgress.reset();
+    }
 
     if (!isDestReached && timerStatus == Misc::TimerStatus::Elapsed)
     {
@@ -165,14 +177,8 @@ bool MWMechanics::AiPackage::pathTo(const MWWorld::Ptr& actor, const osg::Vec3f&
                 }
             }
 
-            if (!mPathFinder.getPath().empty()) // Path has points in it
-            {
-                const osg::Vec3f& lastPos = mPathFinder.getPath().back(); // Get the end of the proposed path
-
-                if (distance(dest, lastPos) > 100) // End of the path is far from the destination
-                    mPathFinder.addPointToPath(
-                        dest); // Adds the final destination to the path, to try to get to where you want to go
-            }
+            // Keep partial routes partial. Appending an unverified final segment
+            // can send ground actors through a wall or off a bank into water.
         }
     }
 
@@ -198,10 +204,17 @@ bool MWMechanics::AiPackage::pathTo(const MWWorld::Ptr& actor, const osg::Vec3f&
         zTurn(actor, getZAngleToPoint(position, dest));
         smoothTurn(actor, getXAngleToPoint(position, dest), 0);
         world->removeActorPath(actor);
-        return true;
+        auto& movement = actor.getClass().getMovementSettings(actor);
+        movement.mPosition[0] = movement.mPosition[1] = 0;
+        return isDestReached;
     }
     else if (mPathFinder.getPath().empty())
+    {
+        // Do not continue the previous movement command into an obstacle or drop.
+        auto& movement = actor.getClass().getMovementSettings(actor);
+        movement.mPosition[0] = movement.mPosition[1] = 0;
         return false;
+    }
 
     world->updateActorPath(actor, mPathFinder.getPath(), agentBounds, position, dest);
 
@@ -371,7 +384,7 @@ bool MWMechanics::AiPackage::checkWayIsClearForActor(
     const float actorSpeed = actor.getClass().getMaxSpeed(actor);
     const float maxAvoidDist
         = AI_REACTION_TIME * actorSpeed + actorSpeed / getAngularVelocity(actorSpeed) * 2; // *2 - for reliability
-    const float distToTarget = osg::Vec2f(endPoint.x(), endPoint.y()).length();
+    const float distToTarget = osg::Vec2f(endPoint.x() - startPoint.x(), endPoint.y() - startPoint.y()).length();
 
     const float offsetXY = distToTarget > maxAvoidDist * 1.5 ? maxAvoidDist : maxAvoidDist / 2;
 

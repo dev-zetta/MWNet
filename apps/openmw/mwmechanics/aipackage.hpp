@@ -1,6 +1,7 @@
 #ifndef GAME_MWMECHANICS_AIPACKAGE_H
 #define GAME_MWMECHANICS_AIPACKAGE_H
 
+#include <components/openmw-mp/Mechanics/MovementProgress.hpp>
 #include <memory>
 
 #include <components/detournavigator/areatype.hpp>
@@ -167,6 +168,7 @@ namespace MWMechanics
 
         // TODO: all this does not belong here, move into temporary storage
         PathFinder mPathFinder;
+        mwmp::mechanics::MovementProgress mMovementProgress{ 16, 3 };
         ObstacleCheck mObstacleCheck;
 
         AiReactionTimer mReaction;

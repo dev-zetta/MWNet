@@ -86,3 +86,42 @@ assert(skills.athletics.base == 1 and skills.security.base == 1)
 handler('athletics', 'jail', { skillIncreaseValue = -1 })
 assert(skills.athletics.base == 0)
 print('Respawn attribute and repeated recovery skill-floor tests passed')
+
+-- The native death/respawn callback persists an empty active-spell SET.
+-- Learned spells and permanent abilities remain in their separate spellbook.
+enumerations = { spellbook = { SET = 0, ADD = 1, REMOVE = 2 } }
+player.data.spellbook = { "permanent ability", "learned spell" }
+player.data.spellsActive = { weakness = { { effects = { { duration = 60 } } } } }
+BasePlayer.SaveSpellsActive(player, { action = enumerations.spellbook.SET, spellsActive = {} })
+assert(next(player.data.spellsActive) == nil)
+assert(#player.data.spellbook == 2)
+print('Empty respawn active-spell SET clears saved effects without erasing the spellbook')
+
+-- Exercise the real notification callbacks and their persistence boundaries.
+package.loaded.commandHandler = {}
+local events = dofile(root .. "eventHandler.lua")
+local saves = 0
+player.IsLoggedIn = function() return true end
+player.SaveSpellsActive = BasePlayer.SaveSpellsActive
+player.QuicksaveToDrive = function() saves = saves + 1 end
+Players = { [0] = player }
+customEventHooks = {
+    makeEventStatus = function() return {} end,
+    triggerHandlers = function() end,
+}
+packetReader = { GetPlayerPacketTables = function()
+    return { action = enumerations.spellbook.SET, spellsActive = {} }
+end }
+player.data.spellsActive = { poison = { {} } }
+events.OnPlayerSpellsActive(0)
+assert(next(player.data.spellsActive) == nil and saves == 1)
+local recoveredPositions = false
+LoadedCells = { ["test cell"] = {
+    SaveActorPositions = function() recoveredPositions = true end,
+    QuicksaveToDrive = function() assert(recoveredPositions); saves = saves + 1 end,
+} }
+events.OnActorRecovered(0, "test cell")
+assert(saves == 2)
+events.OnActorRecovered(0, "unloaded cell")
+assert(saves == 2)
+print('Respawn effect-clear and NPC recovery callbacks persist their committed state')

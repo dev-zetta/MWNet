@@ -1,5 +1,7 @@
 #include <apps/openmw-mp/MagicContent.hpp>
 #include <components/esm3/esmwriter.hpp>
+#include <components/esm3/cellref.hpp>
+#include <components/esm3/loadcell.hpp>
 #include <components/esm3/loadgmst.hpp>
 #include <components/esm3/loadmgef.hpp>
 #include <components/esm3/loadnpc.hpp>
@@ -63,6 +65,30 @@ namespace
             { 0, ESM::RefId::stringRefId("empty item") },
         };
         writeRecord(writer, npc);
+        ESM::Cell cell;
+        cell.blank();
+        cell.mName = "test cell";
+        cell.mData.mFlags = ESM::Cell::Interior | ESM::Cell::HasWater;
+        cell.mWater = 0;
+        writer.startRecord(ESM::Cell::sRecordId);
+        cell.save(writer);
+        ESM::CellRef ref;
+        ref.blank();
+        ref.mRefID = npc.mId;
+        ref.mRefNum = {1, 0};
+        ref.mPos.pos[0] = 100;
+        ref.mPos.pos[2] = 50;
+        ref.save(writer);
+        ref.mRefNum.mIndex = 2;
+        ref.mPos.pos[2] = -50; // Original underwater placements are ineligible.
+        ref.save(writer);
+        ref.mRefNum.mIndex = 3;
+        ref.mPos.pos[2] = 50;
+        ref.save(writer, false, false, true); // Deleted placement is ineligible.
+        ref.mRefNum.mIndex = 4;
+        ref.mRefID = ESM::RefId::stringRefId("ordinary item");
+        ref.save(writer);
+        writer.endRecord(ESM::Cell::sRecordId);
         writer.close();
     }
 
@@ -70,6 +96,16 @@ namespace
     {
         using namespace mwmp::mechanics;
         const auto content = mwmp::loadCanonicalMagicContent({ { directory }, { "test.esm" } });
+        if (content.recoveryAnchors.size() != 1
+            || content.recoveryAnchors[0].identity.cell != "test cell"
+            || content.recoveryAnchors[0].identity.refNum != 1
+            || content.recoveryAnchors[0].refId != "test merchant"
+            || content.recoveryAnchors[0].transform.position.x != 100
+            || content.recoveryAnchors[0].transform.position.z != 50)
+        {
+            std::cerr << "NPC recovery did not retain only the live dry content placement\n";
+            return false;
+        }
         if (content.definitions.size() != 1)
             return false;
         if (content.actorTemplates.size() != 1 || content.actorTemplates[0].inventory.size() != 2

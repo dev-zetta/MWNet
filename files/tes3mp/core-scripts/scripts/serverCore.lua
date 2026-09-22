@@ -935,3 +935,7 @@ end
 function OnObjectLoopTimeExpiration(loopIndex)
     eventHandler.OnObjectLoopTimeExpiration(loopIndex)
 end
+
+function OnActorRecovered(pid, cellDescription)
+    eventHandler.OnActorRecovered(pid, cellDescription)
+end

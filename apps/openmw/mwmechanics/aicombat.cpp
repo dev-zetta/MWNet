@@ -679,8 +679,10 @@ namespace MWMechanics
             // If we did not hit anything, there is a cliff behind actor.
             source = pos + osg::Vec3f(0, 0, 0.75f * halfExtents.z()) + fallbackDirection * (halfExtents.y() + 96);
             destination = source - osg::Vec3f(0, 0, 0.75f * halfExtents.z() + 96);
-            bool isCliffDetected = !rayCasting->castRay(source, destination, mask).mHit;
-            if (isCliffDetected)
+            const auto ground = rayCasting->castRay(source, destination, mask);
+            const bool unsafeGround = !ground.mHit
+                || MWBase::Environment::get().getWorld()->isUnderwater(actor.getCell(), ground.mHitPos);
+            if (unsafeGround)
                 return;
 
             mMovement.mPosition[1] = -1;

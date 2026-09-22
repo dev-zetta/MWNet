@@ -1289,6 +1289,17 @@ eventHandler.OnPlayerQuickKeys = function(pid)
     eventHandler.OnGenericPlayerEvent(pid, "PlayerQuickKeys")
 end
 
+-- This notification follows a committed native recovery, not a client proposal.
+eventHandler.OnActorRecovered = function(pid, cellDescription)
+    local cell = LoadedCells[cellDescription]
+    if cell ~= nil then
+        cell:SaveActorPositions()
+        cell:QuicksaveToDrive()
+    end
+    customEventHooks.triggerHandlers("OnActorRecovered", customEventHooks.makeEventStatus(true, true),
+        {pid, cellDescription})
+end
+
 eventHandler.OnPlayerSpellsActive = function(pid)
     local pendingEvent = pendingPlayerSpellsActiveEvents[pid]
     pendingPlayerSpellsActiveEvents[pid] = nil
@@ -1300,6 +1311,10 @@ eventHandler.OnPlayerSpellsActive = function(pid)
         local playerPacket = packetReader.GetPlayerPacketTables(
             pid, "PlayerSpellsActive")
         Players[pid]:SaveSpellsActive(playerPacket)
+        if playerPacket.action == enumerations.spellbook.SET and next(playerPacket.spellsActive) == nil then
+            -- Native death/respawn clears must survive an immediate reconnect.
+            Players[pid]:QuicksaveToDrive()
+        end
         local eventStatus = customEventHooks.makeEventStatus(true, true)
         customEventHooks.triggerHandlers("OnPlayerSpellsActive", eventStatus,
             {pid, playerPacket})

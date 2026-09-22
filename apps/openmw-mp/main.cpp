@@ -398,6 +398,13 @@ int main(int argc, char *argv[])
                 throw std::runtime_error(
                     "Canonical actor magic templates exceed server limits or are invalid");
             }
+            if (mgr.getOrDefault<bool>("actorRecoveryEnabled", "AI", true))
+            {
+                if (!networking.installActorRecoveryAnchors(magicContent->recoveryAnchors))
+                    throw std::runtime_error("Invalid canonical actor recovery anchors");
+                LOG_MESSAGE_SIMPLE(TimedLog::LOG_INFO, "Installed %llu canonical NPC recovery anchors",
+                    static_cast<unsigned long long>(magicContent->recoveryAnchors.size()));
+            }
             networking.setConsumableMagicItems(
                 std::move(magicContent->consumableItems));
             networking.setDirectConsumableMagicItems(

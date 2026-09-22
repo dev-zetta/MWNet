@@ -174,6 +174,8 @@ namespace mwmp::mechanics
         ActorStateResult applyPositions(
             const std::vector<ActorPositionUpdate>& updates,
             double theoreticalMaximumSpeed, Clock::time_point now);
+        // Server-only relocation: retain sequence protection and reset the movement baseline.
+        bool recoverPosition(const ActorIdentity& identity, const ActorTransform& transform, Clock::time_point now);
         ActorStateResult previewCellChanges(
             const std::vector<ActorCellChangeUpdate>& updates) const;
         ActorStateResult applyCellChanges(

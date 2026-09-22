@@ -3,6 +3,8 @@
 #include <components/esm/defs.hpp>
 #include <components/esm/attr.hpp>
 #include <components/esm3/loadclas.hpp>
+#include <components/esm3/loadcell.hpp>
+#include <components/esm3/cellref.hpp>
 #include <components/esm3/loadcrea.hpp>
 #include <components/esm3/loadench.hpp>
 #include <components/esm3/loadgmst.hpp>
@@ -463,6 +465,7 @@ namespace mwmp
         query.mLoadGameSettings = true;
         query.mLoadActorMagic = true;
         query.mLoadMagic = true;
+        query.mLoadCells = true;
         EsmLoader::EsmData data = EsmLoader::loadEsmData(query,
             options.contentFiles, collections, readers, &encoder);
         const double effectCostMultiplier
@@ -486,6 +489,43 @@ namespace mwmp
             throw std::runtime_error("canonical fatigue settings are invalid");
         }
         result.actorTemplates = makeActorTemplates(data, npcMagickaMultiplier);
+        for (const ESM::Cell& cell : data.mCells)
+        {
+            std::map<ESM::RefNum, mechanics::ActorRecoveryAnchor> anchors;
+            for (std::size_t index = 0; index < cell.mContextList.size(); ++index)
+            {
+                auto reader = readers.get(static_cast<std::size_t>(cell.mContextList[index].index));
+                cell.restore(*reader, static_cast<int>(index));
+                ESM::CellRef reference;
+                ESM::MovedCellRef movedReference;
+                bool deleted = false, moved = false;
+                while (ESM::Cell::getNextRef(*reader, reference, deleted, movedReference, moved))
+                {
+                    anchors.erase(reference.mRefNum);
+                    if (deleted || moved || findRecord(data.mNpcs, reference.mRefID) == nullptr)
+                        continue;
+                    // Water is legitimate for some creatures, so automatic dry
+                    // recovery anchors are restricted to placed NPCs on land.
+                    if ((cell.isExterior() || (cell.mData.mFlags & ESM::Cell::HasWater))
+                        && reference.mPos.pos[2] <= cell.mWater)
+                        continue;
+                    mechanics::ActorRecoveryAnchor anchor;
+                    anchor.identity = { cell.getShortDescription(), reference.mRefNum.mIndex, 0 };
+                    anchor.refId = canonicalId(reference.mRefID);
+                    anchor.transform.position = { reference.mPos.pos[0], reference.mPos.pos[1], reference.mPos.pos[2] };
+                    anchor.transform.rotation = { reference.mPos.rot[0], reference.mPos.rot[1], reference.mPos.rot[2] };
+                    anchors.emplace(reference.mRefNum, std::move(anchor));
+                }
+            }
+            // The current actor wire identity lacks a content-file index. Avoid
+            // ambiguous reference indices instead of guessing a recovery point.
+            std::map<std::uint32_t, unsigned> counts;
+            for (const auto& [ref, anchor] : anchors)
+                ++counts[ref.mIndex];
+            for (auto& [ref, anchor] : anchors)
+                if (counts[ref.mIndex] == 1)
+                    result.recoveryAnchors.push_back(std::move(anchor));
+        }
         result.definitions.reserve(data.mSpells.size()
             + data.mPotions.size() + data.mIngredients.size()
             + data.mEnchantedItems.size());

@@ -912,6 +912,10 @@ void LocalPlayer::resurrect()
 
     MWWorld::Ptr ptrPlayer = getPlayerPtr();
 
+    // Clear temporary casts immediately, including queued effects; permanent
+    // abilities and equipment effects remain owned by their normal sources.
+    ptrPlayer.getClass().getCreatureStats(ptrPlayer).getActiveSpells().clear(ptrPlayer);
+
     if (resurrectType == mwmp::RESURRECT_TYPE::IMPERIAL_SHRINE)
         MWBase::Environment::get().getWorld()->teleportToClosestMarker(ptrPlayer, ESM::RefId::stringRefId("divinemarker"));
     else if (resurrectType == mwmp::RESURRECT_TYPE::TRIBUNAL_TEMPLE)

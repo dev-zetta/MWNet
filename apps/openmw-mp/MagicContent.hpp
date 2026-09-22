@@ -3,6 +3,7 @@
 
 #include <components/openmw-mp/Mechanics/SpellResolver.hpp>
 #include <components/openmw-mp/Mechanics/ActorMagicRegistry.hpp>
+#include <components/openmw-mp/Mechanics/ActorRecovery.hpp>
 
 #include <filesystem>
 #include <string>
@@ -24,6 +25,7 @@ namespace mwmp
     {
         std::vector<mechanics::SpellDefinition> definitions;
         std::vector<mechanics::ActorMagicTemplate> actorTemplates;
+        std::vector<mechanics::ActorRecoveryAnchor> recoveryAnchors;
         std::unordered_set<std::string> consumableItems;
         std::unordered_set<std::string> directConsumableItems;
         double fatigueBase = 1;
