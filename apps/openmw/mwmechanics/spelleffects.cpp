@@ -1,5 +1,8 @@
 #include "spelleffects.hpp"
 
+#include <components/openmw-mp/NetworkActiveSpell.hpp>
+#include <components/debug/debuglog.hpp>
+
 #include <algorithm>
 #include <array>
 
@@ -434,6 +437,9 @@ namespace MWMechanics
             const ActiveSpells::ActiveSpellParams& spellParams, ESM::ActiveEffect& effect, bool& receivedMagicDamage,
             bool& affectedHealth, bool& recalculateMagicka)
         {
+            if (spellParams.isServerAuthoritative() && mwmp::serverTicksMagicEffect(effect.mEffectId))
+                return ESM::ActiveEffect::Flag_Applied;
+
             const auto world = MWBase::Environment::get().getWorld();
             const bool godmode = target == getPlayer() && world->getGodModeState();
             if (effect.mEffectId == ESM::MagicEffect::CureCommonDisease)
@@ -1344,7 +1350,13 @@ namespace MWMechanics
                 bool isEquipment = spellParams.hasFlag(ESM::ActiveSpells::Flag_Equipment);
 
                 if (!spellParams.hasFlag(ESM::ActiveSpells::Flag_Lua))
+                {
                     playEffects(target, *magicEffect, (isTemporary || (isEquipment && playNonLooping)));
+                    if (spellParams.isServerAuthoritative() && target == getPlayer())
+                        Log(Debug::Info) << "Server spell impact: source=" << spellParams.getSourceSpellId()
+                            << " effect=" << effect.mEffectId << " magnitude=" << effect.mMagnitude
+                            << " remaining=" << effect.mTimeLeft << " (hit sound/VFX requested)";
+                }
 
                 if (effect.mEffectId == ESM::MagicEffect::Soultrap && !target.getClass().isNpc()
                     && target.getType() == ESM::Creature::sRecordId

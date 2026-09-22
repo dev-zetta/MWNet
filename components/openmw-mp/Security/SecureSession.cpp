@@ -69,6 +69,7 @@ namespace mwmp::security
         : mReceiveKey(other.mReceiveKey)
         , mSendKey(other.mSendKey)
         , mReceiveCounter(other.mReceiveCounter)
+        , mReceiveWindow(other.mReceiveWindow)
         , mSendCounter(other.mSendCounter)
         , mValid(other.mValid)
     {
@@ -83,6 +84,7 @@ namespace mwmp::security
             mReceiveKey = other.mReceiveKey;
             mSendKey = other.mSendKey;
             mReceiveCounter = other.mReceiveCounter;
+            mReceiveWindow = other.mReceiveWindow;
             mSendCounter = other.mSendCounter;
             mValid = other.mValid;
             other.clear();
@@ -100,6 +102,7 @@ namespace mwmp::security
         sodium_memzero(mReceiveKey.data(), mReceiveKey.size());
         sodium_memzero(mSendKey.data(), mSendKey.size());
         mReceiveCounter = 0;
+        mReceiveWindow.reset();
         mSendCounter = 0;
         mValid = false;
     }
@@ -181,10 +184,14 @@ namespace mwmp::security
             error = SecurityError::InvalidMessage;
             return false;
         }
-        if (counter != mReceiveCounter)
+        if (mReceiveWindow.test(0) && counter <= mReceiveCounter)
         {
-            error = SecurityError::ReplayDetected;
-            return false;
+            const auto age = mReceiveCounter - counter;
+            if (age >= replayWindowSize || mReceiveWindow.test(static_cast<std::size_t>(age)))
+            {
+                error = SecurityError::ReplayDetected;
+                return false;
+            }
         }
 
         try
@@ -205,7 +212,25 @@ namespace mwmp::security
             }
             decoded.resize(static_cast<std::size_t>(decodedBytes));
             plaintext = std::move(decoded);
-            ++mReceiveCounter;
+            // Only authenticated frames may advance the window. A forged future
+            // counter must not evict valid in-flight messages or consume a slot.
+            if (!mReceiveWindow.test(0))
+            {
+                mReceiveCounter = counter;
+                mReceiveWindow.set(0);
+            }
+            else if (counter > mReceiveCounter)
+            {
+                const auto distance = counter - mReceiveCounter;
+                if (distance >= replayWindowSize)
+                    mReceiveWindow.reset();
+                else
+                    mReceiveWindow <<= static_cast<std::size_t>(distance);
+                mReceiveCounter = counter;
+                mReceiveWindow.set(0);
+            }
+            else
+                mReceiveWindow.set(static_cast<std::size_t>(mReceiveCounter - counter));
             return true;
         }
         catch (const std::bad_alloc&)

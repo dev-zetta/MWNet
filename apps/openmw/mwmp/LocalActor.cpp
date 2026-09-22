@@ -87,17 +87,20 @@ void LocalActor::updateCell()
 
 void LocalActor::updatePosition(bool forceUpdate)
 {
-    bool posIsChanging = false;
-
-    if (creatureStats.mDead)
+    const ESM::Position currentPosition = ptr.getRefData().getPosition();
+    const auto& movement = ptr.getClass().getMovementSettings(ptr);
+    for (std::size_t i = 0; i < 3; ++i)
     {
-        ESM::Position ptrPosition = ptr.getRefData().getPosition();
-        posIsChanging = position.pos[0] != ptrPosition.pos[0] || position.pos[1] != ptrPosition.pos[1] ||
-            position.pos[2] != ptrPosition.pos[2];
+        direction.pos[i] = movement.mPosition[i];
+        direction.rot[i] = movement.mRotation[i];
     }
-    else
+
+    // Physics and animation can move an actor without a movement command.
+    bool posIsChanging = position != currentPosition;
+
+    if (!creatureStats.mDead)
     {
-        posIsChanging = direction.pos[0] != 0 || direction.pos[1] != 0 || direction.pos[2] != 0 ||
+        posIsChanging = posIsChanging || direction.pos[0] != 0 || direction.pos[1] != 0 || direction.pos[2] != 0 ||
             direction.rot[0] != 0 || direction.rot[1] != 0 || direction.rot[2] != 0 ||
             !MWBase::Environment::get().getWorld()->isOnGround(ptr);
     }
@@ -105,7 +108,7 @@ void LocalActor::updatePosition(bool forceUpdate)
     if (forceUpdate || posIsChanging || posWasChanged)
     {
         posWasChanged = posIsChanging;
-        position = ptr.getRefData().getPosition();
+        position = currentPosition;
         mwmp::Main::get().getNetworking()->getActorList()->addPositionActor(*this);
     }
 }

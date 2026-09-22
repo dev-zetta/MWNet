@@ -75,6 +75,19 @@ endif()
 
 add_test(NAME tes3mp-unit COMMAND tes3mp-tests)
 
+if (TARGET components)
+    add_executable(tes3mp-actor-packet-tests actor_packets.cpp)
+    target_include_directories(tes3mp-actor-packet-tests PRIVATE ${CMAKE_SOURCE_DIR})
+    target_link_libraries(tes3mp-actor-packet-tests PRIVATE components)
+    add_test(NAME tes3mp-actor-packets COMMAND tes3mp-actor-packet-tests)
+
+    add_executable(tes3mp-magic-content-tests magic_content.cpp
+        ../openmw-mp/MagicContent.cpp)
+    target_include_directories(tes3mp-magic-content-tests PRIVATE ${CMAKE_SOURCE_DIR})
+    target_link_libraries(tes3mp-magic-content-tests PRIVATE components tes3mp-mechanics)
+    add_test(NAME tes3mp-magic-content COMMAND tes3mp-magic-content-tests)
+endif()
+
 add_executable(tes3mp-persistence-fault persistence_fault.cpp)
 target_include_directories(tes3mp-persistence-fault PRIVATE ${CMAKE_SOURCE_DIR})
 target_link_libraries(tes3mp-persistence-fault PRIVATE tes3mp-persistence)

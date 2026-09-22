@@ -13,6 +13,20 @@ void ActorProcessor::Do(ActorPacket &packet, Player &player, BaseActorList &acto
 
 bool ActorProcessor::Process(const mwmp::transport::ReceivedApplicationPacket& packet, BaseActorList &actorList)
 {
+    if (packet.id == protocol::ApplicationPacketId::ActorAuthority)
+    {
+        BaseActorList request;
+        request.guid = transport::TransportConnectionId(packet.sender.value);
+        request.isValid = true;
+        ActorPacket* decoder = Networking::get().getActorPacketController()->GetPacket(ID_ACTOR_AUTHORITY);
+        decoder->setActorList(&request);
+        decoder->Read(packet.payload);
+        if (request.isValid && decoder->isPacketValid())
+            Networking::getPtr()->renewActorAuthority(request);
+        decoder->setActorList(&actorList);
+        return true;
+    }
+
     for (auto &processor : processors)
     {
         if (processor.first == static_cast<std::uint16_t>(packet.id))

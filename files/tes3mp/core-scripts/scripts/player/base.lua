@@ -406,11 +406,13 @@ function BasePlayer:EndCharGen()
 
     if spawnUsed ~= nil and spawnUsed.cellDescription ~= nil then
         tes3mp.SetCell(self.pid, spawnUsed.cellDescription)
-        tes3mp.SendCell(self.pid)
 
         if spawnUsed.position ~= nil and spawnUsed.rotation ~= nil then
             tes3mp.SetPos(self.pid, spawnUsed.position[1], spawnUsed.position[2], spawnUsed.position[3])
             tes3mp.SetRot(self.pid, spawnUsed.rotation[1], spawnUsed.rotation[2])
+        end
+        tes3mp.SendCell(self.pid)
+        if spawnUsed.position ~= nil and spawnUsed.rotation ~= nil then
             tes3mp.SendPos(self.pid)
         end
 
@@ -584,6 +586,24 @@ function BasePlayer:ProcessDeath()
     end
 end
 
+function BasePlayer:RestoreRespawnAttributes()
+    local floor = math.floor(math.max(1, math.min(config.maxAttributeValue,
+        config.respawnAttributeFloor or 10)))
+    for index = 0, tes3mp.GetAttributeCount() - 1 do
+        local name = tes3mp.GetAttributeName(index)
+        local base = math.max(floor, tes3mp.GetAttributeBase(self.pid, index))
+        local damage = math.max(0, math.min(tes3mp.GetAttributeDamage(self.pid, index), base - floor))
+        tes3mp.SetAttributeBase(self.pid, index, base)
+        tes3mp.SetAttributeDamage(self.pid, index, damage)
+        local saved = self.data.attributes[name]
+        if type(saved) ~= "table" then saved = { skillIncrease = 0 } end
+        saved.base = base
+        saved.damage = damage
+        self.data.attributes[name] = saved
+    end
+    tes3mp.SendAttributes(self.pid)
+end
+
 function BasePlayer:Resurrect()
 
     local currentResurrectType = enumerations.resurrect.REGULAR
@@ -606,12 +626,14 @@ function BasePlayer:Resurrect()
         currentResurrectType = enumerations.resurrect.REGULAR
 
         tes3mp.SetCell(self.pid, config.defaultRespawn.cellDescription)
-        tes3mp.SendCell(self.pid)
 
         if config.defaultRespawn.position ~= nil and config.defaultRespawn.rotation ~= nil then
             tes3mp.SetPos(self.pid, config.defaultRespawn.position[1],
                 config.defaultRespawn.position[2], config.defaultRespawn.position[3])
             tes3mp.SetRot(self.pid, config.defaultRespawn.rotation[1], config.defaultRespawn.rotation[2])
+        end
+        tes3mp.SendCell(self.pid)
+        if config.defaultRespawn.position ~= nil and config.defaultRespawn.rotation ~= nil then
             tes3mp.SendPos(self.pid)
         end
     end
@@ -635,6 +657,7 @@ function BasePlayer:Resurrect()
     -- infinite death loop
     contentFixer.UnequipDeadlyItems(self.pid)
 
+    self:RestoreRespawnAttributes()
     tes3mp.Resurrect(self.pid, currentResurrectType)
 
     if config.deathPenaltyJailDays > 0 or config.bountyDeathPenalty then

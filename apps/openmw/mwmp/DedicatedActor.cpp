@@ -378,7 +378,7 @@ void DedicatedActor::addSpellsActive()
         MWWorld::TimeStamp timestamp = MWWorld::TimeStamp(activeSpell.timestampHour, activeSpell.timestampDay);
         int casterActorId = MechanicsHelper::getActorId(activeSpell.caster);
 
-        MechanicsHelper::createSpellGfx(getPtr(), activeSpell.params.mEffects);
+        // ActiveSpells presents the received effect once, including its hit sound.
 
         // Don't do a check for a spell's existence, because active effects from potions need to be applied here too
         activeSpells.addSpell(ESM::RefId::stringRefId(activeSpell.id), activeSpell.isStackingSpell, activeSpell.params.mEffects, activeSpell.params.mDisplayName, casterActorId);

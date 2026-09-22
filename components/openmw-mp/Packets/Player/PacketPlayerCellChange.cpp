@@ -15,6 +15,7 @@ void mwmp::PacketPlayerCellChange::Packet(bool send)
     Field(player->cell.mName, true);
 
     Field(player->previousCellPosition.pos, true);
+    Field(player->position, 1);
 
     Field(player->isChangingRegion);
 

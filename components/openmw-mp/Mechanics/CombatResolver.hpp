@@ -119,6 +119,7 @@ namespace mwmp::mechanics
         explicit CombatResolver(std::size_t maximumCombatants = 16384);
 
         bool upsert(CombatantId id, const CombatantState& state);
+        std::optional<CombatantState> prepareRespawn(CombatantId id) const;
         CombatResult resolve(const AttackIntent& intent, double serverRoll);
         bool previewRelocations(
             const std::vector<CombatantRelocation>& relocations) const;

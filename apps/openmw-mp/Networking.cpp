@@ -1,3 +1,5 @@
+#include <components/openmw-mp/ScopedActorList.hpp>
+#include <components/openmw-mp/Mechanics/AttackAnimation.hpp>
 #include "Player.hpp"
 #include "processors/ProcessorInitializer.hpp"
 
@@ -207,6 +209,33 @@ std::optional<session::AuthorityLease> Networking::assignActorAuthority(
     return result.lease;
 }
 
+void Networking::renewActorAuthority(BaseActorList& actorList)
+{
+    Cell* cell = CellController::get()->getCell(&actorList.cell);
+    Player* player = Players::getPlayer(actorList.guid);
+    if (!cell || !player || actorList.authorityLeaseId == 0
+        || *cell->getAuthority() != actorList.guid
+        || cell->getAuthorityLeaseId() != actorList.authorityLeaseId)
+        return;
+    const auto visitors = cell->getPlayers();
+    if (std::find(visitors.begin(), visitors.end(), player) == visitors.end())
+        return;
+
+    // Only the server's existing assignment can be renewed. An expired
+    // assignment receives a fresh generation; expired simulation is never applied.
+    const auto lease = assignActorAuthority(actorList.cell, actorList.guid);
+    if (!lease)
+        return;
+    cell->setAuthority(actorList.guid, lease->leaseId);
+    actorList.authorityLeaseId = lease->leaseId;
+    actorList.authorityLeaseDurationMs = static_cast<std::uint32_t>(
+        std::chrono::duration_cast<std::chrono::milliseconds>(
+            session::AuthorityLeaseManager::LeaseDuration).count());
+    ActorPacket* packet = getActorPacketController()->GetPacket(ID_ACTOR_AUTHORITY);
+    packet->setActorList(&actorList);
+    packet->Send(actorList.guid);
+}
+
 bool Networking::validateActorAuthority(const BaseActorList& actorList)
 {
     const auto validation = mAuthorityLeases.validateAndRenew(
@@ -214,6 +243,14 @@ bool Networking::validateActorAuthority(const BaseActorList& actorList)
         session::AuthorityLeaseManager::Clock::now());
     if (validation == session::LeaseValidation::Valid)
         return true;
+
+    // A loading pause can leave authentic samples in flight after expiry.
+    // Drop them, but do not treat an otherwise matching expired lease as forgery.
+    const auto previous = mAuthorityLeases.find(actorList.cell.getShortDescription());
+    if (validation == session::LeaseValidation::Expired && previous
+        && previous->owner == actorList.guid.value
+        && previous->leaseId == actorList.authorityLeaseId)
+        return false;
 
     const unsigned int violations = ++mAuthorityViolations[actorList.guid.value];
     LOG_MESSAGE_SIMPLE(TimedLog::LOG_WARN,
@@ -236,7 +273,11 @@ bool Networking::validatePlayerMovement(Player& player, const BasePlayer& incomi
     mechanics::MovementSample sample;
     sample.position = { incoming.position.pos[0], incoming.position.pos[1],
         incoming.position.pos[2] };
-    sample.cell = player.cell.getShortDescription();
+    sample.cell = incoming.cell.getShortDescription();
+    // Snapshots are unreliable and may cross a reliable cell-change packet.
+    // Discard mismatched cells without applying state or counting a speed violation.
+    if (sample.cell != player.cell.getShortDescription())
+        return false;
     sample.sequence = mCurrentApplicationSequence;
     // Initial synchronization may deliver position before cell state. It is
     // not gameplay movement and cannot establish a meaningful spatial bound.
@@ -275,19 +316,36 @@ bool Networking::validatePlayerMovement(Player& player, const BasePlayer& incomi
 bool Networking::validatePlayerCellChange(Player& player,
     const BasePlayer& incoming)
 {
-    const mechanics::MovementValidationResult result
-        = mMovementValidator.previewCellTransition(player.guid.value,
+    for (const float coordinate : incoming.position.pos)
+        if (!std::isfinite(coordinate)
+            || std::abs(coordinate) > mechanics::MovementValidator::MaximumCoordinateMagnitude)
+            return false;
+    for (const float rotation : incoming.position.rot)
+        if (!std::isfinite(rotation))
+            return false;
+    const auto current = mMovementValidator.current(player.guid.value);
+    if (current && incoming.cell.getShortDescription() == current->cell
+        && incoming.cell.getShortDescription() == player.cell.getShortDescription())
+        return false; // Repeated acknowledgement of an already accepted cell.
+
+    const auto now = mechanics::MovementValidator::Clock::now();
+    mechanics::MovementValidationResult result
+        = mMovementValidator.previewAuthorizedTransition(player.guid.value,
+            { { incoming.position.pos[0], incoming.position.pos[1], incoming.position.pos[2] },
+                incoming.cell.getShortDescription(), mCurrentApplicationSequence }, now);
+    if (!result.accepted())
+        result = mMovementValidator.previewCellTransition(player.guid.value,
             incoming.cell.getShortDescription(),
             { incoming.previousCellPosition.pos[0],
                 incoming.previousCellPosition.pos[1],
                 incoming.previousCellPosition.pos[2] },
-            128.0);
+            128.0, now, mMovementMaximumSpeed);
     if (result.accepted()
         && !mPendingPlayerCellChanges.contains(player.guid.value))
     {
         mPendingPlayerCellChanges.emplace(player.guid.value,
             PendingPlayerCellChange{ player.cell, player.previousCellPosition,
-                player.isChangingRegion });
+                player.position, player.isChangingRegion });
         return true;
     }
 
@@ -312,13 +370,13 @@ bool Networking::commitPlayerCellChange(Player& player)
     if (pending == mPendingPlayerCellChanges.end())
         return false;
 
-    const mechanics::MovementValidationResult result
-        = mMovementValidator.acceptCellTransition(player.guid.value,
-            player.cell.getShortDescription(),
-            { player.previousCellPosition.pos[0],
-                player.previousCellPosition.pos[1],
-                player.previousCellPosition.pos[2] },
-            128.0, mechanics::MovementValidator::Clock::now());
+    const mechanics::MovementSample destination{
+        { player.position.pos[0], player.position.pos[1], player.position.pos[2] },
+        player.cell.getShortDescription(), mCurrentApplicationSequence };
+    const auto result = mMovementValidator.commitCellTransition(player.guid.value,
+        destination, { player.previousCellPosition.pos[0], player.previousCellPosition.pos[1],
+            player.previousCellPosition.pos[2] }, 128.0, mMovementMaximumSpeed,
+        mechanics::MovementValidator::Clock::now());
     if (result.accepted())
     {
         mPendingPlayerCellChanges.erase(pending);
@@ -344,6 +402,7 @@ void Networking::cancelPlayerCellChange(Player& player) noexcept
         return;
     player.cell = pending->second.cell;
     player.previousCellPosition = pending->second.previousCellPosition;
+    player.position = pending->second.position;
     player.isChangingRegion = pending->second.isChangingRegion;
     mPendingPlayerCellChanges.erase(pending);
 }
@@ -365,20 +424,6 @@ void Networking::resetPlayerMovement(std::uint64_t connection) noexcept
 
 bool Networking::acceptPlayerDeath(Player& player)
 {
-    const mechanics::CombatantId combatant{
-        mechanics::CombatantKind::Player, player.guid.value, {} };
-    const auto combatState = mCombatResolver.find(combatant);
-    if (!combatState || combatState->alive || combatState->health > 0)
-    {
-        const unsigned int violations = ++mLifecycleViolations[player.guid.value];
-        LOG_MESSAGE_SIMPLE(TimedLog::LOG_WARN,
-            "Rejected non-canonical death intent from connection %llu (violation %u)",
-            static_cast<unsigned long long>(player.guid.value), violations);
-        if (violations >= 5)
-            disconnectTransport({ player.guid.value }, "repeated non-canonical death intents");
-        return false;
-    }
-
     const mechanics::PlayerLifeState lifeState
         = mPlayerLifecycle.state(player.guid.value);
     if (lifeState == mechanics::PlayerLifeState::Dead
@@ -387,6 +432,36 @@ bool Networking::acceptPlayerDeath(Player& player)
         LOG_MESSAGE_SIMPLE(TimedLog::LOG_VERBOSE,
             "Ignored duplicate death acknowledgement from connection %llu",
             static_cast<unsigned long long>(player.guid.value));
+        return false;
+    }
+
+    const mechanics::CombatantId combatant{
+        mechanics::CombatantKind::Player, player.guid.value, {} };
+    const auto combatState = mCombatResolver.find(combatant);
+    if (combatState && combatState->alive && combatState->health > 0)
+    {
+        // A predicted local death is not an authoritative lifecycle change.
+        // Resend health so the client can recover instead of waiting forever.
+        applyCanonicalHealth(player, *combatState);
+        const bool previousExchange = player.exchangeFullInfo;
+        player.exchangeFullInfo = true;
+        PlayerPacket* correction = playerPacketController->GetPacket(ID_PLAYER_STATS_DYNAMIC);
+        correction->setPlayer(&player);
+        correction->Send(player.guid);
+        player.exchangeFullInfo = previousExchange;
+        LOG_MESSAGE_SIMPLE(TimedLog::LOG_VERBOSE,
+            "Corrected non-canonical death for connection %llu with health %.3f",
+            static_cast<unsigned long long>(player.guid.value), combatState->health);
+        return false;
+    }
+    if (!combatState || combatState->alive || combatState->health > 0)
+    {
+        const unsigned int violations = ++mLifecycleViolations[player.guid.value];
+        LOG_MESSAGE_SIMPLE(TimedLog::LOG_WARN,
+            "Rejected non-canonical death intent from connection %llu (violation %u)",
+            static_cast<unsigned long long>(player.guid.value), violations);
+        if (violations >= 5)
+            disconnectTransport({ player.guid.value }, "repeated non-canonical death intents");
         return false;
     }
 
@@ -432,10 +507,25 @@ bool Networking::publishCanonicalPlayerDeath(Player& player, const Target& kille
 
 bool Networking::beginPlayerRespawn(Player& player, std::uint32_t respawnType)
 {
+    const mechanics::CombatantId id{ mechanics::CombatantKind::Player, player.guid.value, {} };
+    const auto restored = mCombatResolver.prepareRespawn(id);
+    if (!restored)
+    {
+        LOG_MESSAGE_SIMPLE(TimedLog::LOG_WARN,
+            "Cannot respawn connection %llu without canonical dead state and positive maximum health",
+            static_cast<unsigned long long>(player.guid.value));
+        return false;
+    }
     const mechanics::PlayerLifeTransition transition
         = mPlayerLifecycle.beginRespawn(player.guid.value, respawnType);
     if (transition.applied())
-        return true;
+    {
+        // Authorize resource restoration on the server before accepting any
+        // post-respawn client snapshots. Update both combat and spell state.
+        applyCanonicalHealth(player, *restored);
+        applyCanonicalFatigue(player, *restored);
+        return applyServerPlayerStats(player);
+    }
     LOG_MESSAGE_SIMPLE(TimedLog::LOG_WARN,
         "Rejected server respawn transition for connection %llu: %s",
         static_cast<unsigned long long>(player.guid.value),
@@ -3504,6 +3594,14 @@ bool Networking::validateActorCasts(Player& player, const BaseActorList& incomin
                 decision = mechanics::CastIntentDecision::InvalidTarget;
             }
         }
+        if (decision != mechanics::CastIntentDecision::Accepted)
+            LOG_MESSAGE_SIMPLE(TimedLog::LOG_VERBOSE,
+                "Invalid actor cast entry: actor=%u-%u type=%d pressed=%d "
+                "targetPlayer=%d targetGuid=%llu targetActor=%u-%u reason=%s",
+                actor.refNum, actor.mpNum, static_cast<int>(actor.cast.type),
+                actor.cast.pressed, actor.cast.target.isPlayer,
+                static_cast<unsigned long long>(actor.cast.target.guid.value),
+                actor.cast.target.refNum, actor.cast.target.mpNum, mechanics::describe(decision));
     }
     if (decision == mechanics::CastIntentDecision::Accepted)
         return true;
@@ -3873,6 +3971,17 @@ bool Networking::resolveActorCast(Player& player, BaseActorList& actorList,
     mActiveEffectLedger.swap(activeEffects);
     mCombatResolver.swap(combat);
     submittedActor.cast.success = result.applied();
+    LOG_MESSAGE_SIMPLE(TimedLog::LOG_VERBOSE,
+        "Actor cast %u-%u source %s resolved: %s, applications %u",
+        submittedActor.refNum, submittedActor.mpNum, sourceId.c_str(),
+        mechanics::describe(result.decision), static_cast<unsigned>(result.applications.size()));
+    for (const auto& application : result.applications)
+        LOG_MESSAGE_SIMPLE(TimedLog::LOG_VERBOSE,
+            "- Spell target %s %llu health %.3f fatigue %.3f active effects %u",
+            application.target.kind == mechanics::CombatantKind::Player ? "player" : "actor",
+            static_cast<unsigned long long>(application.target.value), application.health,
+            application.fatigue, application.activeSpell
+                ? static_cast<unsigned>(application.activeSpell->effects.size()) : 0);
 
     if (const auto casterMagic = mSpellResolver.findCombatant(casterId))
     {
@@ -4001,8 +4110,9 @@ bool Networking::resolveActorCast(Player& player, BaseActorList& actorList,
             ActorPacket* packet = actorPacketController->GetPacket(
                 ID_ACTOR_SPELLS_ACTIVE);
             packet->setActorList(&activeList);
+            packet->Send(player.guid);
             serverCell->sendToLoaded(packet, &activeList);
-            baseActorList = activeList;
+            const ScopedActorList scriptEvent(baseActorList, activeList);
             if (transport::TransportConnectionId* authorityId
                 = serverCell->getAuthority())
             {
@@ -5103,7 +5213,7 @@ bool Networking::validatePlayerAttack(Player& player, const BasePlayer& incoming
             valid = valid && std::isfinite(coordinate);
     }
 
-    if (!attack.pressed)
+    if (!mechanics::isAttackAnimationOnly(attack))
     {
         if (attack.target.isPlayer)
             valid = valid && attack.target.guid.value != 0 && attack.target.guid != player.guid;
@@ -5322,13 +5432,25 @@ bool Networking::validateActorAttacks(Player& player, const BaseActorList& incom
             for (const float coordinate : attack.projectileOrigin.orientation)
                 valid = valid && std::isfinite(coordinate);
         }
-        if (!attack.pressed)
+        if (!mechanics::isAttackAnimationOnly(attack))
         {
             if (attack.target.isPlayer)
                 valid = valid && attack.target.guid.value != 0;
             else
                 valid = valid && (attack.target.refNum != 0 || attack.target.mpNum != 0)
                     && !(attack.target.refNum != 0 && attack.target.mpNum != 0);
+        }
+        if (!valid)
+        {
+            LOG_MESSAGE_SIMPLE(TimedLog::LOG_VERBOSE,
+                "Invalid actor attack entry: actor=%u-%u type=%d pressed=%d hit=%d "
+                "targetPlayer=%d targetGuid=%llu targetActor=%u-%u strength=%.3f count=%u size=%zu",
+                actor.refNum, actor.mpNum, static_cast<int>(attack.type),
+                attack.pressed, attack.isHit, attack.target.isPlayer,
+                static_cast<unsigned long long>(attack.target.guid.value),
+                attack.target.refNum, attack.target.mpNum, attack.attackStrength,
+                incoming.count, incoming.baseActors.size());
+            break;
         }
     }
     if (valid)
@@ -5485,6 +5607,19 @@ bool Networking::resolveActorAttack(Player& player, BaseActorList& actorList,
         intent, static_cast<double>(randombytes_random()) * randomScale);
     if (!result.applied())
     {
+        if (result.decision == mechanics::CombatDecision::OutOfRange)
+        {
+            const auto targetState = mCombatResolver.find(targetId);
+            if (targetState)
+                LOG_MESSAGE_SIMPLE(TimedLog::LOG_VERBOSE,
+                    "Actor attack range: actor=%u-%u from=(%.2f,%.2f,%.2f) "
+                    "target=(%.2f,%.2f,%.2f) reach=%.2f",
+                    submittedActor.refNum, submittedActor.mpNum,
+                    attackerState->position.x, attackerState->position.y, attackerState->position.z,
+                    targetState->position.x, targetState->position.y, targetState->position.z,
+                    intent.kind == mechanics::AttackKind::Melee
+                        ? attackerState->meleeReach : attackerState->projectileReach);
+        }
         rejectionReason = mechanics::describe(result.decision);
         return false;
     }

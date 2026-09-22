@@ -66,6 +66,7 @@ void ActorFunctions::ClearActorList()
     writeActorList.authorityLeaseId = 0;
     writeActorList.authorityLeaseDurationMs = 0;
     writeActorList.baseActors.clear();
+    writeActorList.count = 0;
 }
 
 void ActorFunctions::SetActorListPid(unsigned short pid)
@@ -559,6 +560,8 @@ void ActorFunctions::AddActorSpellActiveEffect(int effectId, double magnitude, d
 void ActorFunctions::AddActor()
 {
     writeActorList.baseActors.push_back(tempActor);
+    // Server-side validators run before packet serialization updates the count.
+    writeActorList.count = static_cast<unsigned int>(writeActorList.baseActors.size());
 
     tempActor = emptyActor;
 }

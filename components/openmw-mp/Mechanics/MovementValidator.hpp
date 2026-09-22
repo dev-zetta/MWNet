@@ -75,11 +75,20 @@ namespace mwmp::mechanics
             Clock::time_point now);
         MovementValidationResult previewCellTransition(std::uint64_t connection,
             std::string_view destinationCell, Position3 previousPosition,
-            double tolerance) const;
+            double tolerance, Clock::time_point now = Clock::time_point{},
+            double theoreticalMaximumSpeed = 0) const;
         MovementValidationResult acceptCellTransition(std::uint64_t connection,
             std::string destinationCell, Position3 previousPosition,
             double tolerance, Clock::time_point now,
-            std::chrono::milliseconds lifetime = TransitionLifetime);
+            std::chrono::milliseconds lifetime = TransitionLifetime,
+            double theoreticalMaximumSpeed = 0);
+
+        MovementValidationResult commitCellTransition(std::uint64_t connection,
+            const MovementSample& destination, Position3 previousPosition,
+            double tolerance, double theoreticalMaximumSpeed, Clock::time_point now);
+
+        MovementValidationResult previewAuthorizedTransition(std::uint64_t connection,
+            const MovementSample& destination, Clock::time_point now) const;
 
         bool authorizeTransition(std::uint64_t connection, std::string cell,
             Position3 position, double tolerance, Clock::time_point now,

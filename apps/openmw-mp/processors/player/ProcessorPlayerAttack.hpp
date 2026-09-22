@@ -1,6 +1,7 @@
 #ifndef OPENMW_PROCESSORPLAYERATTACK_HPP
 #define OPENMW_PROCESSORPLAYERATTACK_HPP
 
+#include <components/openmw-mp/Mechanics/AttackAnimation.hpp>
 #include "../PlayerProcessor.hpp"
 #include "apps/openmw-mp/Networking.hpp"
 
@@ -29,8 +30,9 @@ namespace mwmp
             if (!player.creatureStats.mDead)
             {
                 Networking* networking = Networking::getPtr();
+                const bool animationOnly = mechanics::isAttackAnimationOnly(player.attack);
                 networking->sanitizePlayerAttack(player);
-                if (player.attack.pressed)
+                if (animationOnly)
                 {
                     player.sendToLoaded(&packet);
                     return;

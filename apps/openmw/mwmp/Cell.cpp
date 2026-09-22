@@ -1,4 +1,5 @@
 #include <components/esm3/cellid.hpp>
+#include <components/openmw-mp/Session/AuthorityLease.hpp>
 #include <components/openmw-mp/TimedLog.hpp>
 
 #include "../mwbase/environment.hpp"
@@ -32,7 +33,24 @@ Cell::~Cell()
 
 void Cell::updateLocal(bool forceUpdate)
 {
-    if (localActors.empty())
+    if (!hasLocalAuthority() || authorityLeaseId == 0)
+        return;
+
+    // Renew even quiet/empty cells. After a loading pause, wait for the
+    // server to confirm (or replace) the lease before sending simulation.
+    if (!awaitingAuthorityRenewal && std::chrono::steady_clock::now() >= nextAuthorityRenewal)
+    {
+        BaseActorList request;
+        request.guid = authorityGuid;
+        request.cell = store->getCell()->getEsm3();
+        request.authorityLeaseId = authorityLeaseId;
+        ActorPacket* packet = Main::get().getNetworking()->getActorPacket(ID_ACTOR_AUTHORITY);
+        packet->setActorList(&request);
+        packet->Send();
+        packet->setActorList(Main::get().getNetworking()->getActorList());
+        awaitingAuthorityRenewal = true;
+    }
+    if (awaitingAuthorityRenewal || localActors.empty())
         return;
 
     const float timeoutSec = 0.025;
@@ -669,10 +687,19 @@ bool Cell::hasLocalAuthority()
     return authorityGuid == Main::get().getLocalPlayer()->guid;
 }
 
+bool Cell::hasUsableAuthority()
+{
+    return hasLocalAuthority() && authorityLeaseId != 0 && !awaitingAuthorityRenewal
+        && std::chrono::steady_clock::now() < nextAuthorityRenewal;
+}
+
 void Cell::setAuthority(const mwmp::transport::TransportConnectionId& guid, std::uint64_t leaseId)
 {
     authorityGuid = guid;
     authorityLeaseId = leaseId;
+    awaitingAuthorityRenewal = false;
+    nextAuthorityRenewal = std::chrono::steady_clock::now()
+        + session::AuthorityLeaseManager::RenewalInterval;
 }
 
 std::uint64_t Cell::getAuthorityLeaseId() const

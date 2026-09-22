@@ -131,12 +131,19 @@ local function jailTimeServed(days, ignoreSkillIncreases)
     math.randomseed(core.getSimulationTime())
     for day=1,days do
         local skillid = skillByNumber[math.random(#skillByNumber)]
+        local skillStat = NPC.stats.skills[skillid](self)
         -- skillLevelUp() handles skill-based increase/decrease
-        if ignoreSkillIncreases and (skillid == 'security' or skillid == 'sneak') then
-            local skillStat = NPC.stats.skills[skillid](self)
-            skillStat.base = math.max(0, skillStat.base - 1)
+        -- Recovery after death suppresses skill gains. Its penalties stop at 1;
+        -- ordinary prison sentences retain their normal progression rules.
+        if ignoreSkillIncreases and skillStat.base <= 1 then
+            -- Do not turn a penalty into a free skill increase for old saves.
+        elseif ignoreSkillIncreases and (skillid == 'security' or skillid == 'sneak') then
+            skillStat.base = math.max(1, skillStat.base - 1)
         else
             I.SkillProgression.skillLevelUp(skillid, I.SkillProgression.SKILL_INCREASE_SOURCES.Jail)
+            if ignoreSkillIncreases then
+                skillStat.base = math.max(1, skillStat.base)
+            end
         end
     end
 

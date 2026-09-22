@@ -73,6 +73,11 @@ namespace mwmp
                 if (!networking->resolveActorCast(player, actorList, index,
                     actorDeath, rejectionReason))
                 {
+                    LOG_MESSAGE_SIMPLE(TimedLog::LOG_VERBOSE,
+                        "Actor cast %u-%u source %s in %s rejected: %s",
+                        actor.refNum, actor.mpNum,
+                        (actor.cast.type == Cast::ITEM ? actor.cast.itemId : actor.cast.spellId).c_str(),
+                        cellDescription.c_str(), rejectionReason.c_str());
                     Script::Call<Script::CallbackIdentity(
                         "OnActorCastIntentRejected")>(player.getId(),
                         cellDescription.c_str(), static_cast<unsigned int>(index),

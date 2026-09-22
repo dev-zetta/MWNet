@@ -1,4 +1,5 @@
 #include <components/openmw-mp/Mechanics/CombatResolver.hpp>
+#include <components/openmw-mp/Mechanics/AttackAnimation.hpp>
 
 #include <cmath>
 #include <iostream>
@@ -39,6 +40,44 @@ namespace
         result.position = position;
         result.alive = health > 0;
         return result;
+    }
+
+    void testAttackAnimationPhases()
+    {
+        // Wind-up and targetless release/cancellation bypass damage resolution.
+        EXPECT(isAttackAnimationOnly(true, false, false, 0, 0, 0));
+        EXPECT(isAttackAnimationOnly(false, false, false, 0, 0, 0));
+        // A hit claim or a specified target still requires combat validation.
+        EXPECT(!isAttackAnimationOnly(false, true, false, 0, 0, 0));
+        EXPECT(!isAttackAnimationOnly(false, false, true, 7, 0, 0));
+        EXPECT(!isAttackAnimationOnly(false, false, false, 0, 128964, 0));
+        EXPECT(!isAttackAnimationOnly(false, false, false, 0, 0, 9));
+        // Stale/malformed player markers must not become targetless animations.
+        EXPECT(!isAttackAnimationOnly(false, false, true, 0, 0, 0));
+        EXPECT(!isAttackAnimationOnly(false, false, false, 7, 0, 0));
+    }
+
+    void testCanonicalRespawnResources()
+    {
+        CombatResolver resolver;
+        const CombatantId player{ CombatantKind::Player, 7, {} };
+        EXPECT(!resolver.prepareRespawn(player));
+        auto dead = state(80, {});
+        dead.health = 0;
+        dead.alive = false;
+        dead.fatigue = 0;
+        dead.fatigueRatio = 0;
+        EXPECT(resolver.upsert(player, dead));
+        const auto restored = resolver.prepareRespawn(player);
+        EXPECT(restored.has_value());
+        EXPECT(resolver.find(player)->health == 0); // preparation is not authorization
+        EXPECT(restored->health == 80 && restored->alive);
+        EXPECT(restored->fatigue == 100 && restored->fatigueRatio == 1);
+        EXPECT(resolver.upsert(player, *restored));
+        EXPECT(!resolver.prepareRespawn(player)); // cannot heal a living player
+        dead.maximumHealth = 0;
+        EXPECT(resolver.upsert(player, dead));
+        EXPECT(!resolver.prepareRespawn(player));
     }
 
     void testCanonicalHitAndDeath()
@@ -150,6 +189,8 @@ namespace
 
 int runCombatTests()
 {
+    testAttackAnimationPhases();
+    testCanonicalRespawnResources();
     testCanonicalHitAndDeath();
     testMissRangeAndSequence();
     testInvalidDataAndCapacity();

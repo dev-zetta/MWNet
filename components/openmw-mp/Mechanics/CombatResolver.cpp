@@ -31,6 +31,18 @@ namespace mwmp::mechanics
         return true;
     }
 
+    std::optional<CombatantState> CombatResolver::prepareRespawn(CombatantId id) const
+    {
+        auto restored = find(id);
+        if (!restored || restored->alive || restored->health > 0 || restored->maximumHealth <= 0)
+            return std::nullopt;
+        restored->health = restored->maximumHealth;
+        restored->fatigue = restored->maximumFatigue;
+        restored->fatigueRatio = 1;
+        restored->alive = true;
+        return restored;
+    }
+
     CombatResult CombatResolver::resolve(const AttackIntent& intent, double serverRoll)
     {
         CombatResult result;

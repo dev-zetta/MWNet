@@ -277,6 +277,16 @@ void MechanicsFunctions::Resurrect(unsigned short pid, unsigned int type)
 
     packet->Send(false);
     packet->Send(true);
+
+    // Send restored canonical resources after resurrection, so clients do not
+    // retain the last zero-health snapshot. Include all three resources.
+    const bool previousExchange = player->exchangeFullInfo;
+    player->exchangeFullInfo = true;
+    packet = mwmp::Networking::get().getPlayerPacketController()->GetPacket(ID_PLAYER_STATS_DYNAMIC);
+    packet->setPlayer(player);
+    packet->Send(false);
+    packet->Send(true);
+    player->exchangeFullInfo = previousExchange;
 }
 
 // All methods below are deprecated versions of methods from above

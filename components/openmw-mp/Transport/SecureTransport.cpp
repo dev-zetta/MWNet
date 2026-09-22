@@ -31,6 +31,8 @@ namespace mwmp::transport
         constexpr std::uint16_t sClientProofMessage = 0xfff2;
         constexpr std::uint16_t sServerProofMessage = 0xfff3;
         constexpr std::uint16_t sSecureDataMessage = 0xfff4;
+        constexpr std::uint16_t sKeepaliveMessage = 0xfff5;
+        constexpr std::string_view sKeepalive = "TES3MP protocol 11 keepalive";
         constexpr std::string_view sClientProof = "TES3MP protocol 11 client proof";
         constexpr std::string_view sServerProof = "TES3MP protocol 11 server proof";
         constexpr std::size_t sSecureFrameOverhead = 1 + sizeof(std::uint64_t)
@@ -38,7 +40,7 @@ namespace mwmp::transport
 
         bool isReservedMessage(std::uint16_t messageType)
         {
-            return messageType >= sClientHelloMessage && messageType <= sSecureDataMessage;
+            return messageType >= sClientHelloMessage && messageType <= sKeepaliveMessage;
         }
 
         std::span<const std::byte> bytes(std::string_view value)
@@ -70,6 +72,7 @@ namespace mwmp::transport
         {
             Phase phase = Phase::RawConnected;
             Clock::time_point handshakeDeadline;
+            Clock::time_point lastSent = Clock::now();
             std::unique_ptr<security::ClientHandshake> clientHandshake;
             security::SecureSession session;
             std::string presentedFingerprint;
@@ -99,6 +102,7 @@ namespace mwmp::transport
         bool connectInProgress = false;
         std::optional<std::string> automationFingerprint;
         std::chrono::milliseconds handshakeTimeout{ 10'000 };
+        std::chrono::milliseconds keepaliveInterval{ 5'000 };
         mutable std::mutex mutex;
         std::unordered_map<std::uint64_t, Connection> connections;
         TransportQueue events;
@@ -112,6 +116,8 @@ namespace mwmp::transport
                 return false;
             }
             handshakeTimeout = options.timeouts.handshake;
+            keepaliveInterval = std::clamp(options.timeouts.read / 3,
+                std::chrono::milliseconds(1), std::chrono::milliseconds(5'000));
             return transport->listen(options, error);
         }
 
@@ -148,6 +154,8 @@ namespace mwmp::transport
             remotePort = options.port;
             automationFingerprint = options.trustedFingerprint;
             handshakeTimeout = options.timeouts.handshake;
+            keepaliveInterval = std::clamp(options.timeouts.read / 3,
+                std::chrono::milliseconds(1), std::chrono::milliseconds(5'000));
             connectInProgress = true;
             if (!transport->connect(options, connection, error))
             {
@@ -224,11 +232,15 @@ namespace mwmp::transport
             outer.flags = message.flags & protocol::envelopeFlagBulkChunk;
             outer.sequence = message.sequence;
             outer.payload = std::move(encrypted);
-            return transport->send(std::move(outer), error);
+            const bool sent = transport->send(std::move(outer), error);
+            if (sent)
+                found->second.lastSent = Clock::now();
+            return sent;
         }
 
         std::optional<TransportEvent> poll(std::chrono::milliseconds timeout)
         {
+            sendKeepalives();
             if (auto ready = events.tryPop())
                 return ready;
 
@@ -242,7 +254,7 @@ namespace mwmp::transport
                 const auto now = Clock::now();
                 const auto remaining = now >= deadline ? std::chrono::milliseconds(0)
                                                        : std::chrono::duration_cast<std::chrono::milliseconds>(deadline - now);
-                auto event = transport->poll(remaining);
+                auto event = transport->poll(std::min(remaining, keepaliveInterval));
                 if (!event)
                     return events.tryPop();
                 process(std::move(*event));
@@ -349,6 +361,9 @@ namespace mwmp::transport
             else if (connection.phase == Phase::Authenticated
                 && message.messageType == sSecureDataMessage)
                 acceptSecureData(message, connection);
+            else if (connection.phase == Phase::Authenticated
+                && message.messageType == sKeepaliveMessage)
+                acceptKeepalive(message, connection);
             else
                 failLocked(message.connection, "unexpected or out-of-order secure transport message");
         }
@@ -518,6 +533,39 @@ namespace mwmp::transport
             if (!events.tryPush(
                     { TransportEventType::Message, message.connection, std::move(decoded), {} }))
                 failLocked(message.connection, "secure transport event queue is full");
+        }
+
+        void acceptKeepalive(const TransportMessage& message, Connection& connection)
+        {
+            std::vector<std::byte> plaintext;
+            security::SecurityError error = security::SecurityError::None;
+            if (message.lane != MessageLane::System
+                || message.delivery != DeliveryMode::ReliableOrdered
+                || !connection.session.open(message.payload, plaintext, error)
+                || !std::ranges::equal(plaintext, bytes(sKeepalive)))
+                failLocked(message.connection, "invalid authenticated keepalive");
+        }
+
+        void sendKeepalives()
+        {
+            std::scoped_lock lock(mutex);
+            const auto now = Clock::now();
+            std::vector<TransportConnectionId> failed;
+            for (auto& [id, connection] : connections)
+            {
+                if (connection.phase != Phase::Authenticated
+                    || now - connection.lastSent < keepaliveInterval)
+                    continue;
+                std::vector<std::byte> encrypted;
+                security::SecurityError error = security::SecurityError::None;
+                if (!connection.session.seal(bytes(sKeepalive), encrypted, error)
+                    || !sendControl(TransportConnectionId(id), sKeepaliveMessage, std::move(encrypted)))
+                    failed.emplace_back(id);
+                else
+                    connection.lastSent = now;
+            }
+            for (auto id : failed)
+                failLocked(id, "failed to send authenticated keepalive");
         }
 
         bool sendControl(TransportConnectionId connection, std::uint16_t messageType,

@@ -219,6 +219,10 @@ config.deathTime = 5
 -- The number of days spent in jail as a penalty for dying, when respawning
 config.deathPenaltyJailDays = 5
 
+-- Minimum base and undamaged attribute value after respawn. This keeps repeated
+-- recovery from leaving a character with negligible strength or movement speed.
+config.respawnAttributeFloor = 10
+
 -- Whether players' bounties are reset to 0 after dying
 config.bountyResetOnDeath = true
 

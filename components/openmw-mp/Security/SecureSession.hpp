@@ -4,6 +4,7 @@
 #include "ServerIdentity.hpp"
 
 #include <array>
+#include <bitset>
 #include <cstddef>
 #include <cstdint>
 #include <span>
@@ -44,6 +45,8 @@ namespace mwmp::security
     class SecureSession
     {
     public:
+        // Bounded anti-replay history permits independent lanes and packet loss.
+        static constexpr std::size_t replayWindowSize = 4096;
         SecureSession() = default;
         SecureSession(SecureSession&& other) noexcept;
         SecureSession& operator=(SecureSession&& other) noexcept;
@@ -67,7 +70,9 @@ namespace mwmp::security
 
         std::array<unsigned char, crypto_kx_SESSIONKEYBYTES> mReceiveKey{};
         std::array<unsigned char, crypto_kx_SESSIONKEYBYTES> mSendKey{};
+        // Highest authenticated counter, with bit zero marking its receipt.
         std::uint64_t mReceiveCounter = 0;
+        std::bitset<replayWindowSize> mReceiveWindow;
         std::uint64_t mSendCounter = 0;
         bool mValid = false;
     };

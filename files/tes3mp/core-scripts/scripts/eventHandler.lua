@@ -624,7 +624,11 @@ eventHandler.OnPlayerConnect = function(pid, playerName, nativeAuthentication)
         end
 
         if nativeAuthentication ~= nil then
-            if nativeAuthentication.isNewAccount then
+            -- Native credentials are saved before character creation completes.
+            -- A disconnected new player can therefore authenticate again without
+            -- having a gameplay document yet. Resume chargen instead of loading
+            -- a nonexistent file (which would stop the entire server).
+            if nativeAuthentication.isNewAccount or not Players[pid]:HasAccount() then
                 Players[pid]:RegisterAuthenticated()
                 message = "You have successfully registered.\n" .. config.chatWindowInstructions
             else

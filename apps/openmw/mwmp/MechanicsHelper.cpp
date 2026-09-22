@@ -283,12 +283,9 @@ mwmp::Target MechanicsHelper::getTarget(const MWWorld::Ptr& ptr)
 
 void MechanicsHelper::clearTarget(mwmp::Target& target)
 {
-    target.isPlayer = false;
-    target.refId.clear();
-    target.refNum = -1;
-    target.mpNum = -1;
-
-    target.name.clear();
+    // The wire representation of no target uses zero identifiers. The old
+    // unsigned -1 sentinels looked like two simultaneous actor identities.
+    target = {};
 }
 
 bool MechanicsHelper::isEmptyTarget(const mwmp::Target& target)
@@ -331,6 +328,7 @@ void MechanicsHelper::resetAttack(Attack* attack)
     attack->applyWeaponEnchantment = false;
     attack->applyAmmoEnchantment = false;
     attack->hitPosition.pos[0] = attack->hitPosition.pos[1] = attack->hitPosition.pos[2] = 0;
+    attack->target.isPlayer = false;
     attack->target.guid = mwmp::transport::TransportConnectionId();
     attack->target.refId.clear();
     attack->target.refNum = 0;
@@ -341,10 +339,7 @@ void MechanicsHelper::resetCast(Cast* cast)
 {
     cast->isHit = false;
     cast->success = false;
-    cast->target.guid = mwmp::transport::TransportConnectionId();
-    cast->target.refId.clear();
-    cast->target.refNum = 0;
-    cast->target.mpNum = 0;
+    clearTarget(cast->target);
 }
 
 bool MechanicsHelper::getSpellSuccess(std::string spellId, const MWWorld::Ptr& caster)

@@ -1,6 +1,7 @@
 #include "activespells.hpp"
 
 #include <components/debug/debuglog.hpp>
+#include <components/openmw-mp/NetworkActiveSpell.hpp>
 
 #include <components/misc/resourcehelpers.hpp>
 
@@ -296,12 +297,12 @@ namespace MWMechanics
 
                         Whenever a local actor loses an active spell, send an ID_ACTOR_SPELLS_ACTIVE packet to the server with it
                     */
-                    if (this == &MWMechanics::getPlayer().getClass().getCreatureStats(MWMechanics::getPlayer()).getActiveSpells())
+                    if (!spellIt->isServerAuthoritative() && this == &MWMechanics::getPlayer().getClass().getCreatureStats(MWMechanics::getPlayer()).getActiveSpells())
                     {
                         mwmp::Main::get().getLocalPlayer()->sendSpellsActiveRemoval(spellIt->getSourceSpellId().getRefIdString(),
                             MechanicsHelper::isStackingSpell(spellIt->getSourceSpellId().getRefIdString()), spellIt->mNextWorsening);
                     }
-                    else
+                    else if (!spellIt->isServerAuthoritative())
                     {
                         MWWorld::Ptr actorPtr = MWBase::Environment::get().getWorld()->searchPtrViaActorId(getActorId());
 
@@ -588,12 +589,12 @@ namespace MWMechanics
     void ActiveSpells::addSpell(const ESM::RefId& id, bool stack, std::vector<ActiveEffect> effects,
                                 const std::string& displayName, int casterActorId)
     {
-        ESM::ActiveSpells::ActiveSpellParams esmParams;
-        esmParams.mSourceSpellId = id;
-        esmParams.mEffects = std::move(effects);
-        esmParams.mDisplayName = displayName;
-        esmParams.mFlags = ESM::ActiveSpells::Flag_SpellStore;
-        mQueue.emplace_back(ActiveSpellParams{ esmParams });
+        const auto caster = MWBase::Environment::get().getWorld()->searchPtrViaActorId(casterActorId);
+        auto esmParams = mwmp::networkActiveSpell(id, stack, std::move(effects), displayName,
+            caster.isEmpty() ? ESM::RefNum{} : caster.getCellRef().getRefNum());
+        ActiveSpellParams params{ esmParams };
+        params.mServerAuthoritative = true;
+        mQueue.emplace_back(std::move(params));
     }
     /* End of tes3mp addition */
 

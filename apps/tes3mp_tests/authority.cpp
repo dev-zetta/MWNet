@@ -90,6 +90,32 @@ namespace
         EXPECT(leases.size() == 0);
     }
 
+    void testQuietCellRenewalAndLoadingPause()
+    {
+        AuthorityLeaseManager leases;
+        const auto start = AuthorityLeaseManager::Clock::time_point{};
+        const auto original = leases.grant("Seyda Neen", 7, start).lease.value();
+        // A quiet cell produces no simulation, but explicit renewals keep it alive.
+        for (auto elapsed = 2s; elapsed <= 60s; elapsed += 2s)
+            EXPECT(leases.renew(original.cell, 7, original.leaseId, start + elapsed)
+                == LeaseValidation::Valid);
+        EXPECT(leases.validate(original.cell, 7, original.leaseId, start + 64s)
+            == LeaseValidation::Valid);
+        // A pause longer than the lease cannot revive the expired generation.
+        EXPECT(leases.renew(original.cell, 7, original.leaseId, start + 66s)
+            == LeaseValidation::Expired);
+        const auto replacement = leases.grant(original.cell, 7, start + 66s).lease.value();
+        EXPECT(replacement.leaseId != original.leaseId);
+        EXPECT(leases.validate(original.cell, 7, original.leaseId, start + 66s)
+            == LeaseValidation::WrongLease);
+        EXPECT(leases.renew(original.cell, 8, replacement.leaseId, start + 67s)
+            == LeaseValidation::WrongOwner);
+        EXPECT(leases.find(original.cell)->expiresAt == start + 71s);
+        EXPECT(leases.releaseOwner(7) == 1);
+        EXPECT(leases.renew(original.cell, 7, replacement.leaseId, start + 68s)
+            == LeaseValidation::NotFound);
+    }
+
     void testLimits()
     {
         AuthorityLeaseManager leases(1);
@@ -112,6 +138,7 @@ int runAuthorityTests()
     testGrantRenewAndValidate();
     testExistingLeaseCannotBeStolen();
     testReleaseAndExpiry();
+    testQuietCellRenewalAndLoadingPause();
     testLimits();
     return sFailures;
 }

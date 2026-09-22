@@ -1,5 +1,7 @@
 #include "spellcasting.hpp"
 
+#include <algorithm>
+
 #include <components/esm3/loadench.hpp>
 #include <components/esm3/loadmgef.hpp>
 #include <components/esm3/loadstat.hpp>
@@ -44,6 +46,31 @@
 
 namespace MWMechanics
 {
+    namespace
+    {
+        mwmp::Target castIntentTarget(const MWWorld::Ptr& caster,
+            const MWWorld::Ptr& contact, const ESM::EffectList& effects)
+        {
+            if (mwmp::Main::get().getCellController()->isLocalActor(caster))
+            {
+                // Hit contact is a short-range query. A ranged NPC cast must
+                // name its AI opponent even when no actor is within touch range.
+                // This is intent only: the server still validates target and range.
+                const bool needsTarget = std::any_of(effects.mList.begin(), effects.mList.end(),
+                    [](const auto& effect) { return effect.mData.mRange != ESM::RT_Self; });
+                if (!needsTarget)
+                    return {};
+                MWWorld::Ptr opponent;
+                if (caster.getClass().getCreatureStats(caster).getAiSequence().getCombatTarget(opponent)
+                    && opponent.getClass().isActor())
+                    return MechanicsHelper::getTarget(opponent);
+                if (contact.isEmpty() || !contact.getClass().isActor())
+                    return {};
+            }
+            return MechanicsHelper::getTarget(contact);
+        }
+    }
+
     CastSpell::CastSpell(
         const MWWorld::Ptr& caster, const MWWorld::Ptr& target, const bool fromProjectile, const bool scriptedSpell)
         : mCaster(caster)
@@ -294,7 +321,7 @@ namespace MWMechanics
                 localCast->type = mwmp::Cast::ITEM;
                 localCast->itemId = mId.getRefIdString();
                 localCast->spellId.clear();
-                localCast->target = MechanicsHelper::getTarget(mTarget);
+                localCast->target = castIntentTarget(mCaster, mTarget, enchantment->mEffects);
             }
         }
 
@@ -418,7 +445,7 @@ namespace MWMechanics
                 localCast->type = mwmp::Cast::REGULAR;
                 localCast->spellId = mId.getRefIdString();
                 localCast->itemId.clear();
-                localCast->target = MechanicsHelper::getTarget(mTarget);
+                localCast->target = castIntentTarget(mCaster, mTarget, spell->mEffects);
             }
         }
 

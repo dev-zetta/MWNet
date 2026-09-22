@@ -1,6 +1,7 @@
 #ifndef OPENMW_PROCESSORACTORATTACK_HPP
 #define OPENMW_PROCESSORACTORATTACK_HPP
 
+#include <components/openmw-mp/Mechanics/AttackAnimation.hpp>
 #include "../ActorProcessor.hpp"
 #include "apps/openmw-mp/Networking.hpp"
 
@@ -39,8 +40,9 @@ namespace mwmp
             for (std::size_t index = 0; index < actorList.baseActors.size(); ++index)
             {
                 BaseActor& actor = actorList.baseActors[index];
+                const bool animationOnly = mechanics::isAttackAnimationOnly(actor.attack);
                 networking->sanitizeActorAttack(actor);
-                if (actor.attack.pressed)
+                if (animationOnly)
                 {
                     accepted.push_back(actor);
                     continue;
@@ -72,6 +74,9 @@ namespace mwmp
                 if (!networking->resolveActorAttack(player, actorList, index,
                     actorDeath, rejectionReason))
                 {
+                    LOG_MESSAGE_SIMPLE(TimedLog::LOG_VERBOSE,
+                        "Actor attack %u-%u in %s rejected: %s", actor.refNum, actor.mpNum,
+                        cellDescription.c_str(), rejectionReason.c_str());
                     Script::Call<Script::CallbackIdentity(
                         "OnActorAttackIntentRejected")>(player.getId(), cellDescription.c_str(),
                         static_cast<unsigned int>(index), rejectionReason.c_str());

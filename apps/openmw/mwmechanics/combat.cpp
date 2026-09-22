@@ -245,20 +245,26 @@ namespace MWMechanics
             Ignore projectiles fired by DedicatedPlayers and DedicatedActors
 
             If fired by LocalPlayers and LocalActors, get the associated LocalAttack and set its type
-            to RANGED while also marking it as a hit
+            to RANGED. Only actor impacts represent combat targets; scenery
+            impacts carry no damage intent.
         */
         if (mwmp::PlayerList::isDedicatedPlayer(attacker) || mwmp::Main::get().getCellController()->isDedicatedActor(attacker))
             return;
 
         mwmp::Attack *localAttack = MechanicsHelper::getLocalAttack(attacker);
+        const bool validVictim = !victim.isEmpty() && victim.getClass().isActor();
 
         if (localAttack)
         {
+            MechanicsHelper::resetAttack(localAttack);
             localAttack->type = mwmp::Attack::RANGED;
-            localAttack->isHit = true;
+            localAttack->pressed = false;
+            localAttack->isHit = validVictim;
+            localAttack->attackStrength = attackStrength;
+            if (validVictim)
+                MechanicsHelper::assignAttackTarget(localAttack, victim);
         }
         /* End of tes3mp addition */
-        bool validVictim = !victim.isEmpty() && victim.getClass().isActor();
 
         ESM::RefId weaponSkill = ESM::Skill::Marksman;
         if (!weapon.isEmpty())
@@ -284,7 +290,10 @@ namespace MWMechanics
                     Mark this as a failed LocalAttack now that the hit roll has failed
                 */
                 if (localAttack)
+                {
                     localAttack->success = false;
+                    localAttack->shouldSend = true;
+                }
                 /* End of tes3mp addition */
                 MWMechanics::reduceWeaponCondition(damage, false, weapon, attacker);
                 return;

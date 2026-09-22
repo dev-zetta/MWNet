@@ -210,12 +210,34 @@ fi
 printf '%s\n' "$data_dir" > "$DATA_PATH_FILE"
 
 content_files="Morrowind.esm"
+content_args=(--content Morrowind.esm)
 if [[ -f "$data_dir/Tribunal.esm" || -f "$data_dir/tribunal.esm" ]]; then
     content_files+=",Tribunal.esm"
+    content_args+=(--content Tribunal.esm)
 fi
 if [[ -f "$data_dir/Bloodmoon.esm" || -f "$data_dir/bloodmoon.esm" ]]; then
     content_files+=",Bloodmoon.esm"
+    content_args+=(--content Bloodmoon.esm)
 fi
+
+for archive in Morrowind.bsa Tribunal.bsa Bloodmoon.bsa; do
+    if [[ -f "$data_dir/$archive" ]]; then
+        content_args+=(--fallback-archive "$archive")
+    elif [[ -f "$data_dir/${archive,,}" ]]; then
+        content_args+=(--fallback-archive "${archive,,}")
+    fi
+done
+
+# Direct CLI authentication requires a password file. Without credentials,
+# open the direct-connect UI instead of silently exiting before a window exists.
+connection_args=()
+for argument in "${client_args[@]}"; do
+    case "$argument" in
+        --account-password-file|--account-password-file=*)
+            connection_args=(--connect=127.0.0.1:25565 --skip-menu)
+            ;;
+    esac
+done
 
 if [[ ! -f "$CLIENT_CONFIG/tes3mp-client.cfg" ]]; then
     {
@@ -310,6 +332,6 @@ printf 'Client log: %s\n' "$CLIENT_CONFIG/openmw.log"
     --user-data "$CLIENT_DATA" \
     --resources "$BUILD_DIR/resources" \
     --data "$data_dir" \
-    --connect=127.0.0.1:25565 \
-    --skip-menu \
+    "${content_args[@]}" \
+    "${connection_args[@]}" \
     "${client_args[@]}"

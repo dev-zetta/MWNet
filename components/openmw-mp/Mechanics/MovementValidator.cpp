@@ -90,12 +90,14 @@ namespace mwmp::mechanics
 
     MovementValidationResult MovementValidator::previewCellTransition(
         std::uint64_t connection, std::string_view destinationCell,
-        Position3 previousPosition, double tolerance) const
+        Position3 previousPosition, double tolerance, Clock::time_point now,
+        double theoreticalMaximumSpeed) const
     {
         if (connection == 0)
             return { MovementDecision::InvalidConnection };
         if (!validCell(destinationCell) || !validPosition(previousPosition)
-            || !std::isfinite(tolerance) || tolerance < 0)
+            || !std::isfinite(tolerance) || tolerance < 0
+            || !std::isfinite(theoreticalMaximumSpeed) || theoreticalMaximumSpeed < 0)
         {
             return { MovementDecision::InvalidTransition };
         }
@@ -112,18 +114,21 @@ namespace mwmp::mechanics
 
         const double travelled
             = distance(state->second.sample.position, previousPosition);
-        if (travelled > tolerance)
-            return { MovementDecision::SpeedExceeded, travelled, tolerance };
-        return { MovementDecision::AcceptedTransition, travelled, tolerance };
+        const auto elapsed = std::max(Clock::duration::zero(), now - state->second.observedAt);
+        const double seconds = std::chrono::duration<double>(elapsed + LatencyAllowance).count();
+        const double allowed = tolerance + DistanceMultiplier * theoreticalMaximumSpeed * seconds;
+        if (travelled > allowed)
+            return { MovementDecision::SpeedExceeded, travelled, allowed };
+        return { MovementDecision::AcceptedTransition, travelled, allowed };
     }
 
     MovementValidationResult MovementValidator::acceptCellTransition(
         std::uint64_t connection, std::string destinationCell,
         Position3 previousPosition, double tolerance, Clock::time_point now,
-        std::chrono::milliseconds lifetime)
+        std::chrono::milliseconds lifetime, double theoreticalMaximumSpeed)
     {
         const MovementValidationResult result = previewCellTransition(connection,
-            destinationCell, previousPosition, tolerance);
+            destinationCell, previousPosition, tolerance, now, theoreticalMaximumSpeed);
         if (!result.accepted() || lifetime <= lifetime.zero())
             return result.accepted()
                 ? MovementValidationResult{ MovementDecision::InvalidTransition }
@@ -139,6 +144,58 @@ namespace mwmp::mechanics
         mTransitions.insert_or_assign(connection,
             Transition{ std::move(destinationCell), std::nullopt, 0,
                 now + lifetime });
+        return result;
+    }
+
+    MovementValidationResult MovementValidator::previewAuthorizedTransition(
+        std::uint64_t connection, const MovementSample& destination,
+        Clock::time_point now) const
+    {
+        if (connection == 0)
+            return { MovementDecision::InvalidConnection };
+        if (destination.sequence == 0)
+            return { MovementDecision::InvalidSequence };
+        if (!validPosition(destination.position) || !validCell(destination.cell))
+            return { MovementDecision::InvalidCoordinate };
+        if (const auto state = mStates.find(connection); state != mStates.end()
+            && destination.sequence <= state->second.sample.sequence)
+            return { MovementDecision::StaleSequence };
+
+        const auto found = mTransitions.find(connection);
+        if (found == mTransitions.end() || now > found->second.expiresAt
+            || found->second.cell != destination.cell || !found->second.position)
+            return { MovementDecision::TransitionNotAuthorized };
+        const double travelled = distance(destination.position, *found->second.position);
+        if (travelled > found->second.tolerance)
+            return { MovementDecision::TransitionNotAuthorized, travelled, found->second.tolerance };
+        return { MovementDecision::AcceptedTransition, travelled, found->second.tolerance };
+    }
+
+    MovementValidationResult MovementValidator::commitCellTransition(
+        std::uint64_t connection, const MovementSample& destination,
+        Position3 previousPosition, double tolerance, double theoreticalMaximumSpeed,
+        Clock::time_point now)
+    {
+        if (!mStates.contains(connection) && mStates.size() >= mMaximumConnections)
+            return { MovementDecision::CapacityReached };
+        // Stage only this connection. A rejected destination must not leave an
+        // authorization behind or change the previously accepted movement baseline.
+        MovementValidator staged(1);
+        if (const auto state = mStates.find(connection); state != mStates.end())
+            staged.mStates.emplace(connection, state->second);
+        if (const auto transition = mTransitions.find(connection); transition != mTransitions.end())
+            staged.mTransitions.emplace(connection, transition->second);
+        auto result = staged.previewAuthorizedTransition(connection, destination, now);
+        if (!result.accepted())
+            result = staged.acceptCellTransition(connection, destination.cell,
+                previousPosition, tolerance, now, TransitionLifetime, theoreticalMaximumSpeed);
+        if (!result.accepted())
+            return result;
+        result = staged.validate(connection, destination, theoreticalMaximumSpeed, now);
+        if (!result.accepted())
+            return result;
+        mStates.insert_or_assign(connection, staged.mStates.at(connection));
+        mTransitions.erase(connection);
         return result;
     }
 

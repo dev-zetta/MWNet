@@ -113,6 +113,7 @@ namespace  mwmp
         std::optional<session::AuthorityLease> assignActorAuthority(
             const ESM::Cell& cell, mwmp::transport::TransportConnectionId owner);
         bool validateActorAuthority(const BaseActorList& actorList);
+        void renewActorAuthority(BaseActorList& actorList);
         bool releaseActorAuthority(const ESM::Cell& cell, mwmp::transport::TransportConnectionId owner,
             std::uint64_t leaseId);
         bool validatePlayerMovement(Player& player, const BasePlayer& incoming);
@@ -305,6 +306,7 @@ namespace  mwmp
         {
             ESM::Cell cell;
             ESM::Position previousCellPosition;
+            ESM::Position position;
             bool isChangingRegion = false;
         };
         std::unordered_map<std::uint64_t, PendingPlayerCellChange>

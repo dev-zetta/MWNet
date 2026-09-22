@@ -25,6 +25,7 @@
 #include "../mwmechanics/aitravel.hpp"
 #include "../mwmechanics/creaturestats.hpp"
 #include "../mwmechanics/mechanicsmanagerimp.hpp"
+#include "../mwmechanics/movement.hpp"
 #include "../mwmechanics/spellcasting.hpp"
 #include "../mwmechanics/spellutil.hpp"
 
@@ -106,6 +107,15 @@ MWWorld::Ptr LocalPlayer::getPlayerPtr()
 
 void LocalPlayer::update()
 {
+    // Initial world loading can finish before login/chargen permits the scene
+    // to send its queued cell states. Flush them once gameplay is enabled,
+    // even when the player stays in the same exterior grid after reconnecting.
+    if (isLoggedIn() && !cellStateChanges.empty())
+    {
+        sendCellStates();
+        clearCellStates();
+    }
+
     static float updateTimer = 0;
     const float timeoutSec = 0.015;
 
@@ -394,10 +404,17 @@ void LocalPlayer::updatePosition(bool forceUpdate)
     static bool sentJumpEnd = true;
     static float oldRot[2] = {0};
 
-    position = ptrPlayer.getRefData().getPosition();
-
-    bool posIsChanging = (direction.pos[0] != 0 || direction.pos[1] != 0 ||
-        direction.rot[0] != 0 || direction.rot[1] != 0 || direction.rot[2] != 0);
+    const ESM::Position currentPosition = ptrPlayer.getRefData().getPosition();
+    const auto& movement = ptrPlayer.getClass().getMovementSettings(ptrPlayer);
+    for (std::size_t i = 0; i < 3; ++i)
+    {
+        direction.pos[i] = movement.mPosition[i];
+        direction.rot[i] = movement.mRotation[i];
+    }
+    bool posIsChanging = position != currentPosition || direction.pos[0] != 0
+        || direction.pos[1] != 0 || direction.pos[2] != 0
+        || direction.rot[0] != 0 || direction.rot[1] != 0 || direction.rot[2] != 0;
+    position = currentPosition;
 
     // Animations can change a player's position without actually creating directional movement,
     // so update positions accordingly
@@ -469,13 +486,12 @@ void LocalPlayer::updateCell(bool forceUpdate)
 
         cell = *ptrCell;
         previousCellPosition = position;
-
-        // Make sure the position is updated before a cell packet is sent, or else
-        // cell change events in server scripts will have the wrong player position
-        updatePosition(true);
+        position = MWBase::Environment::get().getWorld()->getPlayerPtr().getRefData().getPosition();
 
         getNetworking()->getPlayerPacket(ID_PLAYER_CELL_CHANGE)->setPlayer(this);
         getNetworking()->getPlayerPacket(ID_PLAYER_CELL_CHANGE)->Send();
+        // The server must accept the cell transition before its position snapshots.
+        updatePosition(true);
 
         isChangingRegion = false;
 
@@ -1005,6 +1021,19 @@ void LocalPlayer::setDynamicStats()
     MWMechanics::CreatureStats *ptrCreatureStats = &ptrPlayer.getClass().getCreatureStats(ptrPlayer);
     MWMechanics::DynamicStat<float> dynamicStat;
 
+    const bool includesHealth = exchangeFullInfo
+        || std::find(statsDynamicIndexChanges.begin(), statsDynamicIndexChanges.end(), 0)
+            != statsDynamicIndexChanges.end();
+    if (includesHealth && creatureStats.mDynamic[0].mCurrent > 0 && ptrCreatureStats->isDead())
+    {
+        // Authenticated server state can reject a locally predicted death.
+        // Recover the engine without requesting/acknowledging a server respawn.
+        MWBase::Environment::get().getMechanicsManager()->resurrect(ptrPlayer);
+        creatureStats.mDead = false;
+        waitingForResurrect = false;
+        LOG_MESSAGE_SIMPLE(TimedLog::LOG_INFO, "Corrected local death using authoritative health");
+    }
+
     for (int i = 0; i < 3; ++i)
     {
         dynamicStat = ptrCreatureStats->getDynamic(i);
@@ -1157,11 +1186,8 @@ void LocalPlayer::setCell()
 
     if (cell.isExterior())
     {
-        // Convert grid coordinates to world position
-        pos.pos[0] = (x + 0.5f) * ESM::Land::REAL_SIZE;
-        pos.pos[1] = (y + 0.5f) * ESM::Land::REAL_SIZE;
-        pos.pos[2] = 0;
-        pos.rot[0] = pos.rot[1] = pos.rot[2] = 0;
+        // The cell-change packet carries the authoritative destination.
+        pos = position;
         ESM::RefId exteriorId = ESM::RefId::esm3ExteriorCell(x, y);
         world->changeToCell(exteriorId, pos, true);
         world->fixPosition();
@@ -1177,6 +1203,7 @@ void LocalPlayer::setCell()
         try
         {
             world->findInteriorPosition(cell.mName, pos);
+            pos = position;
             world->changeToCell(ESM::RefId::stringRefId(cell.mName), pos, true);
         }
         // If we've been sent to an invalid interior, ignore the incoming

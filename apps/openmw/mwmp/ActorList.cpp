@@ -48,12 +48,14 @@ void ActorList::reset()
 
 bool ActorList::setCell(const ESM::Cell& newCell)
 {
+    // Also called at send time by legacy immediate AI/combat paths.
     cell = newCell;
     authorityLeaseId = 0;
     CellController* controller = Main::get().getCellController();
     if (controller->isInitializedCell(newCell))
     {
-        if (Cell* multiplayerCell = controller->getCell(newCell))
+        if (Cell* multiplayerCell = controller->getCell(newCell);
+            multiplayerCell && multiplayerCell->hasUsableAuthority())
             authorityLeaseId = multiplayerCell->getAuthorityLeaseId();
     }
     return authorityLeaseId != 0;
@@ -111,6 +113,7 @@ void ActorList::addAiActor(const MWWorld::Ptr& actorPtr, const MWWorld::Ptr& tar
     baseActor.mpNum = actorPtr.getCellRef().getMpNum();
     baseActor.aiAction = aiAction;
     baseActor.aiTarget = MechanicsHelper::getTarget(targetPtr);
+    baseActor.hasAiTarget = !targetPtr.isEmpty();
 
     LOG_MESSAGE_SIMPLE(TimedLog::LOG_INFO, "Preparing to send ID_ACTOR_AI about %s %i-%i\n- action: %i",
         actorPtr.getCellRef().getRefId().getRefIdString().c_str(), baseActor.refNum, baseActor.mpNum, aiAction);
@@ -155,6 +158,9 @@ void ActorList::addCellChangeActor(BaseActor baseActor)
 
 void ActorList::sendPositionActors()
 {
+    if (!setCell(cell))
+        return;
+
     if (positionActors.size() > 0)
     {
         baseActors = positionActors;
@@ -165,6 +171,9 @@ void ActorList::sendPositionActors()
 
 void ActorList::sendAnimFlagsActors()
 {
+    if (!setCell(cell))
+        return;
+
     if (animFlagsActors.size() > 0)
     {
         baseActors = animFlagsActors;
@@ -175,6 +184,9 @@ void ActorList::sendAnimFlagsActors()
 
 void ActorList::sendAnimPlayActors()
 {
+    if (!setCell(cell))
+        return;
+
     if (animPlayActors.size() > 0)
     {
         baseActors = animPlayActors;
@@ -185,6 +197,9 @@ void ActorList::sendAnimPlayActors()
 
 void ActorList::sendSpeechActors()
 {
+    if (!setCell(cell))
+        return;
+
     if (speechActors.size() > 0)
     {
         baseActors = speechActors;
@@ -195,6 +210,9 @@ void ActorList::sendSpeechActors()
 
 void ActorList::sendStatsDynamicActors()
 {
+    if (!setCell(cell))
+        return;
+
     if (statsDynamicActors.size() > 0)
     {
         baseActors = statsDynamicActors;
@@ -205,6 +223,9 @@ void ActorList::sendStatsDynamicActors()
 
 void ActorList::sendDeathActors()
 {
+    if (!setCell(cell))
+        return;
+
     if (deathActors.size() > 0)
     {
         baseActors = deathActors;
@@ -215,6 +236,9 @@ void ActorList::sendDeathActors()
 
 void ActorList::sendEquipmentActors()
 {
+    if (!setCell(cell))
+        return;
+
     if (equipmentActors.size() > 0)
     {
         baseActors = equipmentActors;
@@ -225,6 +249,9 @@ void ActorList::sendEquipmentActors()
 
 void ActorList::sendAiActors()
 {
+    if (!setCell(cell))
+        return;
+
     if (aiActors.size() > 0)
     {
         baseActors = aiActors;
@@ -235,6 +262,9 @@ void ActorList::sendAiActors()
 
 void ActorList::sendAttackActors()
 {
+    if (!setCell(cell))
+        return;
+
     if (attackActors.size() > 0)
     {
         baseActors = attackActors;
@@ -245,6 +275,9 @@ void ActorList::sendAttackActors()
 
 void ActorList::sendCastActors()
 {
+    if (!setCell(cell))
+        return;
+
     if (castActors.size() > 0)
     {
         baseActors = castActors;
@@ -255,6 +288,9 @@ void ActorList::sendCastActors()
 
 void ActorList::sendCellChangeActors()
 {
+    if (!setCell(cell))
+        return;
+
     if (cellChangeActors.size() > 0)
     {
         baseActors = cellChangeActors;

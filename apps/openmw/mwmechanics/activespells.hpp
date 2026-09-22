@@ -43,6 +43,7 @@ namespace MWMechanics
             int mWorsenings;
             MWWorld::TimeStamp mNextWorsening;
             MWWorld::Ptr mSource;
+            bool mServerAuthoritative = false;
 
             ActiveSpellParams(const ESM::ActiveSpells::ActiveSpellParams& params);
 
@@ -70,6 +71,7 @@ namespace MWMechanics
             std::vector<ActiveEffect>& getEffects() { return mEffects; }
 
             ESM::RefNum getCaster() const { return mCaster; }
+            bool isServerAuthoritative() const { return mServerAuthoritative; }
 
             int getWorsenings() const { return mWorsenings; }
 

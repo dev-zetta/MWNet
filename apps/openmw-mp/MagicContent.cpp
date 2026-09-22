@@ -148,9 +148,12 @@ namespace mwmp
             for (const ESM::ContItem& item : source.mList)
             {
                 const std::string id = canonicalId(item.mItem);
-                if (id.empty() || item.mCount <= 0)
+                if (id.empty() || item.mCount == 0)
                     continue;
-                actor.inventory.push_back({ id, {}, -1, -1, item.mCount });
+                // Negative content counts mark restocking stock, not an empty
+                // inventory. Seed the available quantity without signed overflow.
+                const std::int64_t count = item.mCount;
+                actor.inventory.push_back({ id, {}, -1, -1, count < 0 ? -count : count });
             }
         }
 
@@ -353,12 +356,12 @@ namespace mwmp
                 = (magicEffect.mData.mFlags & ESM::MagicEffect::NoMagnitude) == 0;
             const bool hasDuration
                 = (magicEffect.mData.mFlags & ESM::MagicEffect::NoDuration) == 0;
-            const bool appliedOnce
-                = (magicEffect.mData.mFlags & ESM::MagicEffect::AppliedOnce) != 0;
             const mechanics::SpellRange range = spellRange(effect.mRange);
 
             mechanics::SpellEffectKind kind = mechanics::SpellEffectKind::Timed;
-            if (appliedOnce || !hasDuration)
+            // AppliedOnce controls how a modifier is applied, not its lifetime.
+            // Weakness, shields and other modifiers still last for their duration.
+            if (!hasDuration)
                 kind = mechanics::SpellEffectKind::Instant;
             if (kind == mechanics::SpellEffectKind::Instant)
             {

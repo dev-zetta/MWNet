@@ -39,10 +39,11 @@ void ActorPacket::Packet(bool send)
     if (!PacketHeader(send))
         return;
 
-    BaseActor actor;
-
     for (unsigned int i = 0; i < actorList->count; i++)
     {
+        // Conditional fields belong to this entry only (for example, player
+        // versus actor attack targets). Never reuse the preceding actor's data.
+        BaseActor actor;
         if (send)
             actor = actorList->baseActors.at(i);
 

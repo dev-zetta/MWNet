@@ -74,7 +74,7 @@ namespace
             listen.address = "127.0.0.1";
             listen.maximumConnections = 2;
             listen.timeouts.handshake = 5s;
-            listen.timeouts.read = 10s;
+            listen.timeouts.read = 2s;
             bool listening = false;
             for (std::uint16_t port = 39100; port < 39130 && !listening; ++port)
             {
@@ -90,7 +90,7 @@ namespace
             connect.host = "127.0.0.1";
             connect.port = selectedPort;
             connect.timeouts.handshake = 5s;
-            connect.timeouts.read = 10s;
+            connect.timeouts.read = 2s;
             TransportConnectionId clientConnection;
             EXPECT(client.connect(connect, clientConnection, error));
 
@@ -126,6 +126,15 @@ namespace
             EXPECT(clientAuthenticated);
             EXPECT(serverConnection.has_value());
 
+            // Menus and character creation can be idle beyond the raw read
+            // deadline. Authenticated keepalives must remain transport-internal.
+            const auto idleUntil = std::chrono::steady_clock::now() + 3s;
+            while (std::chrono::steady_clock::now() < idleUntil)
+            {
+                EXPECT(!client.poll(5ms).has_value());
+                EXPECT(!server.poll(5ms).has_value());
+            }
+
             TransportMessage outbound;
             outbound.connection = clientConnection;
             outbound.delivery = DeliveryMode::Unreliable;
@@ -155,6 +164,16 @@ namespace
                 EXPECT(received->message.sequence == outbound.sequence);
                 EXPECT(received->message.payload == outbound.payload);
             }
+
+            // A peer that stops servicing its secure transport must still expire.
+            bool idlePeerExpired = false;
+            const auto expiryDeadline = std::chrono::steady_clock::now() + 3s;
+            while (!idlePeerExpired && std::chrono::steady_clock::now() < expiryDeadline)
+            {
+                const auto event = server.poll(20ms);
+                idlePeerExpired = event && event->type == TransportEventType::Disconnected;
+            }
+            EXPECT(idlePeerExpired);
 
             client.shutdown(1s);
             server.shutdown(1s);

@@ -209,11 +209,12 @@ namespace MWMechanics
             /*
                 Start of tes3mp addition
 
-                Record that this actor is updating an attack so that a packet will be sent about it
+                Record the animation change without overwriting an impact awaiting transmission.
             */
             mwmp::Attack* localAttack = MechanicsHelper::getLocalAttack(actor);
 
-            if (localAttack && localAttack->pressed != storage.mAttack)
+            if (localAttack && !(localAttack->shouldSend && localAttack->isHit)
+                && localAttack->pressed != storage.mAttack)
             {
                 MechanicsHelper::resetAttack(localAttack);
                 localAttack->pressed = storage.mAttack;
@@ -274,7 +275,8 @@ namespace MWMechanics
             */
             mwmp::Attack *localAttack = MechanicsHelper::getLocalAttack(actor);
 
-            if (localAttack && localAttack->pressed != false)
+            if (localAttack && !(localAttack->shouldSend && localAttack->isHit)
+                && localAttack->pressed != false)
             {
                 MechanicsHelper::resetAttack(localAttack);
                 localAttack->pressed = false;
@@ -735,7 +737,8 @@ namespace MWMechanics
                 */
                 mwmp::Attack *localAttack = MechanicsHelper::getLocalAttack(actor);
 
-                if (localAttack && localAttack->pressed != true)
+                if (localAttack && !(localAttack->shouldSend && localAttack->isHit)
+                    && localAttack->pressed != true)
                 {
                     MechanicsHelper::resetAttack(localAttack);
                     localAttack->type = distantCombat ? mwmp::Attack::RANGED : mwmp::Attack::MELEE;

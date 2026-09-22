@@ -2,6 +2,7 @@
 #define OPENMW_MPCELL_HPP
 
 #include <cstdint>
+#include <chrono>
 #include <memory>
 
 #include "ActorList.hpp"
@@ -48,6 +49,7 @@ namespace mwmp
         virtual DedicatedActor *getDedicatedActor(std::string actorIndex);
 
         bool hasLocalAuthority();
+        bool hasUsableAuthority();
         void setAuthority(const mwmp::transport::TransportConnectionId& guid, std::uint64_t leaseId = 0);
         std::uint64_t getAuthorityLeaseId() const;
 
@@ -60,6 +62,8 @@ namespace mwmp
         MWWorld::CellStore* store;
         mwmp::transport::TransportConnectionId authorityGuid{};
         std::uint64_t authorityLeaseId = 0;
+        std::chrono::steady_clock::time_point nextAuthorityRenewal{};
+        bool awaitingAuthorityRenewal = false;
 
         std::map<std::string, std::unique_ptr<LocalActor>> localActors;
         std::map<std::string, std::unique_ptr<DedicatedActor>> dedicatedActors;

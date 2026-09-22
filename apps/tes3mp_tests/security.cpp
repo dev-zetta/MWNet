@@ -11,6 +11,7 @@
 #include <string>
 #include <string_view>
 #include <vector>
+#include <utility>
 
 namespace
 {
@@ -101,6 +102,48 @@ int runSecurityTests()
     EXPECT(!serverSession.open(encrypted, decrypted, securityError));
     EXPECT(securityError == SecurityError::ReplayDetected);
     EXPECT(decrypted == sentinel);
+
+    // Real transports can deliver independent lanes out of order and lose
+    // unreliable frames. Neither event may invalidate otherwise authentic data.
+    std::vector<std::byte> delayed, lost, overtaking;
+    EXPECT(clientSession.seal(bytes("delayed lane"), delayed, securityError));
+    EXPECT(clientSession.seal(bytes("lost snapshot"), lost, securityError));
+    EXPECT(clientSession.seal(bytes("overtaking lane"), overtaking, securityError));
+    EXPECT(serverSession.open(overtaking, decrypted, securityError));
+    EXPECT(serverSession.open(delayed, decrypted, securityError));
+    const auto beforeReplay = decrypted;
+    EXPECT(!serverSession.open(delayed, decrypted, securityError));
+    EXPECT(securityError == SecurityError::ReplayDetected);
+    EXPECT(decrypted == beforeReplay);
+
+    std::vector<std::byte> next;
+    EXPECT(clientSession.seal(bytes("next valid frame"), next, securityError));
+    auto damaged = next;
+    damaged[8] ^= std::byte{ 0x40 };
+    EXPECT(!serverSession.open(damaged, decrypted, securityError));
+    EXPECT(securityError == SecurityError::AuthenticationFailed);
+    EXPECT(decrypted == beforeReplay);
+    EXPECT(serverSession.open(next, decrypted, securityError));
+    EXPECT(serverSession.open(lost, decrypted, securityError));
+
+    // Check both sides of the fixed history boundary with unseen frames.
+    std::vector<std::byte> expired, boundary, newest;
+    for (std::size_t index = 0; index <= SecureSession::replayWindowSize; ++index)
+    {
+        EXPECT(clientSession.seal(bytes("window boundary"), newest, securityError));
+        if (index == 0)
+            expired = newest;
+        else if (index == 1)
+            boundary = newest;
+    }
+    EXPECT(serverSession.open(newest, decrypted, securityError));
+    EXPECT(serverSession.open(boundary, decrypted, securityError));
+    EXPECT(!serverSession.open(expired, decrypted, securityError));
+    EXPECT(securityError == SecurityError::ReplayDetected);
+    SecureSession movedSession(std::move(serverSession));
+    EXPECT(!static_cast<bool>(serverSession));
+    EXPECT(!movedSession.open(boundary, decrypted, securityError));
+    EXPECT(securityError == SecurityError::ReplayDetected);
 
     response.signature[0] ^= 1U;
     ClientHandshake invalidClient;
