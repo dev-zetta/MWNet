@@ -119,6 +119,62 @@ namespace
         EXPECT(miss.targetHealth == 100);
     }
 
+    void testUnarmedFatigueKnockoutAndRecovery()
+    {
+        CombatResolver resolver;
+        const CombatantId attacker{ CombatantKind::Player, 7, {} };
+        const CombatantId target{ CombatantKind::Actor, 11, "Balmora" };
+        auto fist = state(100, {});
+        fist.unarmed = true;
+        fist.unarmedHealthMultiplier = 0.1;
+        auto victim = state(100, { 64, 0, 0 });
+        victim.fatigue = 5;
+        victim.fatigueRatio = 0.05;
+        victim.armorRating = 1000; // armor does not absorb hand-to-hand fatigue
+        victim.fatigueRecoveryPerSecond = 2;
+        EXPECT(resolver.upsert(attacker, fist));
+        EXPECT(resolver.upsert(target, victim));
+        EXPECT(resolver.fatigueRecovery(1).empty());
+        const auto miss = resolver.resolve({ attacker, target, 1, AttackKind::Melee, 0.5 }, 0.9);
+        EXPECT(miss.damage == 0 && miss.targetFatigue == 5 && miss.targetHealth == 100);
+        const auto hit = resolver.resolve({ attacker, target, 2, AttackKind::Melee, 0.5 }, 0);
+        EXPECT(hit.applied() && !hit.healthDamage && hit.damage == 20);
+        EXPECT(hit.targetHealth == 100 && hit.targetFatigue == -15 && hit.targetKnockedOut);
+        EXPECT(resolver.find(target)->fatigueRatio == 0);
+        const auto healthHit = resolver.resolve({ attacker, target, 3, AttackKind::Melee, 0.5 }, 0);
+        EXPECT(healthHit.healthDamage && healthHit.damage == 2);
+        EXPECT(healthHit.targetHealth == 98 && healthHit.targetFatigue == -15);
+        const auto recovery = resolver.fatigueRecovery(8);
+        EXPECT(recovery.size() == 1 && recovery.front().first == target && recovery.front().second == 16);
+        auto restored = *resolver.find(target);
+        restored.fatigue += recovery.front().second;
+        restored.fatigueRatio = restored.fatigue / restored.maximumFatigue;
+        EXPECT(resolver.upsert(target, restored));
+        const auto awake = resolver.resolve({ attacker, target, 4, AttackKind::Melee, 0 }, 0);
+        EXPECT(!awake.healthDamage && awake.targetHealth == 98 && awake.targetFatigue == -9);
+        EXPECT(resolver.fatigueRecovery(1000).front().second == 109); // capped at maximum
+        EXPECT(resolver.fatigueRecovery(-1).empty());
+        EXPECT(resolver.fatigueRecovery(std::numeric_limits<double>::quiet_NaN()).empty());
+
+        victim.paralyzed = true;
+        EXPECT(resolver.upsert(target, victim));
+        const auto paralyzed = resolver.resolve({ attacker, target, 5, AttackKind::Melee, 1 }, 0);
+        EXPECT(paralyzed.healthDamage && paralyzed.damage == 3 && paralyzed.targetFatigue == 5);
+        // Ranged and equipped attacks retain the health path even with positive fatigue.
+        const auto ranged = resolver.resolve({ attacker, target, 6, AttackKind::Ranged, 1 }, 0);
+        EXPECT(ranged.healthDamage && ranged.targetFatigue == 5);
+        fist.unarmed = false;
+        EXPECT(resolver.upsert(attacker, fist));
+        victim.paralyzed = false;
+        EXPECT(resolver.upsert(target, victim));
+        EXPECT(resolver.resolve({ attacker, target, 7, AttackKind::Melee, 1 }, 0).healthDamage);
+        victim.health = 0;
+        victim.alive = false;
+        victim.recoveringFatigue = true;
+        EXPECT(resolver.upsert(target, victim));
+        EXPECT(resolver.fatigueRecovery(1).empty());
+    }
+
     void testInvalidDataAndCapacity()
     {
         CombatResolver resolver(1);
@@ -193,6 +249,7 @@ int runCombatTests()
     testCanonicalRespawnResources();
     testCanonicalHitAndDeath();
     testMissRangeAndSequence();
+    testUnarmedFatigueKnockoutAndRecovery();
     testInvalidDataAndCapacity();
     testActorIdentityIsCellScoped();
     testActorRelocationIsAtomic();

@@ -96,7 +96,20 @@ namespace mwmp
             actorList.baseActors = std::move(accepted);
             actorList.count = actorList.baseActors.size();
             if (!actorList.baseActors.empty())
+            {
+                BaseActorList ownResults = actorList;
+                std::erase_if(ownResults.baseActors, [](const BaseActor& actor) {
+                    return !actor.attack.unarmed;
+                });
+                ownResults.count = ownResults.baseActors.size();
+                if (!ownResults.baseActors.empty())
+                {
+                    packet.setActorList(&ownResults);
+                    packet.Send(player.guid);
+                    packet.setActorList(&actorList);
+                }
                 serverCell->sendToLoaded(&packet, &actorList);
+            }
 
             if (!deathList.baseActors.empty())
             {

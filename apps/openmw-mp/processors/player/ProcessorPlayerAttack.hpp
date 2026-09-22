@@ -65,6 +65,8 @@ namespace mwmp
                             player.getId(), rejectionReason.c_str());
                     return;
                 }
+                // The attacker needs the canonical result as well as observers.
+                packet.Send(player.guid);
                 player.sendToLoaded(&packet);
             }
         }

@@ -57,7 +57,8 @@ namespace mwmp::mechanics
         const auto validStat = [](double value) {
             return std::isfinite(value) && value >= 0 && value <= MaximumStatValue;
         };
-        if (!validId(actor.refId) || !validStat(actor.maximumHealth)
+        if (!validStat(actor.handToHand) || !validStat(actor.endurance)
+            || !validId(actor.refId) || !validStat(actor.maximumHealth)
             || !validStat(actor.maximumMagicka) || !validStat(actor.maximumFatigue)
             || !validStat(actor.willpower) || !validStat(actor.luck)
             || !validStat(actor.enchantSkill)

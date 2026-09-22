@@ -654,6 +654,7 @@ namespace MWClass
         if (localAttack)
         {
             localAttack->isHit = true;
+            localAttack->attackStrength = attackStrength;
             localAttack->success = success;
             localAttack->hitPosition = MechanicsHelper::getPositionFromVector(hitPosition);
             MechanicsHelper::assignAttackTarget(localAttack, victim);

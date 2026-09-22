@@ -409,6 +409,9 @@ int main(int argc, char *argv[])
                 std::move(magicContent->consumableItems));
             networking.setDirectConsumableMagicItems(
                 std::move(magicContent->directConsumableItems));
+            networking.setUnarmedFormula(magicContent->unarmedMinimum, magicContent->unarmedMaximum,
+                magicContent->unarmedHealth, magicContent->fatigueRecoveryBase,
+                magicContent->fatigueRecoveryPerEndurance);
             networking.setSpellFatigueFormula(magicContent->fatigueBase,
                 magicContent->fatigueMultiplier);
         }

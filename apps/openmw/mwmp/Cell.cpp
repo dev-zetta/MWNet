@@ -447,6 +447,12 @@ void Cell::readAttack(ActorList& actorList)
     {
         std::string mapIndex = Main::get().getCellController()->generateMapIndex(baseActor);
 
+        if (baseActor.attack.unarmed && localActors.count(mapIndex) > 0)
+        {
+            MechanicsHelper::processFistResult(baseActor.attack);
+            continue;
+        }
+
         if (dedicatedActors.count(mapIndex) > 0)
         {
             LOG_MESSAGE_SIMPLE(TimedLog::LOG_INFO, "Reading ActorAttack about %s", mapIndex.c_str());

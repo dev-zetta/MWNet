@@ -97,6 +97,12 @@ local function applyStagger(attack, rawHealthDamage)
 end
 
 local function onHit(data)
+    if data.waitForServerHit then
+        -- The local hit roll may disagree with the authoritative result.
+        -- Present the fist impact once, when the server replies.
+        data.muteSound = true
+        data.ignoreStagger = true
+    end
     if data.successful and not godMode() then
         local rawHealthDamage = common.getDamage(data, 'health')
         if not data.ignoreArmor then
@@ -109,7 +115,7 @@ local function onHit(data)
             if not data.muteSound then
                 core.sound.playSound3d('Health Damage', self)
             end
-            if data.hitPos then
+            if data.hitPos and not data.waitForServerHit then
                 I.Combat.spawnBloodEffect(data.hitPos)
             end
         end
@@ -118,6 +124,10 @@ local function onHit(data)
         end
     elseif data.attacker and not data.muteSound and Player.objectIsInstance(data.attacker) then
         core.sound.playSound3d('miss', self)
+    end
+    if data.waitForServerHit then
+        -- Keep the intent/crime callback, but resources come from server stats.
+        data.damage = {}
     end
     Actor._onHit(self, data)
 end

@@ -589,6 +589,8 @@ end
 function BasePlayer:RestoreRespawnAttributes()
     local floor = math.floor(math.max(1, math.min(config.maxAttributeValue,
         config.respawnAttributeFloor or 10)))
+    local fatigueAttributes = { Strength = true, Willpower = true, Agility = true, Endurance = true }
+    local fatigueBase, fatigueAttributeCount = 0, 0
     for index = 0, tes3mp.GetAttributeCount() - 1 do
         local name = tes3mp.GetAttributeName(index)
         local base = math.max(floor, tes3mp.GetAttributeBase(self.pid, index))
@@ -600,8 +602,24 @@ function BasePlayer:RestoreRespawnAttributes()
         saved.base = base
         saved.damage = damage
         self.data.attributes[name] = saved
+        if fatigueAttributes[name] then
+            fatigueBase = fatigueBase + math.max(0,
+                base - damage + tes3mp.GetAttributeModifier(self.pid, index))
+            fatigueAttributeCount = fatigueAttributeCount + 1
+        end
     end
     tes3mp.SendAttributes(self.pid)
+    if fatigueAttributeCount == 4 then
+        -- Attribute penalties change fatigue capacity too. Do not revive with
+        -- the previous character's saved maximum after restoring attributes.
+        fatigueBase = math.max(1, fatigueBase)
+        self.data.stats.fatigueBase = fatigueBase
+        self.data.stats.fatigueCurrent = fatigueBase
+        tes3mp.SetFatigueBase(self.pid, fatigueBase)
+        tes3mp.SetFatigueCurrent(self.pid, fatigueBase)
+        tes3mp.SendStatsDynamic(self.pid)
+        self:QuicksaveToDrive()
+    end
 end
 
 function BasePlayer:Resurrect()

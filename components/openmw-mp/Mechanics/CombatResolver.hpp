@@ -9,6 +9,7 @@
 #include <string>
 #include <unordered_map>
 #include <vector>
+#include <utility>
 
 namespace mwmp::mechanics
 {
@@ -50,6 +51,11 @@ namespace mwmp::mechanics
         double projectileReach = 0;
         Position3 position;
         bool alive = true;
+        bool unarmed = false;
+        bool paralyzed = false;
+        double unarmedHealthMultiplier = 0.1;
+        double fatigueRecoveryPerSecond = 0;
+        bool recoveringFatigue = false;
     };
 
     struct CombatantRelocation
@@ -99,6 +105,9 @@ namespace mwmp::mechanics
         double damage = 0;
         double targetHealth = 0;
         bool targetDied = false;
+        double targetFatigue = 0;
+        bool healthDamage = true;
+        bool targetKnockedOut = false;
 
         bool applied() const noexcept
         {
@@ -121,6 +130,7 @@ namespace mwmp::mechanics
         bool upsert(CombatantId id, const CombatantState& state);
         std::optional<CombatantState> prepareRespawn(CombatantId id) const;
         CombatResult resolve(const AttackIntent& intent, double serverRoll);
+        std::vector<std::pair<CombatantId, double>> fatigueRecovery(double elapsedSeconds) const;
         bool previewRelocations(
             const std::vector<CombatantRelocation>& relocations) const;
         bool applyRelocations(

@@ -453,6 +453,9 @@ void StatsFunctions::SetFatigueBase(unsigned short pid, double value)
     GET_PLAYER(pid, player,);
 
     player->creatureStats.mDynamic[2].mBase = value;
+    // Canonical fatigue carries its full maximum in mBase. Remove the legacy
+    // maximum-as-modifier value so reducing the base actually reduces capacity.
+    player->creatureStats.mDynamic[2].mMod = 0;
 
     if (!Utils::vectorContains(player->statsDynamicIndexChanges, 2))
         player->statsDynamicIndexChanges.push_back(2);

@@ -4,6 +4,7 @@
 #include <components/openmw-mp/Packets/Actor/PacketActorSpellsActive.hpp>
 #include <components/openmw-mp/Packets/Player/PacketPlayerSpellsActive.hpp>
 #include <components/openmw-mp/Packets/Actor/PacketActorAttack.hpp>
+#include <components/openmw-mp/Packets/Player/PacketPlayerAttack.hpp>
 
 #include <algorithm>
 #include <iostream>
@@ -159,6 +160,34 @@ namespace
         return true;
     }
 
+    bool checkPlayerFistPackets()
+    {
+        for (const bool hit : { false, true })
+            for (const bool health : { false, true })
+            {
+                mwmp::BasePlayer sent, received;
+                sent.attack.unarmed = true;
+                sent.attack.isHit = sent.attack.success = hit;
+                sent.attack.healthDamage = health;
+                sent.attack.attackStrength = 0.35f;
+                sent.attack.target.refNum = 123;
+                sent.attack.damage = hit ? 7 : 0;
+                sent.attack.knockdown = hit;
+                EffectPacket<mwmp::PacketPlayerAttack, mwmp::BasePlayer> encoder, decoder;
+                const auto bytes = encoder.encode(sent);
+                decoder.bind(received);
+                decoder.Read(bytes);
+                if (!encoder.isPacketValid() || !decoder.isPacketValid()
+                    || !received.attack.unarmed || received.attack.isHit != hit
+                    || received.attack.attackStrength != 0.35f
+                    || received.attack.damage != sent.attack.damage
+                    || (hit && received.attack.healthDamage != health)
+                    || received.attack.knockdown != hit)
+                    return false;
+            }
+        return true;
+    }
+
     bool checkBatch(bool reverse)
     {
         mwmp::BaseActor hit;
@@ -167,6 +196,9 @@ namespace
         hit.attack.target.guid = mwmp::transport::TransportConnectionId{ 7 };
         hit.attack.isHit = true;
         hit.attack.damage = 12;
+        hit.attack.unarmed = true;
+        hit.attack.healthDamage = false;
+        hit.attack.attackStrength = 0.35f;
 
         mwmp::BaseActor release;
         release.refNum = 175653;
@@ -209,6 +241,9 @@ namespace
                 || actual.target.refNum != expected.target.refNum
                 || actual.target.isPlayer != expected.target.isPlayer
                 || actual.damage != expected.damage
+                || actual.unarmed != expected.unarmed
+                || actual.healthDamage != expected.healthDamage
+                || actual.attackStrength != expected.attackStrength
                 || mwmp::mechanics::isAttackAnimationOnly(actual)
                     != mwmp::mechanics::isAttackAnimationOnly(expected))
             {
@@ -231,5 +266,5 @@ int main()
     const bool batch = checkCastBatchSurvivesScriptEvent();
     if (!batch)
         std::cerr << "Publishing NPC effects destroyed the remaining cast batch\n";
-    return forward && reverse && spells && batch ? 0 : 1;
+    return forward && reverse && spells && batch && checkPlayerFistPackets() ? 0 : 1;
 }

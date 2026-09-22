@@ -136,7 +136,7 @@ namespace mwmp::protocol
         CodecError mError = CodecError::None;
     };
 
-    inline constexpr std::uint16_t protocolVersion = 11;
+    inline constexpr std::uint16_t protocolVersion = 12;
     inline constexpr std::uint16_t envelopeFlagBulkChunk = 1U << 0U;
     inline constexpr std::uint16_t envelopeFlagUnreliable = 1U << 1U;
     inline constexpr std::uint16_t envelopeKnownFlags = envelopeFlagBulkChunk | envelopeFlagUnreliable;

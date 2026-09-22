@@ -30,6 +30,8 @@ void PacketActorAttack::Actor(BaseActor &actor, bool send)
     Field(actor.attack.success);
 
     Field(actor.attack.isHit);
+    Field(actor.attack.unarmed);
+    Field(actor.attack.attackStrength);
 
     if (actor.attack.type == mwmp::Attack::MELEE)
     {
@@ -37,7 +39,6 @@ void PacketActorAttack::Actor(BaseActor &actor, bool send)
     }
     else if (actor.attack.type == mwmp::Attack::RANGED)
     {
-        Field(actor.attack.attackStrength);
         Field(actor.attack.rangedWeaponId, true);
         Field(actor.attack.rangedAmmoId, true);
 
@@ -53,6 +54,7 @@ void PacketActorAttack::Actor(BaseActor &actor, bool send)
     if (actor.attack.isHit)
     {
         Field(actor.attack.damage);
+        Field(actor.attack.healthDamage);
         Field(actor.attack.block);
         Field(actor.attack.knockdown);
         Field(actor.attack.applyWeaponEnchantment);

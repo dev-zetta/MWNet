@@ -28,6 +28,9 @@ namespace mwmp
         std::vector<mechanics::ActorRecoveryAnchor> recoveryAnchors;
         std::unordered_set<std::string> consumableItems;
         std::unordered_set<std::string> directConsumableItems;
+        double unarmedMinimum = 0.1, unarmedMaximum = 0.5, unarmedHealth = 0.1;
+        double fatigueRecoveryBase = 2;
+        double fatigueRecoveryPerEndurance = 0.02;
         double fatigueBase = 1;
         double fatigueMultiplier = 0;
     };

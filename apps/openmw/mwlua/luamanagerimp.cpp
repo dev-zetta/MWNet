@@ -24,6 +24,9 @@
 
 #include "../mwbase/windowmanager.hpp"
 #include "../mwbase/world.hpp"
+#include "../mwworld/class.hpp"
+#include "../mwmechanics/npcstats.hpp"
+#include "../mwmp/MechanicsHelper.hpp"
 
 #include "../mwrender/bonegroup.hpp"
 #include "../mwrender/postprocessor.hpp"
@@ -697,6 +700,12 @@ namespace MWLua
             data["damage"] = damageTable;
             data["hitPos"] = hitPos;
             data["successful"] = successful;
+            data["waitForServerHit"] = !attacker.isEmpty()
+                && attacker.getClass().isNpc()
+                && MechanicsHelper::getLocalAttack(attacker) != nullptr
+                && sourceType == MWMechanics::DamageSourceType::Melee
+                && weapon.isEmpty() && ammo.isEmpty()
+                && !attacker.getClass().getNpcStats(attacker).isWerewolf();
             switch (sourceType)
             {
                 case MWMechanics::DamageSourceType::Unspecified:

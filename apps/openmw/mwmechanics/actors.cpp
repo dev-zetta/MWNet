@@ -1,6 +1,7 @@
 #include "actors.hpp"
 
 #include <array>
+#include <ctime>
 #include <optional>
 
 #include <components/esm3/esmreader.hpp>
@@ -1168,6 +1169,41 @@ namespace MWMechanics
         }
     }
 
+    namespace
+    {
+        void forgiveCrimeAfterRespawn(const MWWorld::Ptr& actor, const MWWorld::Ptr& player,
+            std::time_t respawnTime)
+        {
+            if (actor == player || !actor.getClass().isNpc())
+                return;
+            NpcStats& npcStats = actor.getClass().getNpcStats(actor);
+            if (npcStats.getCrimeId() == -1 || std::difftime(respawnTime, npcStats.getCrimeTime()) <= 0)
+                return;
+
+            CreatureStats& stats = actor.getClass().getCreatureStats(actor);
+            const int oldDispositionPenalty = npcStats.getCrimeDispositionModifier();
+            // Match paid-crime forgiveness, including disposition and pursuit.
+            // Leaving the crime disposition penalty behind can make the NPC
+            // immediately aggressive again after its combat package is removed.
+            stats.getAiSequence().stopCombat();
+            stats.getAiSequence().stopPursuit();
+            stats.setHitAttemptActor({});
+            stats.setAttacked(false);
+            stats.setAlarmed(false);
+            stats.setAttackingOrSpell(false);
+            stats.setAiSetting(AiSetting::Fight, actor.getClass().getBaseFightRating(actor));
+            npcStats.setCrimeDispositionModifier(0);
+            npcStats.setCrimeId(-1);
+            auto& movement = actor.getClass().getMovementSettings(actor);
+            movement.mPosition[0] = movement.mPosition[1] = movement.mPosition[2] = 0;
+            MWBase::Environment::get().getSoundManager()->stopSay(actor);
+            LOG_MESSAGE_SIMPLE(TimedLog::LOG_INFO,
+                "Cleared pre-respawn crime hostility for NPC %s %u-%u (disposition penalty %d)",
+                actor.getCellRef().getRefId().getRefIdString().c_str(), actor.getCellRef().getRefNum().mIndex,
+                actor.getCellRef().getMpNum(), oldDispositionPenalty);
+        }
+    }
+
     void Actors::updateCrimePursuit(const MWWorld::Ptr& ptr, float duration, SidingCache& cachedAllies) const
     {
         const MWWorld::Ptr player = getPlayer();
@@ -1242,26 +1278,7 @@ namespace MWMechanics
                 // Update witness crime id
                 npcStats.setCrimeId(-1);
             }
-            /* Start of tes3mp addition */
-            else if (mwmp::Main::get().getLocalPlayer()->diedSinceArrestAttempt
-                && creatureStats.getAiSequence().isInCombat(player))
-            {
-                if (difftime(mwmp::Main::get().getLocalPlayer()->deathTime, npcStats.getCrimeTime()) > 0)
-                {
-                    creatureStats.getAiSequence().stopCombat();
-                    creatureStats.setAttacked(false);
-                    creatureStats.setAlarmed(false);
-                    creatureStats.setAiSetting(AiSetting::Fight, ptr.getClass().getBaseFightRating(ptr));
 
-                    npcStats.setCrimeId(-1);
-                    npcStats.setCrimeTime(time(0));
-                    LOG_MESSAGE_SIMPLE(TimedLog::LOG_INFO,
-                        "NPC %s %i-%i has forgiven player's crimes after the player's death",
-                        ptr.getCellRef().getRefId().getRefIdString().c_str(), ptr.getCellRef().getRefNum().mIndex,
-                        ptr.getCellRef().getMpNum());
-                }
-            }
-            /* End of tes3mp addition */
         }
     }
 
@@ -1587,6 +1604,21 @@ namespace MWMechanics
             const osg::Vec3f playerPos = player.getRefData().getPosition().asVec3();
 
             /// \todo move update logic to Actor class where appropriate
+
+            // Reconcile every local witness before any actor detects aggression.
+            // Doing this inside each actor's AI update lets earlier witnesses
+            // shout/re-engage through an ally whose old combat has not cleared.
+            if (mwmp::Main::get().getLocalPlayer()->diedSinceArrestAttempt
+                && !player.getClass().getCreatureStats(player).isDead())
+            {
+                for (const Actor& witness : mActors)
+                {
+                    if (!witness.isInvalid()
+                        && mwmp::Main::get().getCellController()->isLocalActor(witness.getPtr()))
+                        forgiveCrimeAfterRespawn(witness.getPtr(), player,
+                            mwmp::Main::get().getLocalPlayer()->deathTime);
+                }
+            }
 
             SidingCache cachedAllies{ *this, true }; // will be filled as engageCombat iterates
 

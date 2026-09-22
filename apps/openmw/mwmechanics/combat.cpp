@@ -590,8 +590,9 @@ namespace MWMechanics
             if (sound)
                 sndMgr->playSound3D(victim, sound->mId, 1.0f, 1.0f);
         }
-        else if (!healthdmg)
+        else if (!healthdmg && MechanicsHelper::getLocalAttack(attacker) == nullptr)
         {
+            // Locally simulated fist sounds are presented on the canonical reply.
             static const std::array<ESM::RefId, 2> sounds
                 = { ESM::RefId::stringRefId("Hand To Hand Hit"), ESM::RefId::stringRefId("Hand To Hand Hit 2") };
             sndMgr->playSound3D(victim, sounds[Misc::Rng::rollDice(sounds.size(), prng)], 1.0f, 1.0f);

@@ -47,6 +47,13 @@ bool PlayerProcessor::Process(const mwmp::transport::ReceivedApplicationPacket& 
                         processor.second->strPacketID.c_str());
                     return true;
                 }
+                if (guid == myGuid && packet.id == mwmp::protocol::ApplicationPacketId::PlayerAttack)
+                {
+                    // A result must not overwrite a queued local attack intent.
+                    processor.second->Do(*myPacket, &validation);
+                    myPacket->setPlayer(player);
+                    return true;
+                }
                 if (player == nullptr)
                     player = PlayerList::newPlayer(guid);
                 myPacket->setPlayer(player);

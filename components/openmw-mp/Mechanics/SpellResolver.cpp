@@ -364,7 +364,7 @@ namespace mwmp::mechanics
             pending.state->magicka = std::clamp(pending.state->magicka
                 + pending.magickaDelta, 0.0, pending.state->maximumMagicka);
             pending.state->fatigue = std::clamp(pending.state->fatigue
-                + pending.fatigueDelta, 0.0, pending.state->maximumFatigue);
+                + pending.fatigueDelta, -MaximumStatValue, pending.state->maximumFatigue);
             pending.state->alive = pending.state->health > 0;
             SpellApplication application;
             application.target = pending.id;
@@ -464,7 +464,8 @@ namespace mwmp::mechanics
             && state.health <= state.maximumHealth && validStat(state.magicka)
             && validStat(state.maximumMagicka)
             && state.magicka <= state.maximumMagicka
-            && validStat(state.fatigue) && validStat(state.maximumFatigue)
+            && std::isfinite(state.fatigue) && state.fatigue >= -MaximumStatValue
+            && validStat(state.maximumFatigue)
             && state.fatigue <= state.maximumFatigue
             && std::isfinite(state.castingMultiplier)
             && state.castingMultiplier >= 0

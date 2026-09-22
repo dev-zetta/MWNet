@@ -12,15 +12,21 @@ local attributes = {
     { base = 50, damage = 50 },
     { base = 70, damage = 5 },
 }
-local sends = 0
+local names = {}
+local sends, dynamicSends = 0, 0
+local fatigueBase, fatigueCurrent = 200, 200
 tes3mp = {
     GetAttributeCount = function() return #attributes end,
-    GetAttributeName = function(i) return tostring(i) end,
+    GetAttributeName = function(i) return names[i+1] or tostring(i) end,
+    GetAttributeModifier = function(_, i) return attributes[i+1].modifier or 0 end,
     GetAttributeBase = function(_, i) return attributes[i+1].base end,
     GetAttributeDamage = function(_, i) return attributes[i+1].damage end,
     SetAttributeBase = function(_, i, value) attributes[i+1].base = value end,
     SetAttributeDamage = function(_, i, value) attributes[i+1].damage = value end,
     SendAttributes = function() sends = sends + 1 end,
+    SetFatigueBase = function(_, value) fatigueBase = value end,
+    SetFatigueCurrent = function(_, value) fatigueCurrent = value end,
+    SendStatsDynamic = function() dynamicSends = dynamicSends + 1 end,
 }
 local BasePlayer = dofile(root .. "player/base.lua")
 local player = { pid = 0, data = { attributes = { ["0"] = { skillIncrease = 7 } } } }
@@ -38,6 +44,27 @@ end
 config.respawnAttributeFloor = 20
 BasePlayer.RestoreRespawnAttributes(player)
 assert(attributes[1].base == 20 and attributes[1].damage == 0)
+
+-- A saved pre-penalty capacity must not survive restoration of all four attributes.
+config.respawnAttributeFloor = 10
+names = { "Strength", "Willpower", "Agility", "Endurance" }
+attributes = {
+    { base = 1, damage = 0 }, { base = 50, damage = 50 },
+    { base = 10, damage = 0 }, { base = 10, damage = 0 },
+}
+local fatigueSaves = 0
+player.QuicksaveToDrive = function() fatigueSaves = fatigueSaves + 1 end
+player.data.stats = { fatigueBase = 200, fatigueCurrent = 200, healthCurrent = 0 }
+BasePlayer.RestoreRespawnAttributes(player)
+assert(fatigueBase == 40 and fatigueCurrent == 40 and dynamicSends == 1, "stale saved fatigue maximum survived respawn")
+assert(player.data.stats.fatigueBase == 40 and player.data.stats.fatigueCurrent == 40 and fatigueSaves == 1)
+assert(player.data.stats.healthCurrent == 0, 'fatigue preparation must not revive health early')
+-- Match the engine's effective-attribute formula, including modifiers.
+attributes[1].modifier = 5
+attributes[4].modifier = -3
+BasePlayer.RestoreRespawnAttributes(player)
+assert(fatigueBase == 42 and fatigueCurrent == 42 and dynamicSends == 2)
+print('Respawn derives and saves fatigue capacity from current effective attributes')
 
 -- Exercise the actual asynchronous jail callback and its registered skill handler.
 local skills = {

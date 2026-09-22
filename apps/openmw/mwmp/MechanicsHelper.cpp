@@ -6,6 +6,8 @@
 #include "../mwbase/environment.hpp"
 #include "../mwbase/mechanicsmanager.hpp"
 #include "../mwbase/world.hpp"
+#include "../mwbase/soundmanager.hpp"
+#include "../mwmechanics/npcstats.hpp"
 
 #include "../mwmechanics/creaturestats.hpp"
 #include "../mwmechanics/combat.hpp"
@@ -376,8 +378,55 @@ bool MechanicsHelper::isTeamMember(const MWWorld::Ptr& playerChecked, const MWWo
     return isTeamMember;
 }
 
+void MechanicsHelper::processLocalFistResult(const Attack& attack)
+{
+    processFistResult(attack);
+}
+
+void MechanicsHelper::processFistResult(const Attack& attack)
+{
+    if (!attack.unarmed || attack.pressed || attack.type != Attack::MELEE || isEmptyTarget(attack.target))
+        return;
+
+    MWWorld::Ptr victim;
+    if (attack.target.isPlayer)
+        victim = getPlayerPtr(attack.target);
+    else
+    {
+        auto* controller = Main::get().getCellController();
+        if (controller->isLocalActor(attack.target.refNum, attack.target.mpNum))
+            victim = controller->getLocalActor(attack.target.refNum, attack.target.mpNum)->getPtr();
+        else if (controller->isDedicatedActor(attack.target.refNum, attack.target.mpNum))
+            victim = controller->getDedicatedActor(attack.target.refNum, attack.target.mpNum)->getPtr();
+    }
+    if (victim.isEmpty())
+        return;
+
+    const char* sound = "miss";
+    if (attack.success && attack.isHit)
+    {
+        auto& prng = MWBase::Environment::get().getWorld()->getPrng();
+        sound = Misc::Rng::rollDice(2, prng) == 0 ? "Hand To Hand Hit" : "Hand To Hand Hit 2";
+        auto& stats = victim.getClass().getCreatureStats(victim);
+        if (attack.damage > 0 && !attack.knockdown && !stats.isDead() && !stats.getKnockedDown() && !stats.isParalyzed())
+            stats.setHitRecovery(true);
+    }
+    MWBase::Environment::get().getSoundManager()->playSound3D(victim, ESM::RefId::stringRefId(sound), 1, 1);
+    LOG_MESSAGE_SIMPLE(TimedLog::LOG_INFO, "Server-confirmed fist impact on %s: %s (%s damage %.3f, knockout %d)",
+        victim.getCellRef().getRefId().getRefIdString().c_str(), sound,
+        attack.healthDamage ? "health" : "fatigue", attack.damage, attack.knockdown);
+    // Dynamic stats arrive in separate canonical packets. Do not apply damage
+    // or submit a new attack from this presentation-only result.
+}
+
 void MechanicsHelper::processAttack(Attack attack, const MWWorld::Ptr& attacker)
 {
+    if (attack.unarmed)
+    {
+        MWBase::Environment::get().getMechanicsManager()->setAttackingOrSpell(attacker, false);
+        processFistResult(attack);
+        return;
+    }
     LOG_MESSAGE_SIMPLE(TimedLog::LOG_VERBOSE, "Processing attack from %s of type %i",
         std::string(attacker.getClass().getName(attacker)).c_str(), attack.type);
 

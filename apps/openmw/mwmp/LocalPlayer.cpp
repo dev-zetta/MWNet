@@ -922,13 +922,16 @@ void LocalPlayer::resurrect()
         MWBase::Environment::get().getWorld()->teleportToClosestMarker(ptrPlayer, ESM::RefId::stringRefId("templemarker"));
 
     MWBase::Environment::get().getMechanicsManager()->resurrect(ptrPlayer);
+    // Retaliation against the previous life's attacker must not recruit allies
+    // into a new fight as soon as the player is revived.
+    ptrPlayer.getClass().getCreatureStats(ptrPlayer).setHitAttemptActor({});
+    ptrPlayer.getClass().getCreatureStats(ptrPlayer).setAttacked(false);
+
 
     // The player could have died from a hand-to-hand attack, so reset their fatigue
     // as well
-    if (creatureStats.mDynamic[2].mMod < 1)
-        creatureStats.mDynamic[2].mMod = 1;
-
-    creatureStats.mDynamic[2].mCurrent = creatureStats.mDynamic[2].mMod;
+    creatureStats.mDynamic[2].mCurrent = std::max(1.0f,
+        creatureStats.mDynamic[2].mBase + creatureStats.mDynamic[2].mMod);
     MWMechanics::DynamicStat<float> fatigue;
     fatigue.readState(creatureStats.mDynamic[2]);
     ptrPlayer.getClass().getCreatureStats(ptrPlayer).setFatigue(fatigue);
@@ -1042,7 +1045,10 @@ void LocalPlayer::setDynamicStats()
     {
         dynamicStat = ptrCreatureStats->getDynamic(i);
         dynamicStat.setBase(creatureStats.mDynamic[i].mBase);
-        dynamicStat.setCurrent(creatureStats.mDynamic[i].mCurrent);
+        if (i == 2)
+            dynamicStat.setModifier(creatureStats.mDynamic[i].mMod);
+        // Negative fatigue is authoritative unconsciousness, not an invalid stat.
+        dynamicStat.setCurrent(creatureStats.mDynamic[i].mCurrent, i == 2);
         ptrCreatureStats->setDynamic(i, dynamicStat);
     }
 }

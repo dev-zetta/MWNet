@@ -112,6 +112,9 @@ namespace  mwmp
         void setConsumableMagicItems(std::unordered_set<std::string> itemIds);
         void setDirectConsumableMagicItems(std::unordered_set<std::string> itemIds);
         void setSpellFatigueFormula(double base, double multiplier);
+        void setUnarmedFormula(double minimum, double maximum, double health, double recoveryBase, double recoveryMultiplier);
+        bool configureUnarmedCombat(mechanics::CombatantId attacker, mechanics::CombatantId target,
+            bool unarmed, double skill, double endurance);
 
         std::optional<session::AuthorityLease> assignActorAuthority(
             const ESM::Cell& cell, mwmp::transport::TransportConnectionId owner);
@@ -286,6 +289,9 @@ namespace  mwmp
         mechanics::SpellResolver mSpellResolver;
         std::unordered_set<std::string> mConsumableMagicItems;
         std::unordered_set<std::string> mDirectConsumableMagicItems;
+        double mUnarmedMinimum = 0.1, mUnarmedMaximum = 0.5, mUnarmedHealth = 0.1;
+        double mFatigueRecoveryBase = 2;
+        double mFatigueRecoveryPerEndurance = 0.02;
         double mSpellFatigueBase = 1;
         double mSpellFatigueMultiplier = 0;
         std::unordered_set<std::uint64_t> mAuthenticatedConnections;

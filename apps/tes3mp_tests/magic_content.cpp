@@ -6,6 +6,7 @@
 #include <components/esm3/loadmgef.hpp>
 #include <components/esm3/loadnpc.hpp>
 #include <components/esm3/loadskil.hpp>
+#include <components/esm/attr.hpp>
 #include <components/esm3/loadspel.hpp>
 
 #include <chrono>
@@ -29,7 +30,7 @@ namespace
         // Legacy content reloads the engine's real fixed flags for WeaknessToFire.
         writer.setFormatVersion(ESM::DefaultFormatVersion);
         writer.save(stream);
-        for (const auto& id : { "fEffectCostMult", "fNPCbaseMagickaMult", "fFatigueBase", "fFatigueMult" })
+        for (const auto& id : { "fEffectCostMult", "fNPCbaseMagickaMult", "fFatigueBase", "fFatigueMult", "fMinHandToHandMult", "fMaxHandToHandMult", "fHandtoHandHealthPer", "fFatigueReturnBase", "fFatigueReturnMult" })
         {
             ESM::GameSetting setting{};
             setting.mId = ESM::RefId::stringRefId(id);
@@ -59,6 +60,8 @@ namespace
         npc.blank();
         npc.mId = ESM::RefId::stringRefId("test merchant");
         npc.mNpdt.mHealth = npc.mNpdt.mMana = npc.mNpdt.mFatigue = 100;
+        npc.mNpdt.mSkills[ESM::Skill::HandToHand] = 40;
+        npc.mNpdt.mAttributes[ESM::Attribute::Endurance] = 50;
         npc.mInventory.mList = {
             { -5, ESM::RefId::stringRefId("restocking scroll") },
             { 2, ESM::RefId::stringRefId("ordinary item") },
@@ -114,6 +117,14 @@ namespace
             || content.actorTemplates[0].inventory[1].count != 2)
         {
             std::cerr << "Restocking NPC inventory was dropped or retained a negative count\n";
+            return false;
+        }
+        if (!content.actorTemplates[0].isNpc || content.actorTemplates[0].handToHand != 40
+            || content.actorTemplates[0].endurance != 50 || content.unarmedMinimum != 1
+            || content.unarmedMaximum != 1 || content.unarmedHealth != 1
+            || content.fatigueRecoveryBase != 1 || content.fatigueRecoveryPerEndurance != 1)
+        {
+            std::cerr << "Canonical fist and recovery profile did not match loaded content\n";
             return false;
         }
         const auto& definition = content.definitions.front();

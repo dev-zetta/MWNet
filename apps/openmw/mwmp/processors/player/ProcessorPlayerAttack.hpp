@@ -17,7 +17,9 @@ namespace mwmp
 
         void Do(PlayerPacket &packet, BasePlayer *player) override
         {
-            if (!isLocal() && player != nullptr)
+            if (isLocal() && player != nullptr && !isRequest())
+                MechanicsHelper::processLocalFistResult(player->attack);
+            else if (!isLocal() && player != nullptr)
             {
                 DedicatedPlayer& dedicatedPlayer = static_cast<DedicatedPlayer&>(*player);
                 MWWorld::Ptr playerPtr = dedicatedPlayer.getPtr();

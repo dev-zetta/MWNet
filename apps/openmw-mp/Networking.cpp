@@ -2864,6 +2864,20 @@ namespace
             0.0, mwmp::mechanics::SpellResolver::MaximumStatValue);
     }
 
+    double effectiveCombatStat(const std::map<ESM::RefId, ESM::StatState<float>>& stats,
+        const ESM::RefId& id) noexcept
+    {
+        const auto found = stats.find(id);
+        if (found == stats.end())
+            return 0;
+        // Attributes/skills serialize base, modifier and damage; mCurrent is
+        // only meaningful for dynamic resources (health, magicka, fatigue).
+        const auto& stat = found->second;
+        const double value = static_cast<double>(stat.mBase) + stat.mMod - stat.mDamage;
+        return std::isfinite(value)
+            ? std::clamp(value, 0.0, mwmp::mechanics::CombatResolver::MaximumStatValue) : 0;
+    }
+
     double activeEffectMagnitude(
         const std::optional<std::vector<mwmp::mechanics::CanonicalActiveSpell>>& spells,
         std::string_view effectId)
@@ -3441,7 +3455,8 @@ bool Networking::resolvePlayerCast(Player& player, std::string& rejectionReason,
         state->health = application.health;
         state->fatigue = application.fatigue;
         state->fatigueRatio = state->maximumFatigue == 0
-            ? 1.0 : state->fatigue / state->maximumFatigue;
+            ? 1.0 : std::clamp(state->fatigue / state->maximumFatigue, 0.0, 1.0);
+        state->recoveringFatigue = state->recoveringFatigue || state->fatigue < state->maximumFatigue;
         state->alive = !application.died;
         if (!combat.upsert(application.target, *state))
         {
@@ -4064,7 +4079,8 @@ bool Networking::resolveActorCast(Player& player, BaseActorList& actorList,
         state->health = application.health;
         state->fatigue = application.fatigue;
         state->fatigueRatio = state->maximumFatigue == 0
-            ? 1.0 : state->fatigue / state->maximumFatigue;
+            ? 1.0 : std::clamp(state->fatigue / state->maximumFatigue, 0.0, 1.0);
+        state->recoveringFatigue = state->recoveringFatigue || state->fatigue < state->maximumFatigue;
         state->alive = !application.died;
         if (!combat.upsert(application.target, *state))
         {
@@ -4478,9 +4494,9 @@ namespace
                 player.creatureStats.mDynamic[2]);
             state.fatigue = std::clamp(
                 static_cast<double>(player.creatureStats.mDynamic[2].mCurrent),
-                0.0, state.maximumFatigue);
+                -maximumCanonicalStat, state.maximumFatigue);
             state.fatigueRatio = state.maximumFatigue == 0
-                ? 1.0 : state.fatigue / state.maximumFatigue;
+                ? 1.0 : std::clamp(state.fatigue / state.maximumFatigue, 0.0, 1.0);
         }
         state.accuracy = 0.75;
         state.evasion = 0.10;
@@ -4522,7 +4538,8 @@ namespace
     {
         auto& fatigue = player.creatureStats.mDynamic[2];
         fatigue.mBase = static_cast<float>(state.maximumFatigue);
-        fatigue.mMod = static_cast<float>(state.maximumFatigue);
+        // DynamicStat stores an additive modifier, not the modified maximum.
+        fatigue.mMod = 0;
         fatigue.mCurrent = static_cast<float>(state.fatigue);
         fatigue.mDamage = 0;
         fatigue.mProgress = 0;
@@ -4564,9 +4581,9 @@ namespace
                 actor.creatureStats.mDynamic[2]);
             state.fatigue = std::clamp(
                 static_cast<double>(actor.creatureStats.mDynamic[2].mCurrent),
-                0.0, state.maximumFatigue);
+                -maximumCanonicalStat, state.maximumFatigue);
             state.fatigueRatio = state.maximumFatigue == 0
-                ? 1.0 : state.fatigue / state.maximumFatigue;
+                ? 1.0 : std::clamp(state.fatigue / state.maximumFatigue, 0.0, 1.0);
         }
         state.accuracy = 0.70;
         state.evasion = 0.10;
@@ -4609,7 +4626,8 @@ namespace
     {
         auto& fatigue = actor.creatureStats.mDynamic[2];
         fatigue.mBase = static_cast<float>(state.maximumFatigue);
-        fatigue.mMod = static_cast<float>(state.maximumFatigue);
+        // DynamicStat stores an additive modifier, not the modified maximum.
+        fatigue.mMod = 0;
         fatigue.mCurrent = static_cast<float>(state.fatigue);
         fatigue.mDamage = 0;
         fatigue.mProgress = 0;
@@ -5159,6 +5177,10 @@ bool Networking::reconcilePlayerStats(Player& player)
     const mechanics::CombatantId id{ mechanics::CombatantKind::Player, player.guid.value, {} };
     const auto existing = mCombatResolver.find(id);
     mechanics::CombatantState state = playerCombatState(player, existing, false);
+    state.fatigueRecoveryPerSecond = std::min(mechanics::CombatResolver::MaximumStatValue,
+        mFatigueRecoveryBase + effectiveCombatStat(player.creatureStats.mAttributes, ESM::Attribute::Endurance)
+            * mFatigueRecoveryPerEndurance);
+    state.recoveringFatigue = state.recoveringFatigue || state.fatigue < state.maximumFatigue;
     if (existing)
     {
         applyCanonicalHealth(player, state);
@@ -5183,6 +5205,10 @@ bool Networking::applyServerPlayerStats(Player& player)
     const mechanics::CombatantId id{ mechanics::CombatantKind::Player, player.guid.value, {} };
     mechanics::CombatantState state = playerCombatState(
         player, mCombatResolver.find(id), true);
+    state.fatigueRecoveryPerSecond = std::min(mechanics::CombatResolver::MaximumStatValue,
+        mFatigueRecoveryBase + effectiveCombatStat(player.creatureStats.mAttributes, ESM::Attribute::Endurance)
+            * mFatigueRecoveryPerEndurance);
+    state.recoveringFatigue = state.recoveringFatigue || state.fatigue < state.maximumFatigue;
     mechanics::SpellCombatantState magic = playerSpellState(player, state,
         mActiveEffectLedger.snapshot(id), mSpellFatigueBase,
         mSpellFatigueMultiplier, mSpellResolver.findCombatant(id), true);
@@ -5236,6 +5262,11 @@ bool Networking::reconcileActorStats(Player& player, BaseActorList& incoming)
         const BaseActor* cachedActor = serverCell->getActor(actor.refNum, actor.mpNum);
         mechanics::CombatantState state = actorCombatState(
             actor, cachedActor, existing, false);
+        const auto profile = mActorMagicRegistry.find(Misc::StringUtils::lowerCase(
+            cachedActor ? cachedActor->refId : actor.refId));
+        state.fatigueRecoveryPerSecond = std::min(mechanics::CombatResolver::MaximumStatValue,
+            mFatigueRecoveryBase + (profile ? profile->endurance : 0) * mFatigueRecoveryPerEndurance);
+        state.recoveringFatigue = state.recoveringFatigue || state.fatigue < state.maximumFatigue;
         if (existing)
         {
             applyCanonicalHealth(actor, state);
@@ -5277,6 +5308,11 @@ bool Networking::applyServerActorStats(BaseActorList& actorList)
         const BaseActor* cachedActor = serverCell->getActor(actor.refNum, actor.mpNum);
         mechanics::CombatantState state = actorCombatState(
             actor, cachedActor, mCombatResolver.find(id), true);
+        const auto profile = mActorMagicRegistry.find(Misc::StringUtils::lowerCase(
+            cachedActor ? cachedActor->refId : actor.refId));
+        state.fatigueRecoveryPerSecond = std::min(mechanics::CombatResolver::MaximumStatValue,
+            mFatigueRecoveryBase + (profile ? profile->endurance : 0) * mFatigueRecoveryPerEndurance);
+        state.recoveringFatigue = state.recoveringFatigue || state.fatigue < state.maximumFatigue;
         const auto actorTemplate = mActorMagicRegistry.find(
             Misc::StringUtils::lowerCase(actor.refId));
         mechanics::SpellCombatantState magic;
@@ -5307,7 +5343,9 @@ bool Networking::validatePlayerAttack(Player& player, const BasePlayer& incoming
 {
     const Attack& attack = incoming.attack;
     bool valid = attack.type == Attack::MELEE || attack.type == Attack::RANGED;
-    valid = valid && attack.attackAnimation.size() <= 128
+    valid = valid && std::isfinite(attack.attackStrength)
+        && attack.attackStrength >= 0 && attack.attackStrength <= 1
+        && attack.attackAnimation.size() <= 128
         && attack.rangedWeaponId.size() <= 256 && attack.rangedAmmoId.size() <= 256;
 
     if (attack.type == Attack::RANGED)
@@ -5340,11 +5378,53 @@ bool Networking::validatePlayerAttack(Player& player, const BasePlayer& incoming
     return false;
 }
 
+void Networking::setUnarmedFormula(double minimum, double maximum, double health, double recoveryBase, double recoveryMultiplier)
+{
+    for (const double value : { minimum, maximum, health, recoveryBase, recoveryMultiplier })
+        if (!std::isfinite(value) || value < 0 || value > mechanics::CombatResolver::MaximumStatValue)
+            throw std::invalid_argument("invalid hand-to-hand formula");
+    if (minimum > maximum)
+        throw std::invalid_argument("invalid hand-to-hand damage range");
+    mUnarmedMinimum = minimum;
+    mUnarmedMaximum = maximum;
+    mUnarmedHealth = health;
+    mFatigueRecoveryBase = recoveryBase;
+    mFatigueRecoveryPerEndurance = recoveryMultiplier;
+}
+
+bool Networking::configureUnarmedCombat(mechanics::CombatantId attackerId,
+    mechanics::CombatantId targetId, bool unarmed, double skill, double endurance)
+{
+    auto attacker = mCombatResolver.find(attackerId);
+    auto target = mCombatResolver.find(targetId);
+    if (!attacker || !target)
+        return false;
+    attacker->unarmed = unarmed;
+    attacker->minimumDamage = unarmed
+        ? std::min(mechanics::CombatResolver::MaximumStatValue, skill * mUnarmedMinimum) : 1;
+    attacker->maximumDamage = unarmed
+        ? std::min(mechanics::CombatResolver::MaximumStatValue, skill * mUnarmedMaximum) : 12;
+    attacker->unarmedHealthMultiplier = mUnarmedHealth;
+    target->paralyzed = false;
+    if (const auto spells = mActiveEffectLedger.snapshot(targetId))
+        for (const auto& spell : *spells)
+            for (const auto& effect : spell.effects)
+                if (effect.effectId == "paralyze" && effect.timeLeft > 0)
+                    target->paralyzed = true;
+    // Match the engine's per-second calculateRestoration formula.
+    target->fatigueRecoveryPerSecond = std::min(mechanics::CombatResolver::MaximumStatValue,
+        mFatigueRecoveryBase + endurance * mFatigueRecoveryPerEndurance);
+    return mCombatResolver.upsert(attackerId, *attacker)
+        && mCombatResolver.upsert(targetId, *target);
+}
+
 void Networking::sanitizePlayerAttack(Player& player) noexcept
 {
     player.attack.success = false;
     player.attack.isHit = false;
     player.attack.damage = 0;
+    player.attack.unarmed = false;
+    player.attack.healthDamage = true;
     player.attack.block = false;
     player.attack.knockdown = false;
     player.attack.applyWeaponEnchantment = false;
@@ -5433,7 +5513,23 @@ bool Networking::resolvePlayerAttack(Player& player, std::string& rejectionReaso
         }
     }
 
-    const double strength = player.attack.type == Attack::RANGED
+    const auto equipment = mEquipmentLedger.snapshot(player.guid.value);
+    constexpr std::size_t carriedRight = 16;
+    const bool unarmed = player.attack.type == Attack::MELEE && !player.isWerewolf
+        && equipment && equipment->at(carriedRight).empty();
+    double targetEndurance = 0;
+    if (targetPlayer)
+        targetEndurance = effectiveCombatStat(targetPlayer->creatureStats.mAttributes, ESM::Attribute::Endurance);
+    else if (const auto profile = mActorMagicRegistry.find(Misc::StringUtils::lowerCase(targetActor->refId)))
+        targetEndurance = profile->endurance;
+    if (!configureUnarmedCombat(attackerId, targetId, unarmed,
+            effectiveCombatStat(player.npcStats.mSkills, ESM::Skill::HandToHand), targetEndurance))
+    {
+        rejectionReason = "invalid canonical hand-to-hand state";
+        return false;
+    }
+
+    const double strength = unarmed || player.attack.type == Attack::RANGED
         ? static_cast<double>(player.attack.attackStrength) : 1.0;
     if (!std::isfinite(strength) || strength < 0 || strength > 1)
     {
@@ -5458,6 +5554,9 @@ bool Networking::resolvePlayerAttack(Player& player, std::string& rejectionReaso
     player.attack.success = result.decision == mechanics::CombatDecision::AppliedHit;
     player.attack.isHit = player.attack.success;
     player.attack.damage = static_cast<float>(result.damage);
+    player.attack.unarmed = unarmed;
+    player.attack.healthDamage = result.healthDamage;
+    player.attack.knockdown = result.targetKnockedOut;
 
     const auto canonicalTarget = mCombatResolver.find(targetId);
     if (!canonicalTarget)
@@ -5466,12 +5565,22 @@ bool Networking::resolvePlayerAttack(Player& player, std::string& rejectionReaso
         return false;
     }
 
+    if (auto magic = mSpellResolver.findCombatant(targetId))
+    {
+        magic->health = canonicalTarget->health;
+        magic->fatigue = canonicalTarget->fatigue;
+        magic->alive = canonicalTarget->alive;
+        mSpellResolver.upsertCombatant(targetId, *magic);
+    }
+
     if (targetPlayer != nullptr)
     {
         applyCanonicalHealth(*targetPlayer, *canonicalTarget);
+        applyCanonicalFatigue(*targetPlayer, *canonicalTarget);
         targetPlayer->exchangeFullInfo = false;
         targetPlayer->statsDynamicIndexChanges.clear();
         targetPlayer->statsDynamicIndexChanges.push_back(0);
+        targetPlayer->statsDynamicIndexChanges.push_back(2);
         PlayerPacket* statsPacket = playerPacketController->GetPacket(ID_PLAYER_STATS_DYNAMIC);
         statsPacket->setPlayer(targetPlayer);
         statsPacket->Send(targetPlayer->guid);
@@ -5487,6 +5596,7 @@ bool Networking::resolvePlayerAttack(Player& player, std::string& rejectionReaso
     else
     {
         applyCanonicalHealth(*targetActor, *canonicalTarget);
+        applyCanonicalFatigue(*targetActor, *canonicalTarget);
         targetActor->hasStatsDynamicData = true;
 
         BaseActorList statsList;
@@ -5527,6 +5637,8 @@ bool Networking::validateActorAttacks(Player& player, const BaseActorList& incom
         valid = valid && (actor.refNum != 0 || actor.mpNum != 0)
             && !(actor.refNum != 0 && actor.mpNum != 0)
             && (attack.type == Attack::MELEE || attack.type == Attack::RANGED)
+            && std::isfinite(attack.attackStrength)
+            && attack.attackStrength >= 0 && attack.attackStrength <= 1
             && attack.attackAnimation.size() <= 128
             && attack.rangedWeaponId.size() <= 256
             && attack.rangedAmmoId.size() <= 256;
@@ -5577,6 +5689,8 @@ void Networking::sanitizeActorAttack(BaseActor& actor) noexcept
     actor.attack.success = false;
     actor.attack.isHit = false;
     actor.attack.damage = 0;
+    actor.attack.unarmed = false;
+    actor.attack.healthDamage = true;
     actor.attack.block = false;
     actor.attack.knockdown = false;
     actor.attack.applyWeaponEnchantment = false;
@@ -5696,7 +5810,25 @@ bool Networking::resolveActorAttack(Player& player, BaseActorList& actorList,
         }
     }
 
-    const double strength = submittedActor.attack.type == Attack::RANGED
+    const auto profile = mActorMagicRegistry.find(Misc::StringUtils::lowerCase(attackerActor->refId));
+    const auto equipment = mActorStateLedger.equipment({ actorList.cell.getShortDescription(),
+        attackerActor->refNum, attackerActor->mpNum });
+    constexpr std::size_t carriedRight = 16;
+    const bool unarmed = submittedActor.attack.type == Attack::MELEE
+        && profile && profile->isNpc && equipment && equipment->at(carriedRight).empty();
+    double targetEndurance = 0;
+    if (targetPlayer)
+        targetEndurance = effectiveCombatStat(targetPlayer->creatureStats.mAttributes, ESM::Attribute::Endurance);
+    else if (const auto profile = mActorMagicRegistry.find(Misc::StringUtils::lowerCase(targetActor->refId)))
+        targetEndurance = profile->endurance;
+    if (!configureUnarmedCombat(attackerId, targetId, unarmed,
+            profile ? profile->handToHand : 0, targetEndurance))
+    {
+        rejectionReason = "invalid canonical actor hand-to-hand state";
+        return false;
+    }
+
+    const double strength = unarmed || submittedActor.attack.type == Attack::RANGED
         ? static_cast<double>(submittedActor.attack.attackStrength) : 1.0;
     if (!std::isfinite(strength) || strength < 0 || strength > 1)
     {
@@ -5735,6 +5867,9 @@ bool Networking::resolveActorAttack(Player& player, BaseActorList& actorList,
         = result.decision == mechanics::CombatDecision::AppliedHit;
     submittedActor.attack.isHit = submittedActor.attack.success;
     submittedActor.attack.damage = static_cast<float>(result.damage);
+    submittedActor.attack.unarmed = unarmed;
+    submittedActor.attack.healthDamage = result.healthDamage;
+    submittedActor.attack.knockdown = result.targetKnockedOut;
 
     const auto canonicalTarget = mCombatResolver.find(targetId);
     if (!canonicalTarget)
@@ -5743,12 +5878,22 @@ bool Networking::resolveActorAttack(Player& player, BaseActorList& actorList,
         return false;
     }
 
+    if (auto magic = mSpellResolver.findCombatant(targetId))
+    {
+        magic->health = canonicalTarget->health;
+        magic->fatigue = canonicalTarget->fatigue;
+        magic->alive = canonicalTarget->alive;
+        mSpellResolver.upsertCombatant(targetId, *magic);
+    }
+
     if (targetPlayer != nullptr)
     {
         applyCanonicalHealth(*targetPlayer, *canonicalTarget);
+        applyCanonicalFatigue(*targetPlayer, *canonicalTarget);
         targetPlayer->exchangeFullInfo = false;
         targetPlayer->statsDynamicIndexChanges.clear();
         targetPlayer->statsDynamicIndexChanges.push_back(0);
+        targetPlayer->statsDynamicIndexChanges.push_back(2);
         PlayerPacket* statsPacket = playerPacketController->GetPacket(
             ID_PLAYER_STATS_DYNAMIC);
         statsPacket->setPlayer(targetPlayer);
@@ -5767,6 +5912,7 @@ bool Networking::resolveActorAttack(Player& player, BaseActorList& actorList,
     else
     {
         applyCanonicalHealth(*targetActor, *canonicalTarget);
+        applyCanonicalFatigue(*targetActor, *canonicalTarget);
         targetActor->hasStatsDynamicData = true;
 
         BaseActorList statsList;
@@ -5898,7 +6044,7 @@ void Networking::setSpellFatigueFormula(double base, double multiplier)
 void Networking::advanceActiveEffects(double elapsedSeconds)
 {
     mechanics::ActiveEffectLedger activeEffects = mActiveEffectLedger;
-    const mechanics::ActiveEffectAdvanceResult advanced
+    mechanics::ActiveEffectAdvanceResult advanced
         = activeEffects.advance(elapsedSeconds);
     if (!advanced.applied())
     {
@@ -5906,6 +6052,22 @@ void Networking::advanceActiveEffects(double elapsedSeconds)
             "Failed to advance canonical active effects: %s",
             mechanics::describe(advanced.decision));
         return;
+    }
+    const auto recovery = mCombatResolver.fatigueRecovery(elapsedSeconds);
+    if (!recovery.empty())
+    {
+        std::unordered_map<mechanics::CombatantId, std::size_t, mechanics::CombatantIdHash> indices;
+        indices.reserve(advanced.changes.size() + recovery.size());
+        for (std::size_t index = 0; index < advanced.changes.size(); ++index)
+            indices.emplace(advanced.changes[index].owner, index);
+        for (const auto& [owner, delta] : recovery)
+        {
+            const auto [found, inserted] = indices.emplace(owner, advanced.changes.size());
+            if (inserted)
+                advanced.changes.push_back({ owner, 0, 0, delta, false, std::nullopt });
+            else
+                advanced.changes[found->second].fatigueDelta += delta;
+        }
     }
     if (advanced.changes.empty())
     {
@@ -5946,9 +6108,10 @@ void Networking::advanceActiveEffects(double elapsedSeconds)
         if (tick.fatigueDelta != 0)
         {
             state->fatigue = std::clamp(state->fatigue + tick.fatigueDelta,
-                0.0, state->maximumFatigue);
+                -mechanics::CombatResolver::MaximumStatValue, state->maximumFatigue);
             state->fatigueRatio = state->maximumFatigue == 0
-                ? 1.0 : state->fatigue / state->maximumFatigue;
+                ? 1.0 : std::clamp(state->fatigue / state->maximumFatigue, 0.0, 1.0);
+            state->recoveringFatigue = state->fatigue < state->maximumFatigue;
             change.fatigueChanged = true;
         }
         state->alive = state->health > 0;

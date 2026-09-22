@@ -46,6 +46,8 @@ namespace MechanicsHelper
     bool getSpellSuccess(std::string spellId, const MWWorld::Ptr& caster);
 
     void processAttack(mwmp::Attack attack, const MWWorld::Ptr& attacker);
+    void processLocalFistResult(const mwmp::Attack& attack);
+    void processFistResult(const mwmp::Attack& attack);
     void processCast(mwmp::Cast cast, const MWWorld::Ptr& caster);
 
     void createSpellGfx(const MWWorld::Ptr& targetPtr, const std::vector<ESM::ActiveEffect>& mEffects);

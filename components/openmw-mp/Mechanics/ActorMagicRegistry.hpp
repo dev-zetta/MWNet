@@ -15,6 +15,9 @@ namespace mwmp::mechanics
     struct ActorMagicTemplate
     {
         std::string refId;
+        bool isNpc = false;
+        double handToHand = 0;
+        double endurance = 0;
         double maximumHealth = 0;
         double maximumMagicka = 0;
         double maximumFatigue = 0;

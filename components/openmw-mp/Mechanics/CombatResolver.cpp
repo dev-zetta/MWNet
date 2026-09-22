@@ -67,6 +67,7 @@ namespace mwmp::mechanics
             return result;
         }
         if (!std::isfinite(intent.strength) || intent.strength < 0 || intent.strength > 1
+            || (intent.kind != AttackKind::Melee && intent.kind != AttackKind::Ranged)
             || !std::isfinite(serverRoll) || serverRoll < 0 || serverRoll >= 1)
         {
             result.decision = CombatDecision::InvalidIntent;
@@ -110,6 +111,7 @@ namespace mwmp::mechanics
             attacker->second.accuracy - target->second.evasion,
             MinimumHitChance, MaximumHitChance);
         result.targetHealth = target->second.health;
+        result.targetFatigue = target->second.fatigue;
         if (serverRoll >= result.hitChance)
         {
             result.decision = CombatDecision::AppliedMiss;
@@ -122,17 +124,46 @@ namespace mwmp::mechanics
         const double fatigueMultiplier = MinimumFatigueMultiplier
             + (MaximumFatigueMultiplier - MinimumFatigueMultiplier)
                 * attacker->second.fatigueRatio;
-        const double armorMultiplier = 100.0 / (100.0 + target->second.armorRating);
-        result.damage = std::min(target->second.health,
-            std::max(0.0, baseDamage * fatigueMultiplier * armorMultiplier));
-
+        const bool fist = intent.kind == AttackKind::Melee && attacker->second.unarmed;
+        result.healthDamage = !fist || target->second.fatigue < 0 || target->second.paralyzed;
         CombatantState& canonicalTarget = target->second;
-        canonicalTarget.health -= result.damage;
+        if (!result.healthDamage)
+        {
+            // Fatigue can cross zero: negative fatigue is the engine's knockout state.
+            result.damage = std::min(MaximumStatValue + canonicalTarget.fatigue, std::max(0.0, baseDamage));
+            canonicalTarget.fatigue -= result.damage;
+            canonicalTarget.fatigueRatio = canonicalTarget.maximumFatigue == 0 ? 1.0
+                : std::clamp(canonicalTarget.fatigue / canonicalTarget.maximumFatigue, 0.0, 1.0);
+            canonicalTarget.recoveringFatigue = true;
+        }
+        else
+        {
+            const double armorMultiplier = 100.0 / (100.0 + canonicalTarget.armorRating);
+            const double damage = fist ? baseDamage * attacker->second.unarmedHealthMultiplier
+                : baseDamage * fatigueMultiplier * armorMultiplier;
+            result.damage = std::min(canonicalTarget.health, std::max(0.0, damage));
+            canonicalTarget.health -= result.damage;
+        }
         canonicalTarget.alive = canonicalTarget.health > 0;
         result.targetHealth = canonicalTarget.health;
+        result.targetFatigue = canonicalTarget.fatigue;
+        result.targetKnockedOut = canonicalTarget.fatigue < 0;
         result.targetDied = !canonicalTarget.alive;
         result.decision = CombatDecision::AppliedHit;
         return result;
+    }
+
+    std::vector<std::pair<CombatantId, double>> CombatResolver::fatigueRecovery(double elapsedSeconds) const
+    {
+        std::vector<std::pair<CombatantId, double>> changes;
+        if (!std::isfinite(elapsedSeconds) || elapsedSeconds <= 0)
+            return changes;
+        for (const auto& [id, state] : mCombatants)
+            if (state.alive && state.recoveringFatigue && state.fatigue < state.maximumFatigue
+                && state.fatigueRecoveryPerSecond > 0)
+                changes.emplace_back(id, std::min(state.maximumFatigue - state.fatigue,
+                    state.fatigueRecoveryPerSecond * elapsedSeconds));
+        return changes;
     }
 
     bool CombatResolver::previewRelocations(
@@ -236,10 +267,12 @@ namespace mwmp::mechanics
             return std::isfinite(value) && value >= 0 && value <= MaximumStatValue;
         };
         const double expectedFatigueRatio = state.maximumFatigue == 0
-            ? 1.0 : state.fatigue / state.maximumFatigue;
+            ? 1.0 : std::clamp(state.fatigue / state.maximumFatigue, 0.0, 1.0);
         return finiteRange(state.health) && finiteRange(state.maximumHealth)
             && state.health <= state.maximumHealth
-            && finiteRange(state.fatigue) && finiteRange(state.maximumFatigue)
+            && std::isfinite(state.fatigue) && state.fatigue >= -MaximumStatValue
+            && finiteRange(state.maximumFatigue)
+            && finiteRange(state.unarmedHealthMultiplier) && finiteRange(state.fatigueRecoveryPerSecond)
             && state.fatigue <= state.maximumFatigue
             && std::isfinite(state.fatigueRatio) && state.fatigueRatio >= 0
             && state.fatigueRatio <= 1

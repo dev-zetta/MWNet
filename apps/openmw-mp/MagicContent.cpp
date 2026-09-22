@@ -314,6 +314,9 @@ namespace mwmp
                     actor.maximumMagicka = npc.mNpdt.mMana;
                     actor.maximumFatigue = npc.mNpdt.mFatigue;
                 }
+                actor.isNpc = true;
+                actor.handToHand = valueOrZero(skills, ESM::Skill::HandToHand);
+                actor.endurance = valueOrZero(attributes, ESM::Attribute::Endurance);
                 actor.willpower = valueOrZero(
                     attributes, ESM::Attribute::Willpower);
                 actor.luck = valueOrZero(attributes, ESM::Attribute::Luck);
@@ -336,6 +339,7 @@ namespace mwmp
                     creature.mData.getAttribute(ESM::Attribute::Willpower));
                 actor.luck = std::max(0,
                     creature.mData.getAttribute(ESM::Attribute::Luck));
+                actor.endurance = std::max(0, creature.mData.getAttribute(ESM::Attribute::Endurance));
                 actor.enchantSkill = std::max(0, creature.mData.mMagic);
                 for (int index = 0; index < ESM::MagicSchool::Length; ++index)
                 {
@@ -488,6 +492,12 @@ namespace mwmp
         {
             throw std::runtime_error("canonical fatigue settings are invalid");
         }
+        result.unarmedMinimum = EsmLoader::getGameSetting(data.mGameSettings, "fMinHandToHandMult").getFloat();
+        result.unarmedMaximum = EsmLoader::getGameSetting(data.mGameSettings, "fMaxHandToHandMult").getFloat();
+        result.unarmedHealth = EsmLoader::getGameSetting(data.mGameSettings, "fHandtoHandHealthPer").getFloat();
+        // Match real-time restoration, which differs from the resting formula.
+        result.fatigueRecoveryBase = EsmLoader::getGameSetting(data.mGameSettings, "fFatigueReturnBase").getFloat();
+        result.fatigueRecoveryPerEndurance = EsmLoader::getGameSetting(data.mGameSettings, "fFatigueReturnMult").getFloat();
         result.actorTemplates = makeActorTemplates(data, npcMagickaMultiplier);
         for (const ESM::Cell& cell : data.mCells)
         {

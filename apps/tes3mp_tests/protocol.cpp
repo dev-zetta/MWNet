@@ -231,10 +231,10 @@ namespace
         EXPECT(decodeMessage(message, decoded, payload).error == CodecError::TrailingData);
 
         message.pop_back();
-        message[4] = std::byte{ 10 };
+        message[4] = static_cast<std::byte>(protocolVersion - 1);
         EXPECT(decodeMessage(message, decoded, payload).error == CodecError::UnsupportedVersion);
 
-        message[4] = std::byte{ 11 };
+        message[4] = static_cast<std::byte>(protocolVersion);
         message[8] = std::byte{ 0x80 };
         EXPECT(decodeMessage(message, decoded, payload).error == CodecError::InvalidValue);
     }

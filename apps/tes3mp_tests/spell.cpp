@@ -143,6 +143,22 @@ namespace
         EXPECT(replacement.findCombatant(caster).has_value());
     }
 
+    void testSpellPreservesUnconsciousFatigue()
+    {
+        SpellResolver resolver;
+        const CombatantId caster{ CombatantKind::Player, 7, {} };
+        const CombatantId target{ CombatantKind::Actor, 19, "Balmora" };
+        auto unconscious = combatant(100, 50, { 100, 0, 0 });
+        unconscious.fatigue = -15;
+        EXPECT(resolver.upsertCombatant(caster, combatant(100, 50, {})));
+        EXPECT(resolver.upsertCombatant(target, unconscious));
+        EXPECT(resolver.upsertDefinition(fireball()));
+        EXPECT(resolver.resolve({ caster, target, "fireball", 1 }, 0, 0).applied());
+        EXPECT(resolver.findCombatant(target)->fatigue == -15);
+        unconscious.fatigue = -SpellResolver::MaximumStatValue - 1;
+        EXPECT(!resolver.upsertCombatant(target, unconscious));
+    }
+
     void testInstantDynamicResourcesAndAbsorbAreCanonical()
     {
         SpellResolver resolver;
@@ -336,6 +352,7 @@ int runSpellTests()
     testRangeTargetAndResourceValidation();
     testMixedRangesApplyToCanonicalTargets();
     testItemChargeIsCanonicalResource();
+    testSpellPreservesUnconsciousFatigue();
     testInstantDynamicResourcesAndAbsorbAreCanonical();
     testMorrowindCastingFormulaUsesEffectiveSchool();
     testDefinitionsAndCapacityFailClosed();

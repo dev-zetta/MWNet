@@ -31,6 +31,8 @@ void PacketPlayerAttack::Packet(bool send)
     Field(player->attack.success);
 
     Field(player->attack.isHit);
+    Field(player->attack.unarmed);
+    Field(player->attack.attackStrength);
 
     if (player->attack.type == mwmp::Attack::MELEE)
     {
@@ -38,7 +40,6 @@ void PacketPlayerAttack::Packet(bool send)
     }
     else if (player->attack.type == mwmp::Attack::RANGED)
     {
-        Field(player->attack.attackStrength);
         Field(player->attack.rangedWeaponId, true);
         Field(player->attack.rangedAmmoId, true);
 
@@ -54,6 +55,7 @@ void PacketPlayerAttack::Packet(bool send)
     if (player->attack.isHit)
     {
         Field(player->attack.damage);
+        Field(player->attack.healthDamage);
         Field(player->attack.block);
         Field(player->attack.knockdown);
         Field(player->attack.applyWeaponEnchantment);

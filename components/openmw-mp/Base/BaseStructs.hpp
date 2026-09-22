@@ -127,6 +127,8 @@ namespace mwmp
         float damage = 0;
         float attackStrength = 0;
 
+        bool unarmed = false; // Server-derived result classification, never trusted from a client.
+        bool healthDamage = true;
         bool isHit = false;
         bool success = false;
         bool block = false;
