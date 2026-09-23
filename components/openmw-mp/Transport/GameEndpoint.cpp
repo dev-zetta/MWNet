@@ -1,4 +1,4 @@
-#include "Protocol11Endpoint.hpp"
+#include "GameEndpoint.hpp"
 
 #include "GameNetworkingSocketsTransport.hpp"
 #include "SecureTransport.hpp"
@@ -11,7 +11,7 @@
 
 namespace mwmp::transport
 {
-    Protocol11Endpoint::Protocol11Endpoint(
+    GameEndpoint::GameEndpoint(
         std::unique_ptr<session::SessionTransport> transport,
         SecureTransport* secureTransport, session::Endpoint role) noexcept
         : mTransport(std::move(transport))
@@ -20,9 +20,9 @@ namespace mwmp::transport
     {
     }
 
-    Protocol11Endpoint::~Protocol11Endpoint() = default;
+    GameEndpoint::~GameEndpoint() = default;
 
-    std::unique_ptr<Protocol11Endpoint> Protocol11Endpoint::createServer(
+    std::unique_ptr<GameEndpoint> GameEndpoint::createServer(
         const std::filesystem::path& identityPath, std::string& error)
     {
         auto identity = security::ServerIdentity::loadOrCreate(identityPath, error);
@@ -34,11 +34,11 @@ namespace mwmp::transport
         SecureTransport* securePointer = secure.get();
         auto sessions = std::make_unique<session::SessionTransport>(
             std::move(secure), session::Endpoint::Server);
-        return std::unique_ptr<Protocol11Endpoint>(new Protocol11Endpoint(
+        return std::unique_ptr<GameEndpoint>(new GameEndpoint(
             std::move(sessions), securePointer, session::Endpoint::Server));
     }
 
-    std::unique_ptr<Protocol11Endpoint> Protocol11Endpoint::createClient(
+    std::unique_ptr<GameEndpoint> GameEndpoint::createClient(
         const std::filesystem::path& trustStorePath, std::string& error)
     {
         auto trustStore = security::TrustStore::load(trustStorePath, error);
@@ -50,48 +50,59 @@ namespace mwmp::transport
         SecureTransport* securePointer = secure.get();
         auto sessions = std::make_unique<session::SessionTransport>(
             std::move(secure), session::Endpoint::Client);
-        return std::unique_ptr<Protocol11Endpoint>(new Protocol11Endpoint(
+        return std::unique_ptr<GameEndpoint>(new GameEndpoint(
             std::move(sessions), securePointer, session::Endpoint::Client));
     }
 
-    bool Protocol11Endpoint::listen(const ListenOptions& options, TransportError& error)
+    std::unique_ptr<GameEndpoint> GameEndpoint::createProbe()
+    {
+        auto secure = std::make_unique<SecureTransport>(
+            std::make_unique<GameNetworkingSocketsTransport>(), security::TrustStore::ephemeral());
+        auto* pointer = secure.get();
+        auto sessions = std::make_unique<session::SessionTransport>(
+            std::move(secure), session::Endpoint::Client);
+        return std::unique_ptr<GameEndpoint>(new GameEndpoint(
+            std::move(sessions), pointer, session::Endpoint::Client));
+    }
+
+    bool GameEndpoint::listen(const ListenOptions& options, TransportError& error)
     {
         return mTransport->listen(options, error);
     }
 
-    bool Protocol11Endpoint::connect(const ConnectOptions& options,
+    bool GameEndpoint::connect(const ConnectOptions& options,
         TransportConnectionId& connection, TransportError& error)
     {
         return mTransport->connect(options, connection, error);
     }
 
-    bool Protocol11Endpoint::send(TransportMessage message, TransportError& error)
+    bool GameEndpoint::send(TransportMessage message, TransportError& error)
     {
         return mTransport->send(std::move(message), error);
     }
 
-    std::optional<TransportEvent> Protocol11Endpoint::poll(std::chrono::milliseconds timeout)
+    std::optional<TransportEvent> GameEndpoint::poll(std::chrono::milliseconds timeout)
     {
         return mTransport->poll(timeout);
     }
 
-    std::optional<std::string> Protocol11Endpoint::peerAddress(
+    std::optional<std::string> GameEndpoint::peerAddress(
         TransportConnectionId connection) const
     {
         return mTransport->peerAddress(connection);
     }
 
-    void Protocol11Endpoint::disconnect(TransportConnectionId connection)
+    void GameEndpoint::disconnect(TransportConnectionId connection)
     {
         mTransport->disconnect(connection);
     }
 
-    void Protocol11Endpoint::shutdown(std::chrono::milliseconds timeout)
+    void GameEndpoint::shutdown(std::chrono::milliseconds timeout)
     {
         mTransport->shutdown(timeout);
     }
 
-    bool Protocol11Endpoint::confirmFingerprint(TransportConnectionId connection,
+    bool GameEndpoint::confirmFingerprint(TransportConnectionId connection,
         std::string_view fingerprint, TransportError& error)
     {
         if (mRole != session::Endpoint::Client)
@@ -103,24 +114,24 @@ namespace mwmp::transport
         return mSecureTransport->confirmFingerprint(connection, fingerprint, error);
     }
 
-    std::optional<std::string> Protocol11Endpoint::serverFingerprint() const
+    std::optional<std::string> GameEndpoint::serverFingerprint() const
     {
         return mSecureTransport->serverFingerprint();
     }
 
-    session::TransitionResult Protocol11Endpoint::advance(TransportConnectionId connection,
+    session::TransitionResult GameEndpoint::advance(TransportConnectionId connection,
         session::State target, TransportError& error)
     {
         return mTransport->advance(connection, target, error);
     }
 
-    std::optional<session::State> Protocol11Endpoint::state(
+    std::optional<session::State> GameEndpoint::state(
         TransportConnectionId connection) const
     {
         return mTransport->state(connection);
     }
 
-    ITransport& Protocol11Endpoint::transport() noexcept
+    ITransport& GameEndpoint::transport() noexcept
     {
         return *mTransport;
     }

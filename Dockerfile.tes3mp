@@ -41,6 +41,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     libsqlite3-dev \
     libprotobuf-dev \
     protobuf-compiler \
+    libcurl4-openssl-dev \
     libsodium-dev \
     libssl-dev \
     ninja-build \

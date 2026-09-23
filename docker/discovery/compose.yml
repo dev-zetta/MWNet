@@ -1,0 +1,45 @@
+services:
+  directory:
+    image: tes3mp-directory:${SOURCE_REVISION:-local}
+    build:
+      context: ../..
+      dockerfile: docker/discovery/Dockerfile
+      target: runtime
+      args:
+        SOURCE_REVISION: ${SOURCE_REVISION:-unknown}
+    command: ["--origin", "https://${DIRECTORY_HOST:?Set DIRECTORY_HOST}", "--bind", "0.0.0.0", "--database", "/data/directory.sqlite3", "--trust-proxy"]
+    volumes: ["directory-data:/data"]
+    restart: unless-stopped
+    read_only: true
+    cap_drop: [ALL]
+    security_opt: [no-new-privileges:true]
+    mem_limit: 512m
+    cpus: 1
+    pids_limit: 64
+    logging: &logs
+      driver: json-file
+      options: {max-size: "10m", max-file: "3"}
+  https:
+    image: caddy:2.10.2@sha256:c3d7ee5d2b11f9dc54f947f68a734c84e9c9666c92c88a7f30b9cba5da182adb
+    environment:
+      DIRECTORY_HOST: ${DIRECTORY_HOST:?Set DIRECTORY_HOST}
+    ports: ["80:80", "443:443"]
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy-data:/data
+      - caddy-config:/config
+    depends_on:
+      directory: {condition: service_healthy}
+    restart: unless-stopped
+    read_only: true
+    cap_drop: [ALL]
+    cap_add: [NET_BIND_SERVICE]
+    security_opt: [no-new-privileges:true]
+    mem_limit: 128m
+    cpus: 1
+    pids_limit: 64
+    logging: *logs
+volumes:
+  directory-data:
+  caddy-data:
+  caddy-config:

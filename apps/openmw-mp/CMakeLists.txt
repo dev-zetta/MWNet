@@ -185,7 +185,8 @@ target_link_libraries(tes3mp-server
     ${Breakpad_Library}
     tes3mp-mechanics
     tes3mp-metrics
-    tes3mp-protocol11-endpoint
+    tes3mp-discovery
+    tes3mp-game-endpoint
 )
 
 if (UNIX)

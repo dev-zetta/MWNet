@@ -20,7 +20,7 @@ cmake -S "$source_dir" -B "$output_dir/build" -G Ninja \
     -DBUILD_NAVMESHTOOL=OFF -DBUILD_BULLETOBJECTTOOL=OFF \
     -DBUILD_TES3MP_TESTS=ON -DTES3MP_FETCH_DEPS=ON
 cmake --build "$output_dir/build" --parallel "${TES3MP_BUILD_JOBS:-4}" \
-    --target tes3mp tes3mp-server tes3mp-tests tes3mp-persistence-fault tes3mp-headless-integration
+    --target tes3mp tes3mp-server tes3mp-tests tes3mp-persistence-fault tes3mp-headless-integration tes3mp-directory tes3mp-discovery-tests
 ctest --test-dir "$output_dir/build" --output-on-failure
 python3 "$source_dir/CI/generate_spdx_sbom.py" --root "$source_dir" \
     --output "$output_dir/tes3mp-source.spdx.json"

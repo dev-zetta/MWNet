@@ -5,6 +5,7 @@
 #include <filesystem>
 #include <optional>
 #include <string>
+#include <span>
 
 #include <sodium.h>
 
@@ -32,6 +33,8 @@ namespace mwmp::security
             return mSecretKey;
         }
         std::string fingerprint() const;
+        std::array<unsigned char, crypto_sign_BYTES> signDiscovery(
+            std::span<const unsigned char> payload) const;
 
     private:
         ServerIdentity(std::array<unsigned char, crypto_sign_PUBLICKEYBYTES> publicKey,

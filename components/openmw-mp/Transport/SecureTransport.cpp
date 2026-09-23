@@ -101,6 +101,7 @@ namespace mwmp::transport
         TransportConnectionId pendingOutboundConnection;
         bool connectInProgress = false;
         std::optional<std::string> automationFingerprint;
+        std::optional<std::string> expectedFingerprint;
         std::chrono::milliseconds handshakeTimeout{ 10'000 };
         std::chrono::milliseconds keepaliveInterval{ 5'000 };
         mutable std::mutex mutex;
@@ -150,6 +151,13 @@ namespace mwmp::transport
                     "--trust-fingerprint is not a valid Ed25519 fingerprint" };
                 return false;
             }
+            if (options.expectedFingerprint
+                && !security::TrustStore::isValidFingerprint(*options.expectedFingerprint))
+            {
+                error = { TransportErrorCode::InvalidConfiguration, "invalid expected fingerprint" };
+                return false;
+            }
+            expectedFingerprint = options.expectedFingerprint;
             remoteHost = options.host;
             remotePort = options.port;
             automationFingerprint = options.trustedFingerprint;
@@ -414,6 +422,12 @@ namespace mwmp::transport
             }
             connection.clientHandshake.reset();
             connection.presentedFingerprint = security::fingerprint(response.identityPublicKey);
+
+            if (expectedFingerprint && *expectedFingerprint != connection.presentedFingerprint)
+            {
+                failLocked(message.connection, "server fingerprint differs from discovery listing");
+                return;
+            }
 
             if (automationFingerprint)
             {
@@ -693,13 +707,13 @@ namespace mwmp::transport
 
     void SecureTransport::disconnect(TransportConnectionId connection)
     {
-        {
-            std::scoped_lock lock(mImpl->mutex);
-            mImpl->connections.erase(connection.value);
-            if (mImpl->pendingOutboundConnection == connection)
-                mImpl->pendingOutboundConnection = {};
-        }
-        mImpl->transport->disconnect(connection);
+        std::scoped_lock lock(mImpl->mutex);
+        if (!mImpl->connections.contains(connection.value)
+            && mImpl->pendingOutboundConnection != connection)
+            return;
+        // Erasing the secure state suppresses the backend's subsequent terminal
+        // event. Queue our own exactly once so application/player state retires.
+        mImpl->failLocked(connection, "application disconnect");
     }
 
     void SecureTransport::shutdown(std::chrono::milliseconds timeout)

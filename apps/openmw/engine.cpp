@@ -1189,6 +1189,9 @@ void OMW::Engine::go()
         */
         if (mwmp::Main::isInitialized() && mwmp::Main::isNewGamePending())
         {
+            // These transitions precede frame(), whose normal GC barrier has
+            // not run yet. World cleanup touches the same Lua state.
+            mLuaWorker->finishGc();
             mwmp::Main::clearNewGamePending();
             mWindowManager->removeGuiMode(MWGui::GM_MainMenu);
             mStateManager->newGame(true);
@@ -1196,6 +1199,7 @@ void OMW::Engine::go()
 
         if (mwmp::Main::isInitialized() && mwmp::Main::isPendingReturnToBrowser())
         {
+            mLuaWorker->finishGc();
             mwmp::Main::clearPendingReturnToBrowser();
             mwmp::Main::get().getGUIController()->destroyServerBrowser();
             mStateManager->cleanup();

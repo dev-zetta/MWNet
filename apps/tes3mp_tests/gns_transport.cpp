@@ -1,5 +1,5 @@
 #include <components/openmw-mp/Transport/GameNetworkingSocketsTransport.hpp>
-#include <components/openmw-mp/Transport/Protocol11Endpoint.hpp>
+#include <components/openmw-mp/Transport/GameEndpoint.hpp>
 #include <components/openmw-mp/Transport/SecureTransport.hpp>
 
 #include <components/openmw-mp/Security/ServerIdentity.hpp>
@@ -211,6 +211,7 @@ namespace
             bool clientAuthenticated = false;
             bool serverAuthenticated = false;
             bool prompted = false;
+            TransportConnectionId serverConnection;
             const auto deadline = std::chrono::steady_clock::now() + 5s;
             while (std::chrono::steady_clock::now() < deadline
                 && (!clientAuthenticated || !serverAuthenticated))
@@ -222,12 +223,33 @@ namespace
                         || event->type == TransportEventType::Connected;
                 }
                 if (auto event = server.poll(5ms))
-                    serverAuthenticated = serverAuthenticated
-                        || event->type == TransportEventType::Connected;
+                {
+                    if (event->type == TransportEventType::Connected)
+                    {
+                        serverAuthenticated = true;
+                        serverConnection = event->connection;
+                    }
+                }
             }
             EXPECT(clientAuthenticated);
             EXPECT(serverAuthenticated);
             EXPECT(!prompted);
+            // Local secure closure must reach the application exactly once.
+            // Otherwise rejected pre-authentication clients retain player slots.
+            server.disconnect(serverConnection);
+            const auto terminal = server.poll(0ms);
+            EXPECT(terminal && terminal->type == TransportEventType::Disconnected
+                && terminal->connection == serverConnection);
+            server.disconnect(serverConnection);
+            EXPECT(!server.poll(0ms));
+            bool remoteClosed = false;
+            const auto closeDeadline = std::chrono::steady_clock::now() + 2s;
+            while (!remoteClosed && std::chrono::steady_clock::now() < closeDeadline)
+            {
+                const auto event = client.poll(10ms);
+                remoteClosed = event && event->type == TransportEventType::Disconnected;
+            }
+            EXPECT(remoteClosed);
             client.shutdown(1s);
             server.shutdown(1s);
 
@@ -292,16 +314,16 @@ namespace
         std::filesystem::remove_all(directory, cleanupError);
     }
 
-    void testProtocol11Endpoint()
+    void testGameEndpoint()
     {
         const auto unique = std::to_string(
             std::chrono::steady_clock::now().time_since_epoch().count());
         const auto directory = std::filesystem::temp_directory_path()
-            / ("tes3mp-protocol11-endpoint-" + unique);
+            / ("tes3mp-game-endpoint-" + unique);
         std::string persistenceError;
-        auto server = Protocol11Endpoint::createServer(
+        auto server = GameEndpoint::createServer(
             directory / "server-identity.key", persistenceError);
-        auto client = Protocol11Endpoint::createClient(
+        auto client = GameEndpoint::createClient(
             directory / "trusted-servers.json", persistenceError);
         EXPECT(server != nullptr);
         EXPECT(client != nullptr);
@@ -480,6 +502,6 @@ int runGameNetworkingSocketsTests()
     client.shutdown(1s);
     server.shutdown(1s);
     testSecureTransport();
-    testProtocol11Endpoint();
+    testGameEndpoint();
     return sFailures;
 }

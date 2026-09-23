@@ -38,7 +38,7 @@ declare -rA GROUPED_DEPS=(
     libunshield-dev libtinyxml-dev libbullet-dev liblz4-dev libpng-dev libjpeg-dev
     libluajit-5.1-dev librecast-dev libsqlite3-dev ca-certificates libicu-dev
     libyaml-cpp-dev libqt6svg6 libqt6svg6-dev libprotobuf-dev protobuf-compiler
-    libsodium-dev libssl-dev
+    libsodium-dev libssl-dev libcurl4-openssl-dev
   "
 
   # These dependencies can alternatively be built and linked statically.
@@ -91,6 +91,7 @@ declare -rA GROUPED_DEPS=(
     librecast1
     libsdl2-2.0-0
     libsqlite3-0
+    libcurl4t64
     libswresample4
     libswscale7
     libtinyxml2.6.2v5

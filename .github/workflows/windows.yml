@@ -70,7 +70,7 @@ jobs:
 
     - name: Install TES3MP transport dependencies
       working-directory: ${{ github.workspace }}/deps/vcpkg-x64-windows-${{ inputs.msvc }}-${{ env.VCPKG_TAG }}
-      run: .\vcpkg.exe install libsodium:x64-windows protobuf:x64-windows openssl:x64-windows
+      run: .\vcpkg.exe install libsodium:x64-windows protobuf:x64-windows openssl:x64-windows curl:x64-windows
 
     - name: Cache Qt
       id: qt-cache

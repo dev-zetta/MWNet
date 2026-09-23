@@ -2,7 +2,7 @@
 
 ## Scope and assets
 
-This model covers the TES3MP multiplayer client, dedicated server, protocol 11 transport, server-side Lua boundary and JSON/SQLite persistence. The protected assets are account credentials, server identity keys, player/world state, process availability, gameplay integrity and the user's trust decision for a server endpoint.
+This model covers the TES3MP multiplayer client, dedicated server, protocol 12 transport, server-side Lua boundary and JSON/SQLite persistence. The protected assets are account credentials, server identity keys, player/world state, process availability, gameplay integrity and the user's trust decision for a server endpoint.
 
 Morrowind content, plugins and server-side Lua scripts are trusted inputs selected by the operator. A compromised host, malicious administrator, malicious game plugin or arbitrary native Lua module is outside the protocol's protection boundary.
 
@@ -19,11 +19,11 @@ Morrowind content, plugins and server-side Lua scripts are trusted inputs select
 
 | Threat | Required control | Current alpha status |
 | --- | --- | --- |
-| Malformed, truncated or oversized packets | Sticky fail-closed decoder, fixed-width fields, explicit limits and no partial destination mutation | Implemented across the protocol 11 packet boundary; the required long-running fuzz campaign remains a release gate |
+| Malformed, truncated or oversized packets | Sticky fail-closed decoder, fixed-width fields, explicit limits and no partial destination mutation | Implemented across the protocol 12 packet boundary; the required long-running fuzz campaign remains a release gate |
 | Spoofed player identity | Connection-bound sender identity; ignore client-supplied sender GUIDs | Implemented |
 | Replay, interception or server impersonation | Authenticated encryption, signed ephemeral handshake, TOFU fingerprint pinning and hard mismatch failure | Implemented |
 | Flooding and authentication CPU exhaustion | Per-connection byte/message/chat buckets, pre-KDF limiter and account-plus-IP lockout | Implemented; public-load tuning remains a gate |
-| Credential disclosure | Passwords only inside encrypted sessions, 128-byte cap, protected temporary buffers, Argon2id and redacted logging | Implemented for native protocol 11 authentication |
+| Credential disclosure | Passwords only inside encrypted sessions, 128-byte cap, protected temporary buffers, Argon2id and redacted logging | Implemented for native protocol 12 authentication |
 | Legacy credential retention | Verify once, atomically replace with Argon2id, and avoid backups containing obsolete material | Implemented for the native account store |
 | Unauthorized movement or actor simulation | Canonical movement bounds and expiring server-issued actor authority leases | Implemented foundation and live validation |
 | Forged combat, inventory, jail, object or respawn outcomes | Intent/result messages and canonical server models | Canonical ledgers and validation are active for the listed paths; integration, adversarial and soak evidence remain release gates |
@@ -34,7 +34,7 @@ Morrowind content, plugins and server-side Lua scripts are trusted inputs select
 
 ## Security invariants
 
-- Protocol 10 input is never decoded by a protocol 11 endpoint.
+- Gameplay envelopes with a version other than 12 are rejected; discovery API v1 does not change the gameplay wire format.
 - No gameplay packet, mutation callback or relay is accepted before account authentication.
 - A fingerprint mismatch cannot fall back to an unauthenticated connection.
 - Decode failure cannot invoke C++, Lua or relay behavior with partially decoded state.
@@ -44,6 +44,10 @@ Morrowind content, plugins and server-side Lua scripts are trusted inputs select
 
 ## Residual risks and release gates
 
-The alpha has canonical combat, movement, inventory/equipment, container, object, active-effect, death/respawn and justice foundations, but some game-event provenance paths still require adversarial integration coverage before they can be treated as release evidence. It has not completed the required decoder fuzz budget, 100-cycle stress run, 24-hour eight-client soak, complete persistence fault-injection matrix, independent security review or specialist review of TES3MP's additional GPL terms and third-party notices. These are explicit blockers, not accepted stable-release risks.
+The alpha has canonical combat, movement, inventory/equipment, container, object, active-effect, death/respawn and justice foundations, but some game-event provenance paths still require adversarial integration coverage before they can be treated as release evidence. Earlier fuzz, integration, persistence and paired-soak evidence is recorded in [the release gates](RELEASE_GATES.md); it applies to the revisions it tested. The final release candidate still needs its required validation evidence, independent security review and specialist review of TES3MP's additional GPL terms and third-party notices. These remain explicit release blockers.
 
-Public discovery is outside the 1.0.0 scope. A future service must use HTTPS, return signed server-identity metadata and receive a separate threat review.
+Public discovery is included in the 1.0.0 scope and requires a separate independent security review before public deployment. HTTPS authenticates the directory origin; a server-signed, bounded listing binds metadata to the existing game identity. A fresh, single-use challenge binds each mutation to the directory origin, operation, key and requesting source. The directory confirms identity and reachability through the encrypted handshake without accessing game accounts. This does not independently certify advertised protocol/content compatibility, server conduct or player counts; normal join checks remain authoritative.
+
+Production verification accepts numeric global-unicast addresses only, with two concurrent checks and four-second handshake deadlines. DNS names in announcements are intentionally unsupported to avoid DNS rebinding and resolver stalls. Private addresses require explicit `--local-test`. The proxy is the only public entry point; `--trust-proxy` is valid only when direct backend access is prevented. Caddy overwrites `X-Real-IP`. Public listings, challenge state, rate buckets, request sizes, HTTP connections and SQLite growth have explicit caps; details and residual limits are documented in [public discovery](docs/public-discovery.md).
+
+The directory may suppress listings, replay previously signed metadata for its origin, or become unavailable; clients retain direct connections. A signature authenticates the metadata's author, not its freshness in a compromised directory. Directory metadata never grants trust or overwrites a saved fingerprint, and the actual game connection must present the advertised identity. Public launch remains gated on staging acceptance, operator abuse controls, HTTPS/DNS checks, platform validation and independent review. The service does not relay game traffic, traverse NAT or centralize accounts.

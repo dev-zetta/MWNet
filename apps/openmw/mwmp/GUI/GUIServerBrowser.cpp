@@ -1,4 +1,5 @@
 #include "GUIServerBrowser.hpp"
+#include <MyGUI_TextIterator.h>
 
 #include <algorithm>
 #include <cctype>
@@ -9,6 +10,7 @@
 #include <vector>
 
 #include <components/openmw-mp/Protocol/ProtocolLimits.hpp>
+#include <components/openmw-mp/Version.hpp>
 #include <components/openmw-mp/Security/TrustStore.hpp>
 #include <components/files/configurationmanager.hpp>
 #include <components/settings/settings.hpp>
@@ -136,6 +138,21 @@ GUIServerBrowser::GUIServerBrowser()
     getWidget(mFingerprintLabel, "FingerprintStatus");
     getWidget(mStatusLabel, "StatusLabel");
 
+    getWidget(mPublicPanel, "PublicPanel");
+    getWidget(mDirectPanel, "DirectPanel");
+    getWidget(mPublicServers, "PublicServers");
+    getWidget(mSearch, "SearchServers");
+    getWidget(mButtonPublic, "ButtonPublic");
+    getWidget(mButtonRefresh, "RefreshServers");
+    getWidget(mButtonMore, "MoreServers");
+    mPublicPanel->setVisible(false);
+    mButtonMore->setEnabled(false);
+    mButtonPublic->eventMouseButtonClick += MyGUI::newDelegate(this, &GUIServerBrowser::onPublicClicked);
+    mButtonRefresh->eventMouseButtonClick += MyGUI::newDelegate(this, &GUIServerBrowser::onRefreshClicked);
+    mButtonMore->eventMouseButtonClick += MyGUI::newDelegate(this, &GUIServerBrowser::onMoreClicked);
+    mSearch->eventEditTextChange += MyGUI::newDelegate(this, &GUIServerBrowser::onSearchChanged);
+    mPublicServers->eventListSelectAccept += MyGUI::newDelegate(this, &GUIServerBrowser::onPublicSelected);
+
     mEditPassword->setEditPassword(true);
     mEditServerPassword->setEditPassword(true);
     mEditAddress->eventComboChangePosition
@@ -169,6 +186,7 @@ GUIServerBrowser::GUIServerBrowser()
 
 void GUIServerBrowser::refresh()
 {
+    updateStoredFingerprint(true);
     const std::string& error = Main::get().getNetworking()->getLastError();
     if (error.empty())
         mStatusLabel->setCaption(
@@ -199,24 +217,14 @@ void GUIServerBrowser::onPingClicked(MyGUI::Widget*)
         return;
     }
 
-    mStatusLabel->setCaption("Probing the protocol-11 encrypted handshake...");
-    const ServerProbeResult result = Networking::probeServer(endpoint->host, endpoint->port);
-    if (!result.reachable)
-    {
-        mStatusLabel->setCaption(result.detail);
-        return;
-    }
-
-    const std::string expected = mEditFingerprint->getCaption().asUTF8();
-    if (!expected.empty() && expected != result.fingerprint)
-    {
-        mFingerprintLabel->setCaption("Presented fingerprint: " + result.fingerprint);
-        mStatusLabel->setCaption("Reachable, but the presented fingerprint does not match the expected one.");
-        return;
-    }
-    mFingerprintLabel->setCaption("Presented fingerprint: " + result.fingerprint);
-    mStatusLabel->setCaption(result.detail + " Handshake: "
-        + std::to_string(result.elapsed.count()) + " ms.");
+    if (mProbeRequest.valid()) return;
+    mProbeAddress = endpoint->canonical;
+    mStatusLabel->setCaption("Probing the encrypted handshake...");
+    mButtonPing->setEnabled(false);
+    mCancelProbe = false;
+    mProbeRequest = std::async(std::launch::async, [this, host=endpoint->host, port=endpoint->port] {
+        return Networking::probeServer(host, port, &mCancelProbe);
+    });
 }
 
 void GUIServerBrowser::onSaveClicked(MyGUI::Widget*)
@@ -265,6 +273,8 @@ void GUIServerBrowser::onRegisterClicked(MyGUI::Widget*)
 
 void GUIServerBrowser::onCancelClicked(MyGUI::Widget*)
 {
+    mCancelDiscovery = true;
+    mCancelProbe = true;
     setVisible(false);
     MWBase::Environment::get().getStateManager()->requestQuit();
 }
@@ -286,9 +296,9 @@ void GUIServerBrowser::reloadServerChoices()
     mEditAddress->setCaption(current);
 }
 
-void GUIServerBrowser::updateStoredFingerprint()
+void GUIServerBrowser::updateStoredFingerprint(bool preserveInput)
 {
-    mEditFingerprint->setCaption("");
+    if (!preserveInput) mEditFingerprint->setCaption("");
     mFingerprintLabel->setCaption("Stored fingerprint: none");
     const auto endpoint = parseEndpoint(mEditAddress->getCaption().asUTF8());
     if (!endpoint)
@@ -320,8 +330,17 @@ void GUIServerBrowser::doConnect(bool registerAccount)
     options.serverAccessPassword = mEditServerPassword->getCaption().asUTF8();
     options.registerAccount = registerAccount;
     const std::string fingerprint = mEditFingerprint->getCaption().asUTF8();
-    if (!fingerprint.empty())
-        options.trustedFingerprint = fingerprint;
+    if (endpoint->canonical == mListedEndpoint && !mListedFingerprint.empty())
+    {
+        options.expectedFingerprint = mListedFingerprint;
+        if (!fingerprint.empty() && fingerprint != mListedFingerprint)
+        {
+            mStatusLabel->setCaption("The expected fingerprint differs from the selected public server.");
+            return;
+        }
+    }
+    else if (!fingerprint.empty())
+        options.expectedFingerprint = fingerprint;
 
     if (options.accountName.empty()
         || options.accountName.size() > protocol::limits::accountNameBytes)
@@ -353,4 +372,129 @@ void GUIServerBrowser::doConnect(bool registerAccount)
     }
     else
         refresh();
+}
+
+GUIServerBrowser::~GUIServerBrowser()
+{
+    mCancelDiscovery = true;
+    mCancelProbe = true;
+}
+
+void GUIServerBrowser::onPublicClicked(MyGUI::Widget*)
+{
+    const bool visible = !mPublicPanel->getVisible();
+    mPublicPanel->setVisible(visible);
+    mDirectPanel->setVisible(!visible);
+    if (!visible) mCancelDiscovery = true;
+    mButtonLogin->setEnabled(!visible);
+    mButtonRegister->setEnabled(!visible);
+    mButtonPublic->setCaption(visible ? "Direct connect" : "Public servers");
+    if (visible && mServers.empty()) startDirectoryRequest(true);
+}
+
+void GUIServerBrowser::onRefreshClicked(MyGUI::Widget*) { startDirectoryRequest(true); }
+void GUIServerBrowser::onMoreClicked(MyGUI::Widget*) { startDirectoryRequest(false); }
+void GUIServerBrowser::onSearchChanged(MyGUI::EditBox*) { filterServers(); }
+
+void GUIServerBrowser::startDirectoryRequest(bool reset)
+{
+    if (mDirectoryRequest.valid()) return;
+    discovery::HttpOptions options{
+        Settings::Manager::getOrDefault<std::string>("directoryUrl", "Discovery", ""),
+        Settings::Manager::getOrDefault<std::string>("caFile", "Discovery", "")};
+    if (options.origin.empty())
+    {
+        mStatusLabel->setCaption("Public discovery is not configured. Enter a server address to connect directly.");
+        return;
+    }
+    if (reset) { mServers.clear(); mNextPage.clear(); filterServers(); }
+    else if (mNextPage.empty() || mServers.size() >= discovery::maximumListings) return;
+    mCancelDiscovery = false;
+    mButtonRefresh->setEnabled(false);
+    mButtonMore->setEnabled(false);
+    mStatusLabel->setCaption("Loading public servers...");
+    mDirectoryRequest = std::async(std::launch::async, [this, options, cursor=mNextPage] {
+        return discovery::fetch(options, cursor, mCancelDiscovery);
+    });
+}
+
+void GUIServerBrowser::filterServers()
+{
+    auto lower = [](std::string s) {
+        for (char& c : s) c = static_cast<char>(std::tolower(static_cast<unsigned char>(c)));
+        return s;
+    };
+    const auto search = lower(mSearch->getCaption().asUTF8());
+    mPublicServers->removeAllItems();
+    mFiltered.clear();
+    for (std::size_t i = 0; i < mServers.size(); ++i)
+    {
+        const auto& l = mServers[i].listing;
+        if (lower(l.name).find(search) == std::string::npos) continue;
+        mFiltered.push_back(i);
+        const auto label = l.name + "  " + std::to_string(l.players) + "/" + std::to_string(l.capacity)
+            + (l.password ? "  [password]" : "")
+            + (l.protocol == TES3MP_PROTO_VERSION ? "  [protocol matches]" : "  [incompatible protocol]")
+            + "  " + std::to_string(l.content.size()) + " content rules";
+        // Server names are untrusted text, never MyGUI colour markup.
+        mPublicServers->addItem(MyGUI::TextIterator::toTagsString(label));
+    }
+}
+
+void GUIServerBrowser::onPublicSelected(MyGUI::ListBox*, std::size_t index)
+{
+    if (index >= mFiltered.size()) return;
+    const auto& server = mServers[mFiltered[index]];
+    if (server.listing.protocol != TES3MP_PROTO_VERSION)
+    {
+        mStatusLabel->setCaption("This server advertises an incompatible gameplay protocol.");
+        return;
+    }
+    mListedEndpoint = *security::TrustStore::canonicalEndpoint(server.listing.host, server.listing.port);
+    mListedFingerprint = server.fingerprint;
+    mEditAddress->setCaption(mListedEndpoint);
+    updateStoredFingerprint();
+    mEditFingerprint->setCaption(mListedFingerprint);
+    onPublicClicked(nullptr);
+    mStatusLabel->setCaption("Server selected. Content is checked on join; new identities require confirmation.");
+}
+
+void GUIServerBrowser::onFrame(float)
+{
+    if (mDirectoryRequest.valid() && mDirectoryRequest.wait_for(std::chrono::seconds(0)) == std::future_status::ready)
+    {
+        try
+        {
+            auto page = mDirectoryRequest.get();
+            if (page.next == mNextPage && !page.next.empty()) throw std::runtime_error("Directory repeated its page cursor.");
+            mNextPage = page.next;
+            for (auto& server : page.servers)
+            {
+                if (mServers.size() == discovery::maximumListings) break;
+                if (std::none_of(mServers.begin(), mServers.end(), [&](const auto& s) { return s.fingerprint == server.fingerprint; }))
+                    mServers.push_back(std::move(server));
+            }
+            filterServers();
+            mStatusLabel->setCaption("Double-click a server to select it. Content compatibility is checked when joining.");
+        }
+        catch (const std::exception& e) { mStatusLabel->setCaption(MyGUI::TextIterator::toTagsString(e.what())); }
+        mButtonRefresh->setEnabled(true);
+        mButtonMore->setEnabled(!mNextPage.empty() && mServers.size() < discovery::maximumListings);
+    }
+    if (mProbeRequest.valid() && mProbeRequest.wait_for(std::chrono::seconds(0)) == std::future_status::ready)
+    {
+        mButtonPing->setEnabled(true);
+        try
+        {
+            auto result = mProbeRequest.get();
+            auto current = parseEndpoint(mEditAddress->getCaption().asUTF8());
+            if (!current || current->canonical != mProbeAddress) return;
+            const auto expected = mEditFingerprint->getCaption().asUTF8();
+            mFingerprintLabel->setCaption("Presented fingerprint: " + result.fingerprint);
+            if (result.reachable && !expected.empty() && expected != result.fingerprint)
+                mStatusLabel->setCaption("Reachable, but its identity differs from the expected fingerprint.");
+            else mStatusLabel->setCaption(MyGUI::TextIterator::toTagsString(result.detail));
+        }
+        catch (const std::exception& e) { mStatusLabel->setCaption(MyGUI::TextIterator::toTagsString(e.what())); }
+    }
 }

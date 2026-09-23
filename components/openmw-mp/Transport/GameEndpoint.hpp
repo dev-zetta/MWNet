@@ -1,5 +1,5 @@
-#ifndef OPENMW_MP_TRANSPORT_PROTOCOL11_ENDPOINT_HPP
-#define OPENMW_MP_TRANSPORT_PROTOCOL11_ENDPOINT_HPP
+#ifndef OPENMW_MP_TRANSPORT_GAME_ENDPOINT_HPP
+#define OPENMW_MP_TRANSPORT_GAME_ENDPOINT_HPP
 
 #include "ITransport.hpp"
 
@@ -20,18 +20,19 @@ namespace mwmp::transport
 {
     class SecureTransport;
 
-    class Protocol11Endpoint
+    class GameEndpoint
     {
     public:
-        static std::unique_ptr<Protocol11Endpoint> createServer(
+        static std::unique_ptr<GameEndpoint> createServer(
             const std::filesystem::path& identityPath, std::string& error);
-        static std::unique_ptr<Protocol11Endpoint> createClient(
+        static std::unique_ptr<GameEndpoint> createClient(
             const std::filesystem::path& trustStorePath, std::string& error);
 
-        ~Protocol11Endpoint();
+        static std::unique_ptr<GameEndpoint> createProbe();
+        ~GameEndpoint();
 
-        Protocol11Endpoint(const Protocol11Endpoint&) = delete;
-        Protocol11Endpoint& operator=(const Protocol11Endpoint&) = delete;
+        GameEndpoint(const GameEndpoint&) = delete;
+        GameEndpoint& operator=(const GameEndpoint&) = delete;
 
         bool listen(const ListenOptions& options, TransportError& error);
         bool connect(const ConnectOptions& options,
@@ -53,7 +54,7 @@ namespace mwmp::transport
         ITransport& transport() noexcept;
 
     private:
-        Protocol11Endpoint(std::unique_ptr<session::SessionTransport> transport,
+        GameEndpoint(std::unique_ptr<session::SessionTransport> transport,
             SecureTransport* secureTransport, session::Endpoint role) noexcept;
 
         std::unique_ptr<session::SessionTransport> mTransport;

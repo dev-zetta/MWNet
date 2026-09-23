@@ -47,13 +47,13 @@ endif()
 if (TARGET tes3mp-gns-transport)
     target_sources(tes3mp-tests PRIVATE gns_transport.cpp)
     target_link_libraries(tes3mp-tests PRIVATE tes3mp-gns-transport
-        tes3mp-protocol11-endpoint tes3mp-security)
+        tes3mp-game-endpoint tes3mp-security)
     target_compile_definitions(tes3mp-tests PRIVATE TES3MP_HAS_GNS_TRANSPORT=1)
 
     add_executable(tes3mp-headless-integration headless_integration.cpp)
     target_include_directories(tes3mp-headless-integration PRIVATE ${CMAKE_SOURCE_DIR})
     target_link_libraries(tes3mp-headless-integration PRIVATE tes3mp-mechanics
-        tes3mp-metrics tes3mp-protocol11-endpoint tes3mp-security)
+        tes3mp-metrics tes3mp-game-endpoint tes3mp-security)
 
     if (MSVC)
         target_compile_options(tes3mp-headless-integration PRIVATE /W4 /WX)
@@ -101,3 +101,10 @@ endif()
 
 add_test(NAME tes3mp-persistence-fault COMMAND tes3mp-persistence-fault)
 set_tests_properties(tes3mp-persistence-fault PROPERTIES TIMEOUT 30)
+
+if (TARGET tes3mp-directory-core)
+    add_executable(tes3mp-discovery-tests discovery.cpp)
+    target_link_libraries(tes3mp-discovery-tests PRIVATE tes3mp-directory-core)
+    add_test(NAME tes3mp-discovery COMMAND tes3mp-discovery-tests)
+    set_tests_properties(tes3mp-discovery PROPERTIES TIMEOUT 120 RUN_SERIAL TRUE)
+endif()

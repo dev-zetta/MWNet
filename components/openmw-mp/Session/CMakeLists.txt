@@ -15,18 +15,18 @@ else()
 endif()
 
 if (TARGET tes3mp-gns-transport)
-    add_library(tes3mp-protocol11-endpoint STATIC
-        ../Transport/Protocol11Endpoint.cpp
+    add_library(tes3mp-game-endpoint STATIC
+        ../Transport/GameEndpoint.cpp
     )
-    target_include_directories(tes3mp-protocol11-endpoint PUBLIC ${CMAKE_SOURCE_DIR})
-    target_compile_features(tes3mp-protocol11-endpoint PUBLIC cxx_std_20)
-    target_link_libraries(tes3mp-protocol11-endpoint
+    target_include_directories(tes3mp-game-endpoint PUBLIC ${CMAKE_SOURCE_DIR})
+    target_compile_features(tes3mp-game-endpoint PUBLIC cxx_std_20)
+    target_link_libraries(tes3mp-game-endpoint
         PUBLIC tes3mp-session tes3mp-gns-transport)
 
     if (MSVC)
-        target_compile_options(tes3mp-protocol11-endpoint PRIVATE /W4 /WX)
+        target_compile_options(tes3mp-game-endpoint PRIVATE /W4 /WX)
     else()
-        target_compile_options(tes3mp-protocol11-endpoint
+        target_compile_options(tes3mp-game-endpoint
             PRIVATE -Wall -Wextra -Wpedantic -Werror)
     endif()
 endif()

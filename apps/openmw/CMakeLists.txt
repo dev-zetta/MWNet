@@ -238,7 +238,8 @@ target_link_libraries(openmw-lib
     osg-ffmpeg-videoplayer
     oics
     components
-    tes3mp-protocol11-endpoint
+    tes3mp-discovery
+    tes3mp-game-endpoint
     ICU::uc
     ICU::i18n
     ICU::data

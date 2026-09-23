@@ -208,6 +208,8 @@ namespace mwmp::security
 
     bool TrustStore::save(std::string& error) const
     {
+        if (mPath.empty())
+            return true;
         try
         {
             boost::property_tree::ptree root;

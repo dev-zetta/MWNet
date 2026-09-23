@@ -1,4 +1,7 @@
 #include "ServerIdentity.hpp"
+#include <vector>
+#include <stdexcept>
+#include <string_view>
 
 #include "SodiumInit.hpp"
 
@@ -231,4 +234,18 @@ namespace mwmp::security
             sodium_base64_VARIANT_URLSAFE_NO_PADDING);
         return "ed25519/" + std::string(encoded.data());
     }
+}
+
+std::array<unsigned char, crypto_sign_BYTES> mwmp::security::ServerIdentity::signDiscovery(
+    std::span<const unsigned char> payload) const
+{
+    if (payload.size() > 256 * 1024 + 1024)
+        throw std::invalid_argument("discovery signing payload too large");
+    constexpr std::string_view domain = "TES3MP discovery v1\n";
+    std::vector<unsigned char> bytes(domain.begin(), domain.end());
+    bytes.insert(bytes.end(), payload.begin(), payload.end());
+    std::array<unsigned char, crypto_sign_BYTES> signature{};
+    if (crypto_sign_detached(signature.data(), nullptr, bytes.data(), bytes.size(), mSecretKey.data()) != 0)
+        throw std::runtime_error("discovery signing failed");
+    return signature;
 }

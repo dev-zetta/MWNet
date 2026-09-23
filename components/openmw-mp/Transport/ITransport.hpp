@@ -115,6 +115,8 @@ namespace mwmp::transport
         std::string host;
         std::uint16_t port = 25565;
         std::optional<std::string> trustedFingerprint;
+        // Enforce an identity without granting trust or changing saved pins.
+        std::optional<std::string> expectedFingerprint;
         TransportTimeouts timeouts;
     };
 

@@ -138,6 +138,15 @@ def generate(root: pathlib.Path) -> dict[str, object]:
         ),
     ]
 
+    for name, version, url, license_id in (
+        ("libcurl", ">=7.85", "https://curl.se/libcurl/", "curl"),
+        ("Boost", ">=1.70", "https://www.boost.org/", "BSL-1.0"),
+        ("SQLite3", None, "https://sqlite.org/", "NOASSERTION"),
+        ("Caddy", "2.10.2", "https://caddyserver.com/", "Apache-2.0"),
+    ):
+        packages.append(package(f"SPDXRef-Package-{name}", name, version, url, license_id,
+                                comment="Public discovery dependency; resolve the exact binary package in release artifacts."))
+
     relationships = [
         {
             "spdxElementId": "SPDXRef-DOCUMENT",
@@ -152,7 +161,7 @@ def generate(root: pathlib.Path) -> dict[str, object]:
     ]
 
     known = {"GameNetworkingSockets", "libsodium"}
-    for dependency in ("GameNetworkingSockets", "libsodium"):
+    for dependency in ("GameNetworkingSockets", "libsodium", "libcurl", "Boost", "SQLite3", "Caddy"):
         relationships.append(
             {
                 "spdxElementId": "SPDXRef-Package-TES3MP",

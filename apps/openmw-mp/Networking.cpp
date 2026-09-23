@@ -94,7 +94,7 @@ namespace
     }
 }
 
-Networking::Networking(transport::Protocol11Endpoint& endpoint,
+Networking::Networking(transport::GameEndpoint& endpoint,
     const std::filesystem::path& credentialDirectory,
     const std::filesystem::path& legacyPlayerDirectory,
     unsigned int maximumConnections, unsigned short port,
@@ -6362,7 +6362,7 @@ void Networking::processSystemPacket(const transport::ReceivedApplicationPacket&
     if (player == nullptr)
         return;
     LOG_MESSAGE_SIMPLE(TimedLog::LOG_WARN,
-        "Rejected deprecated system packet %u after the protocol-11 cutover",
+        "Rejected deprecated system packet %u after the multiplayer cutover",
         static_cast<unsigned int>(static_cast<std::uint16_t>(packet.id)));
     kickPlayer(player->guid);
 }
@@ -6561,7 +6561,7 @@ void Networking::update(const transport::ReceivedApplicationPacket& packet)
         processWorldstatePacket(packet);
     else
         LOG_MESSAGE_SIMPLE(TimedLog::LOG_WARN,
-            "Unhandled protocol-11 packet with identifier %i has arrived",
+            "Unhandled multiplayer packet with identifier %i has arrived",
             static_cast<std::uint16_t>(packet.id));
 }
 
@@ -6796,6 +6796,18 @@ int Networking::mainLoop()
         if (auto event = mEndpoint.poll(std::chrono::milliseconds(1)))
             processTransportEvent(std::move(*event));
         TimerAPI::Tick();
+        if (mAnnouncer && std::chrono::steady_clock::now() >= mDiscoveryNextUpdate)
+        {
+            mDiscoveryListing.players = static_cast<std::uint16_t>(std::min(
+                mAuthenticatedConnections.size(), static_cast<std::size_t>(mDiscoveryListing.capacity)));
+            mDiscoveryListing.password = isPassworded();
+            mDiscoveryListing.content.clear();
+            if (getDataFileEnforcementState())
+                for (const auto& [name, hashes] : samples)
+                    mDiscoveryListing.content.push_back({name, hashes});
+            mAnnouncer->update(mDiscoveryListing);
+            mDiscoveryNextUpdate = std::chrono::steady_clock::now() + std::chrono::seconds(10);
+        }
         mMetrics.observeQueueDepth(mPersistenceService.pending());
         const auto now = std::chrono::steady_clock::now();
         if (now >= nextActiveEffectTick)
@@ -6808,6 +6820,15 @@ int Networking::mainLoop()
         mMetrics.observeTick(now - tickStarted);
         if (now >= nextMetricsReport)
         {
+            if (mAnnouncer)
+            {
+                const auto status = mAnnouncer->status();
+                if (status != mDiscoveryStatus)
+                {
+                    LOG_MESSAGE_SIMPLE(TimedLog::LOG_INFO, "Discovery: %s", status.c_str());
+                    mDiscoveryStatus = status;
+                }
+            }
             mMetrics.setResidentMemoryBytes(metrics::residentMemoryBytes());
             const auto snapshot = mMetrics.snapshot();
             LOG_MESSAGE_SIMPLE(TimedLog::LOG_INFO,
@@ -6917,7 +6938,7 @@ void Networking::processApplicationMessage(transport::TransportMessage message)
         return;
     if (!received)
     {
-        disconnectTransport(message.connection, "invalid protocol-11 application packet");
+        disconnectTransport(message.connection, "invalid multiplayer application packet");
         return;
     }
 

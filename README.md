@@ -7,7 +7,7 @@ Stock OpenMW 0.52 is a single-player engine. TES3MP adds a dedicated server, a m
 
 * TES3MP version: 1.0.0-alpha.1
 * OpenMW base version: 0.52.0
-* Network protocol version: 11
+* Network protocol version: 12
 * License: GPLv3 with additional allowed terms (see [LICENSE](LICENSE))
 * Upstream engine: [OpenMW on GitLab](https://gitlab.com/OpenMW/openmw)
 * Maintainer: Gabriel Max ([dev-zetta](https://github.com/dev-zetta))
@@ -15,7 +15,7 @@ Stock OpenMW 0.52 is a single-player engine. TES3MP adds a dedicated server, a m
 Current status
 --------------
 
-TES3MP 1.0.0-alpha.1 is an unreleased hardening build on OpenMW 0.52. Protocol 11 is intentionally incompatible with legacy clients and servers while the multiplayer transport, parser, authority and persistence boundaries are rebuilt.
+TES3MP 1.0.0-alpha.1 is an unreleased hardening build on OpenMW 0.52. Protocol 12 is intentionally incompatible with legacy clients and servers while the multiplayer transport, parser, authority and persistence boundaries are rebuilt.
 
 The underlying OpenMW engine supports completing the main quests in Morrowind, Tribunal, and Bloodmoon. Multiplayer adds more state and authority boundaries than single-player OpenMW, so server scripts, load order, content files, and TES3MP versions must match between the server and every client. A local server is recommended when testing gameplay or diagnosing synchronization problems.
 
@@ -34,7 +34,7 @@ The major changes since TES3MP 0.8.1 include:
 
 See the [TES3MP changelog](tes3mp-changelog.md) for the detailed release history and OpenMW's [engine changelog](CHANGELOG.md) for upstream changes.
 
-The standalone browser, legacy master service and automatic connection to `master.tes3mp.com` have been removed. Direct connect is the only discovery path supported for 1.0.0. Public discovery, if reintroduced later, will be a separately reviewed service rather than part of this release.
+The standalone browser, legacy master service and automatic connection to `master.tes3mp.com` have been removed. The new, separately reviewed HTTPS directory API v1 and in-game public browser are part of the 1.0.0 release scope. Announcing is opt-in and the directory URL is unset until a new domain is selected; direct connect remains available during directory outages. See [public discovery deployment and API](docs/public-discovery.md).
 
 Multiplayer features
 --------------------

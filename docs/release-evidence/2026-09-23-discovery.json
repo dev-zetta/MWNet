@@ -1,0 +1,91 @@
+{
+  "schemaVersion": 1,
+  "baseCommit": "f5b75a31eb922b7c1289e6c98a0d028dbf73962a",
+  "sourceState": "uncommitted development worktree; not an exact-commit release certification",
+  "implementationManifestSha256": "407cc80fc2f4c25fbf2abb7f97e390f219b628f56a3024b16494185eb4bb3c59",
+  "startedUtc": "2026-09-22T22:06:59.712934+00:00",
+  "finishedUtc": "2026-09-23T00:08:10.073178+00:00",
+  "soak": {
+    "requestedSeconds": 7200,
+    "directoryCommand": [
+      "/usr/local/bin/tes3mp-directory",
+      "--origin",
+      "https://localhost:8443",
+      "--database",
+      "/data/soak-2h/directory.sqlite3",
+      "--local-test"
+    ],
+    "startedUnix": 1790114819.7129335,
+    "completed": true,
+    "errors": [],
+    "revision": "f5b75a31eb-discovery-worktree",
+    "binarySha256": {
+      "directory": "99b45653d62e107f0b958850c63b008b6d31c184a42cc9383b40bea78fc5effe",
+      "workload": "6fb0fe7cde6b5f596680f2dfa118784de75cd827921be77980740f97b0acbdee"
+    },
+    "workloadExitCode": 0,
+    "finalMetrics": {
+      "listings": "0",
+      "visible": "0",
+      "pending": "0",
+      "challenges": "0",
+      "rateBuckets": "0",
+      "listingBytes": "0",
+      "verificationFailures": "0"
+    },
+    "directoryExitCodes": [
+      0,
+      0
+    ],
+    "elapsedSeconds": 7269.844114362997,
+    "peakDirectoryRssBytes": 14495744,
+    "finishedUnix": 1790122090.073178
+  },
+  "resources": {
+    "samples": 3598,
+    "successfulCycles": 3562,
+    "outageAttempts": 16,
+    "peakDirectoryRssBytes": 14495744,
+    "peakDirectoryHighWaterBytes": 14495744,
+    "peakWorkloadRssBytes": 19316736,
+    "peakDatabaseAndWalBytes": 588856,
+    "lastWorkloadDatabaseAndWalBytes": 584736,
+    "peakPendingVerifications": 1,
+    "peakDirectoryFileDescriptors": 18,
+    "sampledCpuSeconds": {
+      "directory": 24.32,
+      "workload": 70.18
+    },
+    "artifactSha256": {
+      "directory.log": "10da08822d06602daa0c1ef82f39ba6b5bec8b29972d1764d4b3ca6a51b7d4d8",
+      "directory.sqlite3": "988dc2dd7b4db8863748195902db2bee940e20dacdf0f0f84358ae0a6dcb7d03",
+      "result.json": "42d1750ebb40de09b86d52c978141a179ab9718716a7e112795367b2742ae788",
+      "samples.jsonl": "c086cd806fabd784ad2735cf816e3c5117f9c53e5b6190f0f9f24c4c5a4bb697",
+      "workload.log": "d69ea594d89ee0ab698cbe99a90e93aeb2be0a072003f82a111b8ab60b1c00dd"
+    }
+  },
+  "containersAtCompletion": [
+    {
+      "name": "/tes3mp-discovery-gate",
+      "image": "sha256:7428e80eea5f1edb3fd412f483f557761fb487a32102684697b3299da6740a5b",
+      "oomKilled": false,
+      "restarts": 0,
+      "memoryLimitBytes": 536870912,
+      "cpuLimitNano": 2000000000,
+      "readOnlyRoot": true
+    },
+    {
+      "name": "/tes3mp-discovery-gate-https",
+      "image": "sha256:c3d7ee5d2b11f9dc54f947f68a734c84e9c9666c92c88a7f30b9cba5da182adb",
+      "oomKilled": false,
+      "restarts": 0,
+      "memoryLimitBytes": 134217728,
+      "cpuLimitNano": 1000000000,
+      "readOnlyRoot": false
+    }
+  ],
+  "graphicalBinaries": {
+    "client": "34866b2d8acd9f974f6de496f4a26832ea5d418656f8eee3127bd59ecda5835c",
+    "server": "3b3b2b8cc8aeb444f0abcd5d716f41894321c408d68d88ce4e50d95ad71a5414"
+  }
+}

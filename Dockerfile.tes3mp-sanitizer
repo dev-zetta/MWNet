@@ -4,6 +4,8 @@ FROM ${TES3MP_BUILD_IMAGE}
 ARG TES3MP_SOURCE_COMMIT=unknown
 LABEL org.opencontainers.image.revision="${TES3MP_SOURCE_COMMIT}"
 
+RUN apt-get update && apt-get install -y --no-install-recommends libcurl4-openssl-dev && rm -rf /var/lib/apt/lists/*
+
 COPY . /tes3mp
 
 # RSS is measured without sanitizer allocator/fake-stack retention. Both
@@ -39,7 +41,7 @@ RUN for profile in sanitizer soak-native; do \
         -D TES3MP_FETCH_DEPS=ON \
         -D TES3MP_GNS_UBSAN_COMPAT="$gns_ubsan_compat" $source_arg \
         && cmake --build "/tes3mp/build-$profile" \
-            --target tes3mp-headless-integration tes3mp-tests tes3mp-persistence-fault \
+            --target tes3mp-headless-integration tes3mp-tests tes3mp-persistence-fault tes3mp-discovery-tests \
             --parallel 4 \
         && ASAN_OPTIONS=detect_leaks=1:halt_on_error=1 \
             UBSAN_OPTIONS=print_stacktrace=1:halt_on_error=1 \

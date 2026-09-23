@@ -216,10 +216,10 @@ Networking::Networking()
 {
     Files::ConfigurationManager configuration;
     std::string error;
-    endpoint = transport::Protocol11Endpoint::createClient(
+    endpoint = transport::GameEndpoint::createClient(
         configuration.getUserConfigPath() / "trusted-servers.json", error);
     if (!endpoint)
-        throw std::runtime_error("Failed to initialize protocol-11 client transport: " + error);
+        throw std::runtime_error("Failed to initialize multiplayer client transport: " + error);
     dispatcher = std::make_unique<transport::ApplicationPacketDispatcher>(
         endpoint->transport(), transport::ApplicationPacketFlow::ClientToServer, 1);
 
@@ -239,14 +239,14 @@ Networking::~Networking()
     endpoint->shutdown(std::chrono::seconds(5));
 }
 
-ServerProbeResult Networking::probeServer(const std::string& host, unsigned short port)
+ServerProbeResult Networking::probeServer(const std::string& host, unsigned short port, const std::atomic_bool* cancel)
 {
     ServerProbeResult result;
     const auto started = std::chrono::steady_clock::now();
 
     Files::ConfigurationManager configuration;
     std::string creationError;
-    auto probe = transport::Protocol11Endpoint::createClient(
+    auto probe = transport::GameEndpoint::createClient(
         configuration.getUserConfigPath() / "trusted-servers.json", creationError);
     if (!probe)
     {
@@ -271,7 +271,7 @@ ServerProbeResult Networking::probeServer(const std::string& host, unsigned shor
     }
 
     const auto deadline = started + std::chrono::seconds(4);
-    while (std::chrono::steady_clock::now() < deadline)
+    while ((!cancel || !cancel->load()) && std::chrono::steady_clock::now() < deadline)
     {
         auto event = probe->poll(std::chrono::milliseconds(100));
         if (!event)
@@ -334,6 +334,7 @@ void Networking::connect(const std::string& ip, unsigned short port,
     connectOptions.host = ip;
     connectOptions.port = port;
     connectOptions.trustedFingerprint = options.trustedFingerprint;
+    connectOptions.expectedFingerprint = options.expectedFingerprint;
     transport::TransportError error;
     if (!endpoint->connect(connectOptions, serverConnection, error))
     {
@@ -390,7 +391,7 @@ void Networking::connect(const std::string& ip, unsigned short port,
         return;
 
     LOG_MESSAGE_SIMPLE(TimedLog::LOG_INFO,
-        "Protocol 11 session established with %s:%u",
+        "Encrypted session established with %s:%u",
         ip.c_str(), static_cast<unsigned int>(port));
 }
 
@@ -437,7 +438,7 @@ bool Networking::preInit(std::vector<std::string>& content, Files::Collections& 
     while (std::chrono::steady_clock::now() < deadline)
     {
         auto event = endpoint->poll(std::chrono::milliseconds(100));
-        if (!event)
+        if (!event || event->connection != serverConnection)
             continue;
         if (event->type == transport::TransportEventType::Disconnected)
             return failConnection(event->detail.empty()
@@ -524,7 +525,7 @@ bool Networking::authenticate(ClientConnectionOptions& options)
     while (std::chrono::steady_clock::now() < deadline)
     {
         auto event = endpoint->poll(std::chrono::milliseconds(100));
-        if (!event)
+        if (!event || event->connection != serverConnection)
             continue;
         if (event->type == transport::TransportEventType::Disconnected)
             return failConnection(event->detail.empty()
@@ -565,7 +566,7 @@ bool Networking::requestSpawn()
     while (std::chrono::steady_clock::now() < deadline)
     {
         auto event = endpoint->poll(std::chrono::milliseconds(100));
-        if (!event)
+        if (!event || event->connection != serverConnection)
             continue;
         if (event->type == transport::TransportEventType::Disconnected)
             return failConnection(event->detail.empty()
@@ -632,6 +633,8 @@ bool Networking::receiveApplicationMessage(const transport::TransportMessage& me
 
 void Networking::processTransportEvent(transport::TransportEvent event)
 {
+    if (event.connection != serverConnection)
+        return;
     switch (event.type)
     {
         case transport::TransportEventType::Connected:
@@ -656,7 +659,7 @@ void Networking::processTransportEvent(transport::TransportEvent event)
             transport::ReceivedApplicationPacket application;
             if (!receiveApplicationMessage(event.message, application))
             {
-                failConnection("Received an invalid protocol-11 application packet.");
+                failConnection("Received an invalid multiplayer application packet.");
                 Main::get().getGUIController()->requestShowBrowser();
                 return;
             }

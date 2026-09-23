@@ -1,5 +1,7 @@
 #ifndef OPENMW_NETWORKING_HPP
 #define OPENMW_NETWORKING_HPP
+#include <components/openmw-mp/Discovery/Client.hpp>
+
 
 #include <components/openmw-mp/Controllers/SystemPacketController.hpp>
 #include <components/openmw-mp/Controllers/PlayerPacketController.hpp>
@@ -31,7 +33,7 @@
 #include <components/openmw-mp/Session/AuthorityLease.hpp>
 #include <components/openmw-mp/Transport/ApplicationPacketDispatcher.hpp>
 #include <components/openmw-mp/Transport/ApplicationPacketReceiver.hpp>
-#include <components/openmw-mp/Transport/Protocol11Endpoint.hpp>
+#include <components/openmw-mp/Transport/GameEndpoint.hpp>
 #include "Player.hpp"
 
 #include <filesystem>
@@ -49,7 +51,7 @@ namespace  mwmp
     class Networking
     {
     public:
-        Networking(transport::Protocol11Endpoint& endpoint,
+        Networking(transport::GameEndpoint& endpoint,
             const std::filesystem::path& credentialDirectory,
             const std::filesystem::path& legacyPlayerDirectory,
             unsigned int maximumConnections, unsigned short port,
@@ -77,6 +79,8 @@ namespace  mwmp
         unsigned short getPort() const;
 
         int mainLoop();
+        void setAnnouncer(discovery::Announcer* announcer, discovery::Listing listing)
+        { mAnnouncer = announcer; mDiscoveryListing = std::move(listing); }
 
         void stopServer(int code);
 
@@ -262,8 +266,12 @@ namespace  mwmp
             const char* reason);
         static Networking *sThis;
 
+        discovery::Announcer* mAnnouncer = nullptr;
+        discovery::Listing mDiscoveryListing;
+        std::string mDiscoveryStatus;
+        std::chrono::steady_clock::time_point mDiscoveryNextUpdate{};
         TPlayers *players;
-        transport::Protocol11Endpoint& mEndpoint;
+        transport::GameEndpoint& mEndpoint;
         metrics::ServerMetrics mMetrics;
         transport::ApplicationPacketDispatcher mDispatcher;
         transport::ApplicationPacketReceiver mReceiver;

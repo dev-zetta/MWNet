@@ -5,6 +5,7 @@
 #include <optional>
 
 #include <boost/filesystem/fstream.hpp>
+#include <boost/asio/ip/address.hpp>
 #include <boost/iostreams/concepts.hpp>
 #include <boost/iostreams/stream_buffer.hpp>
 
@@ -19,7 +20,7 @@
 #include <components/openmw-mp/NetworkMessages.hpp>
 #include <components/openmw-mp/Protocol/EndpointSecurity.hpp>
 #include <components/openmw-mp/Security/PasswordHash.hpp>
-#include <components/openmw-mp/Transport/Protocol11Endpoint.hpp>
+#include <components/openmw-mp/Transport/GameEndpoint.hpp>
 #include <components/openmw-mp/Utils.hpp>
 #include <components/openmw-mp/Version.hpp>
 
@@ -300,7 +301,7 @@ int main(int argc, char *argv[])
     LOG_MESSAGE_SIMPLE(TimedLog::LOG_INFO, "TES3MP dedicated server %s (%s %s)",
         TES3MP_VERSION, Utils::getOperatingSystemType().c_str(),
         Utils::getArchitectureType().c_str());
-    LOG_APPEND(TimedLog::LOG_INFO, "Protocol version: %i (protocol 11 only)",
+    LOG_APPEND(TimedLog::LOG_INFO, "Protocol version: %i",
         TES3MP_PROTO_VERSION);
     const std::string buildCommit = commitHash.empty() ? "unavailable" : commitHash.substr(0, 10);
     LOG_APPEND(TimedLog::LOG_INFO, "Build commit: %s", buildCommit);
@@ -345,7 +346,7 @@ int main(int argc, char *argv[])
             throw std::runtime_error("Security/movementViolationLimit must be between 1 and 100");
 
         std::string transportError;
-        auto endpoint = transport::Protocol11Endpoint::createServer(
+        auto endpoint = transport::GameEndpoint::createServer(
             cfgMgr.getUserConfigPath() / "server-identity.key", transportError);
         if (!endpoint)
             throw std::runtime_error("Failed to load the server identity: " + transportError);
@@ -421,7 +422,57 @@ int main(int argc, char *argv[])
 
         networking.postInit();
 
+        std::unique_ptr<discovery::Announcer> announcer;
+        if (mgr.getOrDefault<bool>("announce", "Discovery", false))
+        {
+            try
+            {
+                discovery::HttpOptions options{
+                    mgr.getOrDefault<std::string>("directoryUrl", "Discovery", ""),
+                    mgr.getOrDefault<std::string>("caFile", "Discovery", "")};
+                const bool localTest = mgr.getOrDefault<bool>("localTest", "Discovery", false);
+                discovery::Listing listing;
+                listing.host = mgr.getOrDefault<std::string>("publicAddress", "Discovery", "");
+                if (localTest)
+                {
+                    const auto& origin = options.origin;
+                    const bool loopbackOrigin = origin == "https://localhost" || origin.starts_with("https://localhost:")
+                        || origin == "https://127.0.0.1" || origin.starts_with("https://127.0.0.1:")
+                        || origin == "https://[::1]" || origin.starts_with("https://[::1]:");
+                    boost::system::error_code addressError;
+                    const auto advertised = boost::asio::ip::make_address(listing.host,addressError);
+                    if (!loopbackOrigin || addressError || !advertised.is_loopback())
+                        throw std::runtime_error("Discovery/localTest requires loopback game and HTTPS directory addresses");
+                }
+                else if (!publicListen || !discovery::publicAddress(listing.host))
+                    throw std::runtime_error("Discovery requires publicListen=true and a globally routable numeric publicAddress");
+                const int publicPort = mgr.getOrDefault<int>("publicPort", "Discovery", port);
+                if (publicPort < 1 || publicPort > 65535) throw std::runtime_error("invalid discovery port");
+                listing.port = static_cast<std::uint16_t>(publicPort);
+                listing.name = mgr.getString("hostname", "General");
+                listing.version = TES3MP_VERSION;
+                listing.protocol = TES3MP_PROTO_VERSION;
+                listing.capacity = static_cast<std::uint16_t>(players);
+                listing.password = networking.isPassworded();
+                if (networking.getDataFileEnforcementState())
+                    for (const auto& [name, hashes] : networking.getSamples())
+                        listing.content.push_back({name, hashes});
+                auto identity = security::ServerIdentity::loadOrCreate(
+                    cfgMgr.getUserConfigPath() / "server-identity.key", transportError);
+                if (!identity || identity->fingerprint() != endpoint->serverFingerprint())
+                    throw std::runtime_error("discovery identity differs from the listening identity");
+
+                announcer = std::make_unique<discovery::Announcer>(options, std::move(*identity), listing);
+                networking.setAnnouncer(announcer.get(), std::move(listing));
+            }
+            catch (const std::exception& e)
+            {
+                LOG_MESSAGE_SIMPLE(TimedLog::LOG_ERROR, "Discovery disabled: %s", e.what());
+            }
+        }
         code = networking.mainLoop();
+        networking.setAnnouncer(nullptr, {});
+        announcer.reset();
         endpoint->shutdown(listenOptions.timeouts.shutdown);
     }
     catch (std::exception &e)

@@ -214,7 +214,7 @@ jobs:
         -D TES3MP_FETCH_DEPS=ON
 
     - name: Build dedicated server and protocol tests
-      run: cmake --build build-server --target tes3mp-server tes3mp-tests --parallel $(nproc)
+      run: cmake --build build-server --target tes3mp-server tes3mp-tests tes3mp-headless-integration tes3mp-persistence-fault tes3mp-directory tes3mp-discovery-tests --parallel $(nproc)
 
     - name: Run dedicated-server-only tests
       run: ctest --test-dir build-server --output-on-failure

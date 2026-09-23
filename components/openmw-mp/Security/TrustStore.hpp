@@ -25,6 +25,8 @@ namespace mwmp::security
     public:
         static std::optional<TrustStore> load(const std::filesystem::path& path, std::string& error);
 
+        static TrustStore ephemeral() { return TrustStore({}); }
+
         TrustStore(TrustStore&& other) noexcept;
         TrustStore& operator=(TrustStore&& other) noexcept;
         TrustStore(const TrustStore&) = delete;

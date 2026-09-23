@@ -8,7 +8,7 @@
 #include <components/openmw-mp/Security/AuthenticationMessages.hpp>
 #include <components/openmw-mp/Security/AuthenticationRateLimiter.hpp>
 #include <components/openmw-mp/Security/ServerAuthenticationService.hpp>
-#include <components/openmw-mp/Transport/Protocol11Endpoint.hpp>
+#include <components/openmw-mp/Transport/GameEndpoint.hpp>
 
 #include "SoakMemorySamples.hpp"
 
@@ -52,7 +52,7 @@ namespace
     using mwmp::session::TransitionResult;
     using mwmp::transport::DeliveryMode;
     using mwmp::transport::MessageLane;
-    using mwmp::transport::Protocol11Endpoint;
+    using mwmp::transport::GameEndpoint;
     using mwmp::transport::TransportConnectionId;
     using mwmp::transport::TransportError;
     using mwmp::transport::TransportEvent;
@@ -82,7 +82,7 @@ namespace
 
     struct Peer
     {
-        std::unique_ptr<Protocol11Endpoint> client;
+        std::unique_ptr<GameEndpoint> client;
         TransportConnectionId clientConnection;
         TransportConnectionId serverConnection;
         std::filesystem::path trustPath;
@@ -182,7 +182,7 @@ namespace
                 std::chrono::steady_clock::now().time_since_epoch().count()));
     }
 
-    std::optional<TransportEvent> waitForEvent(Protocol11Endpoint& endpoint,
+    std::optional<TransportEvent> waitForEvent(GameEndpoint& endpoint,
         TransportEventType type, std::optional<TransportConnectionId> connection = std::nullopt,
         std::optional<MessageType> messageType = std::nullopt,
         std::chrono::seconds timeout = 5s)
@@ -355,7 +355,7 @@ namespace
         void startServer(const std::filesystem::path& identityPath)
         {
             std::string errorText;
-            mServer = Protocol11Endpoint::createServer(identityPath, errorText);
+            mServer = GameEndpoint::createServer(identityPath, errorText);
             require(mServer != nullptr, "server identity failed: " + errorText);
 
             mwmp::transport::ListenOptions listen;
@@ -392,7 +392,7 @@ namespace
         }
 
         Peer connect(std::size_t index, bool expectFirstTrust,
-            std::unique_ptr<Protocol11Endpoint> client = {})
+            std::unique_ptr<GameEndpoint> client = {})
         {
             Peer peer;
             peer.trustPath = mRoot / ("trusted-" + std::to_string(index) + ".json");
@@ -405,7 +405,7 @@ namespace
                 peer.client = std::move(client);
             else
             {
-                peer.client = Protocol11Endpoint::createClient(peer.trustPath, errorText);
+                peer.client = GameEndpoint::createClient(peer.trustPath, errorText);
                 ++mCreatedClients;
             }
             require(peer.client != nullptr, "client trust store failed: " + errorText);
@@ -426,7 +426,8 @@ namespace
             while (std::chrono::steady_clock::now() < deadline
                 && (!clientConnected || !serverConnection))
             {
-                if (auto event = peer.client->poll(5ms))
+                if (auto event = peer.client->poll(5ms);
+                    event && event->connection == peer.clientConnection)
                 {
                     if (event->type == TransportEventType::TrustRequired)
                     {
@@ -465,8 +466,8 @@ namespace
             return peer;
         }
 
-        TransportEvent transmit(Protocol11Endpoint& source,
-            TransportConnectionId sourceConnection, Protocol11Endpoint& destination,
+        TransportEvent transmit(GameEndpoint& source,
+            TransportConnectionId sourceConnection, GameEndpoint& destination,
             TransportConnectionId destinationConnection, MessageType type,
             std::vector<std::byte> payload = {},
             MessageLane lane = MessageLane::System,
@@ -523,11 +524,11 @@ namespace
             return std::move(*event);
         }
 
-        static std::string transmissionContext(Protocol11Endpoint& source,
-            TransportConnectionId sourceConnection, Protocol11Endpoint& destination,
+        static std::string transmissionContext(GameEndpoint& source,
+            TransportConnectionId sourceConnection, GameEndpoint& destination,
             TransportConnectionId destinationConnection, MessageType type)
         {
-            const auto describeEndpoint = [](Protocol11Endpoint& endpoint,
+            const auto describeEndpoint = [](GameEndpoint& endpoint,
                 TransportConnectionId connection) {
                 const auto state = endpoint.state(connection);
                 return std::string(endpoint.role() == mwmp::session::Endpoint::Server
@@ -540,7 +541,7 @@ namespace
                 + "} destination={" + describeEndpoint(destination, destinationConnection) + "}";
         }
 
-        static std::string queuedDisconnectDetails(Protocol11Endpoint& endpoint,
+        static std::string queuedDisconnectDetails(GameEndpoint& endpoint,
             TransportConnectionId connection)
         {
             // Failure diagnostics have a fixed bound even if messages are queued.
@@ -864,7 +865,7 @@ namespace
         {
             mServer->shutdown(1s);
             std::string errorText;
-            auto replacement = Protocol11Endpoint::createServer(
+            auto replacement = GameEndpoint::createServer(
                 mRoot / "replacement-identity.key", errorText);
             require(replacement != nullptr,
                 "replacement server identity failed: " + errorText);
@@ -877,7 +878,7 @@ namespace
             require(replacement->listen(listen, error),
                 "replacement server failed to listen: " + error.detail);
 
-            auto client = Protocol11Endpoint::createClient(
+            auto client = GameEndpoint::createClient(
                 mRoot / "trusted-0.json", errorText);
             require(client != nullptr, "failed to reload trusted server record");
             mwmp::transport::ConnectOptions connect;
@@ -1020,7 +1021,7 @@ namespace
 
         Options mOptions;
         std::filesystem::path mRoot;
-        std::unique_ptr<Protocol11Endpoint> mServer;
+        std::unique_ptr<GameEndpoint> mServer;
         std::uint16_t mPort = 0;
         std::string mFingerprint;
         mwmp::security::ServerAuthenticationService mAuthentication;

@@ -1,6 +1,7 @@
 #ifndef OPENMW_NETWORKING_HPP
 #define OPENMW_NETWORKING_HPP
 
+#include <atomic>
 #include <chrono>
 #include <cstdint>
 #include <deque>
@@ -13,7 +14,7 @@
 #include <components/openmw-mp/NetworkMessages.hpp>
 #include <components/openmw-mp/Transport/ApplicationPacketDispatcher.hpp>
 #include <components/openmw-mp/Transport/ApplicationPacketReceiver.hpp>
-#include <components/openmw-mp/Transport/Protocol11Endpoint.hpp>
+#include <components/openmw-mp/Transport/GameEndpoint.hpp>
 
 #include <components/openmw-mp/Controllers/SystemPacketController.hpp>
 #include <components/openmw-mp/Controllers/PlayerPacketController.hpp>
@@ -45,6 +46,7 @@ namespace mwmp
         std::string accountPassword;
         std::string serverAccessPassword;
         std::optional<std::string> trustedFingerprint;
+        std::optional<std::string> expectedFingerprint;
         bool registerAccount = false;
     };
 
@@ -76,7 +78,8 @@ namespace mwmp
         void disconnect();
         void setLastError(const std::string& msg) { lastError = msg; }
         const std::string& getLastError() const { return lastError; }
-        static ServerProbeResult probeServer(const std::string& host, unsigned short port);
+        static ServerProbeResult probeServer(const std::string& host, unsigned short port,
+            const std::atomic_bool* cancel = nullptr);
 
         LocalSystem *getLocalSystem();
         LocalPlayer *getLocalPlayer();
@@ -89,7 +92,7 @@ namespace mwmp
         std::string lastError;
         std::deque<transport::ReceivedApplicationPacket> pendingPackets;
         std::size_t pendingPacketBytes = 0;
-        std::unique_ptr<transport::Protocol11Endpoint> endpoint;
+        std::unique_ptr<transport::GameEndpoint> endpoint;
         std::unique_ptr<transport::ApplicationPacketDispatcher> dispatcher;
         transport::ApplicationPacketReceiver receiver;
         transport::TransportConnectionId serverConnection;

@@ -1,29 +1,40 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <MyGUI type="Layout" version="3.2.0">
     <Widget type="Window" skin="MW_Dialog" position="0 0 680 430" layer="Modal" name="_Main">
-        <Widget type="TextBox" skin="ProgressText" position="12 10 650 24" name="TitleLabel">
-            <Property key="Caption" value="TES3MP Protocol 11 Direct Connect"/>
+        <Widget type="TextBox" skin="ProgressText" position="12 10 410 24" name="TitleLabel">
+            <Property key="Caption" value="TES3MP Server Browser"/>
         </Widget>
         <Widget type="TextBox" skin="ProgressText" position="12 48 190 24"><Property key="Caption" value="Server address"/></Widget>
         <Widget type="ComboBox" skin="MW_ComboBox" position="210 44 210 30" name="EditAddress"/>
         <Widget type="AutoSizedButton" skin="MW_Button" position="428 44 66 28" name="ButtonPing"><Property key="Caption" value="Ping"/></Widget>
         <Widget type="AutoSizedButton" skin="MW_Button" position="502 44 72 28" name="ButtonSave"><Property key="Caption" value="Save"/></Widget>
         <Widget type="AutoSizedButton" skin="MW_Button" position="582 44 78 28" name="ButtonForget"><Property key="Caption" value="Remove"/></Widget>
-        <Widget type="TextBox" skin="ProgressText" position="12 90 190 24"><Property key="Caption" value="Account name"/></Widget>
-        <Widget type="EditBox" skin="MW_TextEdit" position="210 86 450 30" name="EditAccount"/>
-        <Widget type="TextBox" skin="ProgressText" position="12 132 190 24"><Property key="Caption" value="Account password"/></Widget>
-        <Widget type="EditBox" skin="MW_TextEdit" position="210 128 450 30" name="EditPassword"/>
-        <Widget type="TextBox" skin="ProgressText" position="12 174 190 24"><Property key="Caption" value="Server access password"/></Widget>
-        <Widget type="EditBox" skin="MW_TextEdit" position="210 170 450 30" name="EditServerPassword"/>
-        <Widget type="TextBox" skin="ProgressText" position="12 216 190 24"><Property key="Caption" value="Expected fingerprint"/></Widget>
-        <Widget type="EditBox" skin="MW_TextEdit" position="210 212 450 30" name="EditFingerprint"/>
-        <Widget type="TextBox" skin="ProgressText" position="210 244 450 40" name="FingerprintStatus"><Property key="Caption" value="Stored fingerprint: none"/></Widget>
+        <Widget type="Widget" position="0 80 680 205" name="DirectPanel">
+        <Widget type="TextBox" skin="ProgressText" position="12 10 190 24"><Property key="Caption" value="Account name"/></Widget>
+        <Widget type="EditBox" skin="MW_TextEdit" position="210 6 450 30" name="EditAccount"/>
+        <Widget type="TextBox" skin="ProgressText" position="12 52 190 24"><Property key="Caption" value="Account password"/></Widget>
+        <Widget type="EditBox" skin="MW_TextEdit" position="210 48 450 30" name="EditPassword"/>
+        <Widget type="TextBox" skin="ProgressText" position="12 94 190 24"><Property key="Caption" value="Server access password"/></Widget>
+        <Widget type="EditBox" skin="MW_TextEdit" position="210 90 450 30" name="EditServerPassword"/>
+        <Widget type="TextBox" skin="ProgressText" position="12 136 190 24"><Property key="Caption" value="Expected fingerprint"/></Widget>
+        <Widget type="EditBox" skin="MW_TextEdit" position="210 132 450 30" name="EditFingerprint"/>
+        <Widget type="TextBox" skin="ProgressText" position="12 164 648 40" name="FingerprintStatus"><Property key="WordWrap" value="true"/><Property key="Caption" value="Stored fingerprint: none"/></Widget>
+        </Widget>
         <Widget type="TextBox" skin="ProgressText" position="12 292 648 60" name="StatusLabel">
+            <Property key="WordWrap" value="true"/>
             <Property key="Caption" value="Enter a server and account. First use will ask you to confirm its fingerprint."/>
         </Widget>
         <Widget type="AutoSizedButton" skin="MW_Button" position="350 378 86 28" name="ButtonLogin"><Property key="Caption" value="Log in"/></Widget>
         <Widget type="AutoSizedButton" skin="MW_Button" position="444 378 112 28" name="ButtonRegister"><Property key="Caption" value="Register"/></Widget>
         <Widget type="AutoSizedButton" skin="MW_Button" position="564 378 96 28" name="ButtonCancel"><Property key="Caption" value="Cancel"/></Widget>
+        <Widget type="AutoSizedButton" skin="MW_Button" position="490 8 170 28" name="ButtonPublic"><Property key="Caption" value="Public servers"/></Widget>
+        <Widget type="Widget" skin="MW_Dialog" position="8 80 660 205" name="PublicPanel">
+            <Widget type="TextBox" skin="ProgressText" position="8 8 80 24"><Property key="Caption" value="Search"/></Widget>
+            <Widget type="EditBox" skin="MW_TextEdit" position="90 6 300 28" name="SearchServers"/>
+            <Widget type="AutoSizedButton" skin="MW_Button" position="402 6 112 28" name="RefreshServers"><Property key="Caption" value="Refresh"/></Widget>
+            <Widget type="AutoSizedButton" skin="MW_Button" position="526 6 112 28" name="MoreServers"><Property key="Caption" value="More"/></Widget>
+            <Widget type="ListBox" skin="MW_List" position="8 40 630 150" name="PublicServers"/>
+        </Widget>
     </Widget>
     <CodeGeneratorSettings/>
 </MyGUI>

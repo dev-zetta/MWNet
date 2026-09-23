@@ -1,0 +1,23 @@
+{
+    admin off
+    servers {
+        protocols h1 h2
+        max_header_size 8KiB
+        timeouts {
+            read_header 5s
+            read_body 5s
+            write 10s
+            idle 30s
+        }
+    }
+}
+{$DIRECTORY_HOST} {
+    handle /v1/* {
+        reverse_proxy directory:8080 {
+            header_up X-Real-IP {remote_host}
+        }
+    }
+    handle {
+        respond 404
+    }
+}
