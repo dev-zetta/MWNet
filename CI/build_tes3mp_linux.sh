@@ -18,9 +18,10 @@ cmake -S "$source_dir" -B "$output_dir/build" -G Ninja \
     -DBUILD_MWINIIMPORTER=OFF -DBUILD_ESSIMPORTER=OFF \
     -DBUILD_BSATOOL=OFF -DBUILD_ESMTOOL=OFF -DBUILD_NIFTEST=OFF \
     -DBUILD_NAVMESHTOOL=OFF -DBUILD_BULLETOBJECTTOOL=OFF \
-    -DBUILD_TES3MP_TESTS=ON -DTES3MP_FETCH_DEPS=ON
+    -DBUILD_TES3MP_TESTS=ON -DBUILD_TES3MP_DIRECTORY=ON -DTES3MP_FETCH_DEPS=ON
 cmake --build "$output_dir/build" --parallel "${TES3MP_BUILD_JOBS:-4}" \
-    --target tes3mp tes3mp-server tes3mp-tests tes3mp-persistence-fault tes3mp-headless-integration tes3mp-directory tes3mp-discovery-tests
+    --target tes3mp tes3mp-server tes3mp-tests tes3mp-persistence-fault tes3mp-headless-integration \
+        tes3mp-actor-packet-tests tes3mp-magic-content-tests tes3mp-directory tes3mp-discovery-tests
 ctest --test-dir "$output_dir/build" --output-on-failure
 python3 "$source_dir/CI/generate_spdx_sbom.py" --root "$source_dir" \
     --output "$output_dir/tes3mp-source.spdx.json"

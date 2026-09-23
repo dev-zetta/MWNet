@@ -67,6 +67,8 @@ def main():
                          'RELEASE_GATES.md', 'LUA_API_COMPATIBILITY.md'):
             shutil.copy2(source / filename, root / filename)
         shutil.copytree(source / 'files/tes3mp/core-scripts', root / 'files/tes3mp/core-scripts')
+        (root / 'docs').mkdir()
+        shutil.copy2(source / 'docs/public-discovery.md', root / 'docs/public-discovery.md')
         if not args.server_only:
             shutil.copy2(client, root / 'build/tes3mp')
             shutil.copy2(build / 'tes3mp-client-default.cfg', root / 'build/tes3mp-client-default.cfg')
