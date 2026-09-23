@@ -32,6 +32,9 @@ def main():
             raise RuntimeError('expected one package root')
         root = roots[0]
         manifest = json.loads((root / 'manifest.json').read_text())
+        bundled_data = root / 'files/tes3mp/core-scripts/data'
+        if {p.name for p in bundled_data.iterdir()} != {'moderation.json'}:
+            raise RuntimeError('package contains unexpected runtime state')
         actual = {str(p.relative_to(root)) for p in root.rglob('*') if p.is_file()}
         if actual != set(manifest['files']) | {'manifest.json'}:
             raise RuntimeError('manifest file inventory mismatch')

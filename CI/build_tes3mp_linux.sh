@@ -10,6 +10,7 @@ if ! git -C "$source_dir" diff --quiet HEAD --; then
     echo 'Candidate builds require a clean tracked source tree' >&2
     exit 1
 fi
+python3 "$source_dir/CI/test_tes3mp_server_launcher.py"
 cmake -S "$source_dir" -B "$output_dir/build" -G Ninja \
     -DCMAKE_BUILD_TYPE=RelWithDebInfo \
     -DCMAKE_C_COMPILER=clang -DCMAKE_CXX_COMPILER=clang++ \

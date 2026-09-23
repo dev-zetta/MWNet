@@ -48,13 +48,10 @@ fi
 
 mkdir -p "$SERVER_ROOT" "$CONFIG_HOME/openmw" "$DATA_HOME" "$CACHE_HOME"
 
-# Preserve generated world and player data while refreshing executable scripts.
-if [[ ! -f "$SERVER_ROOT/scripts/serverCore.lua" ]]; then
-    cp -a "$CORE_SCRIPTS/." "$SERVER_ROOT/"
-else
-    cp -a "$CORE_SCRIPTS/scripts/." "$SERVER_ROOT/scripts/"
-    cp -a "$CORE_SCRIPTS/lib/." "$SERVER_ROOT/lib/"
-fi
+# Copy code separately from local state; profiles must be selected explicitly.
+mkdir -p "$SERVER_ROOT/scripts" "$SERVER_ROOT/lib" "$SERVER_ROOT/data"
+cp -a "$CORE_SCRIPTS/scripts/." "$SERVER_ROOT/scripts/"
+cp -a "$CORE_SCRIPTS/lib/." "$SERVER_ROOT/lib/"
 
 if [[ -n "$SERVER_PROFILE" && ! -f "$SERVER_ROOT/.profile-initialized" ]]; then
     if [[ ! -d "$SERVER_PROFILE/data" ]]; then
@@ -64,6 +61,19 @@ if [[ -n "$SERVER_PROFILE" && ! -f "$SERVER_ROOT/.profile-initialized" ]]; then
     cp -a "$SERVER_PROFILE/data/." "$SERVER_ROOT/data/"
     printf '%s\n' "$SERVER_PROFILE" > "$SERVER_ROOT/.profile-initialized"
     printf 'Initialized local server state from %s\n' "$SERVER_PROFILE"
+fi
+
+# Seed a fresh installation without overwriting an operator's existing settings.
+for directory in cell custom map player recordstore world; do
+    mkdir -p "$SERVER_ROOT/data/$directory"
+done
+for filename in banlist.json requiredDataFiles.json; do
+    if [[ ! -e "$SERVER_ROOT/data/$filename" ]]; then
+        cp "$CORE_SCRIPTS/defaults/$filename" "$SERVER_ROOT/data/$filename"
+    fi
+done
+if [[ ! -e "$SERVER_ROOT/data/moderation.json" ]]; then
+    cp "$CORE_SCRIPTS/data/moderation.json" "$SERVER_ROOT/data/moderation.json"
 fi
 
 if [[ ! -f "$SERVER_CONFIG" ]]; then

@@ -66,7 +66,12 @@ def main():
         for filename in ('run-tes3mp-server.sh', 'LICENSE', 'DEPENDENCIES.md',
                          'RELEASE_GATES.md', 'LUA_API_COMPATIBILITY.md'):
             shutil.copy2(source / filename, root / filename)
-        shutil.copytree(source / 'files/tes3mp/core-scripts', root / 'files/tes3mp/core-scripts')
+        core_source = source / 'files/tes3mp/core-scripts'
+        core_target = root / 'files/tes3mp/core-scripts'
+        # Runtime data can contain accounts and world state, even in a clean tracked tree.
+        shutil.copytree(core_source, core_target, ignore=shutil.ignore_patterns('data'))
+        (core_target / 'data').mkdir()
+        shutil.copy2(core_source / 'data/moderation.json', core_target / 'data/moderation.json')
         (root / 'docs').mkdir()
         shutil.copy2(source / 'docs/public-discovery.md', root / 'docs/public-discovery.md')
         if not args.server_only:
