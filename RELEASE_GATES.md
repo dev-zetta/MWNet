@@ -6,7 +6,7 @@ TES3MP 1.0 is released sequentially. Passing a later implementation milestone do
 
 | Milestone | Required scope | Current status |
 | --- | --- | --- |
-| `1.0.0-alpha.1` | Clean out-of-tree builds, protocol 12 only, fail-closed codec, unit/fuzz targets, loopback default | Implementation and earlier fuzz campaign present; paired native/sanitizer Linux soak passed at c978f30275; Linux client/server preview built at 56fcea73f4; cross-platform and remaining candidate evidence pending |
+| `1.0.0-alpha.1` | Clean out-of-tree builds, protocol 12 only, fail-closed codec, unit/fuzz targets, loopback default | Implementation and earlier fuzz campaign present; paired native/sanitizer Linux soak passed at c978f30275; Linux discovery preview built and package-tested at e0b844eafa; cross-platform and remaining candidate evidence pending |
 | `1.0.0-alpha.2` | GameNetworkingSockets, encrypted identity handshake, TOFU and Argon2id migration | Implementation present on the alpha branch; milestone is not released out of sequence |
 | `1.0.0-alpha.3` | Canonical authority, lifecycle gates, owned workers and atomic persistence | Implementation and automated encrypted integration/fault harnesses present; exact-candidate evidence pending |
 | `1.0.0-beta.1` | Sanitizer and fuzz gates, limited opt-in public test, independent security review | Blocked |
@@ -48,3 +48,5 @@ CI artifacts, fuzz corpora, soak logs, performance reports and review records mu
   blocked despite successful compilation, package smoke checks and earlier soak.
 
 - [September 23 public discovery acceptance](docs/release-evidence/2026-09-23-discovery.md) records the local directory, graphical browser, transport cleanup and Lua transition checks. Its two-hour churn result and the remaining public deployment and release gates are tracked separately.
+
+- [September 23 committed Linux preview](docs/release-evidence/2026-09-23-linux-preview.md) records six native suites, three launcher regressions, source/SBOM/archive provenance and extracted-package smoke checks at `e0b844eafa`, including the corrected fresh-profile initialization failure.
