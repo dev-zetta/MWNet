@@ -63,16 +63,19 @@ jobs:
       uses: actions/cache@v5
       with:
         path: deps/Qt
-        key: qt-6.10.3-macos-universal-v1
+        key: qt-6.10.3-macos-universal-v2
 
     - name: Install Qt SDK
       if: steps.qt-cache.outputs.cache-hit != 'true'
       run: |
         python -m pip install aqtinstall==3.3.0
-        python -m aqt install-qt mac desktop 6.10.3 clang_64 --outputdir deps/Qt --archives qtbase qttools qtsvg qttranslations
+        python -m aqt install-qt mac desktop 6.10.3 clang_64 --outputdir deps/Qt
 
     - name: Add Qt tools to PATH
       run: echo "$PWD/deps/Qt/6.10.3/macos/bin" >> "$GITHUB_PATH"
+
+    - name: Verify Qt build tools and their runtime libraries
+      run: lupdate -version
 
     - name: Install building dependencies
       run: |
