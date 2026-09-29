@@ -29,6 +29,14 @@ if (NOT TARGET GameNetworkingSockets::static AND NOT TARGET GameNetworkingSocket
     )
     FetchContent_MakeAvailable(GameNetworkingSockets)
 
+    # GNS uses WinMM timers declared by the full Windows headers. The parent
+    # project's lean-header definition hides those declarations.
+    if (MSVC)
+        target_compile_options(GameNetworkingSockets_s PRIVATE /UWIN32_LEAN_AND_MEAN)
+    elseif (WIN32)
+        target_compile_options(GameNetworkingSockets_s PRIVATE -UWIN32_LEAN_AND_MEAN)
+    endif()
+
     # GNS v1.5.1 intentionally erases typed packet callback pointers through a
     # void* adapter and performs unaligned integer access in its packet codec.
     # Clang UBSan rejects both constructs. Keep ASan enabled for the dependency,
