@@ -1,0 +1,32 @@
+name: MWNet Windows and macOS candidates
+
+on:
+  workflow_dispatch:
+    inputs:
+      source-ref:
+        description: Existing release tag or commit to build
+        required: true
+        default: v1.0.0-alpha.1
+        type: string
+
+permissions:
+  contents: read
+
+jobs:
+  Windows:
+    uses: ./.github/workflows/windows.yml
+    with:
+      image: "2022"
+      build-type: Release
+      package: true
+      source-ref: ${{ inputs.source-ref }}
+  MacOS:
+    strategy:
+      fail-fast: false
+      matrix:
+        image: [macos-15, macos-15-intel]
+    uses: ./.github/workflows/macos.yml
+    with:
+      image: ${{ matrix.image }}
+      build-type: Release
+      source-ref: ${{ inputs.source-ref }}

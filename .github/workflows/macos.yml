@@ -3,6 +3,14 @@ name: Reusable MacOS workflow
 on:
   workflow_call:
     inputs:
+      source-ref:
+        description: Source tag or commit; defaults to the workflow revision
+        default: ""
+        type: string
+      release:
+        description: Create a draft release from the package
+        default: false
+        type: boolean
       build-type:
         default: RelWithDebInfo
         type: string
@@ -17,6 +25,8 @@ jobs:
     runs-on: ${{ inputs.image }}
     steps:
     - uses: actions/checkout@v6
+      with:
+        ref: ${{ inputs.source-ref }}
     - run: echo "CMAKE_BUILD_TYPE=${{ inputs.build-type }}" >> $GITHUB_ENV
 
     - run: echo "MACOS_AMD64=true" >> $GITHUB_ENV
@@ -38,8 +48,25 @@ jobs:
 
     - name: Configure
       run: CI/before_script.macos.sh -C
+    - name: Enable multiplayer tests and include server configuration
+      run: |
+        cmake -S . -B build -DBUILD_MWNET_TESTS=ON
+        cp build/mwnet-client-default.cfg build/mwnet-server-default.cfg build/MWNet.app/Contents/Resources/
+        cp -R files/mwnet/core-scripts build/MWNet.app/Contents/Resources/server
     - name: Build
       run: CI/macos/build.sh
+
+    - name: Run multiplayer tests
+      run: ctest --test-dir build --output-on-failure
+
+    - name: Verify packaged client and server
+      run: |
+        mkdir package-smoke
+        hdiutil attach build/MWNet-*.dmg -mountpoint "$PWD/package-smoke" -nobrowse
+        trap 'hdiutil detach "$PWD/package-smoke"' EXIT
+        test -x package-smoke/MWNet.app/Contents/MacOS/mwnet-server
+        test -f package-smoke/MWNet.app/Contents/Resources/server/scripts/serverCore.lua
+        package-smoke/MWNet.app/Contents/MacOS/mwnet --version
 
     - name: Store dmg
       uses: actions/upload-artifact@v6
@@ -49,7 +76,7 @@ jobs:
           ${{ github.workspace }}/build/MWNet-*.dmg
 
     - name: Create prerelease
-      if: ${{ inputs.build-type == 'Release' }}
+      if: ${{ inputs.release }}
       uses: softprops/action-gh-release@v2
       with:
         files: ${{ github.workspace }}/build/MWNet-*.dmg

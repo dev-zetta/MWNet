@@ -3,6 +3,10 @@ name: Reusable Windows workflow
 on:
   workflow_call:
     inputs:
+      source-ref:
+        description: Source tag or commit; defaults to the workflow revision
+        default: ""
+        type: string
       image:
         description: Window Server image
         required: true
@@ -36,6 +40,8 @@ jobs:
       run: choco install nsis
 
     - uses: actions/checkout@v6
+      with:
+        ref: ${{ inputs.source-ref }}
 
     - shell: bash
       name: Add deps version env to GITHUB_ENV, stripping comments
@@ -117,6 +123,7 @@ jobs:
         -D OPENMW_USE_SYSTEM_YAML_CPP=OFF
         -D OPENMW_LTO_BUILD=ON
         -D MWNET_FETCH_DEPS=ON
+        -D BUILD_MWNET_TESTS=ON
         ${{ inputs.package && '-D "VCREDIST64=$env:VCToolsRedistDir/vc_redist.x64.exe"' || '' }}
         -D CMAKE_EXPORT_COMPILE_COMMANDS=ON
 
@@ -165,11 +172,44 @@ jobs:
       if: ${{ ! inputs.package }}
       run: cmake --install ${{ github.workspace }}/build --prefix ${{ github.workspace }}/install
 
-    - name: Package OpenMW
+    - name: Include the dedicated server and CoreScripts in Windows packages
+      if: ${{ inputs.package }}
+      shell: bash
+      run: |
+        source_dir="$(pwd -W)"
+        cat >> build/cmake_install.cmake <<EOF
+        file(INSTALL DESTINATION "\${CMAKE_INSTALL_PREFIX}" TYPE PROGRAM FILES "$source_dir/build/mwnet-server.exe")
+        file(INSTALL DESTINATION "\${CMAKE_INSTALL_PREFIX}/server" TYPE DIRECTORY FILES "$source_dir/files/mwnet/core-scripts/")
+        EOF
+
+    - name: Package MWNet
       if: ${{ inputs.package }}
       run: |
         cpack --config "${{ github.workspace }}/build/CPackConfig.cmake" -B "${{ github.workspace }}/install"
+        if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+        cpack -G ZIP --config "${{ github.workspace }}/build/CPackConfig.cmake" -B "${{ github.workspace }}/install"
+        if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
         rm -r -Force "${{ github.workspace }}/install/_CPack_Packages"
+
+    - name: Run multiplayer tests
+      run: ctest --test-dir build --output-on-failure
+
+    - name: Verify portable package
+      if: ${{ inputs.package }}
+      run: |
+        $archive = Get-ChildItem install/MWNet-*.zip | Select-Object -First 1
+        Expand-Archive $archive.FullName package-smoke
+        $client = Get-ChildItem package-smoke -Recurse -Filter mwnet.exe | Select-Object -First 1
+        if (-not $client) { throw "Packaged client is missing" }
+        $root = $client.Directory.FullName
+        foreach ($required in @('mwnet-server.exe', 'server/scripts/serverCore.lua', 'mwnet-server-default.cfg')) {
+          if (-not (Test-Path "$root/$required")) { throw "Missing package file: $required" }
+        }
+        Push-Location $root
+        & ./mwnet.exe --version
+        $result = $LASTEXITCODE
+        Pop-Location
+        if ($result -ne 0) { exit $result }
 
     - name: Remove extra pdb files
       if: ${{ ! inputs.package }}
