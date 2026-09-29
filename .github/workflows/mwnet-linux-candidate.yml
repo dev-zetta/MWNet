@@ -3,6 +3,11 @@ name: MWNet Linux candidate
 # Artifacts only. Publication and non-Linux candidate gates are separate.
 on:
   workflow_dispatch:
+    inputs:
+      source-ref:
+        description: Source tag or commit; defaults to the workflow revision
+        default: ""
+        type: string
 
 permissions:
   contents: read
@@ -15,6 +20,13 @@ jobs:
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0
+          ref: ${{ inputs.source-ref }}
+      - name: Restore compiler cache
+        uses: actions/cache/restore@v5
+        with:
+          path: build/ccache
+          key: mwnet-linux-ccache-${{ github.run_id }}
+          restore-keys: mwnet-linux-ccache-
       - name: Build candidate environment
         run: docker build -f Dockerfile.mwnet -t mwnet-candidate-builder .
       - name: Build, test and package client and server
@@ -23,9 +35,18 @@ jobs:
           docker run --rm --entrypoint bash \
             -e GIT_CONFIG_COUNT=1 \
             -e GIT_CONFIG_KEY_0=safe.directory -e GIT_CONFIG_VALUE_0=/source \
+            -e CMAKE_C_COMPILER_LAUNCHER=ccache -e CMAKE_CXX_COMPILER_LAUNCHER=ccache \
+            -e CCACHE_DIR=/ccache -e CCACHE_BASEDIR=/source -e CCACHE_MAXSIZE=3G \
+            -v "$PWD/build/ccache:/ccache" \
             -v "$PWD:/source:ro" -v "$PWD/build/linux-candidate:/output" \
             mwnet-candidate-builder \
             /source/CI/build_mwnet_linux.sh /source /output
+      - name: Save compiler cache
+        if: always()
+        uses: actions/cache/save@v5
+        with:
+          path: build/ccache
+          key: mwnet-linux-ccache-${{ github.run_id }}
       - uses: actions/upload-artifact@v4
         with:
           name: mwnet-linux-candidate

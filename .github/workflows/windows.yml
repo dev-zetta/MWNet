@@ -102,14 +102,15 @@ jobs:
       uses: actions/cache/restore@v5
       with:
         path: deps/vcpkg-binary-cache
-        key: mwnet-vcpkg-${{ inputs.msvc }}-2026-02-27-v1
+        key: mwnet-vcpkg-${{ inputs.msvc }}-2026-02-27-v2
+        restore-keys: mwnet-vcpkg-${{ inputs.msvc }}-2026-02-27-
 
     - name: Install MWNet transport dependencies
       working-directory: ${{ github.workspace }}/deps/vcpkg-tools
       run: |
         .\bootstrap-vcpkg.bat -disableMetrics
         if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
-        .\vcpkg.exe install libsodium:x64-windows protobuf:x64-windows openssl:x64-windows curl:x64-windows --x-install-root="${{ github.workspace }}/deps/vcpkg-x64-windows-${{ inputs.msvc }}-${{ env.VCPKG_TAG }}/installed"
+        .\vcpkg.exe install libsodium:x64-windows protobuf:x64-windows openssl:x64-windows curl:x64-windows sqlite3:x64-windows --x-install-root="${{ github.workspace }}/deps/vcpkg-x64-windows-${{ inputs.msvc }}-${{ env.VCPKG_TAG }}/installed"
 
     - name: Save compiled transport dependencies
       if: steps.transport-cache.outputs.cache-hit != 'true'

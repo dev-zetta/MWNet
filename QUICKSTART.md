@@ -164,7 +164,7 @@ After successful build, you'll have:
 ## Merge Information
 
 This build combines:
-- **MWNet 1.0.0-alpha.1**: Multiplayer client, dedicated server, direct connect and scripting API
+- **MWNet 1.0.0-alpha.2**: Multiplayer client, dedicated server, direct connect and scripting API
 - **OpenMW 0.52**: Current engine base with modern Lua, navigation, rendering and content APIs
 
 The original OpenMW 0.50 integration resolved 237 merge conflicts while preserving MWNet's multiplayer features; the codebase was subsequently advanced to OpenMW 0.52.

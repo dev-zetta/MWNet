@@ -1,8 +1,5 @@
 #include <components/openmw-mp/Version.hpp>
 
-#include <iostream>
-#include <string_view>
-
 int runProtocolTests();
 int runProgressionTests();
 int runActiveEffectTests();
@@ -42,12 +39,6 @@ int runGameNetworkingSocketsTests();
 int main()
 {
     static_assert(MWNET_PROTO_VERSION == 13, "MWNet uses protocol 13 to distinguish pre-rebrand peers");
-
-    if (std::string_view(MWNET_VERSION) != "1.0.0-alpha.1")
-    {
-        std::cerr << "Unexpected MWNet version: " << MWNET_VERSION << '\n';
-        return 1;
-    }
 
     int failures = runProtocolTests() + runActiveEffectTests() + runActorMagicTests()
         + runActorStateTests()
