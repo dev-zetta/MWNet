@@ -31,6 +31,8 @@ namespace
     std::uint8_t smallReturn() { return 231; }
     std::int16_t signedReturn() { return -1234; }
     const char* echo(const char* value) { return value; }
+    struct Opaque { int value; };
+    Opaque opaqueReturn() { return { 42 }; }
 }
 
 int runNativeFunctionTests()
@@ -60,5 +62,17 @@ int runNativeFunctionTests()
         "signed narrow return is normalized");
     expect(NativeFunction(&echo).call<void*>(scriptText) == scriptText,
         "pointer arguments and return values survive erasure");
+    NativeFunction opaque(&opaqueReturn);
+    expect(opaque.address() != nullptr, "custom adapters retain their native address");
+    bool rejected = false;
+    try
+    {
+        opaque.call<unsigned int>();
+    }
+    catch (const std::logic_error&)
+    {
+        rejected = true;
+    }
+    expect(rejected, "opaque results require a custom language adapter");
     return failures;
 }

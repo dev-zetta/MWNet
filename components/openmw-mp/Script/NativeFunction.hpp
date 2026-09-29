@@ -3,6 +3,7 @@
 
 #include <cstdint>
 #include <memory>
+#include <stdexcept>
 #include <type_traits>
 #include <utility>
 
@@ -18,8 +19,13 @@ namespace mwmp::script
         template <typename R, typename... Args>
         explicit NativeFunction(R (*function)(Args...))
             : mAddress(reinterpret_cast<std::uintptr_t>(function))
-            , mInvoke(&invoke<R, Args...>)
+            , mInvoke(nullptr)
         {
+            // Opaque return values (such as CallPublic's boost::any) use a
+            // custom language adapter, while native plugins still need the address.
+            if constexpr (std::is_void_v<R> || std::is_arithmetic_v<R>
+                || std::is_enum_v<R> || std::is_pointer_v<R>)
+                mInvoke = &invoke<R, Args...>;
         }
 
         void* address() const { return reinterpret_cast<void*>(mAddress); }
@@ -27,6 +33,8 @@ namespace mwmp::script
         template <typename R, typename... Args>
         R call(const Args&... args) const
         {
+            if (mInvoke == nullptr)
+                throw std::logic_error("Native function requires a custom script adapter");
             const void* values[] = { std::addressof(args)..., nullptr };
             if constexpr (std::is_void_v<R>)
                 mInvoke(mAddress, nullptr, values);
