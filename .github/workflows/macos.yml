@@ -25,6 +25,8 @@ jobs:
     runs-on: ${{ inputs.image }}
     env:
       DEVELOPER_DIR: /Applications/Xcode_26.2.app/Contents/Developer
+      HOMEBREW_NO_INSTALL_UPGRADE: "1"
+      HOMEBREW_NO_AUTO_UPDATE: "1"
     steps:
     - uses: actions/checkout@v6
       with:
@@ -43,8 +45,44 @@ jobs:
     - run: echo "DMG_IDENTIFIER=arm64" >> $GITHUB_ENV
       if: ${{ inputs.image != 'macos-15-intel' }}
 
-    - name: Install Building Dependencies
-      run: CI/before_install.macos.sh
+    - uses: actions/setup-python@v6
+      with:
+        python-version: "3.12"
+
+    - name: Cache Qt SDK
+      id: qt-cache
+      uses: actions/cache@v5
+      with:
+        path: deps/Qt
+        key: qt-6.6.3-macos-universal-v1
+
+    - name: Install Qt SDK
+      if: steps.qt-cache.outputs.cache-hit != 'true'
+      run: |
+        python -m pip install aqtinstall==3.1.15
+        python -m aqt install-qt mac desktop 6.6.3 clang_64 --outputdir deps/Qt
+
+    - name: Add Qt tools to PATH
+      run: echo "$PWD/deps/Qt/6.6.3/macos/bin" >> "$GITHUB_PATH"
+
+    - name: Install building dependencies
+      run: |
+        brew install libsodium protobuf curl
+        command -v 7z >/dev/null || brew install p7zip
+        source CI/macos/deps_versions.sh
+        if [[ -n "${MACOS_AMD64:-}" ]]; then
+          sdk=vcpkg-x64-osx-dynamic
+        else
+          sdk=vcpkg-arm64-osx-dynamic
+        fi
+        curl --fail --location --retry 3 \
+          "https://gitlab.com/OpenMW/openmw-deps/-/raw/main/macos/${sdk}-${VCPKG_TAG}-manifest.txt" \
+          -o "$RUNNER_TEMP/openmw-manifest.txt"
+        { read -r url && read -r checksum filename; } < "$RUNNER_TEMP/openmw-manifest.txt"
+        curl --fail --location --retry 3 "$url" -o "$RUNNER_TEMP/$filename"
+        (cd "$RUNNER_TEMP"; printf '%s  %s\n' "$checksum" "$filename" | shasum -a 512 --check)
+        7z x -y -o/tmp/openmw-deps-pre "$RUNNER_TEMP/$filename"
+        mv /tmp/openmw-deps-pre/*/ /tmp/openmw-deps/
 
     - name: Prime ccache
       uses: hendrikmuhs/ccache-action@v1.2.22

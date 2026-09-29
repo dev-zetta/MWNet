@@ -12,14 +12,14 @@ on:
         description: Platforms to build
         default: all
         type: choice
-        options: [all, windows, macos]
+        options: [all, windows, macos, macos-intel, macos-arm64]
 
 permissions:
   contents: read
 
 jobs:
   Windows:
-    if: ${{ inputs.platform != 'macos' }}
+    if: ${{ inputs.platform == 'all' || inputs.platform == 'windows' }}
     uses: ./.github/workflows/windows.yml
     with:
       image: "2022"
@@ -31,7 +31,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        image: [macos-15, macos-15-intel]
+        image: ${{ fromJSON(inputs.platform == 'macos-intel' && '["macos-15-intel"]' || inputs.platform == 'macos-arm64' && '["macos-15"]' || '["macos-15", "macos-15-intel"]') }}
     uses: ./.github/workflows/macos.yml
     with:
       image: ${{ matrix.image }}
