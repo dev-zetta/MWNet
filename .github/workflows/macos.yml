@@ -132,10 +132,13 @@ jobs:
                                 print(f'{path}:{number}: {line}')
             raise RuntimeError('Dependency SDK still references the removed AGL framework')
     - name: Build
-      run: CI/macos/build.sh
+      run: cmake --build build --parallel "$(sysctl -n hw.logicalcpu)"
 
     - name: Run multiplayer tests
       run: ctest --test-dir build --output-on-failure
+
+    - name: Package disk image
+      run: cmake --build build --target package
 
     - name: Verify packaged client and server
       run: |

@@ -1071,6 +1071,13 @@ if (APPLE)
     set(OPENCS_PLUGINS ${OPENCS_PLUGINS} "${INSTALLED_OPENCS_APP}/Contents/PlugIns/${QT_COCOA_PLUGIN_GROUP}/${QT_COCOA_PLUGIN_NAME}")
     set(OPENCS_PLUGINS ${OPENCS_PLUGINS} "${INSTALLED_OPENCS_APP}/Contents/PlugIns/${QT_QMACSTYLE_PLUGIN_GROUP}/${QT_QMACSTYLE_PLUGIN_NAME}")
 
+    # Copied Qt plugins cannot use their original SDK-relative rpaths.
+    get_target_property(QT_CORE_LIBRARY Qt6::Core LOCATION_RELEASE)
+    get_filename_component(QT_LIBRARY_DIR "${QT_CORE_LIBRARY}" DIRECTORY)
+    if(QT_CORE_LIBRARY MATCHES "^(.*)/QtCore\\.framework/")
+        set(QT_LIBRARY_DIR "${CMAKE_MATCH_1}")
+    endif()
+
     install(CODE "
         function(gp_item_default_embedded_path_override item  default_embedded_path_var)
             if (\${item} MATCHES ${OSG_PLUGIN_PREFIX_DIR})
@@ -1079,8 +1086,8 @@ if (APPLE)
             endif()
         endfunction()
 
-        fixup_bundle(\"${INSTALLED_OPENMW_APP}\" \"${PLUGINS}\" \"\")
-        fixup_bundle(\"${INSTALLED_OPENCS_APP}\" \"${OPENCS_PLUGINS}\" \"\")
+        fixup_bundle(\"${INSTALLED_OPENMW_APP}\" \"${PLUGINS}\" \"${QT_LIBRARY_DIR}\")
+        fixup_bundle(\"${INSTALLED_OPENCS_APP}\" \"${OPENCS_PLUGINS}\" \"${QT_LIBRARY_DIR}\")
         " COMPONENT Runtime)
 
     set(CPACK_PRE_BUILD_SCRIPTS ${CMAKE_SOURCE_DIR}/cmake/SignMacApplications.cmake)

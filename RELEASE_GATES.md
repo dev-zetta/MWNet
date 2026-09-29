@@ -1,18 +1,18 @@
 # MWNet 1.0 release gates
 
-MWNet 1.0 is released sequentially. Passing a later implementation milestone does not skip the evidence required by an earlier release, and the stable version remains blocked until every gate below has recorded artifacts from the exact release candidate.
+MWNet 1.0 milestone acceptance proceeds sequentially. Passing a later implementation milestone does not skip the evidence required by an earlier milestone, and the stable version remains blocked until every gate below has recorded artifacts from the exact release candidate. Development previews can provide binaries for testing without closing these gates.
 
 ## Milestones
 
 | Milestone | Required scope | Current status |
 | --- | --- | --- |
 | `1.0.0-alpha.1` | Clean out-of-tree builds, protocol 12 only, fail-closed codec, unit/fuzz targets, loopback default | Implementation and earlier fuzz campaign present; paired native/sanitizer Linux soak passed at c978f30275; Linux discovery preview built and package-tested at e0b844eafa; cross-platform and remaining candidate evidence pending |
-| `1.0.0-alpha.2` | GameNetworkingSockets, encrypted identity handshake, TOFU and Argon2id migration | Implementation present on the alpha branch; milestone is not released out of sequence |
+| `1.0.0-alpha.2` | GameNetworkingSockets, encrypted identity handshake, TOFU and Argon2id migration | Implementation present in the development preview; milestone acceptance still requires the preceding and exact-candidate evidence |
 | `1.0.0-alpha.3` | Canonical authority, lifecycle gates, owned workers and atomic persistence | Implementation and automated encrypted integration/fault harnesses present; exact-candidate evidence pending |
 | `1.0.0-beta.1` | Sanitizer and fuzz gates, limited opt-in public test, independent security review | Blocked |
 | `1.0.0` | Cross-platform, soak, migration, public discovery, security, legal and documentation gates | Blocked |
 
-The source version remains `1.0.0-alpha.1` until the alpha.1 release candidate passes its gates. It must then advance through alpha.2, alpha.3 and beta.1; implemented future-scope work does not change that ordering.
+The current source version is `1.0.0-alpha.2`, a cross-platform development preview with protocol 13. Its release notes identify the tested source and package validation results. The version number does not certify milestone acceptance, interactive gameplay on every platform, or suitability for untrusted public hosting; the remaining gates above and below still apply.
 
 ## Required evidence
 
