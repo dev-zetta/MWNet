@@ -34,6 +34,8 @@ jobs:
     env:
       archive: FAILEDTODOWNLOAD
       VCPKG_BINARY_SOURCES: clear;files,${{ github.workspace }}/deps/vcpkg-binary-cache,readwrite
+      SCCACHE_GHA_ENABLED: "true"
+      SCCACHE_IGNORE_SERVER_IO_ERROR: "1"
 
     steps:
     - name: Install NSIS
@@ -146,6 +148,8 @@ jobs:
 
     - uses: seanmiddleditch/gha-setup-ninja@master
 
+    - uses: mozilla-actions/sccache-action@v0.0.11
+
     - name: Configure OpenMW
       run: >
         cmake
@@ -155,7 +159,7 @@ jobs:
         -D CMAKE_BUILD_TYPE=${{ inputs.build-type }}
         -D CMAKE_TOOLCHAIN_FILE='${{ github.workspace }}/deps/vcpkg-x64-windows-${{ inputs.msvc }}-${{ env.VCPKG_TAG }}/scripts/buildsystems/vcpkg.cmake'
         -D CMAKE_PREFIX_PATH='${{ github.workspace }}/deps/Qt/${{ env.QT_VER }}/msvc2019_64'
-        ${{ inputs.package && '-D CMAKE_CXX_FLAGS_RELEASE="/O2 /Ob2 /DNDEBUG /Zi"' || '' }}
+        ${{ inputs.package && '-D CMAKE_CXX_FLAGS_RELEASE="/O2 /Ob2 /DNDEBUG"' || '' }}
         ${{ inputs.package && '-D "CMAKE_EXE_LINKER_FLAGS_RELEASE=/DEBUG /OPT:REF /OPT:ICF /INCREMENTAL:NO"' || '' }}
         -D LuaJit_INCLUDE_DIR='${{ github.workspace }}/deps/vcpkg-x64-windows-${{ inputs.msvc }}-${{ env.VCPKG_TAG }}/installed/x64-windows/include/luajit'
         -D LuaJit_LIBRARY='${{ github.workspace }}/deps/vcpkg-x64-windows-${{ inputs.msvc }}-${{ env.VCPKG_TAG }}/installed/x64-windows/lib/lua51.lib'
@@ -168,6 +172,10 @@ jobs:
         -D OPENMW_LTO_BUILD=ON
         -D MWNET_FETCH_DEPS=ON
         -D BUILD_MWNET_TESTS=ON
+        -D CMAKE_C_COMPILER_LAUNCHER=sccache
+        -D CMAKE_CXX_COMPILER_LAUNCHER=sccache
+        -D CMAKE_POLICY_DEFAULT_CMP0141=NEW
+        -D CMAKE_MSVC_DEBUG_INFORMATION_FORMAT=Embedded
         ${{ inputs.package && '-D "VCREDIST64=$env:VCToolsRedistDir/vc_redist.x64.exe"' || '' }}
         -D CMAKE_EXPORT_COMPILE_COMMANDS=ON
 

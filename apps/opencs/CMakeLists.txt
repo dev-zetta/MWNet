@@ -156,7 +156,7 @@ foreach(res_file ${OPENCS_RES})
     set(res_output ${CMAKE_CURRENT_BINARY_DIR}/qrc_${res_name}.cpp)
     add_custom_command(
         OUTPUT ${res_output}
-        COMMAND Qt6::rcc ${res_file} -o ${res_output}
+        COMMAND Qt6::rcc ${res_file} -name ${res_name} -o ${res_output}
         DEPENDS ${res_file}
         COMMENT "Compiling Qt resource ${res_file}"
     )
