@@ -34,8 +34,6 @@ jobs:
     env:
       archive: FAILEDTODOWNLOAD
       VCPKG_BINARY_SOURCES: clear;files,${{ github.workspace }}/deps/vcpkg-binary-cache,readwrite
-      SCCACHE_GHA_ENABLED: "true"
-      SCCACHE_IGNORE_SERVER_IO_ERROR: "1"
 
     steps:
     - name: Install NSIS
@@ -148,8 +146,6 @@ jobs:
 
     - uses: seanmiddleditch/gha-setup-ninja@master
 
-    - uses: mozilla-actions/sccache-action@v0.0.11
-
     - name: Configure OpenMW
       run: >
         cmake
@@ -172,11 +168,8 @@ jobs:
         -D OPENMW_LTO_BUILD=ON
         -D MWNET_FETCH_DEPS=ON
         -D BUILD_MWNET_TESTS=ON
-        -D PRECOMPILE_HEADERS_WITH_MSVC=OFF
-        -D CMAKE_C_COMPILER_LAUNCHER=sccache
-        -D CMAKE_CXX_COMPILER_LAUNCHER=sccache
         -D CMAKE_POLICY_DEFAULT_CMP0141=NEW
-        -D CMAKE_MSVC_DEBUG_INFORMATION_FORMAT=Embedded
+        -D CMAKE_MSVC_DEBUG_INFORMATION_FORMAT=ProgramDatabase
         ${{ inputs.package && '-D "VCREDIST64=$env:VCToolsRedistDir/vc_redist.x64.exe"' || '' }}
         -D CMAKE_EXPORT_COMPILE_COMMANDS=ON
 
