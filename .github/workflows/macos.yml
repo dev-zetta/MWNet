@@ -137,6 +137,9 @@ jobs:
     - name: Run multiplayer tests
       run: ctest --test-dir build --output-on-failure
 
+    - name: Verify built client and server
+      run: python release-tools/CI/smoke_mwnet_package.py build/MWNet.app --commit "$(git rev-parse HEAD)"
+
     - name: Package disk image
       run: cmake --build build --target package
 

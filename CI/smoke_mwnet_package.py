@@ -58,6 +58,13 @@ def main():
         output = result.stdout + result.stderr
         print(output)
         if result.returncode != 0:
+            if macos and result.returncode < 0:
+                diagnostic = subprocess.run([
+                    'lldb', '--batch', '-o', 'settings set target.disable-aslr false',
+                    '-o', 'run', '-o', 'thread backtrace all', '--',
+                    str(binaries / 'mwnet-server')], cwd=work, env=env,
+                    capture_output=True, text=True, timeout=60)
+                print(diagnostic.stdout + diagnostic.stderr)
             raise RuntimeError(f'Packaged server exited with {result.returncode}')
         for marker in ('Called "OnServerPostInit"', 'Quitting peacefully.', 'Error state: false'):
             if marker not in output:
