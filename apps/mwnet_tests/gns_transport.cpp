@@ -414,7 +414,7 @@ namespace
     }
 }
 
-int runGameNetworkingSocketsTests()
+static void testRawTransport()
 {
     GameNetworkingSocketsTransport server;
     GameNetworkingSocketsTransport client;
@@ -501,6 +501,13 @@ int runGameNetworkingSocketsTests()
     }
     client.shutdown(1s);
     server.shutdown(1s);
+}
+
+int runGameNetworkingSocketsTests()
+{
+    // Destroy both raw transports before independent secure-transport fixtures
+    // rebind their ports. Shutdown alone retains the shared GNS library lifetime.
+    testRawTransport();
     testSecureTransport();
     testGameEndpoint();
     return sFailures;
