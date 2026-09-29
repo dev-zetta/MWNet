@@ -74,9 +74,20 @@ jobs:
       working-directory: ${{ github.workspace }}/deps
       run: 7z x -y -ovcpkg-x64-windows-${{ inputs.msvc }}-${{ env.VCPKG_TAG }} $env:archive
 
+    # The OpenMW archive is an exported SDK, without ports or triplet definitions.
+    - name: Fetch pinned vcpkg package manager
+      uses: actions/checkout@v6
+      with:
+        repository: microsoft/vcpkg
+        ref: e0edebd1dc2d03cf7d02349df91de74ef4d0c00e
+        path: deps/vcpkg-tools
+
     - name: Install MWNet transport dependencies
-      working-directory: ${{ github.workspace }}/deps/vcpkg-x64-windows-${{ inputs.msvc }}-${{ env.VCPKG_TAG }}
-      run: .\vcpkg.exe install libsodium:x64-windows protobuf:x64-windows openssl:x64-windows curl:x64-windows
+      working-directory: ${{ github.workspace }}/deps/vcpkg-tools
+      run: |
+        .\bootstrap-vcpkg.bat -disableMetrics
+        if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+        .\vcpkg.exe install libsodium:x64-windows protobuf:x64-windows openssl:x64-windows curl:x64-windows --x-install-root="${{ github.workspace }}/deps/vcpkg-x64-windows-${{ inputs.msvc }}-${{ env.VCPKG_TAG }}/installed"
 
     - name: Cache Qt
       id: qt-cache

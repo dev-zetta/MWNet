@@ -8,12 +8,18 @@ on:
         required: true
         default: v1.0.0-alpha.1
         type: string
+      platform:
+        description: Platforms to build
+        default: all
+        type: choice
+        options: [all, windows, macos]
 
 permissions:
   contents: read
 
 jobs:
   Windows:
+    if: ${{ inputs.platform != 'macos' }}
     uses: ./.github/workflows/windows.yml
     with:
       image: "2022"
@@ -21,6 +27,7 @@ jobs:
       package: true
       source-ref: ${{ inputs.source-ref }}
   MacOS:
+    if: ${{ inputs.platform != 'windows' }}
     strategy:
       fail-fast: false
       matrix:
