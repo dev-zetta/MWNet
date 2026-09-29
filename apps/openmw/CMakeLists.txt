@@ -199,11 +199,15 @@ else ()
     )
 endif ()
 
-target_link_libraries(mwnet
-    -Wl,--start-group
-    openmw-lib
-    -Wl,--end-group
-)
+if (APPLE OR MSVC)
+    target_link_libraries(mwnet openmw-lib)
+else()
+    target_link_libraries(mwnet
+        -Wl,--start-group
+        openmw-lib
+        -Wl,--end-group
+    )
+endif()
 
 # Workaround necessary to ensure osgAnimation::MatrixLinearSampler dynamic casts work under Clang
 # NOTE: it's unclear whether the broken behavior is spec-compliant

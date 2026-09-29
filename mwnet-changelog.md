@@ -2,6 +2,7 @@
 -------------
 
 * Fix ARM architecture reporting to format the architecture number without reading past a string literal.
+* Avoid GNU-only linker options with the Apple and Microsoft linkers.
 * Build Windows and Intel/Apple Silicon macOS packages from an explicit source tag, using a pinned Qt SDK and a C++20-capable macOS toolchain.
 * Complete the upstream dependency SDK's Boost headers and use a full vcpkg checkout for additional Windows networking dependencies.
 * Include initial server data and validate packaged client identity, CoreScripts startup, and clean shutdown before publication.
