@@ -23,17 +23,10 @@ int setenv(const char *name, const char *value, int overwrite)
 std::string Utils::convertPath(std::string str)
 {
 #if defined(_WIN32)
-#define _SEP_ '\\'
-#elif defined(__APPLE__)
-#define _SEP_ ':'
+    std::replace(str.begin(), str.end(), '/', '\\');
 #endif
-
-#if defined(_WIN32) || defined(__APPLE__)
-    replace(str.begin(), str.end(), '/', _SEP_);
-#endif //defined(_WIN32) || defined(__APPLE__)
+    // macOS uses POSIX paths, including for Lua scripts and server data.
     return str;
-
-#undef _SEP_
 }
 
 bool Utils::doesFileHaveChecksum(std::string filePath, unsigned int requiredChecksum)
