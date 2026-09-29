@@ -31,6 +31,13 @@ jobs:
     - uses: actions/checkout@v6
       with:
         ref: ${{ inputs.source-ref }}
+    - name: Fetch package validation tooling
+      uses: actions/checkout@v6
+      with:
+        ref: ${{ github.sha }}
+        path: release-tools
+        sparse-checkout: CI/smoke_mwnet_package.py
+        sparse-checkout-cone-mode: false
     - name: Select the C++20 toolchain
       run: |
         sudo xcode-select --switch "$DEVELOPER_DIR"
@@ -97,6 +104,8 @@ jobs:
         cmake -S . -B build -DBUILD_MWNET_TESTS=ON
         cp build/mwnet-client-default.cfg build/mwnet-server-default.cfg build/MWNet.app/Contents/Resources/
         cp -R files/mwnet/core-scripts build/MWNet.app/Contents/Resources/server
+        cp files/mwnet/core-scripts/defaults/*.json build/MWNet.app/Contents/Resources/server/data/
+        mkdir -p build/MWNet.app/Contents/Resources/server/data/{cell,custom,map,player,recordstore,world}
     - name: Build
       run: CI/macos/build.sh
 
@@ -110,7 +119,7 @@ jobs:
         trap 'hdiutil detach "$PWD/package-smoke"' EXIT
         test -x package-smoke/MWNet.app/Contents/MacOS/mwnet-server
         test -f package-smoke/MWNet.app/Contents/Resources/server/scripts/serverCore.lua
-        package-smoke/MWNet.app/Contents/MacOS/mwnet --version
+        python release-tools/CI/smoke_mwnet_package.py package-smoke/MWNet.app --commit "$(git rev-parse HEAD)"
 
     - name: Store dmg
       uses: actions/upload-artifact@v6

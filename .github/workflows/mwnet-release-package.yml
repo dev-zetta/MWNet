@@ -1,0 +1,124 @@
+name: MWNet release package validation
+
+on:
+  workflow_dispatch:
+    inputs:
+      source-ref:
+        description: Source release tag
+        default: v1.0.0-alpha.1
+        required: true
+        type: string
+      build-run:
+        description: Completed native build run ID
+        required: true
+        type: string
+      artifact:
+        description: Native build artifact name
+        required: true
+        type: string
+      platform:
+        description: Package platform
+        required: true
+        type: choice
+        options: [windows, macos-arm64, macos-intel]
+
+permissions:
+  contents: read
+  actions: read
+
+jobs:
+  package:
+    runs-on: ${{ inputs.platform == 'windows' && 'windows-2022' || inputs.platform == 'macos-intel' && 'macos-15-intel' || 'macos-15' }}
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          ref: ${{ inputs.source-ref }}
+      - uses: actions/checkout@v6
+        with:
+          ref: ${{ github.sha }}
+          path: release-tools
+          sparse-checkout: CI/smoke_mwnet_package.py
+          sparse-checkout-cone-mode: false
+      - uses: actions/setup-python@v6
+        with:
+          python-version: "3.12"
+      - uses: actions/download-artifact@v5
+        with:
+          name: ${{ inputs.artifact }}
+          run-id: ${{ inputs.build-run }}
+          github-token: ${{ github.token }}
+          path: incoming
+      - name: Extract Windows portable package
+        if: inputs.platform == 'windows'
+        shell: pwsh
+        run: |
+          $archive = Get-ChildItem incoming/MWNet-*.zip | Select-Object -First 1
+          if (-not $archive) { throw "Missing native Windows archive" }
+          Expand-Archive $archive.FullName package
+          New-Item -ItemType Directory release
+          "PACKAGE_NAME=$($archive.Name)" >> $env:GITHUB_ENV
+      - name: Extract macOS disk image
+        if: inputs.platform != 'windows'
+        run: |
+          mkdir mounted package release
+          image=(incoming/MWNet-*.dmg)
+          test "${#image[@]}" -eq 1
+          hdiutil attach "${image[0]}" -mountpoint "$PWD/mounted" -nobrowse
+          ditto mounted package
+          hdiutil detach "$PWD/mounted"
+          echo "PACKAGE_NAME=$(basename "${image[0]}")" >> "$GITHUB_ENV"
+      - name: Seed pristine server profile
+        shell: python
+        run: |
+          from pathlib import Path
+          import shutil
+          scripts = list(Path('package').rglob('serverCore.lua'))
+          assert len(scripts) == 1, scripts
+          profile = scripts[0].parent.parent
+          for name in ('banlist.json', 'requiredDataFiles.json'):
+              shutil.copy2(profile / 'defaults' / name, profile / 'data' / name)
+          for name in ('cell', 'custom', 'map', 'player', 'recordstore', 'world'):
+              target = profile / 'data' / name
+              target.mkdir(exist_ok=True)
+              assert not list(target.iterdir()), f'Unexpected runtime state in {target}'
+      - name: Validate and archive Windows package
+        if: inputs.platform == 'windows'
+        shell: pwsh
+        run: |
+          $client = Get-ChildItem package -Recurse -Filter mwnet.exe | Select-Object -First 1
+          if (-not $client) { throw "Missing packaged client" }
+          $revision = git rev-parse HEAD
+          python release-tools/CI/smoke_mwnet_package.py $client.Directory.FullName --commit $revision
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          Push-Location package
+          7z a -tzip "../release/$env:PACKAGE_NAME" *
+          $result = $LASTEXITCODE
+          Pop-Location
+          if ($result -ne 0) { exit $result }
+      - name: Sign, archive and validate macOS package
+        if: inputs.platform != 'windows'
+        run: |
+          for app in package/*.app; do
+            codesign --force --deep --sign - "$app"
+            codesign --verify --deep --strict "$app"
+          done
+          hdiutil create -volname MWNet -srcfolder package -format UDZO "release/$PACKAGE_NAME"
+          hdiutil verify "release/$PACKAGE_NAME"
+          hdiutil attach "release/$PACKAGE_NAME" -mountpoint "$PWD/mounted" -nobrowse
+          trap 'hdiutil detach "$PWD/mounted"' EXIT
+          python release-tools/CI/smoke_mwnet_package.py mounted/MWNet.app --commit "$(git rev-parse HEAD)"
+      - name: Generate checksums
+        shell: python
+        run: |
+          import hashlib
+          from pathlib import Path
+          for artifact in list(Path('release').iterdir()):
+              with artifact.open('rb') as stream:
+                  digest = hashlib.file_digest(stream, 'sha256').hexdigest()
+              artifact.with_name(artifact.name + '.sha256').write_text(f'{digest}  {artifact.name}\n')
+              print(digest, artifact.name)
+      - uses: actions/upload-artifact@v6
+        with:
+          name: mwnet-release-${{ inputs.platform }}
+          path: release/*
+          if-no-files-found: error

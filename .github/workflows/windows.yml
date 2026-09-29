@@ -43,6 +43,14 @@ jobs:
       with:
         ref: ${{ inputs.source-ref }}
 
+    - name: Fetch package validation tooling
+      uses: actions/checkout@v6
+      with:
+        ref: ${{ github.sha }}
+        path: release-tools
+        sparse-checkout: CI/smoke_mwnet_package.py
+        sparse-checkout-cone-mode: false
+
     - shell: bash
       name: Add deps version env to GITHUB_ENV, stripping comments
       run: |
@@ -191,6 +199,10 @@ jobs:
         cat >> build/cmake_install.cmake <<EOF
         file(INSTALL DESTINATION "\${CMAKE_INSTALL_PREFIX}" TYPE PROGRAM FILES "$source_dir/build/mwnet-server.exe")
         file(INSTALL DESTINATION "\${CMAKE_INSTALL_PREFIX}/server" TYPE DIRECTORY FILES "$source_dir/files/mwnet/core-scripts/")
+        file(INSTALL DESTINATION "\${CMAKE_INSTALL_PREFIX}/server/data" TYPE FILE FILES "$source_dir/files/mwnet/core-scripts/defaults/banlist.json" "$source_dir/files/mwnet/core-scripts/defaults/requiredDataFiles.json")
+        foreach(directory cell custom map player recordstore world)
+          file(MAKE_DIRECTORY "\${CMAKE_INSTALL_PREFIX}/server/data/\${directory}")
+        endforeach()
         EOF
 
     - name: Package MWNet
@@ -216,11 +228,8 @@ jobs:
         foreach ($required in @('mwnet-server.exe', 'server/scripts/serverCore.lua', 'mwnet-server-default.cfg')) {
           if (-not (Test-Path "$root/$required")) { throw "Missing package file: $required" }
         }
-        Push-Location $root
-        & ./mwnet.exe --version
-        $result = $LASTEXITCODE
-        Pop-Location
-        if ($result -ne 0) { exit $result }
+        $revision = git rev-parse HEAD
+        python release-tools/CI/smoke_mwnet_package.py $root --commit $revision
 
     - name: Remove extra pdb files
       if: ${{ ! inputs.package }}
