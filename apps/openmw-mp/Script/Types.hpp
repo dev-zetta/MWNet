@@ -5,6 +5,7 @@
 #include <cstddef>
 #include <cstdint>
 #include <type_traits>
+#include <components/openmw-mp/Script/NativeFunction.hpp>
 #include "Utils.hpp"
 
 #ifdef _WIN32
@@ -45,6 +46,9 @@ template<> struct CharType<'l'> { typedef unsigned long long type; };
 template<> struct CharType<'f'> { typedef double type; };
 template<> struct CharType<'s'> { typedef const char* type; };
 template<> struct CharType<'v'> { typedef void type; };
+
+template <typename T>
+using ScriptValue = typename CharType<TypeChar<T, sizeof_void<T>::value>::value>::type;
 
 template<typename... Types>
 struct TypeString {
@@ -95,10 +99,10 @@ struct CallbackIdentity
 
 struct ScriptFunctionPointer : public ScriptIdentity
 {
-    uintptr_t addr;
+    mwmp::script::NativeFunction<ScriptValue> native;
     template<typename R, typename... Types>
-    ScriptFunctionPointer(Function<R, Types...> a) : ScriptIdentity(a), addr(reinterpret_cast<uintptr_t>(a)) {}
-    void* voidAddr() const { return reinterpret_cast<void*>(addr); }
+    ScriptFunctionPointer(Function<R, Types...> a) : ScriptIdentity(a), native(a) {}
+    void* voidAddr() const { return native.address(); }
 };
 
 // Signatures remain usable by Lua's compile-time dispatcher. Function address

@@ -156,8 +156,7 @@ struct LuaFunctionDispatcher<0, FunctionIndex> {
     inline static ReturnType Dispatch(lua_State*&&, Args&&... args) {
         // Retrieve function data
         const ScriptFunctionData& functionData = ScriptFunctions::runtimeFunctions[FunctionIndex];
-        // Call the C++ function using reinterpret_cast
-        return reinterpret_cast<FunctionEllipsis<ReturnType>>(functionData.func.voidAddr())(std::forward<Args>(args)...);
+        return functionData.func.native.template call<ReturnType>(args...);
     }
 };
 

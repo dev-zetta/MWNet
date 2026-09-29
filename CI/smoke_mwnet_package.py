@@ -61,7 +61,7 @@ def main():
             if macos and result.returncode < 0:
                 diagnostic = subprocess.run([
                     'lldb', '--batch', '-o', 'settings set target.disable-aslr false',
-                    '-o', 'run', '-o', 'thread backtrace all', '--',
+                    '-o', 'run', '--one-line-on-crash', 'thread backtrace all', '--',
                     str(binaries / 'mwnet-server')], cwd=work, env=env,
                     capture_output=True, text=True, timeout=60)
                 print(diagnostic.stdout + diagnostic.stderr)

@@ -14,6 +14,7 @@ add_executable(mwnet-tests
     lua_policy.cpp
     movement.cpp
     metrics.cpp
+    native_function.cpp
     object_state.cpp
     ownership.cpp
     persistence.cpp
