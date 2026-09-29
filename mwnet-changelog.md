@@ -1,4 +1,12 @@
-1.0.0-alpha.1 (unreleased)
+1.0.0-alpha.2
+-------------
+
+* Fix ARM architecture reporting to format the architecture number without reading past a string literal.
+* Build Windows and Intel/Apple Silicon macOS packages from an explicit source tag, using a pinned Qt SDK and a C++20-capable macOS toolchain.
+* Complete the upstream dependency SDK's Boost headers and use a full vcpkg checkout for additional Windows networking dependencies.
+* Include initial server data and validate packaged client identity, CoreScripts startup, and clean shutdown before publication.
+
+1.0.0-alpha.1 (source preview)
 --------------------------
 
 This is the first hardening milestone for the major OpenMW 0.52 compatibility and maintenance release. It includes all fork changes since 0.8.1 and now uses protocol 13; pre-rebrand clients and servers are unsupported.

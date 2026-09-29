@@ -5,7 +5,7 @@ MWNet is an independent, open-source multiplayer fork of [TES3MP](https://github
 
 Stock OpenMW 0.52 is a single-player engine. MWNet adds a dedicated server, a multiplayer client, encrypted direct connections, synchronized gameplay systems, and a server-side Lua API.
 
-* MWNet version: 1.0.0-alpha.1
+* MWNet version: 1.0.0-alpha.2
 * OpenMW base version: 0.52.0
 * Network protocol version: 13
 * License: GPLv3 with additional allowed terms (see [LICENSE](LICENSE))
@@ -16,7 +16,7 @@ Stock OpenMW 0.52 is a single-player engine. MWNet adds a dedicated server, a mu
 Current status
 --------------
 
-MWNet 1.0.0-alpha.1 is an unreleased hardening build on OpenMW 0.52. Protocol 13 identifies the MWNet client/server pair and is intentionally incompatible with pre-rebrand clients, servers, and discovery signatures.
+MWNet 1.0.0-alpha.2 is a development alpha on OpenMW 0.52. Protocol 13 identifies the MWNet client/server pair and is intentionally incompatible with pre-rebrand clients, servers, and discovery signatures.
 
 The underlying OpenMW engine supports completing the main quests in Morrowind, Tribunal, and Bloodmoon. Multiplayer adds more state and authority boundaries than single-player OpenMW, so server scripts, load order, content files, and MWNet versions must match between the server and every client. A local server is recommended when testing gameplay or diagnosing synchronization problems.
 

@@ -1,6 +1,6 @@
-# MWNet 1.0.0-alpha.1 - Quick Start Guide
+# MWNet 1.0.0-alpha.2 - Quick Start Guide
 
-This guide covers the MWNet 1.0.0-alpha.1 development candidate, based on OpenMW 0.52.
+This guide covers the MWNet 1.0.0-alpha.2 development candidate, based on OpenMW 0.52.
 It is not a stable release; see [release gates](RELEASE_GATES.md) for outstanding validation.
 
 ## Prerequisites

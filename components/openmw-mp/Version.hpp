@@ -1,7 +1,7 @@
 #ifndef OPENMW_VERSION_HPP
 #define OPENMW_VERSION_HPP
 
-#define MWNET_VERSION "1.0.0-alpha.1"
+#define MWNET_VERSION "1.0.0-alpha.2"
 #define MWNET_PROTO_VERSION 13
 
 

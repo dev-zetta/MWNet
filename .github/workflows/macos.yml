@@ -36,7 +36,9 @@ jobs:
       with:
         ref: ${{ github.sha }}
         path: release-tools
-        sparse-checkout: CI/smoke_mwnet_package.py
+        sparse-checkout: |
+          CI/smoke_mwnet_package.py
+          CI/complete_boost_headers.py
         sparse-checkout-cone-mode: false
     - name: Select the C++20 toolchain
       run: |
@@ -90,6 +92,12 @@ jobs:
         (cd "$RUNNER_TEMP"; printf '%s  %s\n' "$checksum" "$filename" | shasum -a 512 --check)
         7z x -y -o/tmp/openmw-deps-pre "$RUNNER_TEMP/$filename"
         mv /tmp/openmw-deps-pre/*/ /tmp/openmw-deps/
+        if [[ -n "${MACOS_AMD64:-}" ]]; then
+          triplet=x64-osx-dynamic
+        else
+          triplet=arm64-osx-dynamic
+        fi
+        python release-tools/CI/complete_boost_headers.py "/tmp/openmw-deps/installed/$triplet"
 
     - name: Prime ccache
       uses: hendrikmuhs/ccache-action@v1.2.22

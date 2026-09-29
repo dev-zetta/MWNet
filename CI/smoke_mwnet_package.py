@@ -4,6 +4,7 @@
 import argparse
 import os
 from pathlib import Path
+import platform
 import re
 import shutil
 import subprocess
@@ -41,6 +42,8 @@ def main():
             or f'Protocol version: {expected_protocol} ' not in output
             or args.commit[:10] not in output):
         raise RuntimeError('Packaged client does not match the requested alpha source')
+    if platform.machine() == 'arm64' and 'ARMv8 64-bit' not in output:
+        raise RuntimeError('Packaged client reported an unexpected ARM architecture')
 
     with tempfile.TemporaryDirectory(prefix='mwnet-package-smoke-') as tmp:
         work = Path(tmp)

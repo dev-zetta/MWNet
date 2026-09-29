@@ -6,7 +6,7 @@ on:
       source-ref:
         description: Existing release tag or commit to build
         required: true
-        default: v1.0.0-alpha.1
+        default: v1.0.0-alpha.2
         type: string
       platform:
         description: Platforms to build

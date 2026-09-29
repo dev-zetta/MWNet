@@ -33,6 +33,7 @@ jobs:
 
     env:
       archive: FAILEDTODOWNLOAD
+      VCPKG_BINARY_SOURCES: clear;files,${{ github.workspace }}/deps/vcpkg-binary-cache,readwrite
 
     steps:
     - name: Install NSIS
@@ -48,8 +49,14 @@ jobs:
       with:
         ref: ${{ github.sha }}
         path: release-tools
-        sparse-checkout: CI/smoke_mwnet_package.py
+        sparse-checkout: |
+          CI/smoke_mwnet_package.py
+          CI/complete_boost_headers.py
         sparse-checkout-cone-mode: false
+
+    - uses: actions/setup-python@v6
+      with:
+        python-version: "3.12"
 
     - shell: bash
       name: Add deps version env to GITHUB_ENV, stripping comments
@@ -90,12 +97,29 @@ jobs:
         ref: e0edebd1dc2d03cf7d02349df91de74ef4d0c00e
         path: deps/vcpkg-tools
 
+    - name: Restore compiled transport dependencies
+      id: transport-cache
+      uses: actions/cache/restore@v5
+      with:
+        path: deps/vcpkg-binary-cache
+        key: mwnet-vcpkg-${{ inputs.msvc }}-2026-02-27-v1
+
     - name: Install MWNet transport dependencies
       working-directory: ${{ github.workspace }}/deps/vcpkg-tools
       run: |
         .\bootstrap-vcpkg.bat -disableMetrics
         if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
         .\vcpkg.exe install libsodium:x64-windows protobuf:x64-windows openssl:x64-windows curl:x64-windows --x-install-root="${{ github.workspace }}/deps/vcpkg-x64-windows-${{ inputs.msvc }}-${{ env.VCPKG_TAG }}/installed"
+
+    - name: Save compiled transport dependencies
+      if: steps.transport-cache.outputs.cache-hit != 'true'
+      uses: actions/cache/save@v5
+      with:
+        path: deps/vcpkg-binary-cache
+        key: ${{ steps.transport-cache.outputs.cache-primary-key }}
+
+    - name: Complete Boost headers
+      run: python release-tools/CI/complete_boost_headers.py "deps/vcpkg-x64-windows-${{ inputs.msvc }}-${{ env.VCPKG_TAG }}/installed/x64-windows"
 
     - name: Cache Qt
       id: qt-cache
