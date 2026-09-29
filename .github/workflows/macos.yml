@@ -23,10 +23,16 @@ jobs:
   MacOS:
     name: ${{ inputs.image }}
     runs-on: ${{ inputs.image }}
+    env:
+      DEVELOPER_DIR: /Applications/Xcode_26.2.app/Contents/Developer
     steps:
     - uses: actions/checkout@v6
       with:
         ref: ${{ inputs.source-ref }}
+    - name: Select the C++20 toolchain
+      run: |
+        sudo xcode-select --switch "$DEVELOPER_DIR"
+        xcrun clang++ --version
     - run: echo "CMAKE_BUILD_TYPE=${{ inputs.build-type }}" >> $GITHUB_ENV
 
     - run: echo "MACOS_AMD64=true" >> $GITHUB_ENV
