@@ -16,7 +16,7 @@
 
 
     /*
-    Start of tes3mp addition
+    Start of mwnet addition
 
     Include additional headers for multiplayer purposes
 */
@@ -24,7 +24,7 @@
 #include "../mwmp/Networking.hpp"
 #include "../mwmp/ObjectList.hpp"
 #include <components/openmw-mp/TimedLog.hpp>
-/* End of tes3mp addition */
+/* End of mwnet addition */
 #include "../mwbase/dialoguemanager.hpp"
 #include "../mwbase/environment.hpp"
 #include "../mwbase/mechanicsmanager.hpp"
@@ -422,14 +422,14 @@ namespace MWGui
     void DialogueWindow::onSelectListItem(const std::string& topic, int /*id*/)
     {
         /*
-            Start of tes3mp change (major)
+            Start of mwnet change (major)
 
             Instead of activating a list item here, send an ObjectDialogueChoice packet to the server
             and let it decide whether the list item gets activated
         */
         sendDialogueChoicePacket(topic);
         return;
-        /* End of tes3mp change (major) */
+        /* End of mwnet change (major) */
 
         MWBase::DialogueManager* dialogueManager = MWBase::Environment::get().getDialogueManager();
 
@@ -490,7 +490,7 @@ namespace MWGui
     }
 
     /*
-        Start of tes3mp addition
+        Start of mwnet addition
 
         A different event that should be used in multiplayer when clicking on choices
         in the dialogue screen, sending DialogueChoice packets to the server so they can
@@ -504,10 +504,10 @@ namespace MWGui
         objectList->addObjectDialogueChoice(mPtr, topic);
         objectList->sendObjectDialogueChoice();
     }
-    /* End of tes3mp addition */
+    /* End of mwnet addition */
 
     /*
-        Start of tes3mp addition
+        Start of mwnet addition
 
         Make it possible to activate any dialogue choice from elsewhere in the code
     */
@@ -541,10 +541,10 @@ namespace MWGui
                 MWBase::Environment::get().getWindowManager()->pushGuiMode(GM_MerchantRepair, mPtr);
         }
     }
-    /* End of tes3mp addition */
+    /* End of mwnet addition */
 
     /*
-        Start of tes3mp addition
+        Start of mwnet addition
 
         Make it possible to get the Ptr of the actor involved in the dialogue
     */
@@ -552,7 +552,7 @@ namespace MWGui
     {
         return mPtr;
     }
-    /* End of tes3mp addition */
+    /* End of mwnet addition */
 
     void DialogueWindow::setPtr(const MWWorld::Ptr& actor)
     {
@@ -621,7 +621,7 @@ namespace MWGui
         if (MWBase::Environment::get().getWorld()->getTimeStamp() >= sellerStats.getLastRestockTime() + delay)
         {
             /*
-                Start of tes3mp change (major)
+                Start of mwnet change (major)
 
                 Instead of restocking the NPC's gold pool or last restock time here, send a packet about them to the server
             */
@@ -636,7 +636,7 @@ namespace MWGui
             objectList->addObjectMiscellaneous(mPtr, mPtr.getClass().getBaseGold(mPtr), MWBase::Environment::get().getWorld()->getTimeStamp().getHour(),
                 MWBase::Environment::get().getWorld()->getTimeStamp().getDay());
             objectList->sendObjectMiscellaneous();
-            /* End of tes3mp change (major) */
+            /* End of mwnet change (major) */
         }
     }
 

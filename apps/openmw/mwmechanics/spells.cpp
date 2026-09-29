@@ -7,13 +7,13 @@
 #include <components/esm3/loadmgef.hpp>
 
 /*
-    Start of tes3mp addition
+    Start of mwnet addition
 
     Include additional headers for multiplayer purposes
 */
 #include "../mwmp/Main.hpp"
 #include "../mwmp/LocalPlayer.hpp"
-/* End of tes3mp addition */
+/* End of mwnet addition */
 
 #include "../mwbase/environment.hpp"
 #include "../mwbase/world.hpp"
@@ -167,12 +167,12 @@ namespace MWMechanics
                 iter = mSpells.erase(iter);
 
                     /*
-                    Start of tes3mp addition
+                    Start of mwnet addition
 
                     Send an ID_PLAYER_SPELLBOOK packet every time a spell is purged here
                 */
                 mwmp::Main::get().getLocalPlayer()->sendSpellChange(spell->mId.getRefIdString(), mwmp::SpellbookChanges::REMOVE);
-                /* End of tes3mp addition */
+                /* End of mwnet addition */
                 purged.push_back(spell->mId);
             }
             else
@@ -233,7 +233,7 @@ namespace MWMechanics
             it->second = timestamp;
     }
 
-    /* Start of tes3mp addition */
+    /* Start of mwnet addition */
     void Spells::setPowerUseTimestamp(const ESM::Spell* spell, int startDay, float startHour)
     {
         ESM::TimeStamp timestamp;
@@ -247,7 +247,7 @@ namespace MWMechanics
         else
             it->second = ts;
     }
-    /* End of tes3mp addition */
+    /* End of mwnet addition */
 
     void Spells::readState(const ESM::SpellState& state, CreatureStats* creatureStats)
     {

@@ -185,7 +185,7 @@ namespace MWGui
             if (type == sliderType)
             {
                 /*
-                    Start of tes3mp addition
+                    Start of mwnet addition
 
                     Hide difficulty widget because it has no use in multiplayer, with
                     the difficulty being set by the server instead
@@ -195,7 +195,7 @@ namespace MWGui
                     widget->setEnabled(false);
                     widget->setVisible(false);
                 }
-                /* End of tes3mp addition */
+                /* End of mwnet addition */
 
                 MyGUI::ScrollBar* scroll = current->castType<MyGUI::ScrollBar>();
                 std::string_view valueType = getSettingValueType(current);

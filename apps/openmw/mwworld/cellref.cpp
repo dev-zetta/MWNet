@@ -30,7 +30,7 @@ namespace MWWorld
     {
     }
 
-    /* Start of tes3mp addition */
+    /* Start of mwnet addition */
     unsigned int CellRef::getMpNum() const
     {
         return std::visit(ESM::VisitOverload{
@@ -48,7 +48,7 @@ namespace MWWorld
             [](ESM4::ActorCharacter&) {},
         }, mCellRef.mVariant);
     }
-    /* End of tes3mp addition */
+    /* End of mwnet addition */
 
     ESM::RefNum CellRef::getRefNum() const noexcept
     {
@@ -108,7 +108,7 @@ namespace MWWorld
 
     static const std::string emptyString = "";
 
-    /* Start of tes3mp addition */
+    /* Start of mwnet addition */
     void CellRef::setTeleport(bool teleportState)
     {
         std::visit(ESM::VisitOverload{
@@ -117,7 +117,7 @@ namespace MWWorld
             [](ESM4::ActorCharacter&) {},
         }, mCellRef.mVariant);
     }
-    /* End of tes3mp addition */
+    /* End of mwnet addition */
 
     ESM::Position CellRef::getDoorDest() const
     {
@@ -131,7 +131,7 @@ namespace MWWorld
             mCellRef.mVariant);
     }
 
-    /* Start of tes3mp addition */
+    /* Start of mwnet addition */
     void CellRef::setDoorDest(const ESM::Position& position)
     {
         std::visit(ESM::VisitOverload{
@@ -140,7 +140,7 @@ namespace MWWorld
             [](ESM4::ActorCharacter&) {},
         }, mCellRef.mVariant);
     }
-    /* End of tes3mp addition */
+    /* End of mwnet addition */
 
     ESM::RefId CellRef::getDestCell() const
     {
@@ -170,7 +170,7 @@ namespace MWWorld
         return std::visit(ESM::VisitOverload{ esm3Visit, esm4Visit, actorDestCell }, mCellRef.mVariant);
     }
 
-    /* Start of tes3mp addition */
+    /* Start of mwnet addition */
     void CellRef::setDestCell(const std::string& cellDescription)
     {
         std::visit(ESM::VisitOverload{
@@ -179,7 +179,7 @@ namespace MWWorld
             [](ESM4::ActorCharacter&) {},
         }, mCellRef.mVariant);
     }
-    /* End of tes3mp addition */
+    /* End of mwnet addition */
 
     void CellRef::setScale(float scale)
     {

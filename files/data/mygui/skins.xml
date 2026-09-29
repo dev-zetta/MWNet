@@ -20,7 +20,7 @@
         <List file="openmw_scroll.skin.xml"/>
         <List file="openmw_debug_window.skin.xml" />
         <List file="openmw_postprocessor_hud.skin.xml" />
-        <List file="tes3mp_chat.skin.xml"/>
-        <List file="tes3mp_multilist.skin.xml"/>
+        <List file="mwnet_chat.skin.xml"/>
+        <List file="mwnet_multilist.skin.xml"/>
     </MyGUI>
 </MyGUI>

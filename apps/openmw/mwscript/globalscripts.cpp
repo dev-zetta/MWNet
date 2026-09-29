@@ -180,7 +180,7 @@ namespace MWScript
                 MWScript::InterpreterContext context(script.second);
 
                 /*
-                    Start of tes3mp addition
+                    Start of mwnet addition
 
                     Mark this InterpreterContext as having a SCRIPT_GLOBAL context
                     and as currently running the script with this name, so that
@@ -189,7 +189,7 @@ namespace MWScript
                 */
                 context.trackContextType(Interpreter::Context::SCRIPT_GLOBAL);
                 context.trackCurrentScriptName(script.first.getRefIdString());
-                /* End of tes3mp addition */
+                /* End of mwnet addition */
 
                 if (!MWBase::Environment::get().getScriptManager()->run(script.first, context))
                     script.second->mRunning = false;

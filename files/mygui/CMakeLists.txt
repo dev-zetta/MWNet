@@ -92,20 +92,20 @@ set(MYGUI_FILES
     openmw_jail_screen.layout
     DejaVuLGCSansMono.ttf
     ../launcher/images/openmw.png
-    # Start of tes3mp addition
-    ../tes3mp/tes3mp_logo.png
-    # End of tes3mp addition
+    # Start of mwnet addition
+    ../mwnet/mwnet_logo.png
+    # End of mwnet addition
     OpenMWResourcePlugin.xml
     skins.xml
 
-    tes3mp_login.layout
-    tes3mp_login.skin.xml
-    tes3mp_dialog_list.layout
-    tes3mp_chat.layout
-    tes3mp_chat.skin.xml
-    tes3mp_text_input.layout
-    tes3mp_server_browser.layout
-    tes3mp_multilist.skin.xml
+    mwnet_login.layout
+    mwnet_login.skin.xml
+    mwnet_dialog_list.layout
+    mwnet_chat.layout
+    mwnet_chat.skin.xml
+    mwnet_text_input.layout
+    mwnet_server_browser.layout
+    mwnet_multilist.skin.xml
     RussoOne-Regular.ttf
 )
 

@@ -1,8 +1,8 @@
 #ifndef OPENMW_VERSION_HPP
 #define OPENMW_VERSION_HPP
 
-#define TES3MP_VERSION "1.0.0-alpha.1"
-#define TES3MP_PROTO_VERSION 12
+#define MWNET_VERSION "1.0.0-alpha.1"
+#define MWNET_PROTO_VERSION 13
 
 
 #endif //OPENMW_VERSION_HPP

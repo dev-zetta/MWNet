@@ -221,7 +221,7 @@ namespace mwmp::session
             case MessageDecision::Allowed:
                 return "message allowed";
             case MessageDecision::UnknownMessage:
-                return "unknown protocol-11 message";
+                return "unknown MWNet message";
             case MessageDecision::WrongDirection:
                 return "message is invalid for this endpoint";
             case MessageDecision::NotAllowedInState:

@@ -7,7 +7,7 @@
 #include <components/misc/resourcehelpers.hpp>
 
 /*
-    Start of tes3mp addition
+    Start of mwnet addition
 
     Include additional headers for multiplayer purposes
 */
@@ -17,7 +17,7 @@
 #include "../mwmp/Networking.hpp"
 #include "../mwmp/CellController.hpp"
 #include "../mwmp/ObjectList.hpp"
-/* End of tes3mp addition */
+/* End of mwnet addition */
 
 #include "../mwbase/environment.hpp"
 #include "../mwbase/mechanicsmanager.hpp"

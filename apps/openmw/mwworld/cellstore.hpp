@@ -233,7 +233,7 @@ namespace MWWorld
             return true;
         }
 
-        /* Start of tes3mp addition */
+        /* Start of mwnet addition */
         void clearMovesToCells();
         Ptr searchExact(unsigned int refNum, unsigned int mpNum, ESM::RefId refId = ESM::RefId(), bool actorsOnly = false);
         std::vector<LiveCellRefBase*>& getMergedRefs();
@@ -241,7 +241,7 @@ namespace MWWorld
         CellRefList<ESM::Creature>* getCreatures();
         CellRefList<ESM::CreatureLevList>* getCreatureLists();
         CellRefList<ESM::Container>* getContainers();
-        /* End of tes3mp addition */
+        /* End of mwnet addition */
 
         /// Call visitor (MWWorld::ConstPtr) for each reference. visitor must return a bool. Returning
         /// false will abort the iteration.

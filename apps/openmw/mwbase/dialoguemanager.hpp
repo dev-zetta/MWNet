@@ -64,13 +64,13 @@ namespace MWBase
 
         virtual bool isGoodbye() const = 0;
                 /*
-                Start of tes3mp addition
+                Start of mwnet addition
 
                 Make it possible to check whether a topic is known by the player from elsewhere
                 in the code
             */
             virtual bool isNewTopic(const ESM::RefId& topic) = 0;
-            /* End of tes3mp addition */
+            /* End of mwnet addition */
         virtual void goodbye() = 0;
 
         virtual bool say(const MWWorld::Ptr& actor, const ESM::RefId& topic) = 0;
@@ -128,19 +128,19 @@ namespace MWBase
         /// Removes the last added topic response for the given actor from the journal
         virtual void clearInfoActor(const MWWorld::Ptr& actor) const = 0;
                 /*
-                Start of tes3mp addition
+                Start of mwnet addition
 
                 Declare this method here so it can be used from outside of MWDialogue::DialogueManager
             */
             virtual void updateActorKnownTopics() = 0;
-            /* End of tes3mp addition */
+            /* End of mwnet addition */
                 /*
-                Start of tes3mp addition
+                Start of mwnet addition
 
                 Make it possible to get the caption of a voice dialogue
             */
             virtual ESM::RefId getVoiceCaption(const ESM::RefId& sound) const = 0;
-            /* End of tes3mp addition */
+            /* End of mwnet addition */
     };
 }
 

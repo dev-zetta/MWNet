@@ -37,7 +37,7 @@ namespace MWGui
         void onFrame();
 
         /*
-            Start of tes3mp change (minor)
+            Start of mwnet change (minor)
 
             Add a deleteDragItems argument that allows the deletion of the
             items in the drag as oppposed to the regular behavior of returning
@@ -47,7 +47,7 @@ namespace MWGui
             or rejected by the server
         */
         void finish(bool deleteDragItems = false);
-        /* End of tes3mp change (minor) */
+        /* End of mwnet change (minor) */
     };
 
 }

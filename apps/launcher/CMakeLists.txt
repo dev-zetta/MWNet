@@ -14,7 +14,7 @@ set(LAUNCHER
     utils/lineedit.cpp
     utils/openalutil.cpp
 
-    ${CMAKE_SOURCE_DIR}/files/windows/launcher.rc
+    ${CMAKE_SOURCE_DIR}/files/mwnet/launcher.rc
 )
 
 set(LAUNCHER_HEADER

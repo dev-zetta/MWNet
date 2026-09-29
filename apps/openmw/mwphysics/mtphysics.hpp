@@ -73,12 +73,12 @@ namespace MWPhysics
                                     // ~PhysicsTaskScheduler()
 
         /*
-            Start of tes3mp addition
+            Start of mwnet addition
 
             Make it possible to set the physics timestep from elsewhere
         */
         void setPhysicsDt(float physicsDt) { mPhysicsDt = physicsDt; }
-        /* End of tes3mp addition */
+        /* End of mwnet addition */
 
     private:
         class WorkersSync;

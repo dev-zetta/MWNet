@@ -7,13 +7,13 @@
 
 
     /*
-    Start of tes3mp addition
+    Start of mwnet addition
 
     Include additional headers for multiplayer purposes
 */
 #include "../mwmp/Main.hpp"
 #include "../mwmp/LocalPlayer.hpp"
-/* End of tes3mp addition */
+/* End of mwnet addition */
 #include "../mwbase/environment.hpp"
 #include "../mwbase/windowmanager.hpp"
 #include "../mwbase/world.hpp"
@@ -91,12 +91,12 @@ namespace MWMechanics
                     MWBase::Environment::get().getWindowManager()->messageBox(msg);
 
                     /*
-                        Start of tes3mp addition
+                        Start of mwnet addition
 
                         Send an ID_PLAYER_SPELLBOOK packet every time a player gains a disease
                     */
                     mwmp::Main::get().getLocalPlayer()->sendSpellChange(spell->mId.getRefIdString(), mwmp::SpellbookChanges::ADD);
-                    /* End of tes3mp addition */
+                    /* End of mwnet addition */
                 }
             }
         }

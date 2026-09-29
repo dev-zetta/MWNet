@@ -1,14 +1,14 @@
 #include "actiontrap.hpp"
 
 /*
-    Start of tes3mp addition
+    Start of mwnet addition
 
     Include additional headers for multiplayer purposes
 */
 #include "../mwmp/Main.hpp"
 #include "../mwmp/Networking.hpp"
 #include "../mwmp/ObjectList.hpp"
-/* End of tes3mp addition */
+/* End of mwnet addition */
 
 #include "../mwmechanics/spellcasting.hpp"
 
@@ -44,7 +44,7 @@ namespace MWWorld
         mTrapSource.getCellRef().setTrap(ESM::RefId());
 
         /*
-            Start of tes3mp addition
+            Start of mwnet addition
 
             Send an ID_OBJECT_TRAP packet every time a trap is triggered
         */
@@ -61,6 +61,6 @@ namespace MWWorld
 
         objectList->addObjectTrap(mTrapSource, pos, false);
         objectList->sendObjectTrap();
-        /* End of tes3mp addition */
+        /* End of mwnet addition */
     }
 }

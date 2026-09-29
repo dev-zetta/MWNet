@@ -290,12 +290,12 @@ namespace MWPhysics
         float mPhysicsDt;
 
                 /*
-                Start of tes3mp addition
+                Start of mwnet addition
 
                 Make it possible to set the physics framerate from elsewhere
             */
             void setPhysicsFramerate(float physFramerate);
-            /* End of tes3mp addition */
+            /* End of mwnet addition */
     private:
         void updateWater();
 

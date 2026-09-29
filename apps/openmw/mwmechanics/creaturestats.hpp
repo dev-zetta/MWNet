@@ -77,12 +77,12 @@ namespace MWMechanics
         ESM::RefNum mHitAttemptActor;
 
         /*
-            Start of tes3mp addition
+            Start of mwnet addition
 
-            Track actor ID for TES3MP multiplayer lookup
+            Track actor ID for MWNet multiplayer lookup
         */
         int mActorId = 0;
-        /* End of tes3mp addition */
+        /* End of mwnet addition */
 
         // The difference between view direction and lower body direction.
         float mSideMovementAngle = 0;
@@ -206,12 +206,12 @@ namespace MWMechanics
         ///< Number of friendly hits received.
 
         /*
-            Start of tes3mp addition
+            Start of mwnet addition
 
             Make it possible to set the number of friendly hits from elsewhere
         */
         void setFriendlyHits(int hits);
-        /* End of tes3mp addition */
+        /* End of mwnet addition */
 
         void friendlyHit();
         ///< Increase number of friendly hits by one.
@@ -250,7 +250,7 @@ namespace MWMechanics
         std::multimap<ESM::RefId, ESM::RefNum>& getSummonedCreatureMap(); // <Effect, summoned creature>
 
         /*
-            Start of tes3mp addition
+            Start of mwnet addition
 
             Make it possible to set a new actorId for summoned creatures, necessary for properly
             initializing them after syncing them across players
@@ -258,7 +258,7 @@ namespace MWMechanics
         void setSummonedCreatureActorId(ESM::RefId refId, int actorId);
         int getActorId() const { return mActorId; }
         void setActorId(int actorId) { mActorId = actorId; }
-        /* End of tes3mp addition */
+        /* End of mwnet addition */
 
 
         enum Flag
@@ -314,9 +314,9 @@ namespace MWMechanics
         const std::map<ESM::RefId, AttributeValue>& getAttributes() const { return mAttributes; }
 
         void updateAwareness(float duration);
-        /* Start of tes3mp addition */
+        /* Start of mwnet addition */
         void updateAwarenessTimer(float duration);
-        /* End of tes3mp addition */
+        /* End of mwnet addition */
         int getAwarenessRoll();
     };
 }

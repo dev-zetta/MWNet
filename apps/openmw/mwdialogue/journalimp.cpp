@@ -78,7 +78,7 @@ namespace MWDialogue
         mTopics.clear();
     }
 
-    /* Start of tes3mp addition */
+    /* Start of mwnet addition */
     bool Journal::hasEntry(const ESM::RefId& id, int index)
     {
         ESM::RefId infoId = JournalEntry::idFromIndex(id, index);
@@ -88,7 +88,7 @@ namespace MWDialogue
 
         return false;
     }
-    /* End of tes3mp addition */
+    /* End of mwnet addition */
 
     void Journal::addEntry(const ESM::RefId& id, int index, const MWWorld::Ptr& actor, int daysPassed, int month, int day)
     {
@@ -120,7 +120,7 @@ namespace MWDialogue
         }
 
             /*
-            Start of tes3mp addition
+            Start of mwnet addition
 
             Override the entry's timestamp if provided with valid time arguments
         */
@@ -130,7 +130,7 @@ namespace MWDialogue
             entry.mMonth = month;
             entry.mDayOfMonth = day;
         }
-        /* End of tes3mp addition */
+        /* End of mwnet addition */
         // there is no need to show empty entries in journal
         if (!entry.getText().empty())
         {

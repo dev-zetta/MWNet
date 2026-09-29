@@ -3,14 +3,14 @@
 #include <components/settings/settings.hpp>
 
 /*
-    Start of tes3mp addition
+    Start of mwnet addition
 
     Include additional headers for multiplayer purposes
 */
 #include "../mwmp/Main.hpp"
 #include "../mwmp/PlayerList.hpp"
 #include "../mwmp/CellController.hpp"
-/* End of tes3mp addition */
+/* End of mwnet addition */
 
 #include "../mwbase/environment.hpp"
 #include "../mwbase/windowmanager.hpp"

@@ -26,7 +26,7 @@ namespace
 
     int raiseLuaApiError(lua_State* lua, const char* message)
     {
-        return luaL_error(lua, "TES3MP API error: %s", message);
+        return luaL_error(lua, "MWNet API error: %s", message);
     }
 
     bool deniedDuringIntentValidation(std::string_view name) noexcept
@@ -344,9 +344,9 @@ void LangLua::LoadProgram(const char *filename)
     LuaFunctionData *functions_ = GetLuaFunctions<sizeof(ScriptFunctions::functions) / sizeof(ScriptFunctions::functions[0])>();
 #endif
     sol::state_view solLua(lua);
-    sol::table tes3mp = solLua.create_named_table("tes3mp");
+    sol::table mwnet = solLua.create_named_table("mwnet");
     for (unsigned i = 0; i < functions_n; i++)
-        tes3mp.set_function(functions_[i].name, functions_[i].func);
+        mwnet.set_function(functions_[i].name, functions_[i].func);
 
 if ((err = lua_pcall(lua, 0, 0, 0)) != 0) // Run once script for load in memory.
     throw std::runtime_error("Lua script " + std::string(filename) + " error (" + std::to_string(err) + "): \"" +

@@ -25,12 +25,12 @@
 #include "videowidget.hpp"
 
 /*
-    Start of tes3mp addition
+    Start of mwnet addition
 */
 #include "../mwmp/Main.hpp"
 #include "../mwmp/GUIController.hpp"
 #include "../mwmp/Networking.hpp"
-/* End of tes3mp addition */
+/* End of mwnet addition */
 
 namespace MWGui
 {
@@ -164,9 +164,9 @@ namespace MWGui
     void MainMenu::onNewGameConfirmed()
     {
         /*
-            Start of tes3mp change (minor)
+            Start of mwnet change (minor)
 
-            If TES3MP is connected, "New Game" from the ESC menu means
+            If MWNet is connected, "New Game" from the ESC menu means
             "disconnect and return to direct connect" rather than starting
             a singleplayer game, to avoid crashing mid-connection.
         */
@@ -176,7 +176,7 @@ namespace MWGui
             mwmp::Main::get().getNetworking()->disconnect();
             return;
         }
-        /* End of tes3mp change (minor) */
+        /* End of mwnet change (minor) */
         MWBase::Environment::get().getWindowManager()->removeGuiMode(MWGui::GM_MainMenu);
         MWBase::Environment::get().getStateManager()->newGame();
     }
@@ -212,7 +212,7 @@ namespace MWGui
         else if (name == "newgame")
         {
             /*
-                Start of tes3mp change (major)
+                Start of mwnet change (major)
 
                 In multiplayer, New Game opens direct connect.
             */
@@ -221,7 +221,7 @@ namespace MWGui
                 mwmp::Main::get().getGUIController()->showServerBrowser();
             }
             else
-            /* End of tes3mp change (major) */
+            /* End of mwnet change (major) */
             if (MWBase::Environment::get().getStateManager()->getState() == MWBase::StateManager::State_NoGame)
                 onNewGameConfirmed();
             else
@@ -349,7 +349,7 @@ namespace MWGui
             buttons.emplace_back("return");
 
         /*
-            Start of tes3mp change (major)
+            Start of mwnet change (major)
 
             In multiplayer, New Game opens direct connect instead of starting a SP game.
             Load Game is kept so players can resume a previous session.
@@ -360,7 +360,7 @@ namespace MWGui
         if (MWBase::Environment::get().getStateManager()->characterBegin()
             != MWBase::Environment::get().getStateManager()->characterEnd())
             buttons.emplace_back("loadgame");
-        /* End of tes3mp change (major)*/
+        /* End of mwnet change (major)*/
 
         buttons.emplace_back("options");
 

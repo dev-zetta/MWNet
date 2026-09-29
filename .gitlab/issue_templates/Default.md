@@ -1,7 +1,7 @@
 <!--
 PLEASE READ THIS BEFORE POSTING:
 If you're reporting an issue specific to an OpenMW fork:
-- TES3MP (Multiplayer): Report at https://github.com/TES3MP/openmw-tes3mp/issues
+- MWNet (Multiplayer): Report in this fork's issue tracker
 - OpenMW-VR: Report at https://gitlab.com/madsbuvi/openmw/-/issues
 
 Mod list issues or mod installer issues do not belong here.

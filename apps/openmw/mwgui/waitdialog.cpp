@@ -13,13 +13,13 @@
 
 
     /*
-    Start of tes3mp addition
+    Start of mwnet addition
 
     Include additional headers for multiplayer purposes
 */
 #include "../mwmp/Main.hpp"
 #include "../mwmp/LocalPlayer.hpp"
-/* End of tes3mp addition */
+/* End of mwnet addition */
 #include "../mwbase/environment.hpp"
 #include "../mwbase/mechanicsmanager.hpp"
 #include "../mwbase/statemanager.hpp"
@@ -163,7 +163,7 @@ namespace MWGui
             MWBase::Environment::get().getWindowManager()->popGuiMode();
         }
         /*
-            Start of tes3mp addition
+            Start of mwnet addition
 
             Prevent resting and waiting if they have been disabled by the server for the local player
         */
@@ -179,7 +179,7 @@ namespace MWGui
             MWBase::Environment::get().getWindowManager()->messageBox("You are not allowed to wait.");
             MWBase::Environment::get().getWindowManager()->popGuiMode();
         }
-        /* End of tes3mp addition */
+        /* End of mwnet addition */
 
         onHourSliderChangedPosition(mHourSlider, 0);
         mHourSlider->setScrollPosition(0);
@@ -219,7 +219,7 @@ namespace MWGui
         if (Settings::saves().mAutosave) // autosaves when enabled
             MWBase::Environment::get().getStateManager()->quickSave("Autosave");
         */
-        /* End of tes3mp change (major)*/
+        /* End of mwnet change (major)*/
 
         MWBase::World* world = MWBase::Environment::get().getWorld();
         MWBase::Environment::get().getWindowManager()->fadeScreenOut(0.2f);
@@ -291,12 +291,12 @@ namespace MWGui
         MWBase::Environment::get().getMechanicsManager()->rest(1, mSleeping);
 
         /*
-            Start of tes3mp change (major)
+            Start of mwnet change (major)
 
             Multiplayer requires that time not get advanced here
         */
         //MWBase::Environment::get().getWorld()->advanceTime(1);
-        /* End of tes3mp change (major)*/
+        /* End of mwnet change (major)*/
 
         MWWorld::Ptr player = MWBase::Environment::get().getWorld()->getPlayerPtr();
         if (player.getClass().getCreatureStats(player).isDead())

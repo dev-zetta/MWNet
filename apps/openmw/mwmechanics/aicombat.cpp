@@ -12,7 +12,7 @@
 #include "../mwphysics/raycasting.hpp"
 
     /*
-    Start of tes3mp addition
+    Start of mwnet addition
 
     Include additional headers for multiplayer purposes
 */
@@ -22,7 +22,7 @@
 #include "../mwmp/ActorList.hpp"
 #include "../mwmp/MechanicsHelper.hpp"
 #include "../mwgui/windowmanagerimp.hpp"
-/* End of tes3mp addition */
+/* End of mwnet addition */
 #include "../mwworld/class.hpp"
 #include "../mwworld/esmstore.hpp"
 
@@ -207,7 +207,7 @@ namespace MWMechanics
             storage.updateAttack(actor, characterController, weapon, isRangedCombat, duration);
 
             /*
-                Start of tes3mp addition
+                Start of mwnet addition
 
                 Record the animation change without overwriting an impact awaiting transmission.
             */
@@ -220,7 +220,7 @@ namespace MWMechanics
                 localAttack->pressed = storage.mAttack;
                 localAttack->shouldSend = true;
             }
-            /* End of tes3mp addition */
+            /* End of mwnet addition */
         }
         else
         {
@@ -248,7 +248,7 @@ namespace MWMechanics
         MWMechanics::CreatureStats& stats = actorClass.getCreatureStats(actor);
 
             /*
-            Start of tes3mp addition
+            Start of mwnet addition
 
             Because multiplayer doesn't pause the world during dialogue, disallow attacks on
             a player engaged in dialogue
@@ -261,7 +261,7 @@ namespace MWMechanics
                 return false;
             }
         }
-        /* End of tes3mp addition */
+        /* End of mwnet addition */
         bool forceFlee = false;
         if (!canFight(actor, target))
         {
@@ -269,7 +269,7 @@ namespace MWMechanics
             stats.setAttackingOrSpell(false);
 
                 /*
-                Start of tes3mp addition
+                Start of mwnet addition
 
                 Record that this actor is stopping an attack so that a packet will be sent about it
             */
@@ -282,7 +282,7 @@ namespace MWMechanics
                 localAttack->pressed = false;
                 localAttack->shouldSend = true;
             }
-            /* End of tes3mp addition */
+            /* End of mwnet addition */
             storage.mActionCooldown = 0.f;
             // Continue combat if target is player or player follower/escorter and an attack has been attempted
             const auto& playerFollowersAndEscorters
@@ -733,7 +733,7 @@ namespace MWMechanics
                 mStrength = Misc::Rng::rollClosedProbability(prng);
 
                     /*
-                    Start of tes3mp addition
+                    Start of mwnet addition
 
                     Record that this actor is starting an attack so that a packet will be sent about it
                 */
@@ -753,7 +753,7 @@ namespace MWMechanics
                     actorList->addAttackActor(actor, *localAttack);
                     actorList->sendAttackActors();
                 }
-                /* End of tes3mp addition */
+                /* End of mwnet addition */
                 const MWWorld::ESMStore& store = *MWBase::Environment::get().getESMStore();
 
                 bool canShout = true;

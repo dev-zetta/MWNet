@@ -6,14 +6,14 @@
 
 
     /*
-    Start of tes3mp addition
+    Start of mwnet addition
 
     Include additional headers for multiplayer purposes
 */
 #include "../mwmp/Main.hpp"
 #include "../mwmp/Networking.hpp"
 #include "../mwmp/ObjectList.hpp"
-/* End of tes3mp addition */
+/* End of mwnet addition */
 #include "../mwbase/environment.hpp"
 #include "../mwbase/luamanager.hpp"
 #include "../mwbase/mechanicsmanager.hpp"
@@ -210,7 +210,7 @@ namespace MWGui
         MWMechanics::NpcStats& npcStats = mPtr.getClass().getNpcStats(mPtr);
 
         /*
-            Start of tes3mp change (major)
+            Start of mwnet change (major)
 
             Don't unilaterally change the merchant's gold pool on our client and instead let the server do it
         */
@@ -222,7 +222,7 @@ namespace MWGui
         objectList->addObjectMiscellaneous(mPtr, npcStats.getGoldPool() + price, npcStats.getLastRestockTime().getHour(),
             npcStats.getLastRestockTime().getDay());
         objectList->sendObjectMiscellaneous();
-        /* End of tes3mp change (major)*/
+        /* End of mwnet change (major)*/
 
         setVisible(false);
         mProgressBar.setVisible(true);

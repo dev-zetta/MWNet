@@ -1,0 +1,6 @@
+data/*
+lib/*
+scripts/custom/*
+!/lib/lua
+
+!/data/moderation.json

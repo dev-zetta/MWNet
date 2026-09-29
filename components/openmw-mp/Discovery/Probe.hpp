@@ -1,5 +1,5 @@
-#ifndef TES3MP_DISCOVERY_PROBE_HPP
-#define TES3MP_DISCOVERY_PROBE_HPP
+#ifndef MWNET_DISCOVERY_PROBE_HPP
+#define MWNET_DISCOVERY_PROBE_HPP
 #include "Protocol.hpp"
 #include <atomic>
 namespace mwmp::discovery

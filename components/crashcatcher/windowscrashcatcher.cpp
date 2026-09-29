@@ -252,9 +252,9 @@ namespace Crash
 
         if (monitorStatus == CrashSHM::Status::DumpedSuccessfully)
         {
-            std::string message = "TES3MP has encountered a fatal error.\nCrash dump saved to '"
+            std::string message = "MWNet has encountered a fatal error.\nCrash dump saved to '"
                 + Misc::StringUtils::u8StringToString(getCrashDumpPath(*mShm).u8string())
-                + "'.\nPlease report this to https://github.com/TES3MP/TES3MP/issues !";
+                + "'.\nPlease report this to the MWNet project issue tracker.";
             SDL_ShowSimpleMessageBox(0, "Fatal Error", message.c_str(), nullptr);
         }
         else if (monitorStatus == CrashSHM::Status::Dumping)

@@ -46,12 +46,12 @@ namespace ESM
             RefNum mRefNum;
 
             /*
-                Start of tes3mp addition
+                Start of mwnet addition
 
                 Keep track of a multiplayer-only number unique to this object
             */
             unsigned int mMpNum;
-            /* End of tes3mp addition */
+            /* End of mwnet addition */
 
             std::string mRefID;    // ID of object being referenced
 

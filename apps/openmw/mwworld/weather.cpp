@@ -11,7 +11,7 @@
 #include <components/esm3/weatherstate.hpp>
 
 /*
-    Start of tes3mp addition
+    Start of mwnet addition
 
     Include additional headers for multiplayer purposes
 */
@@ -19,7 +19,7 @@
 #include "../mwmp/Main.hpp"
 #include "../mwmp/Networking.hpp"
 #include "../mwmp/Worldstate.hpp"
-/* End of tes3mp addition */
+/* End of mwnet addition */
 
 #include "../mwbase/environment.hpp"
 #include "../mwbase/soundmanager.hpp"
@@ -789,7 +789,7 @@ namespace MWWorld
         return {};
     }
 
-    /* Start of tes3mp addition */
+    /* Start of mwnet addition */
     void WeatherManager::setRegionWeather(const std::string& region, const int currentWeather, const int nextWeather,
         const int queuedWeather, const float transitionFactor, bool force)
     {
@@ -819,7 +819,7 @@ namespace MWWorld
             changeWeather(ESM::RefId::stringRefId(region), currentWeather);
         }
     }
-    /* End of tes3mp addition */
+    /* End of mwnet addition */
 
     void WeatherManager::playerTeleported(const ESM::RefId& playerRegion, bool isExterior)
     {
@@ -830,26 +830,26 @@ namespace MWWorld
             if (it != mRegions.end() && playerRegion != mCurrentRegion)
             {
                 /*
-                Start of tes3mp addition
+                Start of mwnet addition
 
                 If we've moved to another region, set our weather creation ability to false;
                 the server will set it to true if it wants us creating weather here
                 */
                 setWeatherCreationState(false);
-                /* End of tes3mp addition */
+                /* End of mwnet addition */
                 mCurrentRegion = playerRegion;
                 forceWeather(it->second.getWeather());
             }
         }
         /*
-        Start of tes3mp addition
+        Start of mwnet addition
 
         There's no scenario where we want our weather creation ability to be true in
         an interior, so set it to false
         */
         if (!isExterior)
             setWeatherCreationState(false);
-        /* End of tes3mp addition */
+        /* End of mwnet addition */
     }
 
     float WeatherManager::calculateWindSpeed(int weatherId, float currentSpeed)
@@ -1159,7 +1159,7 @@ namespace MWWorld
         return false;
     }
 
-    /* Start of tes3mp addition */
+    /* Start of mwnet addition */
     bool WeatherManager::getWeatherCreationState()
     {
         return mWeatherCreationState;
@@ -1175,7 +1175,7 @@ namespace MWWorld
         mwmp::Worldstate *worldstate = mwmp::Main::get().getNetworking()->getWorldstate();
         worldstate->sendWeather(mCurrentRegion.getRefIdString(), mCurrentWeather, mNextWeather, mQueuedWeather, mTransitionFactor);
     }
-    /* End of tes3mp addition */
+    /* End of mwnet addition */
 
     void WeatherManager::clear()
     {
@@ -1247,20 +1247,20 @@ namespace MWWorld
         if (!playerRegion.empty() && playerRegion != mCurrentRegion)
 
             /*
-            Start of tes3mp addition
+            Start of mwnet addition
 
             If we've moved to another region, set our weather creation ability to false;
             the server will set it to true if it wants us creating weather here
         */
         setWeatherCreationState(false);
-        /* End of tes3mp addition */
+        /* End of mwnet addition */
         /*
-        Start of tes3mp addition
+        Start of mwnet addition
 
         Track whether an ID_WORLD_WEATHER packet should be sent or not
     */
     bool shouldSendPacket = false;
-    /* End of tes3mp addition */
+    /* End of mwnet addition */
         {
             mCurrentRegion = playerRegion;
 

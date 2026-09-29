@@ -1,14 +1,14 @@
 #include "actiontake.hpp"
 
 /*
-    Start of tes3mp addition
+    Start of mwnet addition
 
     Include additional headers for multiplayer purposes
 */
 #include "../mwmp/Main.hpp"
 #include "../mwmp/Networking.hpp"
 #include "../mwmp/ObjectList.hpp"
-/* End of tes3mp addition */
+/* End of mwnet addition */
 
 #include "../mwbase/environment.hpp"
 #include "../mwbase/mechanicsmanager.hpp"
@@ -49,7 +49,7 @@ namespace MWWorld
         MWBase::Environment::get().getWorld()->deleteObject(getTarget());
 
             /*
-            Start of tes3mp addition
+            Start of mwnet addition
 
             Send an ID_OBJECT_DELETE packet every time an item is taken from the world
             by the player outside of the inventory screen
@@ -59,7 +59,7 @@ namespace MWWorld
         objectList->packetOrigin = mwmp::CLIENT_GAMEPLAY;
         objectList->addObjectGeneric(getTarget());
         objectList->sendObjectDelete();
-        /* End of tes3mp addition */
+        /* End of mwnet addition */
         setTarget(newitem);
     }
 }

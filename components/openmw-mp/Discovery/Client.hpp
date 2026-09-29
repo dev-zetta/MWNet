@@ -1,5 +1,5 @@
-#ifndef TES3MP_DISCOVERY_CLIENT_HPP
-#define TES3MP_DISCOVERY_CLIENT_HPP
+#ifndef MWNET_DISCOVERY_CLIENT_HPP
+#define MWNET_DISCOVERY_CLIENT_HPP
 #include "Protocol.hpp"
 #include <atomic>
 #include <chrono>

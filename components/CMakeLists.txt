@@ -113,11 +113,11 @@ add_component_dir (bgsm
     stream file
     )
 
-# Start of tes3mp change
+# Start of mwnet change
 #
 # Don't include certain components in server-only builds
 IF (BUILD_OPENMW OR BUILD_OPENMW_TESTS OR BUILD_OPENCS OR BUILD_OPENCS_TESTS)
-# End of tes3mp change
+# End of mwnet change
 add_component_dir (bullethelpers
     collisionobject
     heightfield
@@ -154,11 +154,11 @@ add_component_dir (nifosg
 add_component_dir (nifbullet
     bulletnifloader
     )
-# Start of tes3mp change
+# Start of mwnet change
 #
 # Don't include certain components in server-only builds
 ENDIF (BUILD_OPENMW OR BUILD_OPENMW_TESTS OR BUILD_OPENCS OR BUILD_OPENCS_TESTS)
-# End of tes3mp change
+# End of mwnet change
 
 add_component_dir (toutf8
     tablesgen
@@ -197,20 +197,20 @@ add_component_dir (esm3
     refnum actoridconverter
     )
 
-# Start of tes3mp change
+# Start of mwnet change
 #
 # Don't include certain components in server-only builds
 IF (BUILD_OPENMW OR BUILD_OPENMW_TESTS OR BUILD_OPENCS OR BUILD_OPENCS_TESTS)
-# End of tes3mp change
+# End of mwnet change
 add_component_dir (esmterrain
     gridsampling
     storage
     )
-# Start of tes3mp change
+# Start of mwnet change
 #
 # Don't include certain components in server-only builds
 ENDIF (BUILD_OPENMW OR BUILD_OPENMW_TESTS OR BUILD_OPENCS OR BUILD_OPENCS_TESTS)
-# End of tes3mp change
+# End of mwnet change
 
 add_component_dir (esm4
     actor
@@ -373,11 +373,11 @@ add_component_dir (translation
     translation
     )
 
-# Start of tes3mp addition
+# Start of mwnet addition
 #
 # Don't include certain components in server-only builds
 IF (BUILD_OPENMW OR BUILD_OPENMW_TESTS OR BUILD_OPENCS OR BUILD_OPENCS_TESTS)
-# End of tes3mp change
+# End of mwnet change
 add_component_dir (terrain
     storage world buffercache defs terraingrid material terraindrawable texturemanager chunkmanager compositemaprenderer
     quadtreeworld quadtreenode viewdata cellborder view heightcull
@@ -423,11 +423,11 @@ add_component_dir (sqlite3
     statement
     transaction
     )
-# Start of tes3mp change
+# Start of mwnet change
 #
 # Don't include certain components in server-only builds
 ENDIF (BUILD_OPENMW OR BUILD_OPENMW_TESTS OR BUILD_OPENCS OR BUILD_OPENCS_TESTS)
-# End of tes3mp change
+# End of mwnet change
 
 add_component_dir (bsa
     bsafile compressedbsafile ba2gnrlfile ba2dx10file ba2file memorystream
@@ -515,7 +515,7 @@ add_component_dir (fallback
     fallback validate
     )
 
-# Start of tes3mp change (major)
+# Start of mwnet change (major)
 #
 # Don't require the crashcatcher when building on platforms other than Windows or when building only the server,
 # as it causes compilation problems
@@ -537,9 +537,9 @@ ENDIF (BUILD_OPENMW OR BUILD_OPENMW_TESTS OR BUILD_OPENCS OR BUILD_OPENCS_TESTS)
 add_component_dir (navmeshtool
     protocol
     )
-# End of tes3mp change (major)
+# End of mwnet change (major)
 
-# Start of tes3mp change (major)
+# Start of mwnet change (major)
 #
 # Don't require the DetourNavigator when building the server
 IF (BUILD_OPENMW OR BUILD_OPENMW_TESTS OR BUILD_OPENCS OR BUILD_OPENCS_TESTS)
@@ -612,17 +612,17 @@ ELSE()
         collisionshapetype
         )
 ENDIF (BUILD_OPENMW OR BUILD_OPENMW_TESTS OR BUILD_OPENCS OR BUILD_OPENCS_TESTS)
-# End of tes3mp change (major)
+# End of mwnet change (major)
 
 add_component_dir(loadinglistener
     reporter
     )
 
-# Start of tes3mp change (major)
+# Start of mwnet change (major)
 #
 # Don't require Qt when building the server
 IF (BUILD_OPENMW OR BUILD_OPENMW_TESTS OR BUILD_OPENCS OR BUILD_OPENCS_TESTS)
-# End of tes3mp change
+# End of mwnet change
 if (USE_QT)
     add_component_qt_dir (contentselector
         model/modelitem model/esmfile
@@ -663,11 +663,11 @@ if (USE_QT)
     qt_wrap_ui(ESM_UI_HDR ${ESM_UI})
     qt_wrap_cpp(MOC_SRCS ${COMPONENT_MOC_FILES})
 endif()
-# Start of tes3mp change (major)
+# Start of mwnet change (major)
 #
 # Don't require Qt when building the server
 ENDIF (BUILD_OPENMW OR BUILD_OPENMW_TESTS OR BUILD_OPENCS OR BUILD_OPENCS_TESTS)
-# End of tes3mp change
+# End of mwnet change
 
 if (MSVC)
     # these TUs take a lot of memory for codegen
@@ -701,7 +701,7 @@ if (APPLE)
     target_compile_definitions(components PUBLIC GL_SILENCE_DEPRECATION=1)
 endif()
 
-# Start of tes3mp change (major)
+# Start of mwnet change (major)
 #
 # Don't require graphics related libs when building the server
 IF (BUILD_OPENMW OR BUILD_OPENMW_TESTS OR BUILD_OPENCS OR BUILD_OPENCS_TESTS)
@@ -738,7 +738,7 @@ target_link_libraries(components
     ${Boost_IOSTREAMS_LIBRARY}
     ${MyGUI_LIBRARIES}
     )
-# End of tes3mp change (major)
+# End of mwnet change (major)
 
 # Link yaml-cpp (from the OpenMW engine base)
 if(yaml-cpp_VERSION VERSION_GREATER_EQUAL 0.8.0)
@@ -747,7 +747,7 @@ else()
     target_link_libraries(components yaml-cpp)
 endif()
 
-# Start of tes3mp change (major)
+# Start of mwnet change (major)
 #
 # Don't require RecastNavigation nor Bullet when building the server
 IF (BUILD_OPENMW OR BUILD_OPENMW_TESTS OR BUILD_OPENCS OR BUILD_OPENCS_TESTS)
@@ -759,8 +759,8 @@ IF (BUILD_OPENMW OR BUILD_OPENMW_TESTS OR BUILD_OPENCS OR BUILD_OPENCS_TESTS)
             ${BULLET_LIBRARIES}
             )
 ENDIF (BUILD_OPENMW OR BUILD_OPENMW_TESTS OR BUILD_OPENCS OR BUILD_OPENCS_TESTS)
-target_link_libraries(components Base64 smhasher SQLite3::SQLite3 tes3mp-protocol-codec tes3mp-transport ${ICU_LIBRARIES} ZLIB::ZLIB)
-# End of tes3mp change (major)
+target_link_libraries(components Base64 smhasher SQLite3::SQLite3 mwnet-protocol-codec mwnet-transport ${ICU_LIBRARIES} ZLIB::ZLIB)
+# End of mwnet change (major)
 
 if (WIN32)
     target_link_libraries(components
@@ -768,11 +768,11 @@ if (WIN32)
     ${Boost_ZLIB_LIBRARY})
 endif()
 
-# Start of tes3mp change (major)
+# Start of mwnet change (major)
 #
 # Don't require Qt when building the server
 IF (BUILD_OPENMW OR BUILD_OPENMW_TESTS OR BUILD_OPENCS OR BUILD_OPENCS_TESTS)
-# End of tes3mp change
+# End of mwnet change
 if (USE_QT)
     add_library(components_qt STATIC ${COMPONENT_QT_FILES})
     target_link_libraries(components_qt components Qt::Widgets Qt::Core)
@@ -786,11 +786,11 @@ if (USE_QT)
         target_link_libraries(components_qt gcov)
     endif()
 endif()
-# Start of tes3mp change (major)
+# Start of mwnet change (major)
 #
 # Don't require Qt when building the server
 ENDIF (BUILD_OPENMW OR BUILD_OPENMW_TESTS OR BUILD_OPENCS OR BUILD_OPENCS_TESTS)
-# End of tes3mp change
+# End of mwnet change
 
 if (OSG_STATIC AND CMAKE_SYSTEM_NAME MATCHES "Linux")
     find_package(X11 REQUIRED COMPONENTS Xinerama Xrandr)

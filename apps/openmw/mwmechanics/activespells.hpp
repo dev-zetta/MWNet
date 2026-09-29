@@ -124,9 +124,9 @@ namespace MWMechanics
         std::vector<ActiveSpellParams> mQueue;
         std::queue<Predicate> mPurges;
         bool mIterating;
-        /* Start of tes3mp addition */
+        /* Start of mwnet addition */
         int mActorId = 0;
-        /* End of tes3mp addition */
+        /* End of mwnet addition */
 
         void addToSpells(const MWWorld::Ptr& ptr, const ActiveSpellParams& spell, UpdateContext& context);
 
@@ -179,7 +179,7 @@ namespace MWMechanics
 
         void unloadActor(const MWWorld::Ptr& ptr);
 
-        /* Start of tes3mp addition */
+        /* Start of mwnet addition */
         void addSpell(const ESM::RefId& id, bool stack, std::vector<ActiveEffect> effects,
                       const std::string& displayName, int casterActorId);
         bool removeSpellByTimestamp(const ESM::RefId& id, MWWorld::TimeStamp timestamp);
@@ -188,7 +188,7 @@ namespace MWMechanics
         float getEffectDuration(short effectId, ESM::RefId sourceId);
         int getActorId() const;
         void setActorId(int actorId);
-        /* End of tes3mp addition */
+        /* End of mwnet addition */
     };
 }
 

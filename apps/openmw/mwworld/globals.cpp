@@ -108,7 +108,7 @@ namespace MWWorld
     }
 
     /*
-        Start of tes3mp addition
+        Start of mwnet addition
 
         Make it possible to add a global record from elsewhere
     */
@@ -116,10 +116,10 @@ namespace MWWorld
     {
         mVariables.insert(std::make_pair(global.mId, global));
     }
-    /* End of tes3mp addition */
+    /* End of mwnet addition */
 
     /*
-        Start of tes3mp addition
+        Start of mwnet addition
 
         Make it possible to check whether a global exists
     */
@@ -127,5 +127,5 @@ namespace MWWorld
     {
         return (mVariables.find(name) != mVariables.end());
     }
-    /* End of tes3mp addition */
+    /* End of mwnet addition */
 }

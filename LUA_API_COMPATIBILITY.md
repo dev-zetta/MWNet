@@ -1,6 +1,6 @@
-# TES3MP 1.0 Lua API compatibility
+# MWNet 1.0 Lua API compatibility
 
-Protocol 11 changes the network and trust boundaries, not the safe TES3MP 0.8.1 server-script vocabulary. An automated name-surface comparison against tag `tes3mp-0.8.1` finds all 833 previously bound function and callback names still present in 1.0.0-alpha.1. Existing signatures remain the compatibility contract unless a row below explicitly narrows when a call is legal.
+MWNet uses protocol 13 and exposes its server API as `mwnet`. This fork retains the upstream 0.8.1 function and callback vocabulary, but server scripts must use the new `mwnet` global table. The bundled CoreScripts have been migrated; third-party scripts must update their API-table references before loading. No old global-table alias is installed. The automated comparison uses the checked-in [833-name inventory](CI/fixtures/lua-api-0.8.1.txt) exported from upstream commit `f1f584d6d828c04d97414879b7588646a0d56708`, so it works in fresh clones without upstream branches or tags. It checks function/callback names, not unchanged script source compatibility. Existing signatures remain the compatibility contract unless a row below explicitly narrows when a call is legal.
 
 | Surface | 0.8.1 compatibility | 1.0 behavior |
 | --- | --- | --- |
@@ -53,7 +53,7 @@ Protocol 11 changes the network and trust boundaries, not the safe TES3MP 0.8.1 
 
 ## Lifecycle order
 
-For a successful new or returning protocol 11 session, callbacks occur in this order:
+For a successful new or returning protocol 13 session, callbacks occur in this order:
 
 1. `OnTransportConnect(pid)`
 2. transport identity and encrypted-session establishment

@@ -11,14 +11,14 @@
 #include <components/settings/values.hpp>
 
 /*
-    Start of tes3mp addition
+    Start of mwnet addition
 
     Include additional headers for multiplayer purposes
 */
 #include <components/openmw-mp/TimedLog.hpp>
 #include "../mwmp/Main.hpp"
 #include "../mwmp/GUIController.hpp"
-/* End of tes3mp addition */
+/* End of mwnet addition */
 
 #include "../mwbase/environment.hpp"
 #include "../mwbase/inputmanager.hpp"
@@ -99,13 +99,13 @@ namespace MWGui
             mLastButtonPressed = mInterMessageBoxe->readPressedButton();
 
             /*
-                Start of tes3mp addition
+                Start of mwnet addition
 
                 If this message box was created by the server, send the input back to it
             */
             if (mInterMessageBoxe->mHasServerOrigin)
                 mwmp::Main::get().getGUIController()->processCustomMessageBoxInput(mLastButtonPressed);
-            /* End of tes3mp addition */
+            /* End of mwnet addition */
 
             mInterMessageBoxe->setVisible(false);
             mInterMessageBoxe.reset();
@@ -160,12 +160,12 @@ namespace MWGui
             = std::make_unique<InteractiveMessageBox>(*this, std::string{ message }, buttons, immediate, defaultFocus);
 
             /*
-            Start of tes3mp addition
+            Start of mwnet addition
 
             Track whether the message box has a server origin
         */
         mInterMessageBoxe->mHasServerOrigin = hasServerOrigin;
-        /* End of tes3mp addition */
+        /* End of mwnet addition */
         mLastButtonPressed = -1;
 
         return true;

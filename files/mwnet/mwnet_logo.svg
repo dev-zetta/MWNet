@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="300" height="300" viewBox="0 0 300 300" role="img" aria-label="MWNet">
+  <title>MWNet</title>
+  <rect x="18" y="18" width="264" height="264" rx="48" fill="#15252d"/>
+  <path d="M68 188V92L150 157L232 92V188" fill="none" stroke="#dabc83" stroke-width="16" stroke-linecap="round" stroke-linejoin="round"/>
+  <path d="M68 188L109 220L150 183L191 220L232 188" fill="none" stroke="#6fc8bc" stroke-width="10" stroke-linecap="round" stroke-linejoin="round"/>
+  <g fill="#6fc8bc">
+    <circle cx="68" cy="188" r="12"/>
+    <circle cx="150" cy="183" r="12"/>
+    <circle cx="232" cy="188" r="12"/>
+  </g>
+</svg>

@@ -23,14 +23,14 @@
 #include <SDL_keyboard.h>
 
 /*
-    Start of tes3mp addition
+    Start of mwnet addition
 
     Include additional headers for multiplayer purposes
 */
 #include <components/openmw-mp/TimedLog.hpp>
 #include "../mwmp/Main.hpp"
 #include "../mwmp/GUIController.hpp"
-/* End of tes3mp addition */
+/* End of mwnet addition */
 
 #include <components/debug/debuglog.hpp>
 
@@ -672,7 +672,7 @@ namespace MWGui
         updateMouseEmulationCursor();
 
         /*
-            Start of tes3mp addition
+            Start of mwnet addition
 
             Chat is an interactive overlay that deliberately remains in game mode so
             the multiplayer world keeps running. Do not clear its EditBox focus here:
@@ -683,7 +683,7 @@ namespace MWGui
             && mwmp::Main::get().getGUIController()->getChatEditState();
         if (gameMode && !chatEditing)
             setKeyFocusWidget(nullptr);
-        /* End of tes3mp addition */
+        /* End of mwnet addition */
 
         // Icons of forced hidden windows are displayed
         setMinimapVisibility((mAllowed & GW_Map) && (!mMap->pinned() || (mForceHidden & GW_Map)));
@@ -758,13 +758,13 @@ namespace MWGui
                 break;
             default:
                 /*
-                    Start of tes3mp addition
+                    Start of mwnet addition
 
                     Pass the GuiMode further on to the multiplayer-specific GUI controller
                 */
                 if (mwmp::Main::isInitialized())
                     mwmp::Main::get().getGUIController()->WM_UpdateVisible(mode);
-                /* End of tes3mp addition */
+                /* End of mwnet addition */
                 break;
         }
     }
@@ -850,7 +850,7 @@ namespace MWGui
         }
     }
 
-    /* Start of tes3mp addition */
+    /* Start of mwnet addition */
     void WindowManager::interactiveMessageBox(const ESM::RefId& message, const std::vector<ESM::RefId>& buttons,
         bool block, bool hasServerOrigin)
     {
@@ -891,7 +891,7 @@ namespace MWGui
             mMessageBoxManager->resetInteractiveMessageBox();
         }
     }
-    /* End of tes3mp addition */
+    /* End of mwnet addition */
 
     void WindowManager::messageBox(std::string_view message, enum MWGui::ShowInDialogueMode showInDialogueMode)
     {
@@ -1091,7 +1091,7 @@ namespace MWGui
         }
 
         /*
-            Start of tes3mp addition
+            Start of mwnet addition
 
             Fix crashes caused by messageboxes that never have their modals erased elsewhere, working around
             one of the main GUI-related problems that arise in an unpaused environment
@@ -1106,7 +1106,7 @@ namespace MWGui
                 ++modalIterator;
             }
         }
-        /* End of tes3mp addition */
+        /* End of mwnet addition */
 
         // Make sure message boxes are always in front
         // This is an awful workaround for a series of awfully interwoven issues that couldn't be worked around
@@ -1236,12 +1236,12 @@ namespace MWGui
         setActiveMap(*cellCommon);
     }
 
-    /* Start of tes3mp addition */
+    /* Start of mwnet addition */
     void WindowManager::setGlobalMapImage(int cellX, int cellY, const std::vector<char>& imageData)
     {
         mMap->setGlobalMapImage(cellX, cellY, imageData);
     }
-    /* End of tes3mp addition */
+    /* End of mwnet addition */
 
     void WindowManager::setActiveMap(const MWWorld::Cell& cell)
     {
@@ -1320,7 +1320,7 @@ namespace MWGui
     }
 
     /*
-        Start of tes3mp addition
+        Start of mwnet addition
 
         Allow the completion of a drag and drop from elsewhere in the code
     */
@@ -1329,7 +1329,7 @@ namespace MWGui
         if (mDragAndDrop->mIsOnDragAndDrop)
             mDragAndDrop->finish();
     }
-    /* End of tes3mp addition */
+    /* End of mwnet addition */
 
     void WindowManager::setCursorVisible(bool visible)
     {
@@ -1540,7 +1540,7 @@ namespace MWGui
             for (WindowBase* window : mGuiModeStates[mode].mWindows)
             {
                 /*
-                    Start of tes3mp change (minor)
+                    Start of mwnet change (minor)
 
                     If the dialogue window is already open for this actor, skip setPtr to avoid
                     re-running startDialogue (which would add a duplicate greeting). This happens
@@ -1548,7 +1548,7 @@ namespace MWGui
                 */
                 if (mode == GM_Dialogue && !arg.isEmpty() && mDialogueWindow->getPtr() == arg)
                     continue;
-                /* End of tes3mp change (minor) */
+                /* End of mwnet change (minor) */
                 window->setPtr(arg);
             }
         }
@@ -1798,14 +1798,14 @@ namespace MWGui
         return mPostProcessorHud;
     }
 
-    /* Start of tes3mp addition */
+    /* Start of mwnet addition */
     void WindowManager::executeCommandInConsole(const ESM::RefId& command)
     {
         mConsole->execute(command.getRefIdString());
     }
     MWGui::ContainerWindow* WindowManager::getContainerWindow() { return mContainerWindow; }
     MWGui::DialogueWindow* WindowManager::getDialogueWindow() { return mDialogueWindow; }
-    /* End of tes3mp addition */
+    /* End of mwnet addition */
 
     void WindowManager::useItem(const MWWorld::Ptr& item, bool bypassBeastRestrictions)
     {
@@ -1938,7 +1938,7 @@ namespace MWGui
         mQuickKeysMenu->activateQuickKey(index);
     }
 
-    /* Start of tes3mp addition */
+    /* Start of mwnet addition */
     void WindowManager::setQuickKey(int slot, int quickKeyType, MWWorld::Ptr item, const ESM::RefId& spellId)
     {
         if (slot > 0)
@@ -1964,7 +1964,7 @@ namespace MWGui
             }
         }
     }
-    /* End of tes3mp addition */
+    /* End of mwnet addition */
 
     bool WindowManager::setHudVisibility(bool show)
     {
@@ -2604,7 +2604,7 @@ namespace MWGui
         mConsole->setSelectedObject(object);
     }
 
-    /* Start of tes3mp addition */
+    /* Start of mwnet addition */
     void WindowManager::setConsolePtr(const MWWorld::Ptr &object)
     {
         mConsole->setPtr(object);
@@ -2613,7 +2613,7 @@ namespace MWGui
     {
         mConsole->resetReference();
     }
-    /* End of tes3mp addition */
+    /* End of mwnet addition */
 
     MWWorld::Ptr WindowManager::getConsoleSelectedObject() const
     {

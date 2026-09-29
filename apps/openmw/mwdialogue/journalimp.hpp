@@ -38,12 +38,12 @@ namespace MWDialogue
         ///< Set the journal index without adding an entry.
 
                 /*
-                Start of tes3mp addition
+                Start of mwnet addition
 
                 Make it possible to check whether a journal entry already exists from elsewhere in the code
             */
             virtual bool hasEntry(const ESM::RefId& id, int index);
-            /* End of tes3mp addition */
+            /* End of mwnet addition */
         int getJournalIndex(const ESM::RefId& id) const override;
         ///< Get the journal index.
 

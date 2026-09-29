@@ -12,12 +12,12 @@
 
 
     /*
-    Start of tes3mp addition
+    Start of mwnet addition
 
     Include additional headers for multiplayer purposes
 */
 #include <time.h>
-/* End of tes3mp addition */
+/* End of mwnet addition */
 namespace ESM
 {
     struct Class;
@@ -54,12 +54,12 @@ namespace MWMechanics
         // ---------------------------------------------------------------------------
 
                 /*
-                Start of tes3mp addition
+                Start of mwnet addition
 
                 Add a variable used to track the time of the most recent crime by a player
             */
             time_t mCrimeTime = time(0);
-            /* End of tes3mp addition */
+            /* End of mwnet addition */
         /// Countdown to getting damage while underwater
         float mTimeToStartDrowning;
 
@@ -115,22 +115,22 @@ namespace MWMechanics
         void levelUp();
 
                 /*
-                Start of tes3mp addition
+                Start of mwnet addition
 
                 Useful methods for setting player stats
             */
             int getSkillIncrease(int attribute) const;
             void setSkillIncrease(int attribute, int value);
-            /* End of tes3mp addition */
+            /* End of mwnet addition */
                 /*
-                Start of tes3mp addition
+                Start of mwnet addition
 
                 Make it possible to get and set the time of the last crime witnessed by the NPC,
                 used to stop combat with a player after that player dies and is resurrected
             */
             time_t getCrimeTime();
             void setCrimeTime(time_t crimeTime);
-            /* End of tes3mp addition */
+            /* End of mwnet addition */
         void updateHealth();
         ///< Calculate health based on endurance and strength.
         ///  Called at character creation.

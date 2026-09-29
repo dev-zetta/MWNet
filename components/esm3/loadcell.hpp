@@ -180,12 +180,12 @@ namespace ESM
         ///< Return a short string describing the cell (mostly used for debugging/logging purpose)
 
         /*
-            Start of tes3mp addition
+            Start of mwnet addition
 
-            Return the stable cell identifier used by the TES3MP protocol and scripts.
+            Return the stable cell identifier used by the MWNet protocol and scripts.
         */
         std::string getShortDescription() const;
-        /* End of tes3mp addition */
+        /* End of mwnet addition */
 
         /* Get the next reference in this cell, if any. Returns false when
            there are no more references in the cell.

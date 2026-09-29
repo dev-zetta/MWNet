@@ -194,13 +194,13 @@ namespace MWWorld
         /// string).
 
                 /*
-                Start of tes3mp addition
+                Start of mwnet addition
 
                 Make it possible to check whether a class has a container store
             */
             virtual bool hasContainerStore(const Ptr& ptr) const;
             ///< Does this object have a container store? (default implementation: false)
-            /* End of tes3mp addition */
+            /* End of mwnet addition */
         virtual float getWalkSpeed(const Ptr& ptr) const;
         virtual float getRunSpeed(const Ptr& ptr) const;
         virtual float getSwimSpeed(const Ptr& ptr) const;
@@ -209,13 +209,13 @@ namespace MWWorld
         virtual float getMaxSpeed(const Ptr& ptr) const;
 
                 /*
-                Start of tes3mp addition
+                Start of mwnet addition
 
                 Make it possible to check whether a class can be harvested
             */
             virtual bool canBeHarvested(const ConstPtr& ptr) const;
             ///< Can this object be harvested? (default implementation: false)
-            /* End of tes3mp addition */
+            /* End of mwnet addition */
 
         /// Return current movement speed.
         virtual float getCurrentSpeed(const Ptr& ptr) const;

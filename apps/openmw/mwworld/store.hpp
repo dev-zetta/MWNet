@@ -413,13 +413,13 @@ namespace MWWorld
         void listIdentifier(std::vector<ESM::RefId>& list) const override;
 
             /*
-            Start of tes3mp addition
+            Start of mwnet addition
 
             Make it possible to override a Cell record similarly to how
             other types of records can be overridden
         */
         ESM::Cell *override(const ESM::Cell &cell);
-        /* End of tes3mp addition */
+        /* End of mwnet addition */
         ESM::Cell* insert(const ESM::Cell& cell);
     };
 
@@ -446,13 +446,13 @@ namespace MWWorld
         const ESM::Pathgrid* find(const ESM::Cell& cell) const;
 
             /*
-            Start of tes3mp addition
+            Start of mwnet addition
 
             Make it possible to override a Pathgrid record similarly to how
             other types of records can be overridden
         */
         ESM::Pathgrid* override(const ESM::Pathgrid& pathgrid);
-        /* End of tes3mp addition */
+        /* End of mwnet addition */
     };
 
     template <>

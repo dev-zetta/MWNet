@@ -16,6 +16,7 @@
 #include <components/misc/utf8qtextstream.hpp>
 #include <components/settings/settings.hpp>
 #include <components/version/version.hpp>
+#include <components/openmw-mp/Version.hpp>
 
 #include "datafilespage.hpp"
 #include "graphicspage.hpp"
@@ -45,6 +46,8 @@ Launcher::MainDialog::MainDialog(const Files::ConfigurationManager& configuratio
     , mGameSettings(mCfgMgr)
 {
     setupUi(this);
+    setWindowTitle(tr("MWNet Launcher"));
+    setWindowIcon(QIcon(":/images/mwnet.png"));
 
     mGameInvoker = new ProcessInvoker();
     mWizardInvoker = new ProcessInvoker();
@@ -55,7 +58,7 @@ Launcher::MainDialog::MainDialog(const Files::ConfigurationManager& configuratio
         &MainDialog::wizardFinished);
 
     buttonBox->button(QDialogButtonBox::Close)->setText(tr("Close"));
-    buttonBox->button(QDialogButtonBox::Ok)->setText(tr("Launch OpenMW"));
+    buttonBox->button(QDialogButtonBox::Ok)->setText(tr("Launch MWNet"));
     buttonBox->button(QDialogButtonBox::Help)->setText(tr("Help"));
 
     buttonBox->button(QDialogButtonBox::Ok)->setMinimumWidth(160);
@@ -78,8 +81,14 @@ Launcher::MainDialog::MainDialog(const Files::ConfigurationManager& configuratio
     toolBar->addWidget(spacer);
 
     QLabel* logo = new QLabel(this);
-    logo->setPixmap(QIcon(":/images/openmw-header.png").pixmap(QSize(294, 64)));
+    logo->setPixmap(QIcon(":/images/mwnet.png").pixmap(QSize(64, 64)));
     toolBar->addWidget(logo);
+    QLabel* projectName = new QLabel(QStringLiteral("MWNet"), this);
+    QFont projectFont = projectName->font();
+    projectFont.setPointSize(22);
+    projectFont.setBold(true);
+    projectName->setFont(projectFont);
+    toolBar->addWidget(projectName);
     toolBar->setStyleSheet(toolBarStyle);
 }
 
@@ -165,10 +174,10 @@ Launcher::FirstRunDialogResult Launcher::MainDialog::showFirstRunDialog()
         msgBox.setIcon(QMessageBox::Question);
         msgBox.setStandardButtons(QMessageBox::NoButton);
         msgBox.setText(
-            tr("<html><head/><body><p><b>Welcome to OpenMW!</b></p>"
+            tr("<html><head/><body><p><b>Welcome to MWNet!</b></p>"
                "<p>It is recommended to run the Installation Wizard.</p>"
                "<p>The Wizard will let you select an existing Morrowind installation, "
-               "or install Morrowind for OpenMW to use.</p></body></html>"));
+               "or install Morrowind for MWNet to use.</p></body></html>"));
 
         QAbstractButton* wizardButton
             = msgBox.addButton(tr("Run &Installation Wizard"), QMessageBox::AcceptRole); // ActionRole doesn't work?!
@@ -201,14 +210,10 @@ void Launcher::MainDialog::setVersionLabel()
 {
     // Add version information to bottom of the window
     QString revision(QString::fromUtf8(Version::getCommitHash().data(), Version::getCommitHash().size()));
-    QString tag(QString::fromUtf8(Version::getTagHash().data(), Version::getTagHash().size()));
-
     versionLabel->setTextInteractionFlags(Qt::TextSelectableByMouse);
-    if (!Version::getVersion().empty() && (revision.isEmpty() || revision == tag))
-        versionLabel->setText(
-            tr("OpenMW %1 release").arg(QString::fromUtf8(Version::getVersion().data(), Version::getVersion().size())));
-    else
-        versionLabel->setText(tr("OpenMW development (%1)").arg(revision.left(10)));
+    versionLabel->setText(tr("MWNet %1 (%2) — OpenMW %3")
+        .arg(QStringLiteral(MWNET_VERSION), revision.isEmpty() ? tr("unavailable") : revision.left(10),
+            QString::fromUtf8(Version::getVersion().data(), Version::getVersion().size())));
 
     // Add the compile date and time
     auto compileDate = QLocale(QLocale::C).toDate(QString(__DATE__).simplified(), QLatin1String("MMM d yyyy"));
@@ -594,7 +599,7 @@ void Launcher::MainDialog::play()
 
     // Launch the game detached
 
-    if (mGameInvoker->startProcess(QLatin1String("tes3mp"), true))
+    if (mGameInvoker->startProcess(QLatin1String("mwnet"), true))
         return qApp->quit();
 }
 

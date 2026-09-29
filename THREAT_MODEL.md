@@ -1,8 +1,8 @@
-# TES3MP 1.0 threat model
+# MWNet 1.0 threat model
 
 ## Scope and assets
 
-This model covers the TES3MP multiplayer client, dedicated server, protocol 12 transport, server-side Lua boundary and JSON/SQLite persistence. The protected assets are account credentials, server identity keys, player/world state, process availability, gameplay integrity and the user's trust decision for a server endpoint.
+This model covers the MWNet multiplayer client, dedicated server, protocol 12 transport, server-side Lua boundary and JSON/SQLite persistence. The protected assets are account credentials, server identity keys, player/world state, process availability, gameplay integrity and the user's trust decision for a server endpoint.
 
 Morrowind content, plugins and server-side Lua scripts are trusted inputs selected by the operator. A compromised host, malicious administrator, malicious game plugin or arbitrary native Lua module is outside the protocol's protection boundary.
 
@@ -44,7 +44,7 @@ Morrowind content, plugins and server-side Lua scripts are trusted inputs select
 
 ## Residual risks and release gates
 
-The alpha has canonical combat, movement, inventory/equipment, container, object, active-effect, death/respawn and justice foundations, but some game-event provenance paths still require adversarial integration coverage before they can be treated as release evidence. Earlier fuzz, integration, persistence and paired-soak evidence is recorded in [the release gates](RELEASE_GATES.md); it applies to the revisions it tested. The final release candidate still needs its required validation evidence, independent security review and specialist review of TES3MP's additional GPL terms and third-party notices. These remain explicit release blockers.
+The alpha has canonical combat, movement, inventory/equipment, container, object, active-effect, death/respawn and justice foundations, but some game-event provenance paths still require adversarial integration coverage before they can be treated as release evidence. Earlier fuzz, integration, persistence and paired-soak evidence is recorded in [the release gates](RELEASE_GATES.md); it applies to the revisions it tested. The final release candidate still needs its required validation evidence, independent security review and specialist review of MWNet's additional GPL terms and third-party notices. These remain explicit release blockers.
 
 Public discovery is included in the 1.0.0 scope and requires a separate independent security review before public deployment. HTTPS authenticates the directory origin; a server-signed, bounded listing binds metadata to the existing game identity. A fresh, single-use challenge binds each mutation to the directory origin, operation, key and requesting source. The directory confirms identity and reachability through the encrypted handshake without accessing game accounts. This does not independently certify advertised protocol/content compatibility, server conduct or player counts; normal join checks remain authoritative.
 

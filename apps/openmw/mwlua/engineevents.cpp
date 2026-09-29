@@ -28,7 +28,7 @@ namespace MWLua
             MWWorld::Ptr ptr = getPtr(event.mObject);
             if (ptr.isEmpty())
                 return;
-            /* Start of tes3mp addition - skip Generated RefIds (DedicatedPlayers) */
+            /* Start of mwnet addition - skip Generated RefIds (DedicatedPlayers) */
             {
                 const ESM::RefId& refId = ptr.getCellRef().getRefId();
                 if (!refId.is<ESM::StringRefId>() && !refId.is<ESM::EmptyRefId>())
@@ -37,7 +37,7 @@ namespace MWLua
                     return;
                 }
             }
-            /* End of tes3mp addition */
+            /* End of mwnet addition */
             if (ptr.getCellRef().getRefId() == "player")
                 mGlobalScripts.playerAdded(GObject(ptr));
             else

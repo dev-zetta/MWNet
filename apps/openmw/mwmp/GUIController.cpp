@@ -166,7 +166,7 @@ void mwmp::GUIController::showDialogList(const mwmp::BasePlayer::GUIMessageBox &
     list.push_back(buf);
 
     mListBox = new GUIDialogList(guiMessageBox.label, list);
-    windowManager->pushGuiMode((MWGui::GuiMode)GM_TES3MP_ListBox);
+    windowManager->pushGuiMode((MWGui::GuiMode)GM_MWNET_ListBox);
 }
 
 void mwmp::GUIController::showMessageBox(const BasePlayer::GUIMessageBox &guiMessageBox)
@@ -198,7 +198,7 @@ void mwmp::GUIController::showInputBox(const BasePlayer::GUIMessageBox &guiMessa
 
     if (mInputBox)
         windowManager->removeDialog(std::unique_ptr<MWGui::Layout>(mInputBox));
-    windowManager->pushGuiMode((MWGui::GuiMode)GM_TES3MP_InputBox);
+    windowManager->pushGuiMode((MWGui::GuiMode)GM_MWNET_InputBox);
     mInputBox = nullptr;
     mInputBox = new TextInputDialog();
 
@@ -296,13 +296,13 @@ void mwmp::GUIController::WM_UpdateVisible(MWGui::GuiMode mode)
 {
     switch((int)mode)
     {
-        case GM_TES3MP_InputBox:
+        case GM_MWNET_InputBox:
         {
             if (mInputBox != 0)
                 mInputBox->setVisible(true);
             break;
         }
-        case GM_TES3MP_ListBox:
+        case GM_MWNET_ListBox:
         {
             if (mListBox != 0)
                 mListBox->setVisible(true);

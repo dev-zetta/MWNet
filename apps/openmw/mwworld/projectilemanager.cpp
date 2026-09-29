@@ -64,12 +64,12 @@
 #include "../mwphysics/projectile.hpp"
 
 /*
-    Start of tes3mp addition
+    Start of mwnet addition
 
     Include additional headers for multiplayer purposes
 */
 #include "../mwmp/MechanicsHelper.hpp"
-/* End of tes3mp addition */
+/* End of mwnet addition */
 
 namespace
 {
@@ -322,7 +322,7 @@ namespace MWWorld
             orient.makeRotate(osg::Vec3f(0, 1, 0), osg::Vec3f(fallbackDirection));
 
         /*
-            Start of tes3mp addition
+            Start of mwnet addition
 
             If the actor casting this is a LocalPlayer or LocalActor, track their projectile origin so it can be sent
             in the next PlayerCast or ActorCast packet
@@ -353,7 +353,7 @@ namespace MWWorld
                     dedicatedCast->projectileOrigin.orientation[3]);
             }
         }
-        /* End of tes3mp addition */
+        /* End of mwnet addition */
 
         MagicBoltState state;
         state.mSpellId = spellId;

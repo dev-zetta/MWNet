@@ -7,7 +7,7 @@
 #include <components/misc/strings/format.hpp>
 
     /*
-    Start of tes3mp addition
+    Start of mwnet addition
 
     Include additional headers for multiplayer purposes
 */
@@ -15,7 +15,7 @@
 #include "../mwmp/Networking.hpp"
 #include "../mwmp/LocalPlayer.hpp"
 #include "../mwmp/ObjectList.hpp"
-/* End of tes3mp addition */
+/* End of mwnet addition */
 #include "../mwbase/environment.hpp"
 #include "../mwbase/mechanicsmanager.hpp"
 #include "../mwbase/windowmanager.hpp"
@@ -43,7 +43,7 @@ namespace MWWorld
         MWWorld::ContainerStore& store = target.getClass().getContainerStore(target);
 
             /*
-            Start of tes3mp addition
+            Start of mwnet addition
 
             Prepare an ID_CONTAINER packet that will let the server know about the
             items removed from the harvested objects
@@ -56,7 +56,7 @@ namespace MWWorld
         objectList->containerSubAction = mwmp::BaseObjectList::NONE;
 
         mwmp::BaseObject baseObject = objectList->getBaseObjectFromPtr(target);
-        /* End of tes3mp addition */
+        /* End of mwnet addition */
         store.resolve();
         MWWorld::ContainerStore& actorStore = actor.getClass().getContainerStore(actor);
         std::map<std::string, int> takenMap;
@@ -76,16 +76,16 @@ namespace MWWorld
             takenMap[name] += itemCount;
 
                 /*
-                Start of tes3mp addition
+                Start of mwnet addition
 
                 Track this item removal in the ID_CONTAINER packet being prepared
             */
             objectList->addContainerItem(baseObject, *it, 0, itemCount);
-            /* End of tes3mp addition */
+            /* End of mwnet addition */
         }
 
         /*
-            Start of tes3mp addition
+            Start of mwnet addition
 
             Send an ID_CONTAINER packet if the local player is logged in
         */
@@ -94,7 +94,7 @@ namespace MWWorld
             objectList->addBaseObject(baseObject);
             objectList->sendContainer();
         }
-        /* End of tes3mp addition */
+        /* End of mwnet addition */
 
         // Spawn a messagebox (only for items added to player's inventory)
         if (actor == MWBase::Environment::get().getWorld()->getPlayerPtr())

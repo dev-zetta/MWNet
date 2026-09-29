@@ -762,7 +762,7 @@ namespace MWWorld
             list.push_back(ESM::RefId::stringRefId(sharedCell->mName));
         }
     }
-    /* Start of tes3mp addition */
+    /* Start of mwnet addition */
     ESM::Cell *Store<ESM::Cell>::override(const ESM::Cell &cell)
     {
         if (search(cell) != nullptr)
@@ -791,7 +791,7 @@ namespace MWWorld
         }
         return nullptr;
     }
-    /* End of tes3mp addition */
+    /* End of mwnet addition */
 
     ESM::Cell* Store<ESM::Cell>::insert(const ESM::Cell& cell)
     {
@@ -866,7 +866,7 @@ namespace MWWorld
         return RecordId(ESM::RefId(), isDeleted);
     }
     /*
-        Start of tes3mp addition
+        Start of mwnet addition
 
         Make it possible to override a Pathgrid record similarly to how
         other types of records can be overridden
@@ -878,7 +878,7 @@ namespace MWWorld
             ret.first->second = pathgrid;
         return &ret.first->second;
     }
-    /* End of tes3mp addition */
+    /* End of mwnet addition */
     size_t Store<ESM::Pathgrid>::getSize() const
     {
         return mStatic.size();

@@ -49,19 +49,19 @@ namespace MWGui
         std::string_view getWindowIdForLua() const override { return "QuickKeys"; }
 
             /*
-            Start of tes3mp addition
+            Start of mwnet addition
 
             Allow the setting of the selected index from elsewhere in the code
         */
         void setSelectedIndex(int index);
-        /* End of tes3mp addition */
+        /* End of mwnet addition */
             /*
-            Start of tes3mp addition
+            Start of mwnet addition
 
             Allow unassigning an index directly from elsewhere in the code
         */
         void unassignIndex(int index);
-        /* End of tes3mp addition */
+        /* End of mwnet addition */
     private:
         struct keyData
         {

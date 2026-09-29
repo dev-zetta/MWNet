@@ -7,7 +7,7 @@
 
 
     /*
-    Start of tes3mp addition
+    Start of mwnet addition
 
     Include additional headers for multiplayer purposes
 */
@@ -16,7 +16,7 @@
 #include "../mwmp/Networking.hpp"
 #include "../mwmp/LocalPlayer.hpp"
 #include "../mwmp/Worldstate.hpp"
-/* End of tes3mp addition */
+/* End of mwnet addition */
 #include "../mwworld/class.hpp"
 #include "../mwworld/containerstore.hpp"
 #include "../mwworld/esmstore.hpp"
@@ -126,7 +126,7 @@ namespace MWMechanics
         store.add(newItemId, count);
 
         mwmp::Main::get().getLocalPlayer()->storeLastEnchantmentQuantity(count);
-        /* End of tes3mp change (major)*/
+        /* End of mwnet change (major)*/
 
         return true;
     }

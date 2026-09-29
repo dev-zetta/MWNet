@@ -7,7 +7,7 @@
 
 
     /*
-    Start of tes3mp addition
+    Start of mwnet addition
 
     Include additional headers for multiplayer purposes
 */
@@ -15,7 +15,7 @@
 #include "../mwmp/Networking.hpp"
 #include "../mwmp/LocalPlayer.hpp"
 #include "../mwmp/MechanicsHelper.hpp"
-/* End of tes3mp addition */
+/* End of mwnet addition */
 #include "../mwbase/environment.hpp"
 #include "../mwbase/windowmanager.hpp"
 #include "../mwbase/world.hpp"
@@ -88,7 +88,7 @@ namespace MWMechanics
 
             MWBase::Environment::get().getWindowManager()->playSound(ESM::RefId::stringRefId("Enchant Success"));
 
-            /* Start of tes3mp addition */
+            /* Start of mwnet addition */
             {
                 mwmp::ObjectList *objectList = mwmp::Main::get().getNetworking()->getObjectList();
                 objectList->reset();
@@ -96,7 +96,7 @@ namespace MWMechanics
                 objectList->addObjectSound(MWMechanics::getPlayer(), "Enchant Success", 1.0, 1.0);
                 objectList->sendObjectSound();
             }
-            /* End of tes3mp addition */
+            /* End of mwnet addition */
 
             player.getClass().getContainerStore(player).restack(item);
         }
@@ -104,7 +104,7 @@ namespace MWMechanics
         {
             MWBase::Environment::get().getWindowManager()->playSound(ESM::RefId::stringRefId("Enchant Fail"));
 
-            /* Start of tes3mp addition */
+            /* Start of mwnet addition */
             {
                 mwmp::ObjectList *objectList = mwmp::Main::get().getNetworking()->getObjectList();
                 objectList->reset();
@@ -112,7 +112,7 @@ namespace MWMechanics
                 objectList->addObjectSound(MWMechanics::getPlayer(), "Enchant Fail", 1.0, 1.0);
                 objectList->sendObjectSound();
             }
-            /* End of tes3mp addition */
+            /* End of mwnet addition */
         }
 
         player.getClass().skillUsageSucceeded(player, ESM::Skill::Enchant, ESM::Skill::Enchant_Recharge);

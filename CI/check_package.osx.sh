@@ -2,7 +2,7 @@
 
 hdiutil attach ./*.dmg -mountpoint "${TRAVIS_BUILD_DIR}/openmw-package" > /dev/null || echo "hdutil has failed"
 
-EXPECTED_PACKAGE_FILES=('Applications' 'OpenMW-CS.app' 'OpenMW.app')
+EXPECTED_PACKAGE_FILES=('Applications' 'MWNet.app' 'OpenMW-CS.app')
 PACKAGE_FILES=$(ls "${TRAVIS_BUILD_DIR}/openmw-package" | LC_ALL=C sort)
 
 DIFF=$(diff <(printf "%s\n" "${EXPECTED_PACKAGE_FILES[@]}") <(printf "%s\n" "${PACKAGE_FILES[@]}"))

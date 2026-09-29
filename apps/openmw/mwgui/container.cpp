@@ -6,7 +6,7 @@
 #include <components/settings/values.hpp>
 
 /*
-    Start of tes3mp addition
+    Start of mwnet addition
 
     Include additional headers for multiplayer purposes
 */
@@ -16,7 +16,7 @@
 #include "../mwmp/LocalPlayer.hpp"
 #include "../mwmp/ObjectList.hpp"
 #include "../mwmp/CellController.hpp"
-/* End of tes3mp addition */
+/* End of mwnet addition */
 
 #include "../mwbase/environment.hpp"
 #include "../mwbase/mechanicsmanager.hpp"
@@ -133,7 +133,7 @@ namespace MWGui
             return;
 
         /*
-            Start of tes3mp addition
+            Start of mwnet addition
 
             Send an ID_CONTAINER packet every time an item starts being dragged
             from a container
@@ -150,16 +150,16 @@ namespace MWGui
         objectList->addContainerItem(baseObject, itemPtr, itemPtr.getCellRef().getCount(), count);
         objectList->addBaseObject(baseObject);
         objectList->sendContainer();
-        /* End of tes3mp addition */
+        /* End of mwnet addition */
 
         /*
-            Start of tes3mp change (major)
+            Start of mwnet change (major)
 
             Avoid running any of the original code for dragging items, to prevent possibilities
             for item duping or interaction with restricted containers
         */
         return;
-        /* End of tes3mp change (major)*/
+        /* End of mwnet change (major)*/
 
         mDragAndDrop->startDrag(mSelectedItem, mSortModel, mModel, mItemView, count);
     }
@@ -185,7 +185,7 @@ namespace MWGui
         bool success = mModel->onDropItem(mDragAndDrop->mItem.mBase, static_cast<int>(mDragAndDrop->mDraggedCount));
 
         /*
-            Start of tes3mp addition
+            Start of mwnet addition
 
             Send an ID_CONTAINER packet every time an item is dropped in a container
         */
@@ -204,10 +204,10 @@ namespace MWGui
             objectList->addBaseObject(baseObject);
             objectList->sendContainer();
         }
-        /* End of tes3mp addition */
+        /* End of mwnet addition */
 
         /*
-            Start of tes3mp change (major)
+            Start of mwnet change (major)
 
             For valid drops, avoid running the original code for the item transfer, to prevent unilateral
             item duping or interaction on this client
@@ -218,7 +218,7 @@ namespace MWGui
         if (success)
             // mDragAndDrop->drop(mModel, mItemView);
             mDragAndDrop->finish(true);
-        /* End of tes3mp change (major)*/
+        /* End of mwnet change (major)*/
     }
 
     void ContainerWindow::onBackgroundSelected()
@@ -235,12 +235,12 @@ namespace MWGui
         mTreatNextOpenAsLoot = false;
 
             /*
-            Start of tes3mp addition
+            Start of mwnet addition
 
             Mark this container as open for multiplayer logic purposes
         */
         mwmp::Main::get().getLocalPlayer()->storeCurrentContainer(container);
-        /* End of tes3mp addition */
+        /* End of mwnet addition */
         mPtr = container;
 
         bool loot = mPtr.getClass().isActor() && mPtr.getClass().getCreatureStats(mPtr).isDead();
@@ -292,12 +292,12 @@ namespace MWGui
     {
 
             /*
-            Start of tes3mp addition
+            Start of mwnet addition
 
             Mark this container as closed for multiplayer logic purposes
         */
         mwmp::Main::get().getLocalPlayer()->clearCurrentContainer();
-        /* End of tes3mp addition */
+        /* End of mwnet addition */
         // Make sure the window was actually closed and not temporarily hidden.
         if (MWBase::Environment::get().getWindowManager()->containsMode(GM_Container))
             return;
@@ -327,7 +327,7 @@ namespace MWGui
         MWBase::Environment::get().getWindowManager()->setKeyFocusWidget(mCloseButton);
 
         /*
-            Start of tes3mp addition
+            Start of mwnet addition
 
             Send an ID_CONTAINER packet every time the Take All button is used on
             a container
@@ -356,16 +356,16 @@ namespace MWGui
             objectList->addBaseObject(baseObject);
             objectList->sendContainer();
         }
-        /* End of tes3mp addition */
+        /* End of mwnet addition */
 
         /*
-            Start of tes3mp change (major)
+            Start of mwnet change (major)
 
             Avoid running any of the original code for taking all items, to prevent
             possibilities for item duping or interaction with restricted containers
         */
         return;
-        /* End of tes3mp change (major)*/
+        /* End of mwnet change (major)*/
 
         // transfer everything into the player's inventory
         ItemModel* playerModel = MWBase::Environment::get().getWindowManager()->getInventoryWindow()->getModel();
@@ -424,7 +424,7 @@ namespace MWGui
             else
             {
                 /*
-                    Start of tes3mp change (major)
+                    Start of mwnet change (major)
 
                     Instead of deleting the corpse on this client, increasing the death count and
                     running the dead actor's script, simply send an ID_OBJECT_DELETE packet to the server
@@ -482,7 +482,7 @@ namespace MWGui
                 objectList->packetOrigin = mwmp::CLIENT_GAMEPLAY;
                 objectList->addObjectGeneric(ptr);
                 objectList->sendObjectDelete();
-                /* End of tes3mp change (major)*/
+                /* End of mwnet change (major)*/
             }
         }
     }
@@ -562,7 +562,7 @@ namespace MWGui
     }
 
         /*
-        Start of tes3mp addition
+        Start of mwnet addition
 
         Make it possible to check from elsewhere whether there is currently an
         item being dragged in the container window
@@ -571,9 +571,9 @@ namespace MWGui
     {
         return mDragAndDrop->mIsOnDragAndDrop;
     }
-    /* End of tes3mp addition */
+    /* End of mwnet addition */
         /*
-        Start of tes3mp addition
+        Start of mwnet addition
 
         Make it possible to drag a specific item Ptr instead of having to rely
         on an index that may have changed in the meantime, for drags that
@@ -599,5 +599,5 @@ namespace MWGui
 
         return false;
     }
-    /* End of tes3mp addition */
+    /* End of mwnet addition */
 }

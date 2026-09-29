@@ -1,0 +1,67 @@
+FROM ubuntu:24.04
+LABEL maintainer="Gabriel Max (dev-zetta)"
+LABEL description="Docker image for building MWNet 1.0.0 based on OpenMW 0.52"
+
+# Prevent interactive prompts during package installation
+ENV DEBIAN_FRONTEND=noninteractive
+ENV NPROC=4
+
+# Install build dependencies
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    build-essential \
+    clang \
+    cmake \
+    python3 \
+    git \
+    ca-certificates \
+    libboost-all-dev \
+    libsdl2-dev \
+    qt6-base-dev \
+    qt6-tools-dev \
+    libqt6opengl6-dev \
+    qt6-l10n-tools \
+    libopenscenegraph-dev \
+    libavcodec-dev \
+    libavformat-dev \
+    libavutil-dev \
+    libswscale-dev \
+    libswresample-dev \
+    libmygui-dev \
+    libbullet-dev \
+    libopenal-dev \
+    libunshield-dev \
+    liblz4-dev \
+    libluajit-5.1-dev \
+    liblua5.4-dev \
+    libncurses-dev \
+    libtinyxml-dev \
+    librecast-dev \
+    libyaml-cpp-dev \
+    libcollada-dom-dev \
+    libsqlite3-dev \
+    libprotobuf-dev \
+    protobuf-compiler \
+    libcurl4-openssl-dev \
+    libsodium-dev \
+    libssl-dev \
+    ninja-build \
+    libqt6svg6-dev \
+    libfreetype-dev \
+    && rm -rf /var/lib/apt/lists/*
+
+# Ubuntu keeps Clang's sanitizer runtimes in a separate package when
+# recommendations are disabled.
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    libclang-rt-18-dev \
+    llvm \
+    && rm -rf /var/lib/apt/lists/*
+
+# Set working directory
+WORKDIR /mwnet
+
+# Copy build script
+COPY docker-build.sh /docker-build.sh
+RUN chmod +x /docker-build.sh
+
+# Default command
+ENTRYPOINT ["/docker-build.sh"]

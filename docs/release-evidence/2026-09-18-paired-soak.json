@@ -28,7 +28,7 @@
       "native": {
         "executableSha256": "2979e734b61e615e1d0c8b6e8896130da005ecfcd55332a3fdae5e9a44c80913",
         "command": [
-          "/tes3mp/build-soak-native/tes3mp-headless-integration",
+          "/legacy-mp/build-soak-native/legacy-mp-headless-integration",
           "--cycles",
           "100",
           "--clients",
@@ -57,7 +57,7 @@
       "sanitizer": {
         "executableSha256": "e83bc0eca400e17835327ae8a6991e7d8b09c1a013824d62ae3641552c5fc8d5",
         "command": [
-          "/tes3mp/build-sanitizer/tes3mp-headless-integration",
+          "/legacy-mp/build-sanitizer/legacy-mp-headless-integration",
           "--cycles",
           "100",
           "--clients",
@@ -157,5 +157,6 @@
       "inboundBytes": 27662548,
       "outboundBytes": 27662548
     }
-  }
+  },
+  "historicalIdentityNote": "Historical pre-rebrand evidence: LegacyMP/legacy-mp are display aliases for the former fork name in identifiers, commands, and artifact paths. They are not renamed artifacts or MWNet validation results. Hashes, revisions, measurements, and exit codes are unchanged; consult Git history for the original labels."
 }

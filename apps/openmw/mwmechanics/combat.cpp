@@ -15,7 +15,7 @@
 #include "../mwbase/dialoguemanager.hpp"
 
     /*
-    Start of tes3mp addition
+    Start of mwnet addition
 
     Include additional headers for multiplayer purposes
 */
@@ -25,7 +25,7 @@
 #include "../mwmp/PlayerList.hpp"
 #include "../mwmp/CellController.hpp"
 #include "../mwmp/MechanicsHelper.hpp"
-/* End of tes3mp addition */
+/* End of mwnet addition */
 #include "../mwbase/environment.hpp"
 #include "../mwbase/luamanager.hpp"
 #include "../mwbase/mechanicsmanager.hpp"
@@ -240,7 +240,7 @@ namespace MWMechanics
         const MWWorld::Store<ESM::GameSetting>& gmst = world->getStore().get<ESM::GameSetting>();
 
             /*
-            Start of tes3mp addition
+            Start of mwnet addition
 
             Ignore projectiles fired by DedicatedPlayers and DedicatedActors
 
@@ -264,7 +264,7 @@ namespace MWMechanics
             if (validVictim)
                 MechanicsHelper::assignAttackTarget(localAttack, victim);
         }
-        /* End of tes3mp addition */
+        /* End of mwnet addition */
 
         ESM::RefId weaponSkill = ESM::Skill::Marksman;
         if (!weapon.isEmpty())
@@ -285,7 +285,7 @@ namespace MWMechanics
                     MWMechanics::DamageSourceType::Ranged);
 
                 /*
-                    Start of tes3mp addition
+                    Start of mwnet addition
 
                     Mark this as a failed LocalAttack now that the hit roll has failed
                 */
@@ -294,7 +294,7 @@ namespace MWMechanics
                     localAttack->success = false;
                     localAttack->shouldSend = true;
                 }
-                /* End of tes3mp addition */
+                /* End of mwnet addition */
                 MWMechanics::reduceWeaponCondition(damage, false, weapon, attacker);
                 return;
             }
@@ -342,14 +342,14 @@ namespace MWMechanics
         bool appliedEnchantment = applyOnStrikeEnchantment(attacker, victim, projectile, hitPosition, true);
 
         /*
-            Start of tes3mp change (minor)
+            Start of mwnet change (minor)
 
             Track whether the strike enchantment is successful for attacks by the
             LocalPlayer or LocalActors for their projectile
         */
         if (localAttack)
             localAttack->applyAmmoEnchantment = appliedEnchantment;
-        /* End of tes3mp change (minor)*/
+        /* End of mwnet change (minor)*/
 
         if (validVictim)
         {
@@ -370,7 +370,7 @@ namespace MWMechanics
                 attackWindUp, damage, true, hitPosition, true, MWMechanics::DamageSourceType::Ranged);
         }
         /*
-            Start of tes3mp addition
+            Start of mwnet addition
 
             If this is a local attack that had no victim, send a packet for it here
         */
@@ -379,7 +379,7 @@ namespace MWMechanics
             localAttack->hitPosition = MechanicsHelper::getPositionFromVector(hitPosition);
             localAttack->shouldSend = true;
         }
-        /* End of tes3mp addition */
+        /* End of mwnet addition */
     }
 
     float getHitChance(const MWWorld::Ptr& attacker, const MWWorld::Ptr& victim, int skillValue)

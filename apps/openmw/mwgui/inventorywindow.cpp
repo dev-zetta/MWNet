@@ -20,7 +20,7 @@
 
 
     /*
-    Start of tes3mp addition
+    Start of mwnet addition
 
     Include additional headers for multiplayer purposes
 */
@@ -29,7 +29,7 @@
 #include "../mwmp/ObjectList.hpp"
 #include "../mwmp/LocalPlayer.hpp"
 #include "../mwworld/cellstore.hpp"
-/* End of tes3mp addition */
+/* End of mwnet addition */
 #include "../mwbase/environment.hpp"
 #include "../mwbase/inputmanager.hpp"
 #include "../mwbase/luamanager.hpp"
@@ -860,7 +860,7 @@ namespace MWGui
         MWWorld::Ptr newObject = *player.getClass().getContainerStore(player).add(object, count);
 
         /*
-            Start of tes3mp addition
+            Start of mwnet addition
 
             Send an ID_OBJECT_DELETE packet every time an item from the world is picked up
             by the player through the inventory HUD
@@ -870,7 +870,7 @@ namespace MWGui
         objectList->packetOrigin = mwmp::CLIENT_GAMEPLAY;
         objectList->addObjectGeneric(object);
         objectList->sendObjectDelete();
-        /* End of tes3mp addition */
+        /* End of mwnet addition */
 
         // remove from world
         MWBase::Environment::get().getWorld()->deleteObject(object);
@@ -961,14 +961,14 @@ namespace MWGui
             return;
 
         /*
-            Start of tes3mp change (major)
+            Start of mwnet change (major)
 
             Instead of unilaterally using an item, send an ID_PLAYER_ITEM_USE packet and let the server
             decide if the item actually gets used
         */
         //useItem(model.getItem(cycled).mBase);
         mwmp::Main::get().getLocalPlayer()->sendItemUse(model.getItem(cycled).mBase);
-        /* End of tes3mp change (major)*/
+        /* End of mwnet change (major)*/
     }
 
     void InventoryWindow::rebuildAvatar()

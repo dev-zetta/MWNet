@@ -5,12 +5,12 @@
 #include <boost/iostreams/stream.hpp>
 
 /*
-    Start of tes3mp addition
+    Start of mwnet addition
 
     Include additional headers for multiplayer purposes
 */
 #include <components/openmw-mp/TimedLog.hpp>
-/* End of tes3mp addition */
+/* End of mwnet addition */
 
 #include <SDL_messagebox.h>
 
@@ -93,12 +93,12 @@ int wrapApplication(int (*innerApplication)(int argc, char *argv[]), int argc, c
         std::cerr.rdbuf (&cerrsb);
 
         /*
-            Start of tes3mp addition
+            Start of mwnet addition
 
             Initialize the logger added for multiplayer
         */
         LOG_INIT(TimedLog::LOG_INFO);
-        /* End of tes3mp addition */
+        /* End of mwnet addition */
 #endif
         ret = innerApplication(argc, argv);
     }

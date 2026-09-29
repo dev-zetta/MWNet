@@ -50,15 +50,15 @@ namespace MWScript
         ESM::RefId getTarget() const override;
 
                 /*
-                Start of tes3mp addition
+                Start of mwnet addition
 
                 Useful boolean for setting whether scripts send packets, set to false by default
                 to avoid massive packet spam
             */
             bool sendPackets = false;
-            /* End of tes3mp addition */
+            /* End of mwnet addition */
                 /*
-                Start of tes3mp addition
+                Start of mwnet addition
 
                 Used for tracking and checking the type of this InterpreterContext, as well as
                 its current script
@@ -73,7 +73,7 @@ namespace MWScript
             virtual void trackContextType(unsigned short contextType);
 
             virtual void trackCurrentScriptName(const std::string& name);
-            /* End of tes3mp addition */
+            /* End of mwnet addition */
         int getLocalShort(int index) const override;
 
         int getLocalLong(int index) const override;

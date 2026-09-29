@@ -60,10 +60,10 @@ namespace MWMechanics
         , mFollowIndex(mFollowIndexCounter++)
     {
         mTargetActorRefId = actorId;
-        /* Start of tes3mp addition */
+        /* Start of mwnet addition */
         if (mIgnoreDistance)
             mActive = true;
-        /* End of tes3mp addition */
+        /* End of mwnet addition */
     }
 
     AiFollow::AiFollow(const MWWorld::Ptr& actor, bool commanded)
@@ -280,7 +280,7 @@ namespace MWMechanics
 
 
     /*
-    Start of tes3mp addition
+    Start of mwnet addition
 
     Make it possible to allow following from any distance
 */
@@ -288,5 +288,5 @@ void AiFollow::allowAnyDistance(bool state)
 {
     mIgnoreDistance = state;
 }
-/* End of tes3mp addition */
+/* End of mwnet addition */
 }

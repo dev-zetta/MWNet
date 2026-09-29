@@ -28,17 +28,17 @@ jobs:
     - name: Check CMake formatting
       run: CI/check_cmake_format.sh
 
-    - name: Check TES3MP 0.8.1 Lua API compatibility
-      run: CI/check_tes3mp_lua_api.sh
+    - name: Check upstream Lua function compatibility
+      run: CI/check_mwnet_lua_api.sh
 
     - name: Generate SPDX SBOM
-      run: python3 CI/generate_spdx_sbom.py --output build-metadata/tes3mp.spdx.json
+      run: python3 CI/generate_spdx_sbom.py --output build-metadata/mwnet.spdx.json
 
     - name: Retain SPDX SBOM
       uses: actions/upload-artifact@v6
       with:
-        name: tes3mp-source-sbom-${{ github.sha }}
-        path: build-metadata/tes3mp.spdx.json
+        name: mwnet-source-sbom-${{ github.sha }}
+        path: build-metadata/mwnet.spdx.json
 
   ProtocolLinux:
     name: protocol-${{ matrix.compiler }}-${{ matrix.sanitizer }}
@@ -76,7 +76,7 @@ jobs:
         CXX: ${{ matrix.cxx }}
       run: >
         cmake -S . -B build-protocol
-        -D TES3MP_TESTS_ONLY=ON
+        -D MWNET_TESTS_ONLY=ON
         -D CMAKE_BUILD_TYPE=Debug
         -D CMAKE_CXX_FLAGS="${{ matrix.flags }}"
         -D CMAKE_EXE_LINKER_FLAGS="${{ matrix.flags }}"
@@ -93,7 +93,7 @@ jobs:
     - uses: actions/checkout@v6
     - uses: ilammy/msvc-dev-cmd@v1
     - name: Configure protocol tests
-      run: cmake -S . -B build-protocol -D TES3MP_TESTS_ONLY=ON
+      run: cmake -S . -B build-protocol -D MWNET_TESTS_ONLY=ON
     - name: Build protocol tests
       run: cmake --build build-protocol --config Debug --parallel 2
     - name: Run protocol tests
@@ -115,44 +115,44 @@ jobs:
         CXX: clang++
       run: >
         cmake -S . -B build-fuzz
-        -D TES3MP_TESTS_ONLY=ON
-        -D TES3MP_TESTS_WITH_SECURITY=ON
-        -D BUILD_TES3MP_FUZZERS=ON
+        -D MWNET_TESTS_ONLY=ON
+        -D MWNET_TESTS_WITH_SECURITY=ON
+        -D BUILD_MWNET_FUZZERS=ON
         -D CMAKE_BUILD_TYPE=Debug
     - name: Build fuzz smoke targets
       run: >
         cmake --build build-fuzz
-        --target tes3mp-tests tes3mp-persistence-fault
-        tes3mp-packet-fuzz tes3mp-transport-fuzz
-        tes3mp-authentication-fuzz tes3mp-handshake-fuzz
+        --target mwnet-tests mwnet-persistence-fault
+        mwnet-packet-fuzz mwnet-transport-fuzz
+        mwnet-authentication-fuzz mwnet-handshake-fuzz
         --parallel 2
     - name: Run protocol and security unit tests
       run: ctest --test-dir build-fuzz --output-on-failure
     - name: Run protocol codec fuzzer
       run: |
         mkdir -p fuzz-corpus/packet fuzz-artifacts/packet
-        build-fuzz/apps/tes3mp_fuzz/tes3mp-packet-fuzz \
+        build-fuzz/apps/mwnet_fuzz/mwnet-packet-fuzz \
           -runs=10000 -artifact_prefix=fuzz-artifacts/packet/ fuzz-corpus/packet
     - name: Run transport codec fuzzer
       run: |
         mkdir -p fuzz-corpus/transport fuzz-artifacts/transport
-        build-fuzz/apps/tes3mp_fuzz/tes3mp-transport-fuzz \
+        build-fuzz/apps/mwnet_fuzz/mwnet-transport-fuzz \
           -runs=10000 -artifact_prefix=fuzz-artifacts/transport/ fuzz-corpus/transport
     - name: Run authentication fuzzer
       run: |
         mkdir -p fuzz-corpus/authentication fuzz-artifacts/authentication
-        build-fuzz/apps/tes3mp_fuzz/tes3mp-authentication-fuzz \
+        build-fuzz/apps/mwnet_fuzz/mwnet-authentication-fuzz \
           -runs=10000 -artifact_prefix=fuzz-artifacts/authentication/ fuzz-corpus/authentication
     - name: Run secure handshake fuzzer
       run: |
         mkdir -p fuzz-corpus/handshake fuzz-artifacts/handshake
-        build-fuzz/apps/tes3mp_fuzz/tes3mp-handshake-fuzz \
+        build-fuzz/apps/mwnet_fuzz/mwnet-handshake-fuzz \
           -runs=10000 -artifact_prefix=fuzz-artifacts/handshake/ fuzz-corpus/handshake
     - name: Retain fuzz inputs and failures
       if: always()
       uses: actions/upload-artifact@v6
       with:
-        name: tes3mp-fuzz-smoke-${{ github.sha }}
+        name: mwnet-fuzz-smoke-${{ github.sha }}
         path: |
           fuzz-corpus
           fuzz-artifacts
@@ -184,8 +184,8 @@ jobs:
         -D BUILD_COMPONENTS_TESTS=ON
         -D BUILD_OPENMW_TESTS=ON
         -D BUILD_OPENCS_TESTS=ON
-        -D BUILD_TES3MP_TESTS=ON
-        -D TES3MP_FETCH_DEPS=ON
+        -D BUILD_MWNET_TESTS=ON
+        -D MWNET_FETCH_DEPS=ON
         -D CMAKE_INSTALL_PREFIX=install
 
     - name: Build
@@ -210,29 +210,29 @@ jobs:
         -D BUILD_NIFTEST=OFF
         -D BUILD_NAVMESHTOOL=OFF
         -D BUILD_BULLETOBJECTTOOL=OFF
-        -D BUILD_TES3MP_TESTS=ON
-        -D TES3MP_FETCH_DEPS=ON
+        -D BUILD_MWNET_TESTS=ON
+        -D MWNET_FETCH_DEPS=ON
 
     - name: Build dedicated server and protocol tests
-      run: cmake --build build-server --target tes3mp-server tes3mp-tests tes3mp-headless-integration tes3mp-persistence-fault tes3mp-directory tes3mp-discovery-tests --parallel $(nproc)
+      run: cmake --build build-server --target mwnet-server mwnet-tests mwnet-headless-integration mwnet-persistence-fault mwnet-directory mwnet-discovery-tests --parallel $(nproc)
 
     - name: Run dedicated-server-only tests
       run: ctest --test-dir build-server --output-on-failure
 
     - name: Capture protocol 11 performance sample
       run: >
-        build-server/tes3mp-headless-integration
+        build-server/mwnet-headless-integration
         --cycles 10
         --clients 2
         --packet-loss-percent 2
-        --metrics-output build-metadata/tes3mp-performance.json
+        --metrics-output build-metadata/mwnet-performance.json
         --commit ${{ github.sha }}
 
     - name: Retain protocol 11 performance sample
       uses: actions/upload-artifact@v6
       with:
-        name: tes3mp-performance-${{ github.sha }}
-        path: build-metadata/tes3mp-performance.json
+        name: mwnet-performance-${{ github.sha }}
+        path: build-metadata/mwnet-performance.json
 
     # - name: Install
     #   shell: bash

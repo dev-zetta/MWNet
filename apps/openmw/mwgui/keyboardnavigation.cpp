@@ -9,13 +9,13 @@
 
 
     /*
-    Start of tes3mp addition
+    Start of mwnet addition
 
     Include additional headers for multiplayer purposes
 */
 #include "../mwmp/Main.hpp"
 #include "../mwmp/GUIController.hpp"
-/* End of tes3mp addition */
+/* End of mwnet addition */
 #include "../mwbase/environment.hpp"
 #include "../mwbase/windowmanager.hpp"
 
@@ -117,9 +117,9 @@ namespace MWGui
         if (!MWBase::Environment::get().getWindowManager()->isGuiMode())
         {
             /*
-                Start of tes3mp addition
+                Start of mwnet addition
 
-                TES3MP chat is a real-time game-mode overlay, but its EditBox still
+                MWNet chat is a real-time game-mode overlay, but its EditBox still
                 needs MyGUI keyboard focus. Preserve that focus instead of applying
                 OpenMW's normal game-mode focus reset at the end of every frame.
             */
@@ -127,7 +127,7 @@ namespace MWGui
                 && mwmp::Main::get().getGUIController()->getChatEditState();
             if (!chatEditing)
                 MWBase::Environment::get().getWindowManager()->setKeyFocusWidget(nullptr);
-            /* End of tes3mp addition */
+            /* End of mwnet addition */
             return;
         }
 

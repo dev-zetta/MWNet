@@ -1,7 +1,7 @@
 #include "action.hpp"
 
 /*
-    Start of tes3mp addition
+    Start of mwnet addition
 
     Include additional headers for multiplayer purposes
 */
@@ -9,7 +9,7 @@
 #include "../mwmp/Networking.hpp"
 #include "../mwmp/CellController.hpp"
 #include "../mwmp/ObjectList.hpp"
-/* End of tes3mp addition */
+/* End of mwnet addition */
 
 #include "../mwbase/environment.hpp"
 
@@ -65,7 +65,7 @@ void MWWorld::Action::execute(const Ptr& actor, bool noSound)
                     local ? actor : mTarget, mSoundId, 1.0, 1.0, MWSound::Type::Sfx, envType, mSoundOffset);
 
                 /*
-                    Start of tes3mp addition
+                    Start of mwnet addition
 
                     Send an ID_OBJECT_SOUND packet every time a local actor makes a sound here
                 */
@@ -77,7 +77,7 @@ void MWWorld::Action::execute(const Ptr& actor, bool noSound)
                     objectList->addObjectSound(local ? actor : mTarget, mSoundId.getRefIdString(), 1.0, 1.0);
                     objectList->sendObjectSound();
                 }
-                /* End of tes3mp addition */
+                /* End of mwnet addition */
         }
     }
 

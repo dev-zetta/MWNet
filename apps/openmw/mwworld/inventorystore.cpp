@@ -6,7 +6,7 @@
 #include <components/esm3/inventorystate.hpp>
 
 /*
-    Start of tes3mp addition
+    Start of mwnet addition
 
     Include additional headers for multiplayer purposes
 */
@@ -14,7 +14,7 @@
 #include "../mwmp/Main.hpp"
 #include "../mwmp/CellController.hpp"
 #include "../mwmp/PlayerList.hpp"
-/* End of tes3mp addition */
+/* End of mwnet addition */
 
 #include "../mwbase/environment.hpp"
 #include "worldimp.hpp"
@@ -165,13 +165,13 @@ MWWorld::ContainerStoreIterator MWWorld::InventoryStore::add(
     }
 
     /*
-        Start of tes3mp change (major)
+        Start of mwnet change (major)
 
         Only fire inventory events for actors in loaded cells to avoid crashes
     */
     if (mListener && (!actor.isInCell() || MWBase::Environment::get().getWorld()->isCellActive(actor.getCell()->getCell()->getEsm3())))
         mListener->itemAdded(*retVal, count);
-    /* End of tes3mp change (major)*/
+    /* End of mwnet change (major)*/
     MWBase::Environment::get().getWindowManager()->inventoryUpdated(actor);
 
     return retVal;
@@ -527,14 +527,14 @@ void MWWorld::InventoryStore::autoEquip()
     initSlots(slots);
 
         /*
-        Start of tes3mp addition
+        Start of mwnet addition
 
         We need DedicatedPlayers and DedicatedActors to wear exactly what they're wearing on their
         authority client, so don't auto-equip for them
     */
     if (mwmp::PlayerList::isDedicatedPlayer(getPtr()) || mwmp::Main::get().getCellController()->isDedicatedActor(getPtr()))
         return;
-    /* End of tes3mp addition */
+    /* End of mwnet addition */
     // Disable model update during auto-equip
     mUpdatesEnabled = false;
 
@@ -630,13 +630,13 @@ int MWWorld::InventoryStore::remove(const Ptr& item, int count, bool equipReplac
     }
 
     /*
-        Start of tes3mp change (major)
+        Start of mwnet change (major)
 
         Only fire inventory events for actors in loaded cells to avoid crashes
     */
     if (mListener && MWBase::Environment::get().getWorld()->isCellActive(actor.getCell()->getCell()->getEsm3()))
         mListener->itemRemoved(item, retCount);
-    /* End of tes3mp change (major)*/
+    /* End of mwnet change (major)*/
     MWBase::Environment::get().getWindowManager()->inventoryUpdated(actor);
 
     return retCount;
@@ -739,7 +739,7 @@ void MWWorld::InventoryStore::fireEquipmentChangedEvent()
     if (!mUpdatesEnabled)
         return;
     /*
-        Start of tes3mp change (major)
+        Start of mwnet change (major)
 
         Only fire inventory events for local players or for other actors in loaded cells to avoid crashes
     */
@@ -750,7 +750,7 @@ void MWWorld::InventoryStore::fireEquipmentChangedEvent()
             mInventoryListener->equipmentChanged();
         }
     }
-    /* End of tes3mp change (major)*/
+    /* End of mwnet change (major)*/
 
     // if player, update inventory window
     /*

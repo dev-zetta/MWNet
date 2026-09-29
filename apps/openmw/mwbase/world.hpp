@@ -13,12 +13,12 @@
 #include <components/vfs/pathutil.hpp>
 
 /*
-    Start of tes3mp addition
+    Start of mwnet addition
 
     Include additional headers for multiplayer purposes
 */
 #include <components/esm3/variant.hpp>
-/* End of tes3mp addition */
+/* End of mwnet addition */
 
 #include <osg/Timer>
 
@@ -177,12 +177,12 @@ namespace MWBase
         virtual void setGlobalInt(MWWorld::GlobalVariableName name, int value) = 0;
         ///< Set value independently from real type.
             /*
-                Start of tes3mp addition
+                Start of mwnet addition
 
                 Make it possible to get the World's ESMStore as a non-const
             */
             virtual MWWorld::ESMStore& getModifiableStore() = 0;
-            /* End of tes3mp addition */
+            /* End of mwnet addition */
         virtual void setGlobalFloat(MWWorld::GlobalVariableName name, float value) = 0;
         ///< Set value independently from real type.
 
@@ -209,7 +209,7 @@ namespace MWBase
         ///< Return a pointer to a liveCellRef with the given name.
         /// \param activeOnly do non search inactive cells.
             /*
-                Start of tes3mp addition
+                Start of mwnet addition
 
                 Make it possible to check whether global variables exist and to create
                 new ones
@@ -217,7 +217,7 @@ namespace MWBase
             virtual bool hasGlobal(const ESM::RefId& name) = 0;
 
             virtual void createGlobal(const ESM::RefId& name, ESM::VarType varType) = 0;
-            /* End of tes3mp addition */
+            /* End of mwnet addition */
         virtual MWWorld::Ptr searchPtr(const ESM::RefId& name, bool activeOnly, bool searchInContainers = true) = 0;
         ///< Return a pointer to a liveCellRef with the given name.
         /// \param activeOnly do non search inactive cells.
@@ -245,20 +245,20 @@ namespace MWBase
 
         virtual const std::vector<MWWorld::Weather>& getAllWeather() const = 0;
             /*
-                Start of tes3mp addition
+                Start of mwnet addition
 
                 Make it possible to find a Ptr in any active cell based on its refNum and mpNum
             */
             virtual MWWorld::Ptr searchPtrViaActorId(int actorId) = 0;
             virtual MWWorld::Ptr searchPtrViaUniqueIndex(int refNum, int mpNum) = 0;
-            /* End of tes3mp addition */
+            /* End of mwnet addition */
             /*
-                Start of tes3mp addition
+                Start of mwnet addition
 
                 Make it possible to update all Ptrs in active cells that have a certain refId
             */
             virtual void updatePtrsWithRefId(ESM::RefId refId) = 0;
-            /* End of tes3mp addition */
+            /* End of mwnet addition */
         virtual int getCurrentWeatherScriptId() const = 0;
 
         virtual const MWWorld::Weather& getCurrentWeather() const = 0;
@@ -277,38 +277,38 @@ namespace MWBase
 
         virtual int getMasserPhase() const = 0;
             /*
-                Start of tes3mp addition
+                Start of mwnet addition
 
                 Make it possible to set a specific weather state for a region from elsewhere
                 in the code
             */
             virtual void setRegionWeather(const ESM::RefId& region, const unsigned int currentWeather, const unsigned int nextWeather,
                 const unsigned int queuedWeather, const float transitionFactor, bool force) = 0;
-            /* End of tes3mp addition */
+            /* End of mwnet addition */
             /*
-                Start of tes3mp addition
+                Start of mwnet addition
 
                 Make it possible to check whether the local WeatherManager has the
                 ability to create weather changes
             */
             virtual bool getWeatherCreationState() = 0;
-            /* End of tes3mp addition */
+            /* End of mwnet addition */
             /*
-                Start of tes3mp addition
+                Start of mwnet addition
 
                 Make it possible to enable and disable the local WeatherManager's ability
                 to create weather changes
             */
             virtual void setWeatherCreationState(bool state) = 0;
-            /* End of tes3mp addition */
+            /* End of mwnet addition */
             /*
-                Start of tes3mp addition
+                Start of mwnet addition
 
                 Make it possible to send the current weather in a WorldWeather packet
                 when requested from elsewhere in the code
             */
             virtual void sendWeather() = 0;
-            /* End of tes3mp addition */
+            /* End of mwnet addition */
         virtual int getSecundaPhase() const = 0;
 
         virtual std::vector<MWWorld::Moon> getCurrentMoons() const = 0;
@@ -357,21 +357,21 @@ namespace MWBase
             = 0;
         ///< @return an updated Ptr
             /*
-                Start of tes3mp addition
+                Start of mwnet addition
 
                 This has been declared here so it can be accessed from places
                 other than MWWorld::World
             */
             virtual void updateWeather(float duration, bool paused = false) = 0;
-            /* End of tes3mp addition */
+            /* End of mwnet addition */
             /*
-                Start of tes3mp addition
+                Start of mwnet addition
 
                 This has been declared here so it can be accessed from places
                 other than MWWorld::World 
             */
             virtual void PCDropped(const MWWorld::Ptr& item) = 0;
-            /* End of tes3mp addition */
+            /* End of mwnet addition */
         virtual MWWorld::Ptr moveObjectBy(const MWWorld::Ptr& ptr, const osg::Vec3f& vec, bool moveToActive) = 0;
         ///< @return an updated Ptr
 
@@ -560,27 +560,27 @@ namespace MWBase
          */
         virtual MWWorld::SpellCastState startSpellCast(const MWWorld::Ptr& actor) = 0;
             /*
-                Start of tes3mp addition
+                Start of mwnet addition
 
                 Make it possible to set the inertial force of a Ptr directly
             */
             virtual void setInertialForce(const MWWorld::Ptr& ptr, const osg::Vec3f &force) = 0;
-            /* End of tes3mp addition */
+            /* End of mwnet addition */
             /*
-                Start of tes3mp addition
+                Start of mwnet addition
 
                 Make it possible to set whether a Ptr is on the ground or not, needed for proper
                 synchronization in multiplayer
             */
             virtual void setOnGround(const MWWorld::Ptr& ptr, bool onGround) = 0;
-            /* End of tes3mp addition */
+            /* End of mwnet addition */
             /*
-                Start of tes3mp addition
+                Start of mwnet addition
 
                 Make it possible to set the physics framerate from elsewhere
             */
             virtual void setPhysicsFramerate(float physFramerate) = 0;
-            /* End of tes3mp addition */
+            /* End of mwnet addition */
         virtual void castSpell(const MWWorld::Ptr& actor, bool scriptedSpell = false) = 0;
 
         virtual void launchMagicBolt(const ESM::RefId& spellId, const MWWorld::Ptr& caster,
@@ -660,40 +660,40 @@ namespace MWBase
             const MWWorld::ConstPtr& actor, const MWWorld::ConstPtr& target, bool isRangedCombat)
             = 0;
             /*
-                Start of tes3mp addition
+                Start of mwnet addition
 
                 Useful self-contained method for saving door states
             */
             virtual void saveDoorState(const MWWorld::Ptr& door, MWWorld::DoorState state) = 0;
-            /* End of tes3mp addition */
+            /* End of mwnet addition */
             /*
-                Start of tes3mp addition
+                Start of mwnet addition
 
                 Make it possible to check whether a cell is active
             */
             virtual bool isCellActive(const ESM::Cell& cell) = 0;
-            /* End of tes3mp addition */
+            /* End of mwnet addition */
             /*
-                Start of tes3mp addition
+                Start of mwnet addition
 
                 Make it possible to unload a cell from elsewhere
             */
             virtual void unloadCell(const ESM::Cell& cell) = 0;
-            /* End of tes3mp addition */
+            /* End of mwnet addition */
             /*
-                Start of tes3mp addition
+                Start of mwnet addition
 
                 Make it possible to unload all active cells from elsewhere
             */
             virtual void unloadActiveCells() = 0;
-            /* End of tes3mp addition */
+            /* End of mwnet addition */
             /*
-                Start of tes3mp addition
+                Start of mwnet addition
 
                 Clear the CellStore for a specific Cell from elsewhere
             */
             virtual void clearCellStore(const ESM::Cell& cell) = 0;
-            /* End of tes3mp addition */
+            /* End of mwnet addition */
         virtual void addContainerScripts(const MWWorld::Ptr& reference, MWWorld::CellStore* cell) = 0;
         virtual void removeContainerScripts(const MWWorld::Ptr& reference) = 0;
 

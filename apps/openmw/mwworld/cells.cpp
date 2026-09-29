@@ -99,7 +99,7 @@ void MWWorld::Cells::clear()
 }
 
 /*
-    Start of tes3mp addition
+    Start of mwnet addition
 
     Make it possible to clear the CellStore for a specific Cell,
     allowing cells to be replaced from elsewhere in the code
@@ -117,7 +117,7 @@ void MWWorld::Cells::clear(const ESM::Cell& cell)
         mInteriors.erase(Misc::StringUtils::lowerCase(cell.mName));
     }
 }
-/* End of tes3mp addition */
+/* End of mwnet addition */
 
 MWWorld::Ptr MWWorld::Cells::getPtrAndCache (const std::string& name, CellStore& cellStore)
 {

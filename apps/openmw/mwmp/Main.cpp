@@ -74,7 +74,7 @@ std::string loadSettings(Settings::Manager& settings)
     Files::ConfigurationManager mCfgMgr;
 
     // Load defaults first so all keys exist
-    const std::filesystem::path defaultPath = std::filesystem::path(Main::getResDir()) / ".." / "tes3mp-client-default.cfg";
+    const std::filesystem::path defaultPath = std::filesystem::path(Main::getResDir()) / ".." / "mwnet-client-default.cfg";
     if (std::filesystem::exists(defaultPath))
     {
         Settings::SettingsFileParser parser;
@@ -82,7 +82,7 @@ std::string loadSettings(Settings::Manager& settings)
     }
 
     // Overlay user config
-    const std::filesystem::path settingspath = mCfgMgr.getUserConfigPath() / "tes3mp-client.cfg";
+    const std::filesystem::path settingspath = mCfgMgr.getUserConfigPath() / "mwnet-client.cfg";
     if (std::filesystem::exists(settingspath))
     {
         Settings::SettingsFileParser parser;
@@ -93,14 +93,14 @@ std::string loadSettings(Settings::Manager& settings)
 
 Main::Main()
 {
-    LOG_MESSAGE_SIMPLE(TimedLog::LOG_INFO, "tes3mp started");
+    LOG_MESSAGE_SIMPLE(TimedLog::LOG_INFO, "mwnet started");
     mNetworking = new Networking();
     mLocalSystem = new LocalSystem();
     mLocalPlayer = new LocalPlayer();
     mGUIController = new GUIController();
     mCellController = new CellController();
 
-    server = "mp.tes3mp.com";
+    server = "mp.mwnet.com";
     port = 25565;
     mPostInitDone = false;
     mWorldInitDone = false;
@@ -108,7 +108,7 @@ Main::Main()
 
 Main::~Main()
 {
-    LOG_MESSAGE_SIMPLE(TimedLog::LOG_INFO, "tes3mp stopped");
+    LOG_MESSAGE_SIMPLE(TimedLog::LOG_INFO, "mwnet stopped");
     delete mNetworking;
     delete mLocalSystem;
     delete mLocalPlayer;
@@ -126,11 +126,11 @@ void Main::optionsDesc(boost::program_options::options_description *desc)
             ("password", bpo::value<std::string>()->default_value(""),
                         "server access password")
             ("account", bpo::value<std::string>()->default_value(""),
-                        "protocol-11 account name")
+                        "MWNet account name")
             ("account-password-file", bpo::value<std::string>()->default_value(""),
                         "read the account password from a file")
             ("register-account", bpo::bool_switch()->default_value(false),
-                        "register the protocol-11 account on first connection")
+                        "register the MWNet account on first connection")
             ("trust-fingerprint", bpo::value<std::string>()->default_value(""),
                         "require this server identity fingerprint");
 }
@@ -207,14 +207,14 @@ bool Main::init(std::vector<std::string> &content, Files::Collections &collectio
     if (address.empty())
     {
         /*
-            Start of tes3mp change (major)
+            Start of mwnet change (major)
 
             No --connect CLI arg provided: skip connecting here and let
             the in-game direct-connect screen handle it via connectTo().
         */
         get().mLocalSystem->serverPassword.clear();
         return true;
-        /* End of tes3mp change (major) */
+        /* End of mwnet change (major) */
     }
 
     size_t delimPos = address.find(':');
@@ -324,7 +324,7 @@ void Main::frame(float dt)
         return;
 
     /*
-        Start of tes3mp addition
+        Start of mwnet addition
 
         On the first frame after the game is running, perform deferred post-init
         steps that require the world and render loop to be fully started.
@@ -334,7 +334,7 @@ void Main::frame(float dt)
         pMain->mPostInitDone = true;
         MWBase::Environment::get().getMechanicsManager()->toggleAI();
         RecordHelper::createPlaceholderInteriorCell();
-        // Stop vanilla chargen scripts before they run - TES3MP handles chargen itself
+        // Stop vanilla chargen scripts before they run - MWNet handles chargen itself
         MWBase::Environment::get().getScriptManager()->getGlobalScripts().removeScript(
             ESM::RefId::stringRefId("CharGen"));
         // Process the first network update immediately after setup so that
@@ -346,7 +346,7 @@ void Main::frame(float dt)
         get().getGUIController()->update(dt);
         return;
     }
-    /* End of tes3mp addition */
+    /* End of mwnet addition */
 
     get().getNetworking()->update();
 

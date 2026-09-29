@@ -39,30 +39,30 @@ namespace MWWorld
         void unsetRefNum() { setRefNum({}); }
 
         /*
-            Start of tes3mp addition
+            Start of mwnet addition
 
             Set the unique reference number index of a CellRef, needed to
             make objects retain their uniqueIndex when they are updated
             after their records are modified on the fly by the server
         */
         void setRefNum(unsigned int index);
-        /* End of tes3mp addition */
+        /* End of mwnet addition */
 
         /*
-            Start of tes3mp addition
+            Start of mwnet addition
 
             Get the mMpNum (unique multiplayer reference number) of a CellRef
         */
         unsigned int getMpNum() const;
-        /* End of tes3mp addition */
+        /* End of mwnet addition */
 
         /*
-            Start of tes3mp addition
+            Start of mwnet addition
 
             Set the mMpNum (unique multiplayer reference number) of a CellRef
         */
         void setMpNum(unsigned int index);
-        /* End of tes3mp addition */
+        /* End of mwnet addition */
 
         /// Does the RefNum have a content file?
         bool hasContentFile() const { return getRefNum().hasContentFile(); }
@@ -93,34 +93,34 @@ namespace MWWorld
         }
 
         /*
-            Start of tes3mp addition
+            Start of mwnet addition
 
             Make it possible to change the teleport state from elsewhere
         */
         void setTeleport(bool teleportState);
-        /* End of tes3mp addition */
+        /* End of mwnet addition */
 
         // Teleport location for the door, if this is a teleporting door.
         ESM::Position getDoorDest() const;
 
         /*
-            Start of tes3mp addition
+            Start of mwnet addition
 
             Make it possible to change the destination position from elsewhere
         */
         void setDoorDest(const ESM::Position& position);
-        /* End of tes3mp addition */
+        /* End of mwnet addition */
 
         // Destination cell for doors (optional)
         ESM::RefId getDestCell() const;
 
         /*
-            Start of tes3mp addition
+            Start of mwnet addition
 
             Make it possible to change the destination cell from elsewhere
         */
         void setDestCell(const std::string& cellDescription);
-        /* End of tes3mp addition */
+        /* End of mwnet addition */
 
         // Scale applied to mesh
         float getScale() const

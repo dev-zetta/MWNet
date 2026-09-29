@@ -1,0 +1,40 @@
+name: MWNet Linux candidate
+
+# Artifacts only. Publication and non-Linux candidate gates are separate.
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  linux:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 90
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Build candidate environment
+        run: docker build -f Dockerfile.mwnet -t mwnet-candidate-builder .
+      - name: Build, test and package client and server
+        run: |
+          mkdir -p build/linux-candidate
+          docker run --rm --entrypoint bash \
+            -e GIT_CONFIG_COUNT=1 \
+            -e GIT_CONFIG_KEY_0=safe.directory -e GIT_CONFIG_VALUE_0=/source \
+            -v "$PWD:/source:ro" -v "$PWD/build/linux-candidate:/output" \
+            mwnet-candidate-builder \
+            /source/CI/build_mwnet_linux.sh /source /output
+      - uses: actions/upload-artifact@v4
+        with:
+          name: mwnet-linux-candidate
+          path: build/linux-candidate/packages/*
+          if-no-files-found: error
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: mwnet-linux-validation
+          path: |
+            build/linux-candidate/build/Testing/Temporary/LastTest.log
+            build/linux-candidate/smoke/*.log

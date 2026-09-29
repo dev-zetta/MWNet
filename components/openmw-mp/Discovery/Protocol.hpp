@@ -1,7 +1,8 @@
-#ifndef TES3MP_DISCOVERY_PROTOCOL_HPP
-#define TES3MP_DISCOVERY_PROTOCOL_HPP
+#ifndef MWNET_DISCOVERY_PROTOCOL_HPP
+#define MWNET_DISCOVERY_PROTOCOL_HPP
 
 #include <components/openmw-mp/Security/ServerIdentity.hpp>
+#include <components/openmw-mp/Version.hpp>
 #include <boost/property_tree/ptree.hpp>
 #include <cstdint>
 #include <span>
@@ -14,7 +15,7 @@ namespace mwmp::discovery
     inline constexpr std::size_t maximumPayload = 256 * 1024;
     inline constexpr std::size_t maximumBody = 2 * 1024 * 1024;
     inline constexpr std::size_t maximumListings = 1000;
-    inline constexpr std::string_view signatureDomain = "TES3MP discovery v1\n";
+    inline constexpr std::string_view signatureDomain = "MWNet discovery v1\n";
     struct Content
     {
         std::string name;
@@ -24,7 +25,7 @@ namespace mwmp::discovery
     struct Listing
     {
         std::string host, name, version;
-        std::uint16_t port = 25565, protocol = 12, players = 0, capacity = 64;
+        std::uint16_t port = 25565, protocol = MWNET_PROTO_VERSION, players = 0, capacity = 64;
         bool password = false;
         std::vector<Content> content;
         bool operator==(const Listing&) const = default;

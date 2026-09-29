@@ -1,13 +1,13 @@
 #include <MyGUI_ScrollBar.h>
 
 /*
-    Start of tes3mp addition
+    Start of mwnet addition
 
     Include additional headers for multiplayer purposes
 */
 #include "../mwmp/Main.hpp"
 #include "../mwmp/LocalPlayer.hpp"
-/* End of tes3mp addition */
+/* End of mwnet addition */
 
 #include <components/misc/rng.hpp>
 #include <components/misc/strings/format.hpp>
@@ -55,13 +55,13 @@ namespace MWGui
         mProgressBar->setTrackSize(0);
 
         /*
-            Start of tes3mp addition
+            Start of mwnet addition
 
             If we've received a packet overriding the default jail progress text, use the new text
         */
         if (!mwmp::Main::get().getLocalPlayer()->jailProgressText.empty())
             setText("LoadingText", mwmp::Main::get().getLocalPlayer()->jailProgressText);
-        /* End of tes3mp addition */
+        /* End of mwnet addition */
     }
 
     void JailScreen::onFrame(float dt)
@@ -78,7 +78,7 @@ namespace MWGui
             MWWorld::Ptr player = MWMechanics::getPlayer();
 
             /*
-                Start of tes3mp change (minor)
+                Start of mwnet change (minor)
 
                 A server can use the jail flow for a death penalty without moving
                 the resurrected player away from the selected respawn marker.
@@ -90,7 +90,7 @@ namespace MWGui
                 MWBase::Environment::get().getWindowManager()->fadeScreenOut(
                     0.f); // override fade-in caused by cell transition
             }
-            /* End of tes3mp change (minor) */
+            /* End of mwnet change (minor) */
 
             setVisible(true);
             mTimeAdvancer.run(100);
@@ -112,22 +112,22 @@ namespace MWGui
         MWWorld::Ptr player = MWMechanics::getPlayer();
 
         /*
-            Start of tes3mp addition
+            Start of mwnet addition
 
             Declare pointer to LocalPlayer for use in other additions
         */
         mwmp::LocalPlayer* localPlayer = mwmp::Main::get().getLocalPlayer();
-        /* End of tes3mp addition */
+        /* End of mwnet addition */
 
         MWBase::Environment::get().getMechanicsManager()->rest(mDays * 24, true);
 
         /*
-            Start of tes3mp change (major)
+            Start of mwnet change (major)
 
             Multiplayer requires that time not get advanced here
         */
         //MWBase::Environment::get().getWorld()->advanceTime(mDays * 24);
-        /* End of tes3mp change (major)*/
+        /* End of mwnet change (major)*/
 
         // We should not worsen corprus when in prison
         player.getClass().getCreatureStats(player).getActiveSpells().skipWorsenings(mDays * 24);
@@ -135,20 +135,20 @@ namespace MWGui
             player, mDays, localPlayer->ignoreJailSkillIncreases);
 
             /*
-            Start of tes3mp addition
+            Start of mwnet addition
 
             If we've received a packet overriding the default jail end text, use the new text
         */
         if (!localPlayer->jailEndText.empty())
             MWBase::Environment::get().getWindowManager()->messageBox(localPlayer->jailEndText);
-        /* End of tes3mp addition */
+        /* End of mwnet addition */
 
         // A completion is acknowledged only after the asynchronous jail flow
         // has applied its local presentation and skill consequences.
         localPlayer->sendJailCompletion();
 
             /*
-            Start of tes3mp addition
+            Start of mwnet addition
 
             Reset all PlayerJail-related overrides
         */
@@ -158,6 +158,6 @@ namespace MWGui
         localPlayer->jailEndText = "";
         localPlayer->jailSentenceId = 0;
         localPlayer->jailAction = mwmp::JailAction::Begin;
-        /* End of tes3mp addition */
+        /* End of mwnet addition */
     }
 }

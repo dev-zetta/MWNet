@@ -27,17 +27,10 @@ addons:
       libsdl2-dev, libqt5opengl5-dev, libopenal-dev, libunshield-dev, libtinyxml-dev, liblz4-dev,
       # The other ones from OpenMW ppa
       libbullet-dev, libopenscenegraph-3.4-dev, libmygui-dev,
-      # tes3mp stuff
+      # mwnet stuff
       libboost-dev, libqt5opengl5-dev, libluajit-5.1-dev
     ]
-  coverity_scan:
-    project:
-      name: "TES3MP/openmw-tes3mp"
-      description: "<Your project description here>"
-    branch_pattern: coverity_scan
-    notification_email: koncord@tes3mp.com
-    build_command_prepend: "cov-configure --comptype gcc --compiler gcc-8 --template; cmake . -DBUILD_UNITTESTS=FALSE -DBUILD_OPENCS=FALSE -DBUILD_BSATOOL=FALSE -DBUILD_ESMTOOL=FALSE -DBUILD_MWINIIMPORTER=FALSE -DBUILD_LAUNCHER=FALSE"
-    build_command: "make VERBOSE=1 -j3"
+
 matrix:
   include:
     - os: linux
@@ -85,7 +78,6 @@ script:
 # on:
 #  branch: master
 #  condition: "$TRAVIS_EVENT_TYPE = cron && $TRAVIS_OS_NAME = osx"
-#  repo: TES3MP/openmw-tes3mp
 #notifications:
 #  email:
 #    recipients:

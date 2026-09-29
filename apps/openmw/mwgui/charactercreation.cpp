@@ -22,13 +22,13 @@
 
 
     /*
-    Start of tes3mp addition
+    Start of mwnet addition
 
     Include additional headers for multiplayer purposes
 */
 #include "../mwmp/Main.hpp"
 #include "../mwmp/LocalPlayer.hpp"
-/* End of tes3mp addition */
+/* End of mwnet addition */
 #include "birth.hpp"
 #include "class.hpp"
 #include "inventorywindow.hpp"
@@ -326,12 +326,12 @@ namespace MWGui
         MWBase::Environment::get().getWindowManager()->pushGuiMode(GM_Birth);
 
         /*
-            Start of tes3mp addition
+            Start of mwnet addition
 
             Decrease the character generation stage tracked for the LocalPlayer
         */
         mwmp::Main::get().getLocalPlayer()->charGenState.currentStage--;
-        /* End of tes3mp addition */
+        /* End of mwnet addition */
     }
 
     void CharacterCreation::onReviewActivateDialog(int parDialog)
@@ -381,12 +381,12 @@ namespace MWGui
         handleDialogDone(CSE_ClassChosen, GM_Birth);
 
         /*
-            Start of tes3mp addition
+            Start of mwnet addition
 
             Increase the character generation stage tracked for the LocalPlayer
         */
         mwmp::Main::get().getLocalPlayer()->charGenState.currentStage++;
-        /* End of tes3mp addition */
+        /* End of mwnet addition */
     }
 
     void CharacterCreation::onPickClassDialogBack()
@@ -418,12 +418,12 @@ namespace MWGui
                 MWBase::Environment::get().getWindowManager()->pushGuiMode(GM_Race);
 
                 /*
-                    Start of tes3mp addition
+                    Start of mwnet addition
 
                     Decrease the character generation stage tracked for the LocalPlayer
                 */
                 mwmp::Main::get().getLocalPlayer()->charGenState.currentStage--;
-                /* End of tes3mp addition */
+                /* End of mwnet addition */
                 break;
         };
     }
@@ -435,13 +435,13 @@ namespace MWGui
             mPlayerName = mNameDialog->getTextInput();
 
             /*
-                Start of tes3mp change (major)
+                Start of mwnet change (major)
 
                 Ensure names are not longer than the original game's 31 character maximum
             */
             if (mPlayerName.length() > 31)
                 mPlayerName = mPlayerName.substr(0, 31);
-            /* End of tes3mp change (major) */
+            /* End of mwnet change (major) */
 
             MWBase::Environment::get().getMechanicsManager()->setPlayerName(mPlayerName);
             MWBase::Environment::get().getWindowManager()->removeDialog(std::move(mNameDialog));
@@ -450,12 +450,12 @@ namespace MWGui
         handleDialogDone(CSE_NameChosen, GM_Race);
 
         /*
-            Start of tes3mp addition
+            Start of mwnet addition
 
             Increase the character generation stage tracked for the LocalPlayer
         */
         mwmp::Main::get().getLocalPlayer()->charGenState.currentStage++;
-        /* End of tes3mp addition */
+        /* End of mwnet addition */
     }
 
     void CharacterCreation::selectRace()
@@ -490,12 +490,12 @@ namespace MWGui
         handleDialogDone(CSE_RaceChosen, GM_Class);
 
         /*
-            Start of tes3mp addition
+            Start of mwnet addition
 
             Increase the character generation stage tracked for the LocalPlayer
         */
         mwmp::Main::get().getLocalPlayer()->charGenState.currentStage++;
-        /* End of tes3mp addition */
+        /* End of mwnet addition */
     }
 
     void CharacterCreation::selectBirthSign()
@@ -516,12 +516,12 @@ namespace MWGui
         handleDialogDone(CSE_BirthSignChosen, GM_Review);
 
         /*
-            Start of tes3mp addition
+            Start of mwnet addition
 
             Increase the character generation stage tracked for the LocalPlayer
         */
         mwmp::Main::get().getLocalPlayer()->charGenState.currentStage++;
-        /* End of tes3mp addition */
+        /* End of mwnet addition */
     }
 
     void CharacterCreation::onBirthSignDialogBack()
@@ -532,12 +532,12 @@ namespace MWGui
         MWBase::Environment::get().getWindowManager()->pushGuiMode(GM_Class);
 
         /*
-            Start of tes3mp addition
+            Start of mwnet addition
 
             Decrease the character generation stage tracked for the LocalPlayer
         */
         mwmp::Main::get().getLocalPlayer()->charGenState.currentStage--;
-        /* End of tes3mp addition */
+        /* End of mwnet addition */
     }
 
     void CharacterCreation::selectCreatedClass()
@@ -581,12 +581,12 @@ namespace MWGui
         handleDialogDone(CSE_ClassChosen, GM_Birth);
 
         /*
-            Start of tes3mp addition
+            Start of mwnet addition
 
             Increase the character generation stage tracked for the LocalPlayer
         */
         mwmp::Main::get().getLocalPlayer()->charGenState.currentStage++;
-        /* End of tes3mp addition */
+        /* End of mwnet addition */
     }
 
     void CharacterCreation::onCreateClassDialogBack()
@@ -598,12 +598,12 @@ namespace MWGui
         MWBase::Environment::get().getWindowManager()->pushGuiMode(GM_Class);
 
         /*
-            Start of tes3mp addition
+            Start of mwnet addition
 
             Decrease the character generation stage tracked for the LocalPlayer
         */
         mwmp::Main::get().getLocalPlayer()->charGenState.currentStage--;
-        /* End of tes3mp addition */
+        /* End of mwnet addition */
     }
 
     void CharacterCreation::onClassQuestionChosen(int index)
@@ -793,12 +793,12 @@ namespace MWGui
         handleDialogDone(CSE_ClassChosen, GM_Birth);
 
         /*
-            Start of tes3mp addition
+            Start of mwnet addition
 
             Increase the character generation stage tracked for the LocalPlayer
         */
         mwmp::Main::get().getLocalPlayer()->charGenState.currentStage++;
-        /* End of tes3mp addition */
+        /* End of mwnet addition */
     }
 
     CharacterCreation::~CharacterCreation() = default;
@@ -811,7 +811,7 @@ namespace MWGui
             MWBase::Environment::get().getWindowManager()->pushGuiMode(GM_Review);
         }
         /*
-            Start of tes3mp change (major)
+            Start of mwnet change (major)
 
             Servers have control over character generation in multiplayer, which is why
             the automatic transition to the next character generation menu has been
@@ -823,7 +823,7 @@ namespace MWGui
             MWBase::Environment::get().getWindowManager()->pushGuiMode((GuiMode)nextMode);
         }
         */
-        /* End of tes3mp change (major) */
+        /* End of mwnet change (major) */
         else
         {
             mCreationStage = currentStage;

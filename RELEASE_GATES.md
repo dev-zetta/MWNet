@@ -1,6 +1,6 @@
-# TES3MP 1.0 release gates
+# MWNet 1.0 release gates
 
-TES3MP 1.0 is released sequentially. Passing a later implementation milestone does not skip the evidence required by an earlier release, and the stable version remains blocked until every gate below has recorded artifacts from the exact release candidate.
+MWNet 1.0 is released sequentially. Passing a later implementation milestone does not skip the evidence required by an earlier release, and the stable version remains blocked until every gate below has recorded artifacts from the exact release candidate.
 
 ## Milestones
 
@@ -19,15 +19,15 @@ The source version remains `1.0.0-alpha.1` until the alpha.1 release candidate p
 - GCC, Clang and MSVC build and test results for the exact candidate.
 - ASan/UBSan and TSan runs with no relevant defects.
 - Round-trip coverage for every protocol message and malformed coverage for every truncation point, invalid UTF-8, trailing data and allocation limit.
-- At least 24 aggregate CPU-hours of decoder fuzzing under ASan/UBSan, with every finding retained as a regression fixture. Use `CI/run_tes3mp_fuzz_campaign.sh --release-budget` with a complete Clang build; it runs the protocol, transport, authentication and encrypted-handshake targets concurrently while retaining their corpora, logs and crash artifacts.
-- Headless integration results for first trust, fingerprint mismatch, registration, legacy-account migration, lockout, duplicate initialization, reconnect, chat, movement, inventory, combat, jail, death and respawn. The `tes3mp-headless-integration` CTest exercises these over real encrypted loopback connections.
-- Fault injection at every persistence stage showing that either the old or new complete record remains recoverable. The `tes3mp-persistence-fault` CTest terminates a writer process at every stage and verifies both immediate recovery and the next atomic save.
+- At least 24 aggregate CPU-hours of decoder fuzzing under ASan/UBSan, with every finding retained as a regression fixture. Use `CI/run_mwnet_fuzz_campaign.sh --release-budget` with a complete Clang build; it runs the protocol, transport, authentication and encrypted-handshake targets concurrently while retaining their corpora, logs and crash artifacts.
+- Headless integration results for first trust, fingerprint mismatch, registration, legacy-account migration, lockout, duplicate initialization, reconnect, chat, movement, inventory, combat, jail, death and respawn. The `mwnet-headless-integration` CTest exercises these over real encrypted loopback connections.
+- Fault injection at every persistence stage showing that either the old or new complete record remains recoverable. The `mwnet-persistence-fault` CTest terminates a writer process at every stage and verifies both immediate recovery and the next atomic save.
 - One hundred connect/disconnect and death/respawn cycles.
-- A paired 24-hour, eight-client soak with latency and loss simulation and no sanitizer defect, deadlock, application RSS growth above 1% after warm-up, or queue-limit violation. Run `CI/run_tes3mp_soak.sh --release-gates` against native and ASan/UBSan builds of the exact candidate. The native build supplies the unchanged RSS-growth measurement; sanitizer allocator/stack retention is recorded separately, and full leak/error detection remains enabled. Both processes must finish successfully with matching workload and commit metadata. Use at least a 2 GiB container memory limit. Shorter developer runs are allowed only without that flag.
-- Server tick p99, serialization p99, normalized inbound/outbound traffic and resident-memory comparison against the alpha.1 baseline. Compare like-for-like CI artifacts with `CI/compare_tes3mp_performance.py`; a regression over 5% fails unless a non-empty reviewed justification is supplied explicitly.
+- A paired 24-hour, eight-client soak with latency and loss simulation and no sanitizer defect, deadlock, application RSS growth above 1% after warm-up, or queue-limit violation. Run `CI/run_mwnet_soak.sh --release-gates` against native and ASan/UBSan builds of the exact candidate. The native build supplies the unchanged RSS-growth measurement; sanitizer allocator/stack retention is recorded separately, and full leak/error detection remains enabled. Both processes must finish successfully with matching workload and commit metadata. Use at least a 2 GiB container memory limit. Shorter developer runs are allowed only without that flag.
+- Server tick p99, serialization p99, normalized inbound/outbound traffic and resident-memory comparison against the alpha.1 baseline. Compare like-for-like CI artifacts with `CI/compare_mwnet_performance.py`; a regression over 5% fails unless a non-empty reviewed justification is supplied explicitly.
 - Public discovery API v1: signed announcement/replay/expiry tests, encrypted endpoint verification, browser acceptance, directory-outage fallback, backup restoration, a two-hour bounded churn/outage run with resource and final-cleanup evidence, and independent review of the new service. Public launch requires a new domain, VPS, DNS and HTTPS staging acceptance.
 - Independent security review and remediation of release-blocking findings.
-- Specialist review of TES3MP's additional GPL terms and third-party notices. The project does not declare those terms compliant before that review.
+- Specialist review of MWNet's additional GPL terms and third-party notices. The project does not declare those terms compliant before that review.
 
 CI artifacts, fuzz corpora, soak logs, performance reports and review records must identify the tested commit. Human or time-based gates may not be replaced with an unverified checklist entry.
 

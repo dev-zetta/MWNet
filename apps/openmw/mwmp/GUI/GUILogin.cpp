@@ -3,7 +3,7 @@
 #include <MyGUI_Button.h>
 
 
-GUILogin::GUILogin() : WindowModal("tes3mp_login.layout")
+GUILogin::GUILogin() : WindowModal("mwnet_login.layout")
 {
     center(); // center window
 

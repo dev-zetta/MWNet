@@ -7,7 +7,7 @@
 #include <components/esm3/loadweap.hpp>
 
     /*
-    Start of tes3mp addition
+    Start of mwnet addition
 
     Include additional headers for multiplayer purposes
 */
@@ -15,7 +15,7 @@
 #include "../mwmp/Main.hpp"
 #include "../mwmp/Networking.hpp"
 #include "../mwmp/LocalPlayer.hpp"
-/* End of tes3mp addition */
+/* End of mwnet addition */
 #include <components/misc/constants.hpp>
 #include <components/settings/values.hpp>
 
@@ -278,7 +278,7 @@ namespace MWClass
         const ESM::Weapon* record = MWBase::Environment::get().getESMStore()->insert(newItem);
 
             /*
-            Start of tes3mp addition
+            Start of mwnet addition
 
             Send the newly created record to the server and expect it to be
             returned with a server-set id
@@ -286,7 +286,7 @@ namespace MWClass
         unsigned int quantity = mwmp::Main::get().getLocalPlayer()->lastEnchantmentQuantity;
 
         mwmp::Main::get().getNetworking()->getWorldstate()->sendWeaponRecord(&newItem, ref->mBase->mId.getRefIdString(), quantity);
-        /* End of tes3mp addition */
+        /* End of mwnet addition */
         return record->mId;
     }
 

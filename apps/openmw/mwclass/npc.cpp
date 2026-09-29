@@ -24,7 +24,7 @@
 
 
     /*
-    Start of tes3mp addition
+    Start of mwnet addition
 
     Include additional headers for multiplayer purposes
 */
@@ -36,7 +36,7 @@
 #include "../mwmp/ObjectList.hpp"
 #include "../mwmp/CellController.hpp"
 #include "../mwmp/MechanicsHelper.hpp"
-/* End of tes3mp addition */
+/* End of mwnet addition */
 #include "../mwbase/dialoguemanager.hpp"
 #include "../mwbase/environment.hpp"
 #include "../mwbase/luamanager.hpp"
@@ -578,7 +578,7 @@ namespace MWClass
         hitPosition = osg::Vec3f();
 
             /*
-            Start of tes3mp addition
+            Start of mwnet addition
 
             Ignore hit calculations on this client from DedicatedPlayers and DedicatedActors
         */
@@ -586,7 +586,7 @@ namespace MWClass
         {
             return false;
         }
-        /* End of tes3mp addition */
+        /* End of mwnet addition */
         // Get the weapon used (if hand-to-hand, weapon = inv.end())
         MWWorld::InventoryStore& inv = getInventoryStore(ptr);
         MWWorld::ContainerStoreIterator weaponslot = inv.getSlot(MWWorld::InventoryStore::Slot_CarriedRight);
@@ -643,7 +643,7 @@ namespace MWClass
         float damage = 0.0f;
 
         /*
-            Start of tes3mp addition
+            Start of mwnet addition
 
             If the attacker is a LocalPlayer or LocalActor, get their Attack to assign its
             hit position and target. This has to happen before the failed-hit branch so a
@@ -659,7 +659,7 @@ namespace MWClass
             localAttack->hitPosition = MechanicsHelper::getPositionFromVector(hitPosition);
             MechanicsHelper::assignAttackTarget(localAttack, victim);
         }
-        /* End of tes3mp addition */
+        /* End of mwnet addition */
 
         if (!success)
         {
@@ -668,7 +668,7 @@ namespace MWClass
             MWMechanics::reduceWeaponCondition(damage, false, weapon, ptr);
             MWMechanics::resistNormalWeapon(victim, ptr, weapon, damage);
             /*
-                Start of tes3mp addition
+                Start of mwnet addition
 
                 If this was a failed attack by the LocalPlayer or LocalActor, send a
                 packet about it
@@ -687,7 +687,7 @@ namespace MWClass
                 objectList->addObjectHit(victim, ptr, *localAttack);
                 objectList->sendObjectHit();
             }
-            /* End of tes3mp addition */
+            /* End of mwnet addition */
             return;
         }
 
@@ -748,7 +748,7 @@ namespace MWClass
         // Apply "On hit" enchanted weapons
 
         /*
-            Start of tes3mp change (minor)
+            Start of mwnet change (minor)
 
             Track whether the strike enchantment is successful for attacks by the
             LocalPlayer or LocalActors
@@ -756,7 +756,7 @@ namespace MWClass
         bool appliedEnchantment = MWMechanics::applyOnStrikeEnchantment(ptr, victim, weapon, hitPosition);
         if (localAttack)
             localAttack->applyWeaponEnchantment = appliedEnchantment;
-        /* End of tes3mp change (minor)*/
+        /* End of mwnet change (minor)*/
 
         MWMechanics::applyElementalShields(ptr, victim);
 
@@ -798,7 +798,7 @@ namespace MWClass
             MWMechanics::CreatureStats& statsAttacker = attacker.getClass().getCreatureStats(attacker);
 
             /*
-                Start of tes3mp change (minor)
+                Start of mwnet change (minor)
 
                 Instead of only checking whether an attacker is the LocalPlayer, also
                 check if they are a DedicatedPlayer
@@ -817,7 +817,7 @@ namespace MWClass
                 && (statsAttacker.getAiSequence().isInCombat(ptr) || attacker == MWMechanics::getPlayer()))
                 statsAttacker.setHitAttemptActor(ptr.getCellRef().getRefNum());
 
-            /* End of tes3mp change (minor)*/
+            /* End of mwnet change (minor)*/
         }
 
         if (!object.empty())
@@ -908,7 +908,7 @@ namespace MWClass
         }
 
         /*
-            Start of tes3mp addition
+            Start of mwnet addition
 
             If the attacker was the LocalPlayer or LocalActor, record their target and send an
             attack packet about it
@@ -959,22 +959,22 @@ namespace MWClass
                 else Log(Debug::Warning) << "npc.cpp: getLocalActor returned nullptr for " << ptr.getCellRef().getRefId();
             }
         }
-        /* End of tes3mp addition */
+        /* End of mwnet addition */
     }
 
     std::unique_ptr<MWWorld::Action> Npc::activate(const MWWorld::Ptr& ptr, const MWWorld::Ptr& actor) const
     {
         /*
-            Start of tes3mp addition
+            Start of mwnet addition
 
             Don't display a dialogue screen for two players interacting with each other
         */
         if (actor == MWMechanics::getPlayer() && mwmp::PlayerList::isDedicatedPlayer(ptr))
             return std::make_unique<MWWorld::FailedAction>("");
-        /* End of tes3mp addition */
+        /* End of mwnet addition */
 
         /*
-            Start of tes3mp addition
+            Start of mwnet addition
 
             Avoid returning an ActionTalk when a non-player NPC activates another
             non-player NPC, because it will always pop up a dialogue screen for
@@ -982,7 +982,7 @@ namespace MWClass
         */
         if (ptr != MWMechanics::getPlayer() && actor != MWMechanics::getPlayer())
             return std::make_unique<MWWorld::FailedAction>("");
-        /* End of tes3mp addition */
+        /* End of mwnet addition */
 
         // player got activated by another NPC
         if (ptr == MWMechanics::getPlayer())

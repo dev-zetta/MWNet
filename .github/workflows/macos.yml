@@ -46,12 +46,12 @@ jobs:
       with:
         name: openmw-macos-dmg-${{ env.DMG_IDENTIFIER }}-${{ github.sha }}
         path: |
-          ${{ github.workspace }}/build/OpenMW-*.dmg
+          ${{ github.workspace }}/build/MWNet-*.dmg
 
     - name: Create prerelease
       if: ${{ inputs.build-type == 'Release' }}
       uses: softprops/action-gh-release@v2
       with:
-        files: ${{ github.workspace }}/build/OpenMW-*.dmg
+        files: ${{ github.workspace }}/build/MWNet-*.dmg
         prerelease: true
         draft: true

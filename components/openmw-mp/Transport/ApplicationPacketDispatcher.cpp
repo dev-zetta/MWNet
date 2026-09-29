@@ -129,7 +129,7 @@ namespace mwmp::transport
         if (!applicationPacketRoute(id, mFlow, route))
         {
             error = { TransportErrorCode::MessageRejected,
-                "application packet has no protocol-11 route" };
+                "application packet has no MWNet route" };
             return false;
         }
 

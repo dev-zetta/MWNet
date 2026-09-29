@@ -259,7 +259,7 @@ namespace MWWorld
         auto stateManager = MWBase::Environment::get().getStateManager();
 
         /*
-            Start of tes3mp change (major)
+            Start of mwnet change (major)
 
             A local menu, dialogue, console, or message box must not stop a
             multiplayer world that continues to run on the server.
@@ -269,7 +269,7 @@ namespace MWWorld
             mPaused = false;
             return;
         }
-        /* End of tes3mp change (major) */
+        /* End of mwnet change (major) */
 
         auto wm = MWBase::Environment::get().getWindowManager();
         mPaused = !mPausedTags.empty() || wm->isConsoleMode() || wm->isPostProcessorHudVisible()

@@ -3,14 +3,14 @@
 set -e
 
 echo "=========================================="
-echo "TES3MP Merged Branch Docker Build"
+echo "MWNet Merged Branch Docker Build"
 echo "=========================================="
 
-# Build TES3MP with its pinned transport dependencies.
+# Build MWNet with its pinned transport dependencies.
 echo ""
-echo ">> Building TES3MP merged branch..."
-mkdir -p /tes3mp/build
-cd /tes3mp/build
+echo ">> Building MWNet merged branch..."
+mkdir -p /mwnet/build
+cd /mwnet/build
 
 cmake .. \
     -DCMAKE_BUILD_TYPE=RelWithDebInfo \
@@ -21,7 +21,7 @@ cmake .. \
     -DBUILD_WIZARD=OFF \
     -DBUILD_OPENCS=OFF \
     -DUSE_LUAJIT=ON \
-    -DTES3MP_FETCH_DEPS=ON
+    -DMWNET_FETCH_DEPS=ON
 
 echo ""
 # Cap parallel jobs to avoid OOM - Sol3/template compilation uses ~1-2GB RAM per job
@@ -34,6 +34,6 @@ echo "=========================================="
 echo "Build completed successfully!"
 echo "=========================================="
 echo ""
-echo "Executables are in: /tes3mp/build/"
-ls -lh /tes3mp/build/tes3mp* 2>/dev/null || true
+echo "Executables are in: /mwnet/build/"
+ls -lh /mwnet/build/mwnet* 2>/dev/null || true
 echo ""

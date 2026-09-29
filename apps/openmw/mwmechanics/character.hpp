@@ -260,10 +260,10 @@ namespace MWMechanics
             uint32_t loops, bool loopfallback = false) const;
 
     public:
-        /* Start of tes3mp addition */
+        /* Start of mwnet addition */
         std::string getAttackType() const;
         void setAttackingOrSpell(bool attackingOrSpell) const;
-        /* End of tes3mp addition */
+        /* End of mwnet addition */
 
         CharacterController(const MWWorld::Ptr& ptr, MWRender::Animation& anim);
         virtual ~CharacterController();

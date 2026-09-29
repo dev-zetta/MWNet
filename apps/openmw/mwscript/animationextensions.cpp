@@ -4,7 +4,7 @@
 #include <stdexcept>
 
 /*
-    Start of tes3mp addition
+    Start of mwnet addition
 
     Include additional headers for multiplayer purposes
 */
@@ -13,7 +13,7 @@
 #include "../mwmp/ObjectList.hpp"
 #include "../mwmp/ScriptController.hpp"
 #include "interpretercontext.hpp"
-/* End of tes3mp addition */
+/* End of mwnet addition */
 
 #include "../mwworld/cellstore.hpp"
 #include "../mwworld/class.hpp"
@@ -74,7 +74,7 @@ namespace MWScript
                     ptr, group, mode, std::numeric_limits<uint32_t>::max(), true);
 
                 /*
-                    Start of tes3mp addition
+                    Start of mwnet addition
 
                     Send an ID_OBJECT_ANIM_PLAY every time an animation is played for an object
                     through an approved script
@@ -88,7 +88,7 @@ namespace MWScript
                     objectList->addObjectAnimPlay(ptr, std::string(group), mode);
                     objectList->sendObjectAnimPlay();
                 }
-                /* End of tes3mp addition */
+                /* End of mwnet addition */
             }
         };
 

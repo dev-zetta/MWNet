@@ -124,7 +124,7 @@ namespace MWClass
             manualRef.getPtr().getCellRef().setPosition(ptr.getCellRef().getPosition());
 
             /*
-                Start of tes3mp change (major)
+                Start of mwnet change (major)
 
                 Don't spawn leveled creatures in multiplayer; they'll be spawned when the server requests them
             */
@@ -135,7 +135,7 @@ namespace MWClass
             MWBase::Environment::get().getWorldModel()->registerPtr(placed);
             customData.mSpawnedActor = placed.getCellRef().getRefNum();
             */
-            /* End of tes3mp change (major)*/
+            /* End of mwnet change (major)*/
             customData.mSpawn = false;
         }
         else

@@ -29,7 +29,7 @@
 #include <components/settings/values.hpp>
 
 /*
-    Start of tes3mp addition
+    Start of mwnet addition
 
     Include additional headers for multiplayer purposes
 */
@@ -38,7 +38,7 @@
 #include "../mwmp/LocalPlayer.hpp"
 #include "../mwmp/LocalActor.hpp"
 #include "../mwgui/dialogue.hpp"
-/* End of tes3mp addition */
+/* End of mwnet addition */
 
 #include "../mwbase/environment.hpp"
 #include "../mwbase/journal.hpp"
@@ -114,12 +114,12 @@ namespace MWDialogue
         return mKeywordSearch;
     }
 
-    /* Start of tes3mp addition */
+    /* Start of mwnet addition */
     bool DialogueManager::isNewTopic(const ESM::RefId& topic)
     {
         return (!mKnownTopics.count(topic));
     }
-    /* End of tes3mp addition */
+    /* End of mwnet addition */
 
     std::vector<ESM::RefId> DialogueManager::parseTopicIdsFromText(const std::string& text) const
     {
@@ -143,13 +143,13 @@ namespace MWDialogue
                 mKnownTopics.insert(topicId);
 
                 /*
-                Start of tes3mp addition
+                Start of mwnet addition
 
                 Send an ID_PLAYER_TOPIC packet every time a new topic becomes known
             */
             if (mActorKnownTopics.count(topicId) && isNewTopic(topicId))
                 mwmp::Main::get().getLocalPlayer()->sendTopic(topicId.getRefIdString());
-            /* End of tes3mp addition */
+            /* End of mwnet addition */
         }
     }
 
@@ -287,14 +287,14 @@ namespace MWDialogue
                 MWScript::InterpreterContext interpreterContext(&actor.getRefData().getLocals(), actor);
 
                 /*
-                    Start of tes3mp addition
+                    Start of mwnet addition
 
                     Mark this InterpreterContext as having a DIALOGUE context,
                     so that packets sent by the Interpreter can have their
                     origin determined by serverside scripts
                 */
                 //interpreterContext.trackContextType(Interpreter::Context::DIALOGUE);
-                /* End of tes3mp addition */
+                /* End of mwnet addition */
 
                 Interpreter::Interpreter interpreter;
                 MWScript::installOpcodes(interpreter);
@@ -694,7 +694,7 @@ namespace MWDialogue
             if (Settings::gui().mSubtitles)
             {
                 /*
-                    Start of tes3mp change (minor)
+                    Start of mwnet change (minor)
 
                     If the dialogue window is already open for this actor, don't inject the
                     say() subtitle into it - startDialogue() already added the greeting text,
@@ -704,7 +704,7 @@ namespace MWDialogue
                     && static_cast<MWGui::DialogueWindow*>(winMgr->getDialogueWindow())->getPtr() == actor;
                 winMgr->messageBox(info->mResponse,
                     actorInDialogue ? MWGui::ShowInDialogueMode_Never : MWGui::ShowInDialogueMode_IfPossible);
-                /* End of tes3mp change (minor) */
+                /* End of mwnet change (minor) */
             }
             if (!info->mSound.empty())
                 sndMgr->say(actor, Misc::ResourceHelpers::correctSoundPath(VFS::Path::Normalized(info->mSound)));
@@ -712,7 +712,7 @@ namespace MWDialogue
                 executeScript(info->mResultScript, actor);
 
             /*
-                Start of tes3mp addition
+                Start of mwnet addition
 
                 If we are the cell authority over this actor, we need to record this new
                 sound for it
@@ -723,7 +723,7 @@ namespace MWDialogue
                 if (localActor) localActor->sound = info->mSound;
                 else Log(Debug::Warning) << "dialoguemanagerimp: getLocalActor returned nullptr for " << actor.getCellRef().getRefId();
             }
-            /* End of tes3mp addition */
+            /* End of mwnet addition */
             MWBase::Environment::get().getLuaManager()->onDialogueResponse(actor, *info, *dial);
         }
         return info != nullptr;
@@ -829,7 +829,7 @@ namespace MWDialogue
     }
 
     /*
-        Start of tes3mp addition
+        Start of mwnet addition
 
         Make it possible to get the caption of a voice dialogue
     */
@@ -852,5 +852,5 @@ namespace MWDialogue
 
         return ESM::RefId::stringRefId("???");
     }
-    /* End of tes3mp addition */
+    /* End of mwnet addition */
 }

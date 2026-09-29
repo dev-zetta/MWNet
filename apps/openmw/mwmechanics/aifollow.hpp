@@ -99,19 +99,19 @@ namespace MWMechanics
         static int mFollowIndexCounter;
 
                 /*
-                Start of tes3mp addition
+                Start of mwnet addition
 
                 Make it possible to allow following from any distance
             */
             void allowAnyDistance(bool state);
-            /* End of tes3mp addition */
+            /* End of mwnet addition */
                 /*
-                Start of tes3mp addition
+                Start of mwnet addition
 
                 Track whether this package allows following to start from any distance
             */
             bool mIgnoreDistance = false;
-            /* End of tes3mp addition */
+            /* End of mwnet addition */
     };
 }
 #endif

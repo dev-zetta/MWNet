@@ -14,7 +14,7 @@ namespace OpenMW
 {
     bpo::options_description makeOptionsDescription()
     {
-        bpo::options_description desc("Syntax: openmw <options>\nAllowed options");
+        bpo::options_description desc("Syntax: mwnet <options>\nAllowed options");
         Files::ConfigurationManager::addCommonOptions(desc);
 
         auto addOption = desc.add_options();

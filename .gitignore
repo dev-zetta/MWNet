@@ -86,9 +86,14 @@ moc_*.cxx
 *.so
 venv/
 
-## local TES3MP test state
-/.tes3mp-test/
+## local MWNet test state
+/.mwnet-test/
+/.*-test/
 
 ## operating system files
 .DS_Store
 Thumbs.db
+
+# Retired CoreScripts runtime trees are local state, not source.
+/files/*/core-scripts/
+!/files/mwnet/core-scripts/

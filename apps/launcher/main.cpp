@@ -36,7 +36,7 @@ int runLauncher(int argc, char* argv[])
     {
         Platform::Application app(argc, argv);
 
-        app.setDesktopFileName("org.openmw.launcher");
+        app.setDesktopFileName("org.mwnet.launcher");
 
         QString resourcesPath(".");
         if (!variables["resources"].empty())

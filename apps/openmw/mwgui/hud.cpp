@@ -14,7 +14,7 @@
 #include <components/settings/values.hpp>
 
     /*
-    Start of tes3mp addition
+    Start of mwnet addition
 
     Include additional headers for multiplayer purposes
 */
@@ -22,7 +22,7 @@
 #include "../mwmp/Networking.hpp"
 #include "../mwmp/ObjectList.hpp"
 #include "../mwworld/cellstore.hpp"
-/* End of tes3mp addition */
+/* End of mwnet addition */
 #include "../mwbase/environment.hpp"
 #include "../mwbase/inputmanager.hpp"
 #include "../mwbase/windowmanager.hpp"
@@ -220,7 +220,7 @@ namespace MWGui
                 // pick up object
                 if (!object.isEmpty())
                 /*
-                    Start of tes3mp change (major)
+                    Start of mwnet change (major)
 
                     Disable unilateral picking up of objects on this client
 
@@ -236,7 +236,7 @@ namespace MWGui
                     objectList->addObjectActivate(object, MWMechanics::getPlayer());
                     objectList->sendObjectActivate();
                 }
-                /* End of tes3mp change (major) */
+                /* End of mwnet change (major) */
             }
         }
     }

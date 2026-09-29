@@ -13,7 +13,7 @@
 #include "character.hpp"
 
     /*
-    Start of tes3mp addition
+    Start of mwnet addition
 
     Include additional headers for multiplayer purposes
 */
@@ -21,7 +21,7 @@
 #include "../mwgui/windowmanagerimp.hpp"
 #include "../mwmp/Main.hpp"
 #include "../mwmp/LocalPlayer.hpp"
-/* End of tes3mp addition */
+/* End of mwnet addition */
 #include "creaturestats.hpp"
 #include "npcstats.hpp"
 

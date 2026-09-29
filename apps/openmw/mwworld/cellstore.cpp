@@ -5,7 +5,7 @@
 #include <fstream>
 
 /*
-    Start of tes3mp addition
+    Start of mwnet addition
 
     Include additional headers for multiplayer purposes
 */
@@ -13,7 +13,7 @@
 #include "../mwmp/Main.hpp"
 #include "../mwmp/Networking.hpp"
 #include "../mwmp/CellController.hpp"
-/* End of tes3mp addition */
+/* End of mwnet addition */
 
 #include <components/debug/debuglog.hpp>
 
@@ -499,7 +499,7 @@ namespace MWWorld
             assert(found->second == from);
 
                 /*
-                Start of tes3mp addition
+                Start of mwnet addition
 
                 Add extra debug for multiplayer purposes
             */
@@ -512,7 +512,7 @@ namespace MWWorld
                     std::string(found->second->getCell()->getDescription()).c_str(),
                     std::string(from->getCell()->getDescription()).c_str());
             }
-            /* End of tes3mp addition */
+            /* End of mwnet addition */
             mMovedToAnotherCell.erase(found);
         }
         else
@@ -549,7 +549,7 @@ namespace MWWorld
             if (cellToMoveTo != originalCell)
             {
                 /*
-                    Start of tes3mp addition
+                    Start of mwnet addition
 
                     Add extra debug for multiplayer purposes
                 */
@@ -558,7 +558,7 @@ namespace MWWorld
                     std::string(originalCell->getCell()->getDescription()).c_str(),
                     std::string(this->getCell()->getDescription()).c_str(),
                     std::string(cellToMoveTo->getCell()->getDescription()).c_str());
-                /* End of tes3mp addition */
+                /* End of mwnet addition */
                 
                 originalCell->moveTo(object, cellToMoveTo);
             }
@@ -575,7 +575,7 @@ namespace MWWorld
     }
 
     /*
-        Start of tes3mp addition
+        Start of mwnet addition
 
         Make it possible to clear the moves to other cells tracked for objects, allowing for
         on-the-fly cell resets that don't cause crashes
@@ -601,7 +601,7 @@ namespace MWWorld
         mMovedHere.clear();
         mMovedToAnotherCell.clear();
     }
-    /* End of tes3mp addition */
+    /* End of mwnet addition */
 
     struct MergeVisitor
     {
@@ -650,7 +650,7 @@ namespace MWWorld
         mMergedRefsNeedsUpdate = false;
 
             /*
-            Start of tes3mp addition
+            Start of mwnet addition
 
             If the mwmp::Cell corresponding to this CellStore is under the authority of the LocalPlayer,
             prepare a new initialization of LocalActors in it
@@ -662,7 +662,7 @@ namespace MWWorld
         {
             mwmp::Main::get().getCellController()->getCell(getCell()->getEsm3())->shouldInitializeActors = true;
         }
-        /* End of tes3mp addition */
+        /* End of mwnet addition */
     }
 
     bool CellStore::movedHere(const MWWorld::Ptr& ptr) const
@@ -783,7 +783,7 @@ namespace MWWorld
 
 
         /*
-        Start of tes3mp addition
+        Start of mwnet addition
 
         A custom type of search visitor used to find objects by their reference numbers
     */
@@ -815,9 +815,9 @@ namespace MWWorld
             return true;
         }
     };
-    /* End of tes3mp addition */
+    /* End of mwnet addition */
         /*
-        Start of tes3mp addition
+        Start of mwnet addition
 
         Allow the searching of objects by their reference numbers
     */
@@ -831,9 +831,9 @@ namespace MWWorld
         forEach(searchVisitor);
         return searchVisitor.mFound;
     }
-    /* End of tes3mp addition */
+    /* End of mwnet addition */
         /*
-        Start of tes3mp addition
+        Start of mwnet addition
 
         Make it possible to get the mMergedRefs in the CellStore from elsewhere in the code
     */
@@ -841,9 +841,9 @@ namespace MWWorld
     {
         return mMergedRefs;
     }
-    /* End of tes3mp addition */
+    /* End of mwnet addition */
         /*
-        Start of tes3mp addition
+        Start of mwnet addition
 
         Make it possible to get the mNPCs in the CellStore from elsewhere in the code
     */
@@ -851,7 +851,7 @@ namespace MWWorld
     {
         return &get<ESM::NPC>();
     }
-    /* End of tes3mp addition */
+    /* End of mwnet addition */
 
     CellRefList<ESM::Creature> *CellStore::getCreatures()
     {

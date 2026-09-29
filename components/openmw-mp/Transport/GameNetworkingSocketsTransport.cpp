@@ -218,7 +218,7 @@ namespace mwmp::transport
                 static_cast<std::int32_t>(protocol::limits::normalMessageBytes + protocol::envelopeBytes));
             options[2].SetInt32(k_ESteamNetworkingConfig_RecvBufferMessages,
                 static_cast<std::int32_t>(sMaximumQueuedMessages));
-            // Open-source IP connections do not have a certificate authority. TES3MP's
+            // Open-source IP connections do not have a certificate authority. MWNet's
             // identity-bound TOFU handshake authenticates them before gameplay.
             options[3].SetInt32(k_ESteamNetworkingConfig_IP_AllowWithoutAuth, 2);
             return options;
@@ -359,7 +359,7 @@ namespace mwmp::transport
             protocol::CodecError codecError = protocol::CodecError::None;
             if (!encodeTransportMessage(message, encoded, codecError))
             {
-                error = { TransportErrorCode::MessageRejected, "protocol-11 message encoding failed" };
+                error = { TransportErrorCode::MessageRejected, "MWNet message encoding failed" };
                 return false;
             }
 
@@ -502,7 +502,7 @@ namespace mwmp::transport
                 static_cast<MessageLane>(networkMessage.m_idxLane), deliveryMode(networkMessage.m_nFlags), message);
             if (!decoded)
             {
-                recordViolation(networkMessage.m_conn, "invalid protocol-11 message");
+                recordViolation(networkMessage.m_conn, "invalid MWNet message");
                 return;
             }
 

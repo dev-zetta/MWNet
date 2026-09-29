@@ -1,5 +1,5 @@
-#ifndef TES3MP_DISCOVERY_DIRECTORY_HPP
-#define TES3MP_DISCOVERY_DIRECTORY_HPP
+#ifndef MWNET_DISCOVERY_DIRECTORY_HPP
+#define MWNET_DISCOVERY_DIRECTORY_HPP
 #include "Protocol.hpp"
 #include <functional>
 #include <map>

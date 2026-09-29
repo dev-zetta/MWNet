@@ -8,7 +8,7 @@
 #include <components/compiler/extensions.hpp>
 
     /*
-    Start of tes3mp addition
+    Start of mwnet addition
 
     Include additional headers for multiplayer purposes
 */
@@ -17,7 +17,7 @@
 #include "../mwmp/LocalPlayer.hpp"
 #include "../mwmp/ObjectList.hpp"
 #include "../mwmp/ScriptController.hpp"
-/* End of tes3mp addition */
+/* End of mwnet addition */
 #include <components/compiler/locals.hpp>
 #include <components/compiler/opcodes.hpp>
 
@@ -259,7 +259,7 @@ namespace MWScript
                 MWBase::Environment::get().getWorld()->enable(ptr);
 
                 /*
-                    Start of tes3mp addition
+                    Start of mwnet addition
 
                     Send an ID_OBJECT_STATE packet whenever an object should be enabled
                 */
@@ -280,7 +280,7 @@ namespace MWScript
                         objectList->sendObjectState();
                     }
                 }
-                /* End of tes3mp addition */
+                /* End of mwnet addition */
             }
         };
 
@@ -307,7 +307,7 @@ namespace MWScript
                     }
 
                         /*
-                        Start of tes3mp addition
+                        Start of mwnet addition
 
                         Send an ID_OBJECT_STATE packet whenever an object should be disabled, as long as the
                         player is logged in on the server and  if triggered from a clientside script  our
@@ -331,7 +331,7 @@ namespace MWScript
                             objectList->sendObjectState();
                         }
                     }
-                    /* End of tes3mp addition */
+                    /* End of mwnet addition */
                 }
                 else
                 {
@@ -366,7 +366,7 @@ namespace MWScript
                 MWBase::Environment::get().getWindowManager()->playVideo(name, allowSkipping);
 
                     /*
-                    Start of tes3mp addition
+                    Start of mwnet addition
 
                     Send an ID_VIDEO_PLAY packet every time a video is played
                     through a script
@@ -380,7 +380,7 @@ namespace MWScript
                     objectList->addVideoPlay(std::string(name), allowSkipping);
                     objectList->sendVideoPlay();
                 }
-                /* End of tes3mp addition */
+                /* End of mwnet addition */
             }
         };
 
@@ -459,7 +459,7 @@ namespace MWScript
                     lockLevel = 100;
 
                         /*
-                        Start of tes3mp addition
+                        Start of mwnet addition
 
                         Send an ID_OBJECT_LOCK packet every time an object is locked
                         through a script, as long as the lock level being set is not
@@ -474,7 +474,7 @@ namespace MWScript
                         objectList->addObjectLock(ptr, lockLevel);
                         objectList->sendObjectLock();
                     }
-                    /* End of tes3mp addition */
+                    /* End of mwnet addition */
                 }
 
                 if (arg0 == 1)
@@ -503,7 +503,7 @@ namespace MWScript
                 MWWorld::Ptr ptr = R()(runtime);
 
                 /*
-                    Start of tes3mp addition
+                    Start of mwnet addition
 
                     Send an ID_OBJECT_LOCK packet every time an object is unlocked
                     through a script, as long as it's not already unlocked
@@ -517,7 +517,7 @@ namespace MWScript
                     objectList->addObjectLock(ptr, 0);
                     objectList->sendObjectLock();
                 }
-                /* End of tes3mp addition */
+                /* End of mwnet addition */
 
                 if (ptr.getCellRef().isLocked())
                     ptr.getCellRef().unlock();
@@ -1027,7 +1027,7 @@ namespace MWScript
                 if (parameter == 1)
                 {
                     /*
-                        Start of tes3mp addition
+                        Start of mwnet addition
 
                         Send an ID_OBJECT_DELETE packet every time an object is deleted
                         through a script, as long as we haven't already communicated
@@ -1045,7 +1045,7 @@ namespace MWScript
                         objectList->addObjectGeneric(ptr);
                         objectList->sendObjectDelete();
                     }
-                    /* End of tes3mp addition */
+                    /* End of mwnet addition */
 
                     MWBase::Environment::get().getWorld()->deleteObject(ptr);
                 }

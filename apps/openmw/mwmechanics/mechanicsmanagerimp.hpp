@@ -167,12 +167,12 @@ namespace MWMechanics
         std::map<int, MWWorld::Ptr> getActorsFollowingByIndex(const MWWorld::Ptr& actor) override;
 
                 /*
-                Start of tes3mp addition
+                Start of mwnet addition
 
                 Make it possible to set the number of deaths for an actor with the given refId
             */
             virtual void setDeaths(const ESM::RefId& refId, int number);
-            /* End of tes3mp addition */
+            /* End of mwnet addition */
         std::vector<MWWorld::Ptr> getActorsFighting(const MWWorld::Ptr& actor) override;
         std::vector<MWWorld::Ptr> getEnemiesNearby(const MWWorld::Ptr& actor) override;
 
@@ -240,12 +240,12 @@ namespace MWMechanics
             const MWWorld::Ptr& player, const MWWorld::Ptr& item, const MWWorld::Ptr& victim, int count) override;
 
                 /*
-                Start of tes3mp addition
+                Start of mwnet addition
 
                 Make it possible to set the attackingOrSpell state from elsewhere in the code
             */
             virtual void setAttackingOrSpell(const MWWorld::Ptr &ptr, bool state) const override;
-            /* End of tes3mp addition */
+            /* End of mwnet addition */
         bool isAttackPreparing(const MWWorld::Ptr& ptr) override;
         bool isRunning(const MWWorld::Ptr& ptr) override;
         bool isSneaking(const MWWorld::Ptr& ptr) override;
@@ -266,12 +266,12 @@ namespace MWMechanics
             const ESM::RefId& factionId, int arg = 0);
 
                 /*
-                Start of tes3mp addition
+                Start of mwnet addition
 
                 Make it possible to check if an itemId corresponds to a bound item
             */
             bool isBoundItem(const ESM::RefId& itemId) override;
-            /* End of tes3mp addition */
+            /* End of mwnet addition */
     };
 }
 

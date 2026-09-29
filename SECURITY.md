@@ -1,6 +1,6 @@
 # Security policy
 
-TES3MP 1.0.0 is undergoing a security-focused protocol and authority rewrite. The current alpha is for local and explicitly opt-in testing; it is not approved for untrusted public hosting.
+MWNet 1.0.0 is undergoing a security-focused protocol and authority rewrite. The current alpha is for local and explicitly opt-in testing; it is not approved for untrusted public hosting.
 
 ## Supported versions
 
@@ -14,7 +14,7 @@ Stable 1.0.0 remains blocked until the cross-platform, sanitizer, fuzzing, soak,
 
 ## Reporting a vulnerability
 
-Do not open a public issue for an unpatched vulnerability. Email `dev@zetta.app` with the subject `TES3MP security report`, or use the repository host's private security-reporting feature when one is available.
+Do not open a public issue for an unpatched vulnerability. Email `dev@zetta.app` with the subject `MWNet security report`, or use the repository host's private security-reporting feature when one is available.
 
 Include the affected commit or version, operating system, whether the client or server is affected, reproduction steps and the security impact. Attach only the smallest necessary logs and remove passwords, identity private keys, access tokens, player data and unrelated IP addresses. A proof of concept is welcome, but do not test against public servers or data you do not own.
 

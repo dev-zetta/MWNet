@@ -189,7 +189,7 @@ namespace MWGui
         MWGui::PostProcessorHud* getPostProcessorHud() override;
         std::vector<MWGui::WindowBase*> getGuiModeWindows(GuiMode mode) override;
 
-        /* Start of tes3mp addition */
+        /* Start of mwnet addition */
         virtual MWGui::ContainerWindow* getContainerWindow();
         virtual MWGui::DialogueWindow* getDialogueWindow();
         virtual void setConsolePtr(const MWWorld::Ptr& object);
@@ -198,7 +198,7 @@ namespace MWGui
         virtual void finishDragDrop();
         virtual void setQuickKey(int slot, int quickKeyType, MWWorld::Ptr item, const ESM::RefId& spellId = ESM::RefId{});
         virtual void executeCommandInConsole(const ESM::RefId& command);
-        /* End of tes3mp addition */
+        /* End of mwnet addition */
 
         /// Make the player use an item, while updating GUI state accordingly
         void useItem(const MWWorld::Ptr& item, bool bypassBeastRestrictions = false) override;

@@ -52,7 +52,7 @@ namespace MWBase
         ///< Gets a pointer to the requested quest. Will return nullptr if the quest has not been started.
 
         /*
-            Start of tes3mp change (minor)
+            Start of mwnet change (minor)
 
             Make it possible to override current time when adding journal entries, by adding
             optional timestamp override arguments
@@ -60,18 +60,18 @@ namespace MWBase
         virtual void addEntry(const ESM::RefId& id, int index, const MWWorld::Ptr& actor, int daysPassed = -1, int month = -1, int day = -1) = 0;
         ///< Add a journal entry.
         /// @param actor Used as context for replacing of escape sequences (%name, etc).
-        /* End of tes3mp change (minor) */
+        /* End of mwnet change (minor) */
 
         virtual void setJournalIndex(const ESM::RefId& id, int index) = 0;
         ///< Set the journal index without adding an entry.
 
         /*
-            Start of tes3mp addition
+            Start of mwnet addition
 
             Make it possible to check whether a journal entry already exists from elsewhere in the code
         */
         virtual bool hasEntry(const ESM::RefId& id, int index) = 0;
-        /* End of tes3mp addition */
+        /* End of mwnet addition */
 
         virtual int getJournalIndex(const ESM::RefId& id) const = 0;
         ///< Get the journal index.

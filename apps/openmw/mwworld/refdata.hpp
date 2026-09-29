@@ -154,7 +154,7 @@ namespace MWWorld
         ESM::AnimationState& getAnimationState();
 
             /*
-                Start of tes3mp addition
+                Start of mwnet addition
 
                 Track the last state communicated to the server for this reference,
                 to avoid packet spam when the server denies our state change request or
@@ -177,7 +177,7 @@ namespace MWWorld
             short getLastCommunicatedState() { return mLastCommunicatedState; };
 
             void setLastCommunicatedState(short communicationState) { mLastCommunicatedState = communicationState; };
-            /* End of tes3mp addition */
+            /* End of mwnet addition */
     };
 }
 

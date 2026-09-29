@@ -1,16 +1,16 @@
-# Building TES3MP 1.0.0-alpha.1 (OpenMW 0.52)
+# Building MWNet 1.0.0-alpha.1 (OpenMW 0.52)
 
-This document provides build instructions for the in-progress TES3MP 1.0.0 release, based on OpenMW 0.52.
+This document provides build instructions for the in-progress MWNet 1.0.0 release, based on OpenMW 0.52.
 
 ## Project Information
 
-- **TES3MP Version:** 1.0.0-alpha.1
+- **MWNet Version:** 1.0.0-alpha.1
 - **OpenMW Base:** 0.52.0
-- **Branch:** tes3mp_merged
+- **Branch:** mwnet_merged
 - **C++ Standard:** C++20
 - **CMake Requirement:** 3.16.0 or higher
 
-This maintained fork combines TES3MP's multiplayer features with OpenMW 0.52's modernized codebase.
+This maintained fork combines MWNet's multiplayer features with OpenMW 0.52's modernized codebase.
 
 ---
 
@@ -22,10 +22,10 @@ Build in an isolated Docker container with all dependencies pre-installed:
 
 ```bash
 # Build the Docker image (first time only)
-docker build -f Dockerfile.tes3mp -t tes3mp-merged:latest .
+docker build -f Dockerfile.mwnet -t mwnet-merged:latest .
 
-# Build TES3MP in Docker
-docker run --rm -v "$(pwd)":/tes3mp:Z -e NPROC=$(nproc) tes3mp-merged:latest
+# Build MWNet in Docker
+docker run --rm -v "$(pwd)":/mwnet:Z -e NPROC=$(nproc) mwnet-merged:latest
 ```
 
 **Advantages:**
@@ -45,25 +45,25 @@ A custom build script has been created specifically for this merged branch. It h
 
 ```bash
 # Make the script executable (if not already)
-chmod +x tes3mp-merged-build.sh
+chmod +x mwnet-merged-build.sh
 
 # View available options
-./tes3mp-merged-build.sh --help
+./mwnet-merged-build.sh --help
 
 # Install and build everything (client + server + dependencies)
-./tes3mp-merged-build.sh --install
+./mwnet-merged-build.sh --install
 
 # Build server-only
-./tes3mp-merged-build.sh --install --server-only
+./mwnet-merged-build.sh --install --server-only
 
 # Specify number of CPU cores
-./tes3mp-merged-build.sh --install --cores 4
+./mwnet-merged-build.sh --install --cores 4
 
 # Rebuild after making code changes
-./tes3mp-merged-build.sh --rebuild
+./mwnet-merged-build.sh --rebuild
 
 # Clean build directory
-./tes3mp-merged-build.sh --clean
+./mwnet-merged-build.sh --clean
 ```
 
 **Features:**
@@ -77,25 +77,25 @@ chmod +x tes3mp-merged-build.sh
 **Skip options:**
 ```bash
 # Skip package installation (if dependencies already installed)
-./tes3mp-merged-build.sh --install --skip-pkgs
+./mwnet-merged-build.sh --install --skip-pkgs
 
 # Require already installed dependencies instead of using the pinned fetch fallback
-./tes3mp-merged-build.sh --install --skip-deps
+./mwnet-merged-build.sh --install --skip-deps
 ```
 
 ---
 
-### Option 3: Original TES3MP-deploy Script (Advanced)
+### Option 3: Original MWNet-deploy Script (Advanced)
 
-The original TES3MP community deployment script is available but requires modification for this merged branch:
+The original MWNet community deployment script is available but requires modification for this merged branch:
 
 ```bash
-# The script is already cloned in TES3MP-deploy/
-cd TES3MP-deploy
+# The script is already cloned in MWNet-deploy/
+cd MWNet-deploy
 
-# Note: This script downloads from the official TES3MP repository
+# Note: This script downloads from the official MWNet repository
 # You would need to modify it to use your local merged branch
-./tes3mp-deploy.sh --install
+./mwnet-deploy.sh --install
 ```
 
 **Note:** The custom script (Option 2) or Docker (Option 1) are recommended as they're already configured for this merged branch.
@@ -128,9 +128,9 @@ Core libraries:
 - LZ4
 - RecastNavigation
 
-TES3MP-specific:
+MWNet-specific:
 - **GameNetworkingSockets v1.5.1** for the encrypted transport. Install a CMake
-  package or use `-DTES3MP_FETCH_DEPS=ON` to fetch the revision recorded in
+  package or use `-DMWNET_FETCH_DEPS=ON` to fetch the revision recorded in
   `DEPENDENCIES.md`.
 - **libsodium 1.0.18 or newer** for server identities, authenticated sessions
   and Argon2id password hashing.
@@ -163,7 +163,7 @@ sudo apt install -y \
 1. **Navigate to project directory:**
 
 ```bash
-cd /home/gmax/dev/TES3MP
+cd /home/gmax/dev/MWNet
 ```
 
 2. **Create build directory:**
@@ -183,17 +183,17 @@ cmake .. \
   -DBUILD_OPENMW_MP=ON \
   -DBUILD_LAUNCHER=ON \
   -DBUILD_OPENCS=ON \
-  -DTES3MP_FETCH_DEPS=ON
+  -DMWNET_FETCH_DEPS=ON
 ```
 
-Omit `TES3MP_FETCH_DEPS` when an approved GameNetworkingSockets CMake package is installed.
+Omit `MWNET_FETCH_DEPS` when an approved GameNetworkingSockets CMake package is installed.
 
 **Available CMake Options:**
 
 | Option | Default | Description |
 |--------|---------|-------------|
-| `BUILD_OPENMW` | ON | Build the main TES3MP client |
-| `BUILD_OPENMW_MP` | ON | Build TES3MP server (154 multiplayer files) |
+| `BUILD_OPENMW` | ON | Build the main MWNet client |
+| `BUILD_OPENMW_MP` | ON | Build MWNet server (154 multiplayer files) |
 | `BUILD_LAUNCHER` | ON | Build game launcher |
 | `BUILD_OPENCS` | ON | Build OpenMW Construction Set |
 | `BUILD_WIZARD` | ON | Build installation wizard |
@@ -203,11 +203,11 @@ Omit `TES3MP_FETCH_DEPS` when an approved GameNetworkingSockets CMake package is
 | `BUILD_ESMTOOL` | ON | Build ESM file inspector |
 | `BUILD_COMPONENTS_TESTS` | OFF | Build component tests |
 | `BUILD_BENCHMARKS` | OFF | Build benchmarks |
-| `BUILD_TES3MP_TESTS` | OFF | Build TES3MP protocol, transport and server tests |
-| `BUILD_TES3MP_FUZZERS` | OFF | Build TES3MP libFuzzer targets |
-| `TES3MP_TESTS_ONLY` | OFF | Configure the dependency-light protocol and server test tree only |
-| `TES3MP_TESTS_WITH_SECURITY` | OFF | Add libsodium and Boost-based authentication and handshake coverage to a tests-only build |
-| `TES3MP_FETCH_DEPS` | OFF | Fetch the pinned GameNetworkingSockets revision when no package is installed |
+| `BUILD_MWNET_TESTS` | OFF | Build MWNet protocol, transport and server tests |
+| `BUILD_MWNET_FUZZERS` | OFF | Build MWNet libFuzzer targets |
+| `MWNET_TESTS_ONLY` | OFF | Configure the dependency-light protocol and server test tree only |
+| `MWNET_TESTS_WITH_SECURITY` | OFF | Add libsodium and Boost-based authentication and handshake coverage to a tests-only build |
+| `MWNET_FETCH_DEPS` | OFF | Fetch the pinned GameNetworkingSockets revision when no package is installed |
 
 **Build Types:**
 - `Debug` - No optimization, full debug symbols
@@ -242,8 +242,8 @@ After successful compilation, executables will be located in:
 
 ```
 build/
-├── tes3mp              # Main TES3MP client executable
-├── tes3mp-server       # TES3MP multiplayer server
+├── mwnet              # Main MWNet client executable
+├── mwnet-server       # MWNet multiplayer server
 ├── openmw-launcher     # Game launcher
 ├── openmw-cs           # Construction Set
 └── ... (other tools)
@@ -256,27 +256,27 @@ build/
 The protocol, persistence, mechanics and ownership tests have a dependency-light configuration that does not require the OpenMW client stack:
 
 ```bash
-cmake -S . -B build-protocol -DTES3MP_TESTS_ONLY=ON
+cmake -S . -B build-protocol -DMWNET_TESTS_ONLY=ON
 cmake --build build-protocol --parallel
 ctest --test-dir build-protocol --output-on-failure
 ```
 
-A full dependency build with `BUILD_TES3MP_TESTS=ON` also provides `tes3mp-headless-integration`, which exercises the authenticated protocol over real encrypted loopback connections, and `tes3mp-persistence-fault`, which kills a writer process at every atomic-save stage.
+A full dependency build with `BUILD_MWNET_TESTS=ON` also provides `mwnet-headless-integration`, which exercises the authenticated protocol over real encrypted loopback connections, and `mwnet-persistence-fault`, which kills a writer process at every atomic-save stage.
 
 The release-budget fuzz campaign requires Clang/libFuzzer, libsodium and the Boost headers. A minimal build of all four targets can be configured without the OpenMW client dependencies:
 
 ```bash
 CC=clang CXX=clang++ cmake -S . -B build-fuzz \
-    -DTES3MP_TESTS_ONLY=ON \
-    -DTES3MP_TESTS_WITH_SECURITY=ON \
-    -DBUILD_TES3MP_FUZZERS=ON
+    -DMWNET_TESTS_ONLY=ON \
+    -DMWNET_TESTS_WITH_SECURITY=ON \
+    -DBUILD_MWNET_FUZZERS=ON
 cmake --build build-fuzz --parallel
 ```
 
 The campaign runs the protocol, transport, authentication and secure-handshake targets concurrently and retains their corpora, logs, failures and an exact-commit campaign manifest:
 
 ```bash
-CI/run_tes3mp_fuzz_campaign.sh --release-budget
+CI/run_mwnet_fuzz_campaign.sh --release-budget
 ```
 
 Run the mandatory connect/death cycles and paired 24-hour eight-client latency/loss
@@ -284,7 +284,7 @@ soak against an exact candidate with a native build in `build` and an ASan/UBSan
 build in `build-sanitizer`:
 
 ```bash
-CI/run_tes3mp_soak.sh --release-gates
+CI/run_mwnet_soak.sh --release-gates
 ```
 
 The native process must pass the 1% post-warm-up RSS limit. The second process
@@ -304,15 +304,15 @@ paired shorter developer runs without `--release-gates`.
 To build both profiles and run the paired gate in one isolated container:
 
 ```bash
-docker build -f Dockerfile.tes3mp -t tes3mp-build:alpha1-sanitizers .
+docker build -f Dockerfile.mwnet -t mwnet-build:alpha1-sanitizers .
 git diff --quiet HEAD --
 source_commit="$(git rev-parse HEAD)"
 git archive --format=tar HEAD | docker build \
-    --build-arg TES3MP_SOURCE_COMMIT="$source_commit" \
-    -f Dockerfile.tes3mp-sanitizer -t tes3mp-soak:alpha1-sanitizers -
-docker run -d --name tes3mp-alpha1-sanitizer-soak \
+    --build-arg MWNET_SOURCE_COMMIT="$source_commit" \
+    -f Dockerfile.mwnet-sanitizer -t mwnet-soak:alpha1-sanitizers -
+docker run -d --name mwnet-alpha1-sanitizer-soak \
     --memory 2g --memory-swap 2g \
-    tes3mp-soak:alpha1-sanitizers --release-gates
+    mwnet-soak:alpha1-sanitizers --release-gates
 ```
 
 Do not use `--rm`: the completed `/artifacts` directory must remain available
@@ -327,36 +327,36 @@ Allow 2 GiB for the paired runtime; the runner rejects a lower cgroup limit for
 a release run. The observed individual peaks were about 734 MiB with ASan and
 269 MiB without it. Building the images requires additional memory. Python 3
 is required by the paired runner and is included in the dependency image.
-TES3MP calls the pinned GNS build through its flat ABI because GNS disables
+MWNet calls the pinned GNS build through its flat ABI because GNS disables
 RTTI. In the sanitizer profile, fetched GNS sources retain ASan but are excluded
 from UBSan because
 v1.5.1 deliberately erases callback types and uses unaligned packet-buffer
-access; TES3MP sources retain both ASan and UBSan.
+access; MWNet sources retain both ASan and UBSan.
 
 Compare like-for-like performance artifacts against the recorded alpha.1 baseline. A regression above five percent requires an explicit reviewed justification:
 
 ```bash
-CI/compare_tes3mp_performance.py baseline.json candidate.json
+CI/compare_mwnet_performance.py baseline.json candidate.json
 ```
 
 Shorter developer runs are available through each script's `--help`, but do not satisfy the release gates. See [RELEASE_GATES.md](RELEASE_GATES.md) for all cross-platform, sanitizer, fuzz, soak, security and legal evidence required before a stable release.
 
 ---
 
-## Running TES3MP
+## Running MWNet
 
 ### Client
 
 ```bash
 cd build
-./tes3mp
+./mwnet
 ```
 
 ### Server
 
 ```bash
 cd build
-./tes3mp-server
+./mwnet-server
 ```
 
 ---
@@ -365,7 +365,7 @@ cd build
 
 ### API Changes
 
-The original integration updated TES3MP's code to the OpenMW 0.50 APIs. The current branch advances that work to OpenMW 0.52:
+The original integration updated MWNet's code to the OpenMW 0.50 APIs. The current branch advances that work to OpenMW 0.52:
 - **String to RefId:** All ID parameters changed from `std::string` to `ESM::RefId`
 - **Navigation:** Uses OpenMW's updated detournavigator with `ObjectTransform`
 - **Lighting:** Settings-based lighting method configuration
@@ -374,7 +374,7 @@ The original integration updated TES3MP's code to the OpenMW 0.50 APIs. The curr
 
 1. **Missing transport dependencies:** Install GameNetworkingSockets and libsodium,
    or enable the pinned GameNetworkingSockets fallback with
-   `-DTES3MP_FETCH_DEPS=ON`. The fallback still requires libsodium, OpenSSL and
+   `-DMWNET_FETCH_DEPS=ON`. The fallback still requires libsodium, OpenSSL and
    Protobuf development packages.
 
 2. **API Mismatches:** Watch for compilation errors related to:
@@ -418,30 +418,27 @@ This build includes:
 - ESM::RefId API throughout
 - Updated build system with library structure
 
-**From the TES3MP multiplayer lineage:**
+**From the MWNet multiplayer lineage:**
 - Multiplayer core (apps/openmw/mwmp/ - 154 files)
 - In-game saved/recent direct connect with encrypted probes and TOFU fingerprints
 - Encrypted GameNetworkingSockets transport
 - 144 files with multiplayer additions marked
 
-The original OpenMW 0.50 integration resolved 237 merge conflicts while preserving TES3MP's multiplayer features; the codebase was subsequently advanced to OpenMW 0.52.
+The original OpenMW 0.50 integration resolved 237 merge conflicts while preserving MWNet's multiplayer features; the codebase was subsequently advanced to OpenMW 0.52.
 
 ---
 
 ## Additional Resources
 
-- [TES3MP Official Repository](https://github.com/TES3MP/TES3MP)
-- [TES3MP Wiki](https://github.com/TES3MP/TES3MP/wiki)
-- [TES3MP-deploy Script](https://github.com/GrimKriegor/TES3MP-deploy)
 - [OpenMW Documentation](https://openmw.readthedocs.io/)
-- [TES3MP Discord](https://discord.gg/ECJk293)
-- [TES3MP Forum](https://forum.openmw.org/viewforum.php?f=45)
+- [MWNet Discord](https://discord.gg/ECJk293)
+- [MWNet Forum](https://forum.openmw.org/viewforum.php?f=45)
 
 ---
 
 ## License
 
-- TES3MP: GPLv3 with additional allowed terms
+- MWNet: GPLv3 with additional allowed terms
 - OpenMW: GPLv3
 
 See [LICENSE](LICENSE) for full details.

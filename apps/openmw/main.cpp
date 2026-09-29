@@ -15,12 +15,12 @@
 #include <boost/program_options/variables_map.hpp>
 
 /*
-    Start of tes3mp addition
+    Start of mwnet addition
 
     Include the header of the multiplayer's Main class
 */
 #include "mwmp/Main.hpp"
-/* End of tes3mp addition */
+/* End of mwnet addition */
 
 #if defined(_WIN32)
 #include <components/misc/windows.hpp>
@@ -38,7 +38,7 @@ extern "C" __declspec(dllexport) DWORD AmdPowerXpressRequestHighPerformance = 0x
 
 
     /*
-    Start of tes3mp addition
+    Start of mwnet addition
 
     Include additional headers for multiplayer purposes
 */
@@ -46,7 +46,7 @@ extern "C" __declspec(dllexport) DWORD AmdPowerXpressRequestHighPerformance = 0x
 #include <components/openmw-mp/TimedLog.hpp>
 #include <components/openmw-mp/Utils.hpp>
 #include <components/openmw-mp/Version.hpp>
-/* End of tes3mp addition */
+/* End of mwnet addition */
 /**
  * \brief Parses application command line and calls \ref Cfg::ConfigurationManager
  * to parse configuration files.
@@ -65,12 +65,12 @@ bool parseOptions(int argc, char** argv, OMW::Engine& engine, Files::Configurati
     bpo::options_description desc = OpenMW::makeOptionsDescription();
 
         /*
-        Start of tes3mp addition
+        Start of mwnet addition
 
         Parse options added by multiplayer
     */
     mwmp::Main::optionsDesc(&desc);
-    /* End of tes3mp addition */
+    /* End of mwnet addition */
     bpo::variables_map variables;
 
     Files::parseArgs(argc, argv, variables, desc);
@@ -84,6 +84,8 @@ bool parseOptions(int argc, char** argv, OMW::Engine& engine, Files::Configurati
 
     if (variables.count("version"))
     {
+        Debug::getRawStdout() << Utils::getVersionInfo("MWNet client", MWNET_VERSION,
+            std::string(Version::getCommitHash()), MWNET_PROTO_VERSION);
         Debug::getRawStdout() << Version::getOpenmwVersionDescription() << std::endl;
         return false;
     }
@@ -100,12 +102,12 @@ bool parseOptions(int argc, char** argv, OMW::Engine& engine, Files::Configurati
     MWGui::DebugWindow::startLogRecording();
 
         /*
-        Start of tes3mp addition
+        Start of mwnet addition
 
         Print the multiplayer version first
     */
-    Log(Debug::Info) << Utils::getVersionInfo("TES3MP client", TES3MP_VERSION, std::string(Version::getCommitHash()), TES3MP_PROTO_VERSION);
-    /* End of tes3mp addition */
+    Log(Debug::Info) << Utils::getVersionInfo("MWNet client", MWNET_VERSION, std::string(Version::getCommitHash()), MWNET_PROTO_VERSION);
+    /* End of mwnet addition */
     engine.setGrabMouse(!variables["no-grab"].as<bool>());
 
     // Font encoding settings
@@ -193,12 +195,12 @@ bool parseOptions(int argc, char** argv, OMW::Engine& engine, Files::Configurati
     engine.setRandomSeed(variables["random-seed"].as<unsigned int>());
 
     /*
-        Start of tes3mp addition
+        Start of mwnet addition
 
         Configure multiplayer using parsed variables
     */
     mwmp::Main::configure(&variables);
-    /* End of tes3mp addition */
+    /* End of mwnet addition */
 
     return true;
 }
@@ -254,12 +256,12 @@ namespace
 int runApplication(int argc, char* argv[])
 {
     /*
-        Start of tes3mp addition
+        Start of mwnet addition
 
         Initialize the logger added for multiplayer
     */
     LOG_INIT(TimedLog::LOG_INFO);
-    /* End of tes3mp addition */
+    /* End of mwnet addition */
 
     Platform::init();
 
@@ -290,7 +292,7 @@ extern "C" int SDL_main(int argc, char** argv)
 int main(int argc, char** argv)
 #endif
 {
-    return Debug::wrapApplication(&runApplication, argc, argv, "OpenMW");
+    return Debug::wrapApplication(&runApplication, argc, argv, "MWNet");
 }
 
 // Platform specific for Windows when there is no console built into the executable.

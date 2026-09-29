@@ -9,14 +9,14 @@
 #include <components/settings/values.hpp>
 
     /*
-    Start of tes3mp addition
+    Start of mwnet addition
 
     Include additional headers for multiplayer purposes
 */
 #include "../mwmp/Main.hpp"
 #include "../mwmp/Networking.hpp"
 #include "../mwmp/ObjectList.hpp"
-/* End of tes3mp addition */
+/* End of mwnet addition */
 #include "../mwbase/environment.hpp"
 #include "../mwbase/soundmanager.hpp"
 #include "../mwbase/windowmanager.hpp"
@@ -187,7 +187,7 @@ namespace MWClass
                 isTrapped = false;
 
                 /*
-                    Start of tes3mp addition
+                    Start of mwnet addition
 
                     Send an ID_OBJECT_TRAP packet every time a trap is disarmed
                 */
@@ -196,11 +196,11 @@ namespace MWClass
                 objectList->packetOrigin = mwmp::CLIENT_GAMEPLAY;
                 objectList->addObjectTrap(ptr, ptr.getRefData().getPosition(), true);
                 objectList->sendObjectTrap();
-                /* End of tes3mp addition */
+                /* End of mwnet addition */
             }
 
             /*
-                Start of tes3mp addition
+                Start of mwnet addition
 
                 Send an ID_OBJECT_LOCK packet every time a container is unlocked here
             */
@@ -212,7 +212,7 @@ namespace MWClass
                 objectList->addObjectLock(ptr, 0);
                 objectList->sendObjectLock();
             }
-            /* End of tes3mp addition */
+            /* End of mwnet addition */
         }
 
         if (!isLocked || hasKey)

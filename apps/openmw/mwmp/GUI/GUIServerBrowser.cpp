@@ -119,7 +119,7 @@ namespace
 }
 
 GUIServerBrowser::GUIServerBrowser()
-    : WindowModal("tes3mp_server_browser.layout")
+    : WindowModal("mwnet_server_browser.layout")
 {
     center();
     setVisible(false);
@@ -434,7 +434,7 @@ void GUIServerBrowser::filterServers()
         mFiltered.push_back(i);
         const auto label = l.name + "  " + std::to_string(l.players) + "/" + std::to_string(l.capacity)
             + (l.password ? "  [password]" : "")
-            + (l.protocol == TES3MP_PROTO_VERSION ? "  [protocol matches]" : "  [incompatible protocol]")
+            + (l.protocol == MWNET_PROTO_VERSION ? "  [protocol matches]" : "  [incompatible protocol]")
             + "  " + std::to_string(l.content.size()) + " content rules";
         // Server names are untrusted text, never MyGUI colour markup.
         mPublicServers->addItem(MyGUI::TextIterator::toTagsString(label));
@@ -445,7 +445,7 @@ void GUIServerBrowser::onPublicSelected(MyGUI::ListBox*, std::size_t index)
 {
     if (index >= mFiltered.size()) return;
     const auto& server = mServers[mFiltered[index]];
-    if (server.listing.protocol != TES3MP_PROTO_VERSION)
+    if (server.listing.protocol != MWNET_PROTO_VERSION)
     {
         mStatusLabel->setCaption("This server advertises an incompatible gameplay protocol.");
         return;

@@ -1,6 +1,6 @@
 # Code of Conduct
 
-TES3MP contributors, maintainers, server operators and community participants are expected to make collaboration safe, constructive and welcoming.
+MWNet contributors, maintainers, server operators and community participants are expected to make collaboration safe, constructive and welcoming.
 
 ## Expected behavior
 
@@ -16,4 +16,4 @@ Harassment, threats, discrimination, sexualized attention, deliberate intimidati
 
 Report conduct concerns privately to `dev@zetta.app`. Include enough context for a fair review and avoid distributing sensitive material more widely than necessary. The maintainer may warn participants, remove content, restrict participation or ban a participant according to severity and pattern. Reports will be handled as confidentially as practical, and retaliation against a reporter is prohibited.
 
-This policy applies in project repositories, issue trackers, review discussions, project-operated chat spaces and public interactions where someone is representing TES3MP.
+This policy applies in project repositories, issue trackers, review discussions, project-operated chat spaces and public interactions where someone is representing MWNet.

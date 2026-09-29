@@ -26,14 +26,14 @@
 #include <components/vfs/pathutil.hpp>
 
 /*
-    Start of tes3mp addition
+    Start of mwnet addition
 
     Include additional headers for multiplayer purposes
 */
 #include "../mwmp/Main.hpp"
 #include "../mwmp/LocalPlayer.hpp"
 #include "../mwmp/CellController.hpp"
-/* End of tes3mp addition */
+/* End of mwnet addition */
 
 #include "../mwbase/environment.hpp"
 #include "../mwbase/luamanager.hpp"
@@ -434,12 +434,12 @@ namespace MWWorld
             mRendering.notifyWorldSpaceChanged();
 
             /*
-            Start of tes3mp addition
+            Start of mwnet addition
 
             Store a cell unload for the LocalPlayer
         */
         mwmp::Main::get().getLocalPlayer()->storeCellState(cell->getCell()->getEsm3(), mwmp::CellState::UNLOAD);
-        /* End of tes3mp addition */
+        /* End of mwnet addition */
     }
 
     void Scene::loadCell(CellStore& cell, Loading::Listener* loadingListener, bool respawn, const osg::Vec3f& position,
@@ -515,7 +515,7 @@ namespace MWWorld
             cell.respawn();
 
         /*
-            Start of tes3mp addition
+            Start of mwnet addition
 
             Initialize the mwmp::Cell before insertCell so that hasLocalAuthority() returns true
             when updateMergedRefs fires during insertCell, allowing shouldInitializeActors to be set
@@ -527,7 +527,7 @@ namespace MWWorld
                        [&](const ESM4::Cell& /*c*/) {},
                    },
             *cell.getCell());
-        /* End of tes3mp addition */
+        /* End of mwnet addition */
 
         insertCell(cell, loadingListener, navigatorUpdateGuard);
 
@@ -561,14 +561,14 @@ namespace MWWorld
             mRendering.configureAmbient(cellVariant);
 
         /*
-            Start of tes3mp addition
+            Start of mwnet addition
 
             Store a cell load for the LocalPlayer after the cell is fully inserted. This must
             apply to interiors as well as exteriors so the server can accept the following
             cell-change packet and object events.
         */
         mwmp::Main::get().getLocalPlayer()->storeCellState(cell.getCell()->getEsm3(), mwmp::CellState::LOAD);
-        /* End of tes3mp addition */
+        /* End of mwnet addition */
 
         mPreloader->notifyLoaded(&cell);
     }
@@ -738,7 +738,7 @@ namespace MWWorld
         MWBase::Environment::get().getWindowManager()->changeCell(&current);
 
             /*
-            Start of tes3mp addition
+            Start of mwnet addition
 
             Send an ID_PLAYER_CELL_STATE packet with all cell states stored in LocalPlayer
             and then clear them, but only if the player is logged in on the server
@@ -748,7 +748,7 @@ namespace MWWorld
             mwmp::Main::get().getLocalPlayer()->sendCellStates();
             mwmp::Main::get().getLocalPlayer()->clearCellStates();
         }
-        /* End of tes3mp addition */
+        /* End of mwnet addition */
         if (changeEvent)
             mCellChanged = true;
 
@@ -1030,7 +1030,7 @@ namespace MWWorld
         navigatorUpdateGuard.reset();
 
         /*
-            Start of tes3mp addition
+            Start of mwnet addition
 
             Send an ID_PLAYER_CELL_STATE packet with all cell states stored in LocalPlayer
             and then clear them, but only if the player is logged in on the server
@@ -1040,7 +1040,7 @@ namespace MWWorld
             mwmp::Main::get().getLocalPlayer()->sendCellStates();
             mwmp::Main::get().getLocalPlayer()->clearCellStates();
         }
-        /* End of tes3mp addition */
+        /* End of mwnet addition */
 
         changePlayerCell(cell, position, adjustPlayerPos);
 

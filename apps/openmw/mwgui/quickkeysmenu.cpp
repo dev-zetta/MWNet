@@ -15,14 +15,14 @@
 
 
     /*
-    Start of tes3mp addition
+    Start of mwnet addition
 
     Include additional headers for multiplayer purposes
 */
 #include <components/openmw-mp/TimedLog.hpp>
 #include "../mwmp/Main.hpp"
 #include "../mwmp/LocalPlayer.hpp"
-/* End of tes3mp addition */
+/* End of mwnet addition */
 #include "../mwworld/class.hpp"
 #include "../mwworld/esmstore.hpp"
 #include "../mwworld/inventorystore.hpp"
@@ -180,7 +180,7 @@ namespace MWGui
         }
 
         /*
-            Start of tes3mp addition
+            Start of mwnet addition
 
             Send a PLAYER_QUICKKEYS packet whenever a key is unassigned, but only if the player
             is logged in on the server, so as to avoid doing anything doing at startup when all
@@ -190,11 +190,11 @@ namespace MWGui
         {
             mwmp::Main::get().getLocalPlayer()->sendQuickKey(key->index, static_cast<int>(ESM::QuickKeys::Type::Unassigned));
         }
-        /* End of tes3mp addition */
+        /* End of mwnet addition */
     }
 
     /*
-        Start of tes3mp addition
+        Start of mwnet addition
 
         Allow unassigning an index directly from elsewhere in the code
     */
@@ -202,7 +202,7 @@ namespace MWGui
     {
         unassign(&mKey[index]);
     }
-    /* End of tes3mp addition */
+    /* End of mwnet addition */
 
     void QuickKeysMenu::onQuickKeyButtonClicked(MyGUI::Widget* sender)
     {
@@ -297,14 +297,14 @@ namespace MWGui
             mItemSelectionDialog->setVisible(false);
 
         /*
-            Start of tes3mp addition
+            Start of mwnet addition
 
             Send a PlayerQuickKeys packet whenever a key is assigned to an item
             by a player, not by a packet received from the server
         */
         if (!mwmp::Main::get().getLocalPlayer()->isReceivingQuickKeys)
             mwmp::Main::get().getLocalPlayer()->sendQuickKey(mSelected->index, static_cast<int>(ESM::QuickKeys::Type::Item), item.getCellRef().getRefId().getRefIdString());
-        /* End of tes3mp addition */
+        /* End of mwnet addition */
     }
 
     void QuickKeysMenu::onAssignItem(MWWorld::Ptr item)
@@ -346,13 +346,13 @@ namespace MWGui
             mMagicSelectionDialog->setVisible(false);
 
         /*
-            Start of tes3mp addition
+            Start of mwnet addition
 
             Send a PLAYER_QUICKKEYS packet whenever a key is assigned to an item's magic
         */
         if (!mwmp::Main::get().getLocalPlayer()->isReceivingQuickKeys)
             mwmp::Main::get().getLocalPlayer()->sendQuickKey(mSelected->index, static_cast<int>(ESM::QuickKeys::Type::MagicItem), item.getCellRef().getRefId().getRefIdString());
-        /* End of tes3mp addition */
+        /* End of mwnet addition */
     }
 
     void QuickKeysMenu::onAssignMagic(const ESM::RefId& spellId)
@@ -393,13 +393,13 @@ namespace MWGui
             mMagicSelectionDialog->setVisible(false);
 
         /*
-            Start of tes3mp addition
+            Start of mwnet addition
 
             Send a PLAYER_QUICKKEYS packet whenever a key is assigned to a spell
         */
         if (!mwmp::Main::get().getLocalPlayer()->isReceivingQuickKeys)
             mwmp::Main::get().getLocalPlayer()->sendQuickKey(mSelected->index, static_cast<int>(ESM::QuickKeys::Type::Magic), spellId.getRefIdString());
-        /* End of tes3mp addition */
+        /* End of mwnet addition */
     }
 
     void QuickKeysMenu::onAssignMagicCancel()
@@ -470,7 +470,7 @@ namespace MWGui
             if (key->type == ESM::QuickKeys::Type::Item)
             {
                 /*
-                    Start of tes3mp change (major)
+                    Start of mwnet change (major)
 
                     Instead of unilaterally using an item, send an ID_PLAYER_ITEM_USE packet
                 */
@@ -487,14 +487,14 @@ namespace MWGui
                 */
 
                 mwmp::Main::get().getLocalPlayer()->sendItemUse(item, false, static_cast<char>(MWMechanics::DrawState::Weapon));
-                /* End of tes3mp change (major)*/
+                /* End of mwnet change (major)*/
             }
             else if (key->type == ESM::QuickKeys::Type::MagicItem)
             {
                 // equip, if it can be equipped and isn't yet equipped
 
                 /*
-                    Start of tes3mp change (major)
+                    Start of mwnet change (major)
 
                     Instead of unilaterally using an item, send an ID_PLAYER_ITEM_USE packet and let the server
                     decide if the item actually gets used
@@ -517,7 +517,7 @@ namespace MWGui
                 */
 
                 mwmp::Main::get().getLocalPlayer()->sendItemUse(item, false, static_cast<char>(MWMechanics::DrawState::Spell));
-                /* End of tes3mp change (major)*/
+                /* End of mwnet change (major)*/
             }
         }
         else if (key->type == ESM::QuickKeys::Type::Magic)
@@ -540,12 +540,12 @@ namespace MWGui
             MWBase::Environment::get().getWorld()->getPlayer().setDrawState(MWMechanics::DrawState::Spell);
 
                 /*
-                Start of tes3mp addition
+                Start of mwnet addition
 
                 Send a PlayerMiscellaneous packet with the player's new selected spell
             */
             mwmp::Main::get().getLocalPlayer()->sendSelectedSpell(spellId.getRefIdString());
-            /* End of tes3mp addition */
+            /* End of mwnet addition */
         }
         else if (key->type == ESM::QuickKeys::Type::HandToHand)
         {
@@ -591,7 +591,7 @@ namespace MWGui
     }
 
     /*
-        Start of tes3mp addition
+        Start of mwnet addition
 
         Make it possible to add quickKeys from elsewhere in the code
     */
@@ -599,7 +599,7 @@ namespace MWGui
     {
         mSelected = &mKey[index];
     }
-    /* End of tes3mp addition */
+    /* End of mwnet addition */
 
     // ---------------------------------------------------------------------------------------------------------
 

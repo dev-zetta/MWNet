@@ -1,5 +1,7 @@
 # September 18 paired soak and local Linux candidate preparation
 
+> Historical pre-rebrand evidence: LegacyMP/legacy-mp are display aliases for the former fork name in identifiers, commands, and artifact paths. They are not renamed artifacts or MWNet validation results. Hashes, revisions, measurements, and exit codes are unchanged; consult Git history for the original labels.
+
 ## Completed soak at c978f30275
 
 The paired retry at `c978f30275afb3aacc6c0be24331dcbf64cbc24c` completed
@@ -75,7 +77,7 @@ the newly built server's Lua paths. No replacement day-long soak was launched.
 
 The locally retained archive is:
 
-`build/release-candidate-c978f30275/packages/TES3MP-1.0.0-alpha.1-Linux-x86_64-server-56fcea73f4.tar.gz`
+`build/release-candidate-c978f30275/packages/LegacyMP-1.0.0-alpha.1-Linux-x86_64-server-56fcea73f4.tar.gz`
 
 SHA-256: `4a86ad333108cdb154c7cdd8a6114881d315d56e01d9a6cf180db1e40d58ce43`.
 
@@ -97,9 +99,9 @@ because its source snapshot has no Git metadata; the manifest records the
 externally verified runtime commit and binary hash. All seven source changes
 in the build container were checked against the pinned commit.
 
-`CI/build_tes3mp_linux.sh`, `CI/package_tes3mp_linux.py` and
-`CI/smoke_tes3mp_linux.py` provide build, package and extracted-startup
-checks. The manual GitHub workflow `tes3mp-linux-candidate.yml` uploads local
+`CI/build_legacy-mp_linux.sh`, `CI/package_legacy-mp_linux.py` and
+`CI/smoke_legacy-mp_linux.py` provide build, package and extracted-startup
+checks. The manual GitHub workflow `legacy-mp-linux-candidate.yml` uploads local
 build artifacts; it does not publish a release. Its constituent packaging and
 smoke steps were tested locally; the GitHub workflow itself has not run.
 Negative checks also confirmed that a corrupt archive is rejected before
@@ -115,14 +117,14 @@ resumed with eight jobs; the resumed build completed successfully.
 
 The combined archive is retained at:
 
-`build/release-candidate-c978f30275/combined-packages/TES3MP-1.0.0-alpha.1-Linux-x86_64-client-server-56fcea73f4.tar.gz`
+`build/release-candidate-c978f30275/combined-packages/LegacyMP-1.0.0-alpha.1-Linux-x86_64-client-server-56fcea73f4.tar.gz`
 
 SHA-256: `b39c100c179fe1082ba92618ea37dd2b135f1c4335f8912228ec382e703c1603`.
 It includes both executables, CoreScripts, generated client resources and
 configuration, local-session launchers, source SBOM, licenses and checksums.
 It is approximately 181 MiB compressed and requires compatible Ubuntu 24.04
 system libraries, including the graphics/OSG runtime. No game data is included.
-A fresh container with `/tes3mp` hidden and networking disabled verified all
+A fresh container with `/legacy-mp` hidden and networking disabled verified all
 checksums, ran the included client version command successfully, initialized
 CoreScripts and shut the included server down with exit zero and a false
 script-error state. Logs are retained in
@@ -153,7 +155,7 @@ stable 1.0.0 release.
 To repeat client/server preparation in an existing Ubuntu 24.04 build environment:
 
 ```sh
-bash CI/build_tes3mp_linux.sh "$PWD" "$PWD/build/linux-candidate"
+bash CI/build_legacy-mp_linux.sh "$PWD" "$PWD/build/linux-candidate"
 ```
 
 Use a clean committed checkout. The build script runs the full native CTests,

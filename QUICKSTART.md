@@ -1,6 +1,6 @@
-# TES3MP 1.0.0-alpha.1 - Quick Start Guide
+# MWNet 1.0.0-alpha.1 - Quick Start Guide
 
-This guide covers the TES3MP 1.0.0-alpha.1 development candidate, based on OpenMW 0.52.
+This guide covers the MWNet 1.0.0-alpha.1 development candidate, based on OpenMW 0.52.
 It is not a stable release; see [release gates](RELEASE_GATES.md) for outstanding validation.
 
 ## Prerequisites
@@ -16,19 +16,19 @@ It is not a stable release; see [release gates](RELEASE_GATES.md) for outstandin
 
 ```bash
 # From the project root directory
-./tes3mp-merged-build.sh --install
+./mwnet-merged-build.sh --install
 ```
 
 This will:
 - Install all required system dependencies
 - Resolve GameNetworkingSockets at the pinned revision and use the system libsodium
-- Build TES3MP client and server
+- Build MWNet client and server
 - Save build log to `build.log`
 
 ### 2. Run a Local Multiplayer Test
 
 ```bash
-./run-tes3mp-local.sh
+./run-mwnet-local.sh
 ```
 
 This starts an isolated localhost server and the game together, bypassing the single-player intro and character-generation sequence before login. The first run copies display, input, camera, and Lua settings from your current OpenMW profile, asks for the Morrowind `Data Files` directory if it cannot be detected, then remembers both for later runs. Use `--client-profile PATH` to seed the test from another existing profile, or `--server-profile PATH` to migrate an existing CoreScripts server's accounts and world state.
@@ -36,8 +36,8 @@ This starts an isolated localhost server and the game together, bypassing the si
 ### 3. Run Only the Client or Server
 
 ```bash
-./run-tes3mp.sh
-./run-tes3mp-server.sh
+./run-mwnet.sh
+./run-mwnet-server.sh
 ```
 
 ## Common Build Scenarios
@@ -47,20 +47,20 @@ This starts an isolated localhost server and the game together, bypassing the si
 If you only need the server (no GUI):
 
 ```bash
-./tes3mp-merged-build.sh --install --server-only
+./mwnet-merged-build.sh --install --server-only
 ```
 
 ### Rebuild After Code Changes
 
 ```bash
-./tes3mp-merged-build.sh --rebuild
+./mwnet-merged-build.sh --rebuild
 ```
 
 ### Use Specific Number of CPU Cores
 
 ```bash
 # Use 4 cores (faster on systems with limited RAM)
-./tes3mp-merged-build.sh --install --cores 4
+./mwnet-merged-build.sh --install --cores 4
 ```
 
 ### Skip Dependency Installation
@@ -68,7 +68,7 @@ If you only need the server (no GUI):
 If you already have dependencies installed:
 
 ```bash
-./tes3mp-merged-build.sh --install --skip-pkgs
+./mwnet-merged-build.sh --install --skip-pkgs
 ```
 
 ### Clean Build
@@ -76,8 +76,8 @@ If you already have dependencies installed:
 To start fresh:
 
 ```bash
-./tes3mp-merged-build.sh --clean
-./tes3mp-merged-build.sh --install
+./mwnet-merged-build.sh --clean
+./mwnet-merged-build.sh --install
 ```
 
 ## Troubleshooting
@@ -103,14 +103,14 @@ To start fresh:
 
 3. Rebuild:
    ```bash
-   ./tes3mp-merged-build.sh --rebuild
+   ./mwnet-merged-build.sh --rebuild
    ```
 
 ### GameNetworkingSockets Is Not Found
 
 ```bash
 # Use the reviewed pinned source fallback
-cmake -S . -B build -DTES3MP_FETCH_DEPS=ON
+cmake -S . -B build -DMWNET_FETCH_DEPS=ON
 cmake --build build
 ```
 
@@ -140,13 +140,13 @@ make VERBOSE=1 2>&1 | tee verbose_build.log
 After successful build, you'll have:
 
 **In `build/` directory:**
-- `tes3mp` - Main game client
-- `tes3mp-server` - Multiplayer server
+- `mwnet` - Main game client
+- `mwnet-server` - Multiplayer server
 - `openmw-launcher` - Game launcher (if not server-only)
 - `openmw-cs` - Construction Set (if built)
 
 **In `dependencies/` directory:**
-- GameNetworkingSockets and libsodium are resolved as TES3MP dependencies.
+- GameNetworkingSockets and libsodium are resolved as MWNet dependencies.
 
 ## Next Steps
 
@@ -158,16 +158,16 @@ After successful build, you'll have:
 
 - **Build Issues**: Check `build.log` for errors
 - **Full Documentation**: See `BUILD_INSTRUCTIONS.md`
-- **TES3MP Community**: [Discord](https://discord.gg/ECJk293)
+- **MWNet Community**: [Discord](https://discord.gg/ECJk293)
 - **OpenMW Documentation**: [openmw.readthedocs.io](https://openmw.readthedocs.io/)
 
 ## Merge Information
 
 This build combines:
-- **TES3MP 1.0.0-alpha.1**: Multiplayer client, dedicated server, direct connect and scripting API
+- **MWNet 1.0.0-alpha.1**: Multiplayer client, dedicated server, direct connect and scripting API
 - **OpenMW 0.52**: Current engine base with modern Lua, navigation, rendering and content APIs
 
-The original OpenMW 0.50 integration resolved 237 merge conflicts while preserving TES3MP's multiplayer features; the codebase was subsequently advanced to OpenMW 0.52.
+The original OpenMW 0.50 integration resolved 237 merge conflicts while preserving MWNet's multiplayer features; the codebase was subsequently advanced to OpenMW 0.52.
 
 ---
 

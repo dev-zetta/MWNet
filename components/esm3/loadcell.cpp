@@ -249,10 +249,10 @@ namespace ESM
     }
 
     /*
-        Start of tes3mp addition
+        Start of mwnet addition
 
         Keep exterior cell identifiers independent of display names and regions, which are not
-        serialized by every TES3MP cell packet.
+        serialized by every MWNet cell packet.
     */
     std::string Cell::getShortDescription() const
     {
@@ -261,7 +261,7 @@ namespace ESM
 
         return std::to_string(mData.mX) + ", " + std::to_string(mData.mY);
     }
-    /* End of tes3mp addition */
+    /* End of mwnet addition */
 
     bool Cell::getNextRef(ESMReader& esm, CellRef& ref, bool& isDeleted)
     {

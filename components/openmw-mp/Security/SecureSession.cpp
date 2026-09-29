@@ -18,7 +18,7 @@ namespace mwmp::security
         constexpr std::uint8_t sHandshakeVersion = 1;
         constexpr std::uint8_t sSecureFrameVersion = 1;
         constexpr std::size_t sFrameHeaderBytes = 1 + sizeof(std::uint64_t);
-        constexpr std::string_view sTranscriptContext = "TES3MP protocol 11 server identity";
+        constexpr std::string_view sTranscriptContext = "MWNet protocol 13 server identity";
 
         template <std::size_t Size>
         std::span<const std::byte> bytes(const std::array<unsigned char, Size>& value)

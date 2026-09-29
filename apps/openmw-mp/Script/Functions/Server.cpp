@@ -187,12 +187,12 @@ const char *ServerFunctions::GetArchitectureType()
 
 const char *ServerFunctions::GetServerVersion()
 {
-    return TES3MP_VERSION;
+    return MWNET_VERSION;
 }
 
 const char *ServerFunctions::GetProtocolVersion()
 {
-    static std::string version = std::to_string(TES3MP_PROTO_VERSION);
+    static std::string version = std::to_string(MWNET_PROTO_VERSION);
     return version.c_str();
 }
 

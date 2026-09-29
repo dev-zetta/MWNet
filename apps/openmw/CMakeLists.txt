@@ -4,8 +4,8 @@ set(OPENMW_SOURCES
 )
 
 set(OPENMW_RESOURCES
-    ${CMAKE_SOURCE_DIR}/files/tes3mp/tes3mp.rc
-    ${CMAKE_SOURCE_DIR}/files/tes3mp/tes3mp.exe.manifest
+    ${CMAKE_SOURCE_DIR}/files/mwnet/mwnet.rc
+    ${CMAKE_SOURCE_DIR}/files/mwnet/mwnet.exe.manifest
 )
 
 set(OPENMW_HEADERS
@@ -186,20 +186,20 @@ if (MSVC)
 endif()
 
 if (NOT ANDROID)
-    openmw_add_executable(tes3mp
+    openmw_add_executable(mwnet
         ${APPLE_BUNDLE_RESOURCES}
         ${OPENMW_RESOURCES}
         main.cpp
     )
 else ()
-    add_library(tes3mp
+    add_library(mwnet
         SHARED
         main.cpp
         androidmain.cpp
     )
 endif ()
 
-target_link_libraries(tes3mp
+target_link_libraries(mwnet
     -Wl,--start-group
     openmw-lib
     -Wl,--end-group
@@ -208,7 +208,7 @@ target_link_libraries(tes3mp
 # Workaround necessary to ensure osgAnimation::MatrixLinearSampler dynamic casts work under Clang
 # NOTE: it's unclear whether the broken behavior is spec-compliant
 if (CMAKE_CXX_COMPILER_ID STREQUAL Clang)
-    set_target_properties(tes3mp PROPERTIES ENABLE_EXPORTS ON)
+    set_target_properties(mwnet PROPERTIES ENABLE_EXPORTS ON)
 endif()
 
 # Sound stuff - here so CMake doesn't stupidly recompile EVERYTHING
@@ -238,8 +238,8 @@ target_link_libraries(openmw-lib
     osg-ffmpeg-videoplayer
     oics
     components
-    tes3mp-discovery
-    tes3mp-game-endpoint
+    mwnet-discovery
+    mwnet-game-endpoint
     ICU::uc
     ICU::i18n
     ICU::data
@@ -324,16 +324,16 @@ if(APPLE)
     configure_file("${OpenMW_BINARY_DIR}/openmw.cfg" ${BUNDLE_RESOURCES_DIR} COPYONLY)
     configure_file("${OpenMW_BINARY_DIR}/gamecontrollerdb.txt" ${BUNDLE_RESOURCES_DIR} COPYONLY)
 
-    add_custom_command(TARGET tes3mp
+    add_custom_command(TARGET mwnet
         POST_BUILD
         COMMAND cp "${OpenMW_BINARY_DIR}/resources/version" "${BUNDLE_RESOURCES_DIR}/resources")
 
     find_library(COCOA_FRAMEWORK Cocoa)
     find_library(IOKIT_FRAMEWORK IOKit)
-    target_link_libraries(tes3mp ${COCOA_FRAMEWORK} ${IOKIT_FRAMEWORK})
+    target_link_libraries(mwnet ${COCOA_FRAMEWORK} ${IOKIT_FRAMEWORK})
 
     if (FFmpeg_FOUND)
-        target_link_options(tes3mp PRIVATE "LINKER:SHELL:-framework CoreVideo"
+        target_link_options(mwnet PRIVATE "LINKER:SHELL:-framework CoreVideo"
                                            "LINKER:SHELL:-framework CoreMedia"
                                            "LINKER:SHELL:-framework VideoToolbox"
                                            "LINKER:SHELL:-framework AudioToolbox"
@@ -345,11 +345,11 @@ if (BUILD_WITH_CODE_COVERAGE)
     target_compile_options(openmw-lib PRIVATE --coverage)
     target_link_libraries(openmw-lib gcov)
     if (NOT ANDROID)
-        target_compile_options(tes3mp PRIVATE --coverage)
-        target_link_libraries(tes3mp gcov)
+        target_compile_options(mwnet PRIVATE --coverage)
+        target_link_libraries(mwnet gcov)
     endif()
 endif()
 
 if (WIN32)
-    INSTALL(TARGETS tes3mp RUNTIME DESTINATION ".")
+    INSTALL(TARGETS mwnet RUNTIME DESTINATION ".")
 endif()

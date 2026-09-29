@@ -32,9 +32,9 @@ namespace mwmp::transport
         constexpr std::uint16_t sServerProofMessage = 0xfff3;
         constexpr std::uint16_t sSecureDataMessage = 0xfff4;
         constexpr std::uint16_t sKeepaliveMessage = 0xfff5;
-        constexpr std::string_view sKeepalive = "TES3MP protocol 11 keepalive";
-        constexpr std::string_view sClientProof = "TES3MP protocol 11 client proof";
-        constexpr std::string_view sServerProof = "TES3MP protocol 11 server proof";
+        constexpr std::string_view sKeepalive = "MWNet protocol 13 keepalive";
+        constexpr std::string_view sClientProof = "MWNet protocol 13 client proof";
+        constexpr std::string_view sServerProof = "MWNet protocol 13 server proof";
         constexpr std::size_t sSecureFrameOverhead = 1 + sizeof(std::uint64_t)
             + crypto_aead_xchacha20poly1305_ietf_ABYTES;
 
@@ -208,7 +208,7 @@ namespace mwmp::transport
             if (encoded.size() + sizeof(std::uint8_t) + sSecureFrameOverhead > wireLimit)
             {
                 error = { TransportErrorCode::MessageRejected,
-                    "authenticated message exceeds the protocol-11 wire limit" };
+                    "authenticated message exceeds the MWNet wire limit" };
                 return false;
             }
 
@@ -228,7 +228,7 @@ namespace mwmp::transport
             if (!found->second.session.seal(authenticatedMessage, encrypted, securityError))
             {
                 error = { TransportErrorCode::SecurityFailure,
-                    "failed to encrypt the protocol-11 message" };
+                    "failed to encrypt the MWNet message" };
                 return false;
             }
 
@@ -541,7 +541,7 @@ namespace mwmp::transport
             if (!decodeTransportMessage(std::span(plaintext).subspan(1), message.connection, message.lane,
                     message.delivery, decoded))
             {
-                failLocked(message.connection, "decrypted protocol-11 message was invalid");
+                failLocked(message.connection, "decrypted MWNet message was invalid");
                 return;
             }
             if (!events.tryPush(

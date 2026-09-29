@@ -140,9 +140,9 @@ bool LocalPlayer::processCharGen()
 {
     MWBase::WindowManager *windowManager = MWBase::Environment::get().getWindowManager();
 
-    // Block while a TES3MP input box (e.g. password prompt) is open, even after
+    // Block while a MWNet input box (e.g. password prompt) is open, even after
     // charGenState.isFinished - the server expects the user to respond first.
-    if (windowManager->containsMode(static_cast<MWGui::GuiMode>(mwmp::GUIController::GM_TES3MP_InputBox)))
+    if (windowManager->containsMode(static_cast<MWGui::GuiMode>(mwmp::GUIController::GM_MWNET_InputBox)))
         return false;
 
     // If we haven't finished CharGen and we're in a menu, it must be
@@ -463,12 +463,12 @@ void LocalPlayer::updateCell(bool forceUpdate)
     // If the LocalPlayer's Ptr cell is different from the LocalPlayer's packet cell, proceed
     if (forceUpdate || !Main::get().getCellController()->isSameCell(*ptrCell, cell))
     {
-        /* Start of tes3mp addition - never report $Transitional Void to the server as the
+        /* Start of mwnet addition - never report $Transitional Void to the server as the
            player's real cell, or the server will save it and send the player back there on
            every subsequent login */
         if (ptrCell->mName == RecordHelper::getPlaceholderInteriorCellName())
             return;
-        /* End of tes3mp addition */
+        /* End of mwnet addition */
 
         LOG_MESSAGE_SIMPLE(TimedLog::LOG_INFO, "Sending ID_PLAYER_CELL_CHANGE about LocalPlayer to server");
 
@@ -1519,13 +1519,13 @@ void LocalPlayer::sendDeath(char newDeathState)
     deathState = newDeathState;
 
     /*
-        Start of tes3mp addition
+        Start of mwnet addition
 
         Set flag so engine.cpp doesn't fire ID_PLAYER_DEATH every frame
         while waiting for ID_PLAYER_RESURRECT from the server
     */
     waitingForResurrect = true;
-    /* End of tes3mp addition */
+    /* End of mwnet addition */
 
     LOG_MESSAGE_SIMPLE(TimedLog::LOG_INFO, "Sending ID_PLAYER_DEATH about myself to server\n- deathState: %d", deathState);
     getNetworking()->getPlayerPacket(ID_PLAYER_DEATH)->setPlayer(this);

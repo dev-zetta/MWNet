@@ -7,13 +7,13 @@
 #include <components/interpreter/runtime.hpp>
 
 /*
-    Start of tes3mp addition
+    Start of mwnet addition
 
     Include additional headers for multiplayer purposes
 */
 #include "../mwmp/Main.hpp"
 #include "../mwmp/LocalPlayer.hpp"
-/* End of tes3mp addition */
+/* End of mwnet addition */
 
 #include "../mwbase/environment.hpp"
 #include "../mwbase/inputmanager.hpp"
@@ -76,12 +76,12 @@ namespace MWScript
                 runtime.getContext().report(enabled ? "Collision -> On" : "Collision -> Off");
 
                 /*
-                    Start of tes3mp addition
+                    Start of mwnet addition
 
                     Update the LocalPlayer's tclState so it gets sent to the server
                 */
                 mwmp::Main::get().getLocalPlayer()->hasTcl = !enabled;
-                /* End of tes3mp addition */
+                /* End of mwnet addition */
             }
         };
 

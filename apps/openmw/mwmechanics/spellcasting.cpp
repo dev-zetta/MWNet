@@ -12,7 +12,7 @@
 
 
     /*
-    Start of tes3mp addition
+    Start of mwnet addition
 
     Include additional headers for multiplayer purposes
 */
@@ -24,7 +24,7 @@
 #include "../mwmp/ObjectList.hpp"
 #include "../mwmp/CellController.hpp"
 #include "../mwmp/MechanicsHelper.hpp"
-/* End of tes3mp addition */
+/* End of mwnet addition */
 #include "../mwbase/environment.hpp"
 #include "../mwbase/luamanager.hpp"
 #include "../mwbase/mechanicsmanager.hpp"
@@ -249,13 +249,13 @@ namespace MWMechanics
 
             if (!targetIsActor && magicEffect->mData.mFlags & ESM::MagicEffect::NoDuration)
             {
-                /* Start of tes3mp addition */
+                /* Start of mwnet addition */
                 mwmp::ObjectList* objectList = mwmp::Main::get().getNetworking()->getObjectList();
                 objectList->reset();
                 objectList->packetOrigin = mwmp::CLIENT_GAMEPLAY;
                 objectList->addObjectSound(target, magicEffect->mHitSound.getRefIdString(), 1.0f, 1.0f);
                 objectList->sendObjectSound();
-                /* End of tes3mp addition */
+                /* End of mwnet addition */
             }
         }
 
@@ -355,7 +355,7 @@ namespace MWMechanics
                         mCaster, store->get<ESM::Skill>().find(school)->mSchool->mFailureSound, 1.0f, 1.0f);
 
                         /*
-                        Start of tes3mp addition
+                        Start of mwnet addition
 
                         Send an ID_OBJECT_SOUND packet every time a sound is made here
                     */
@@ -364,7 +364,7 @@ namespace MWMechanics
                     objectList->packetOrigin = mwmp::CLIENT_GAMEPLAY;
                     objectList->addObjectSound(mCaster, "Spell Failure " + school.getRefIdString(), 1.0f, 1.0f);
                     objectList->sendObjectSound();
-                    /* End of tes3mp addition */
+                    /* End of mwnet addition */
                 }
                 return false;
             }
@@ -460,7 +460,7 @@ namespace MWMechanics
                 bool fail = false;
 
                 /*
-                    Start of tes3mp change (major)
+                    Start of mwnet change (major)
                 
                     Make spell casting fail based on the casting success rated determined
                     in MechanicsHelper::getSpellSuccess()
@@ -490,7 +490,7 @@ namespace MWMechanics
                         MWBase::Environment::get().getWindowManager()->messageBox("#{sMagicSkillFail}");
                     fail = true;
                 }
-                /* End of tes3mp change (major)*/
+                /* End of mwnet change (major)*/
 
                 if (fail)
                 {
@@ -500,7 +500,7 @@ namespace MWMechanics
                     sndMgr->playSound3D(mCaster, skill->mSchool->mFailureSound, 1.0f, 1.0f);
 
                         /*
-                        Start of tes3mp addition
+                        Start of mwnet addition
 
                         Send an ID_OBJECT_SOUND packet every time a sound is made here
                     */
@@ -509,7 +509,7 @@ namespace MWMechanics
                     objectList->packetOrigin = mwmp::CLIENT_GAMEPLAY;
                     objectList->addObjectSound(mCaster, "Spell Failure " + school.getRefIdString(), 1.0f, 1.0f);
                     objectList->sendObjectSound();
-                    /* End of tes3mp addition */
+                    /* End of mwnet addition */
                     return false;
                 }
             }

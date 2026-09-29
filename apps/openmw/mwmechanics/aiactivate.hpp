@@ -35,16 +35,16 @@ namespace MWMechanics
 
         void writeState(ESM::AiSequence::AiSequence& sequence) const override;
 
-        /* Start of tes3mp addition */
+        /* Start of mwnet addition */
         explicit AiActivate(MWWorld::Ptr object);
-        /* End of tes3mp addition */
+        /* End of mwnet addition */
 
     private:
         const ESM::RefId mObjectId;
 
-        /* Start of tes3mp addition */
+        /* Start of mwnet addition */
         MWWorld::Ptr mObjectPtr;
-        /* End of tes3mp addition */
+        /* End of mwnet addition */
     };
 }
 #endif // GAME_MWMECHANICS_AIACTIVATE_H

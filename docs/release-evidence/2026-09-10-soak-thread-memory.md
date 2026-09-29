@@ -1,5 +1,7 @@
 # Sanitizer soak memory investigation, 2026-09-10
 
+> Historical pre-rebrand evidence: LegacyMP/legacy-mp are display aliases for the former fork name in identifiers, commands, and artifact paths. They are not renamed artifacts or MWNet validation results. Hashes, revisions, measurements, and exit codes are unchanged; consult Git history for the original labels.
+
 ## Remaining failure after connection-metrics cleanup
 
 The eight-client sanitizer soak for
@@ -80,7 +82,7 @@ and server-initiated closure, followed by reconnect on the same transports.
 The tests failed four assertions against the old implementation and pass
 after the fix. The complete three-target sanitizer CTest suite also passes.
 
-The normal `tes3mp` and `tes3mp-server` targets also rebuild successfully in
+The normal `legacy-mp` and `legacy-mp-server` targets also rebuild successfully in
 the matching dependency image. Their copied workspace binaries match the
 container SHA-256 values recorded in `normal-build-result.json`. The client
 version check exits successfully inside that image. A server startup check

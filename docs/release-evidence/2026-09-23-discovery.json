@@ -8,7 +8,7 @@
   "soak": {
     "requestedSeconds": 7200,
     "directoryCommand": [
-      "/usr/local/bin/tes3mp-directory",
+      "/usr/local/bin/legacy-mp-directory",
       "--origin",
       "https://localhost:8443",
       "--database",
@@ -66,7 +66,7 @@
   },
   "containersAtCompletion": [
     {
-      "name": "/tes3mp-discovery-gate",
+      "name": "/legacy-mp-discovery-gate",
       "image": "sha256:7428e80eea5f1edb3fd412f483f557761fb487a32102684697b3299da6740a5b",
       "oomKilled": false,
       "restarts": 0,
@@ -75,7 +75,7 @@
       "readOnlyRoot": true
     },
     {
-      "name": "/tes3mp-discovery-gate-https",
+      "name": "/legacy-mp-discovery-gate-https",
       "image": "sha256:c3d7ee5d2b11f9dc54f947f68a734c84e9c9666c92c88a7f30b9cba5da182adb",
       "oomKilled": false,
       "restarts": 0,
@@ -87,5 +87,6 @@
   "graphicalBinaries": {
     "client": "34866b2d8acd9f974f6de496f4a26832ea5d418656f8eee3127bd59ecda5835c",
     "server": "3b3b2b8cc8aeb444f0abcd5d716f41894321c408d68d88ce4e50d95ad71a5414"
-  }
+  },
+  "historicalIdentityNote": "Historical pre-rebrand evidence: LegacyMP/legacy-mp are display aliases for the former fork name in identifiers, commands, and artifact paths. They are not renamed artifacts or MWNet validation results. Hashes, revisions, measurements, and exit codes are unchanged; consult Git history for the original labels."
 }

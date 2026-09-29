@@ -301,6 +301,13 @@ do domyślnych czcionek Morrowind. Zaznacz to pole, jeśli nadal wolisz oryginal
     </message>
 </context>
 <context>
+    <name>Launcher::AdvancedPage</name>
+    <message>
+        <source>Text file (*.txt)</source>
+        <translation type="unfinished">Plik tekstowy (*.txt)</translation>
+    </message>
+</context>
+<context>
     <name>Launcher::DataFilesPage</name>
     <message>
         <source>English</source>
@@ -473,7 +480,7 @@ do domyślnych czcionek Morrowind. Zaznacz to pole, jeśli nadal wolisz oryginal
     </message>
     <message>
         <source>Launch OpenMW</source>
-        <translation>Uruchom OpenMW</translation>
+        <translation type="vanished">Uruchom OpenMW</translation>
     </message>
     <message>
         <source>Help</source>
@@ -493,7 +500,7 @@ do domyślnych czcionek Morrowind. Zaznacz to pole, jeśli nadal wolisz oryginal
     </message>
     <message>
         <source>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;b&gt;Welcome to OpenMW!&lt;/b&gt;&lt;/p&gt;&lt;p&gt;It is recommended to run the Installation Wizard.&lt;/p&gt;&lt;p&gt;The Wizard will let you select an existing Morrowind installation, or install Morrowind for OpenMW to use.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
-        <translation>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;b&gt;Witamy w OpenMW!&lt;/b&gt;&lt;/p&gt;&lt;p&gt;Zalecamy uruchomienie kreatora instalacji.&lt;/p&gt;&lt;p&gt;Kreator umożliwi wybór istniejącej instalacji Morrowinda lub instalację gry do użytku z OpenMW.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
+        <translation type="vanished">&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;b&gt;Witamy w OpenMW!&lt;/b&gt;&lt;/p&gt;&lt;p&gt;Zalecamy uruchomienie kreatora instalacji.&lt;/p&gt;&lt;p&gt;Kreator umożliwi wybór istniejącej instalacji Morrowinda lub instalację gry do użytku z OpenMW.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
     </message>
     <message>
         <source>Run &amp;Installation Wizard</source>
@@ -505,11 +512,11 @@ do domyślnych czcionek Morrowind. Zaznacz to pole, jeśli nadal wolisz oryginal
     </message>
     <message>
         <source>OpenMW %1 release</source>
-        <translation>Wersja OpenMW %1</translation>
+        <translation type="vanished">Wersja OpenMW %1</translation>
     </message>
     <message>
         <source>OpenMW development (%1)</source>
-        <translation>OpenMW - wersja deweloperska (%1)</translation>
+        <translation type="vanished">OpenMW - wersja deweloperska (%1)</translation>
     </message>
     <message>
         <source>Compiled on %1 %2</source>
@@ -570,6 +577,26 @@ do domyślnych czcionek Morrowind. Zaznacz to pole, jeśli nadal wolisz oryginal
     <message>
         <source>&lt;br&gt;&lt;b&gt;You do not have a game file selected.&lt;/b&gt;&lt;br&gt;&lt;br&gt;OpenMW will not start without a game file selected.&lt;br&gt;</source>
         <translation>&lt;br&gt;&lt;b&gt;Nie wybrano pliku gry.&lt;/b&gt;&lt;br&gt;&lt;br&gt;OpenMW nie uruchomi się bez wybranego pliku gry.&lt;br&gt;</translation>
+    </message>
+    <message>
+        <source>MWNet Launcher</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Launch MWNet</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;b&gt;Welcome to MWNet!&lt;/b&gt;&lt;/p&gt;&lt;p&gt;It is recommended to run the Installation Wizard.&lt;/p&gt;&lt;p&gt;The Wizard will let you select an existing Morrowind installation, or install Morrowind for MWNet to use.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>MWNet %1 (%2) — OpenMW %3</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>unavailable</source>
+        <translation type="unfinished"></translation>
     </message>
 </context>
 <context>

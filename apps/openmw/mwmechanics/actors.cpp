@@ -22,7 +22,7 @@
 #include "../mwworld/cellstore.hpp"
 
     /*
-    Start of tes3mp addition
+    Start of mwnet addition
 
     Include additional headers for multiplayer purposes
 */
@@ -36,7 +36,7 @@
 #include "../mwmp/CellController.hpp"
 #include "../mwmp/MechanicsHelper.hpp"
 #include "../mwmp/ObjectList.hpp"
-/* End of tes3mp addition */
+/* End of mwnet addition */
 #include "../mwworld/class.hpp"
 #include "../mwworld/datetimemanager.hpp"
 #include "../mwworld/esmstore.hpp"
@@ -747,7 +747,7 @@ namespace MWMechanics
                     aggressive = isAggressive(actor1, actor2);
             }
             /*
-                Start of tes3mp addition
+                Start of mwnet addition
 
                 Make aggressive actors initiate combat with DedicatedPlayers
             */
@@ -755,7 +755,7 @@ namespace MWMechanics
             {
                 aggressive = MWBase::Environment::get().getMechanicsManager()->isAggressive(actor1, actor2);
             }
-            /* End of tes3mp addition */
+            /* End of mwnet addition */
         }
 
         // Make guards go aggressive with hostile creatures and werewolves that are in combat
@@ -1078,7 +1078,7 @@ namespace MWMechanics
          */
 
         /*
-            Start of tes3mp change (major)
+            Start of mwnet change (major)
 
             We need DedicatedPlayers and DedicatedActors to not automatically
             equip their light-emitting items, so additional conditions have been
@@ -1660,7 +1660,7 @@ namespace MWMechanics
                     if (playerHitNum.isSet() && playerHitNum == actor.getPtr().getCellRef().getRefNum())
                         player.getClass().getCreatureStats(player).setHitAttemptActor({});
                 }
-                /* End of tes3mp change (major)*/
+                /* End of mwnet change (major)*/
 
                 const Misc::TimerStatus engageCombatTimerStatus = actor.updateEngageCombatTimer(duration);
 
@@ -1694,7 +1694,7 @@ namespace MWMechanics
                     }
 
                     /*
-                        Start of tes3mp change (major)
+                        Start of mwnet change (major)
 
                         Allow AI processing for LocalActors and partially for DedicatedActors
                     */
@@ -1742,7 +1742,7 @@ namespace MWMechanics
                         CreatureStats& stats = actor.getPtr().getClass().getCreatureStats(actor.getPtr());
                         stats.getAiSequence().execute(actor.getPtr(), ctrl, duration, /*outOfRange*/ true);
                     }
-                    /* End of tes3mp change (major)*/
+                    /* End of mwnet change (major)*/
 
                     if (inProcessingRange && actor.getPtr().getClass().isNpc())
                     {
@@ -1937,13 +1937,13 @@ namespace MWMechanics
                 if (isPlayer)
                 {
                     /*
-                        Start of tes3mp change (major)
+                        Start of mwnet change (major)
 
                         The server owns player resurrection, so do not open OpenMW's
                         single-player load/main-menu flow after the death animation.
                     */
                     // MWBase::Environment::get().getStateManager()->askLoadRecent();
-                    /* End of tes3mp change (major) */
+                    /* End of mwnet change (major) */
                 }
                 else
                 {
@@ -1964,7 +1964,7 @@ namespace MWMechanics
             objectList->packetOrigin = mwmp::CLIENT_GAMEPLAY;
             objectList->addObjectGeneric(ptr);
             objectList->sendObjectDelete();
-        /* End of tes3mp change (major)*/
+        /* End of mwnet change (major)*/
 
             const ESM::Static* fx = MWBase::Environment::get().getESMStore()->get<ESM::Static>().search(
                 ESM::RefId::stringRefId("VFX_Summon_End"));
@@ -2087,13 +2087,13 @@ namespace MWMechanics
                     continue;
 
                     /*
-                    Start of tes3mp addition
+                    Start of mwnet addition
 
                     Don't make allied players break each other's sneaking
                 */
                 if (MechanicsHelper::isTeamMember(observer, player))
                     continue;
-                /* End of tes3mp addition */
+                /* End of mwnet addition */
                 if (world->getLOS(player, observer))
                 {
                     if (MWBase::Environment::get().getMechanicsManager()->awarenessCheck(player, observer))
@@ -2280,7 +2280,7 @@ namespace MWMechanics
             // Escort packages also side with them
 
                 /*
-                Start of tes3mp addition
+                Start of mwnet addition
 
                 If we're checking the LocalPlayer and the iteratedActor is a DedicatedPlayer belonging to this one's alliedPlayers,
                 include the iteratedActor in the actors siding with the player
@@ -2308,7 +2308,7 @@ namespace MWMechanics
                     list.push_back(iteratedActor);
                 }
             }
-            /* End of tes3mp addition */
+            /* End of mwnet addition */
             for (const auto& package : stats.getAiSequence())
             {
                 if (excludeInfighting && !sameActor && package->getTypeId() == AiPackageTypeId::Combat
@@ -2525,7 +2525,7 @@ namespace MWMechanics
     }
 
     /*
-        Start of tes3mp addition
+        Start of mwnet addition
 
         Make it possible to set the attackingOrSpell state from elsewhere in the code
     */
@@ -2536,7 +2536,7 @@ namespace MWMechanics
             return;
         it->second->getCharacterController().setAttackingOrSpell(state);
     }
-    /* End of tes3mp addition */
+    /* End of mwnet addition */
 
     int Actors::getGreetingTimer(const MWWorld::Ptr& ptr) const
     {

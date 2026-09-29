@@ -175,13 +175,13 @@ struct Cell
   ///< Return a short string describing the cell (mostly used for debugging/logging purpose)
 
   /*
-      Start of tes3mp addition
+      Start of mwnet addition
 
       Add a method that returns cell descriptions in OpenMW's previous way, because it was widely
-      used in TES3MP
+      used in MWNet
   */
   std::string getShortDescription() const;
-  /* End of tes3mp addition */
+  /* End of mwnet addition */
 
   /* Get the next reference in this cell, if any. Returns false when
      there are no more references in the cell.

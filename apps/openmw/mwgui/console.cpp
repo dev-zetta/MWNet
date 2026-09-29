@@ -10,7 +10,7 @@
 #include <regex>
 
 /*
-    Start of tes3mp addition
+    Start of mwnet addition
 
     Include additional headers for multiplayer purposes
 */
@@ -19,7 +19,7 @@
 #include "../mwmp/Networking.hpp"
 #include "../mwmp/LocalPlayer.hpp"
 #include "../mwmp/ObjectList.hpp"
-/* End of tes3mp addition */
+/* End of mwnet addition */
 
 #include <components/compiler/exception.hpp>
 #include <components/compiler/extensions0.hpp>
@@ -264,7 +264,7 @@ namespace MWGui
                 ConsoleInterpreterContext interpreterContext(*this, mPtr);
 
                     /*
-                    Start of tes3mp addition
+                    Start of mwnet addition
 
                     Send an ID_CONSOLE_COMMAND packet to the server with the
                     command and target used
@@ -288,7 +288,7 @@ namespace MWGui
                 }
 
                 objectList->sendConsoleCommand();
-                /* End of tes3mp addition */
+                /* End of mwnet addition */
                 Interpreter::Interpreter interpreter;
                 MWScript::installOpcodes(interpreter, mConsoleOnlyScripts);
                 const Interpreter::Program program = output.getProgram();
@@ -856,7 +856,7 @@ namespace MWGui
     }
 
     /*
-        Start of tes3mp addition
+        Start of mwnet addition
 
         Allow the direct setting of a console's Ptr, without the assumption that an object
         was clicked and that key focus should be restored to the console window, for console
@@ -866,7 +866,7 @@ namespace MWGui
     {
         mPtr = object;
     }
-    /* End of tes3mp addition */
+    /* End of mwnet addition */
 
     void Console::onReferenceUnavailable()
     {

@@ -4,7 +4,7 @@
 #include <components/esm3/loadmgef.hpp>
 
     /*
-    Start of tes3mp addition
+    Start of mwnet addition
 
     Include additional headers for multiplayer purposes
 */
@@ -15,7 +15,7 @@
 #include "../mwmp/ActorList.hpp"
 #include "../mwmp/CellController.hpp"
 #include "../mwmp/MechanicsHelper.hpp"
-/* End of tes3mp addition */
+/* End of mwnet addition */
 #include "../mwbase/environment.hpp"
 #include "../mwbase/luamanager.hpp"
 #include "../mwbase/mechanicsmanager.hpp"
@@ -75,15 +75,15 @@ namespace MWWorld
         else
         {
             /*
-                Start of tes3mp addition
+                Start of mwnet addition
 
                 Track the original cell of this actor so we can use it when sending a packet
             */
             ESM::Cell originalCell = actor.getCell()->getCell()->getEsm3();
-            /* End of tes3mp addition */
+            /* End of mwnet addition */
 
             /*
-                Start of tes3mp change (minor)
+                Start of mwnet change (minor)
 
                 If this is a DedicatedActor, get their new cell and override their stored cell with it
                 so their cell change is approved in World::moveObject()
@@ -100,7 +100,7 @@ namespace MWWorld
                 teleported = world->moveObject(actor, &worldModel->getCell(mCellId), mPosition.asVec3(), true, true);
 
                 /*
-                Start of tes3mp addition
+                Start of mwnet addition
 
                 Send ActorCellChange packets when an actor follows us across cells, regardless of
                 whether we're the cell authority or not; the server can decide if it wants to comply
@@ -136,7 +136,7 @@ namespace MWWorld
             baseActor.aiTarget = MechanicsHelper::getTarget(world->getPlayerPtr());
             actorList->addAiActor(baseActor);
             actorList->sendAiActors();
-            /* End of tes3mp addition */
+            /* End of mwnet addition */
         }
 
         if (!world->isWaterWalkingCastableOnTarget(teleported) && MWMechanics::hasWaterWalking(teleported))

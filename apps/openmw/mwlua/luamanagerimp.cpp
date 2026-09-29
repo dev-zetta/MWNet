@@ -730,7 +730,7 @@ namespace MWLua
     {
         if (ptr.isEmpty())
             return;
-        /* Start of tes3mp addition - DedicatedPlayer objects have Generated:0x RefIds
+        /* Start of mwnet addition - DedicatedPlayer objects have Generated:0x RefIds
            that Lua scripts cannot serialize, causing "RefId is not a string" errors */
         {
             const ESM::RefId& refId = ptr.getCellRef().getRefId();
@@ -740,7 +740,7 @@ namespace MWLua
                 return;
             }
         }
-        /* End of tes3mp addition */
+        /* End of mwnet addition */
         mObjectLists.objectAddedToScene(ptr); // assigns generated RefNum if it is not set yet.
         mEngineEvents.addToQueue(EngineEvents::OnActive{ getId(ptr) });
 

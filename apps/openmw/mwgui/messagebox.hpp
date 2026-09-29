@@ -106,12 +106,12 @@ namespace MWGui
         bool onControllerButtonEvent(const SDL_ControllerButtonEvent& arg) override;
 
                 /*
-                Start of tes3mp addition
+                Start of mwnet addition
 
                 Track whether the message box has a server origin
             */
             bool mHasServerOrigin = false;
-            /* End of tes3mp addition */
+            /* End of mwnet addition */
     private:
         void buttonActivated(MyGUI::Widget* widget);
 

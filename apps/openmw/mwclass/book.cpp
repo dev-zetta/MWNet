@@ -7,14 +7,14 @@
 #include <components/esm3/loadsoun.hpp>
 
     /*
-    Start of tes3mp addition
+    Start of mwnet addition
 
     Include additional headers for multiplayer purposes
 */
 #include <components/openmw-mp/Utils.hpp>
 #include "../mwmp/Main.hpp"
 #include "../mwmp/Networking.hpp"
-/* End of tes3mp addition */
+/* End of mwnet addition */
 #include "../mwbase/environment.hpp"
 #include "../mwbase/windowmanager.hpp"
 #include "../mwbase/world.hpp"
@@ -151,13 +151,13 @@ namespace MWClass
         const ESM::Book* record = MWBase::Environment::get().getESMStore()->insert(newItem);
 
             /*
-            Start of tes3mp addition
+            Start of mwnet addition
 
             Send the newly created record to the server and expect it to be
             returned with a server-set id
         */
         mwmp::Main::get().getNetworking()->getWorldstate()->sendBookRecord(&newItem, ref->mBase->mId.getRefIdString());
-        /* End of tes3mp addition */
+        /* End of mwnet addition */
         return record->mId;
     }
 

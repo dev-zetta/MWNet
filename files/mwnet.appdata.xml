@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+Copyright 2015 Alexandre Moine <nobrakal@gmail.com>
+Copyright 2020 Bret Curtis <psi29a@gmail.com>
+Adapted for MWNet.
+-->
+<component type="desktop-application">
+ <id>org.mwnet.launcher</id>
+ <metadata_license>CC0-1.0</metadata_license>
+ <project_license>LicenseRef-MWNet</project_license>
+ <name>MWNet</name>
+ <summary>Multiplayer Morrowind powered by OpenMW</summary>
+ <description>
+  <p>MWNet provides an independent multiplayer client, dedicated server, and opt-in public server directory for Morrowind, built on the OpenMW engine.</p>
+  <p>You need the original game data to play. Clients and servers must use matching MWNet versions and content.</p>
+ </description>
+ <launchable type="desktop-id">org.mwnet.launcher.desktop</launchable>
+ <developer id="org.mwnet">
+  <name>MWNet contributors</name>
+ </developer>
+ <branding>
+  <color type="primary" scheme_preference="light">#6fc8bc</color>
+  <color type="primary" scheme_preference="dark">#15252d</color>
+ </branding>
+ <categories>
+  <category>Game</category>
+  <category>RolePlaying</category>
+ </categories>
+</component>

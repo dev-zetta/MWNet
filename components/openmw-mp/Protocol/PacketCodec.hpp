@@ -2,6 +2,7 @@
 #define OPENMW_MP_PACKET_CODEC_HPP
 
 #include "ProtocolLimits.hpp"
+#include <components/openmw-mp/Version.hpp>
 
 #include <cstddef>
 #include <cstdint>
@@ -136,7 +137,7 @@ namespace mwmp::protocol
         CodecError mError = CodecError::None;
     };
 
-    inline constexpr std::uint16_t protocolVersion = 12;
+    inline constexpr std::uint16_t protocolVersion = MWNET_PROTO_VERSION;
     inline constexpr std::uint16_t envelopeFlagBulkChunk = 1U << 0U;
     inline constexpr std::uint16_t envelopeFlagUnreliable = 1U << 1U;
     inline constexpr std::uint16_t envelopeKnownFlags = envelopeFlagBulkChunk | envelopeFlagUnreliable;

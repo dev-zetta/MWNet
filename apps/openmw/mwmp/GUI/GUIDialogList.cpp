@@ -14,7 +14,7 @@
 
 using namespace mwmp;
 
-GUIDialogList::GUIDialogList(const std::string &message, const std::vector<std::string> &list) : WindowModal("tes3mp_dialog_list.layout")
+GUIDialogList::GUIDialogList(const std::string &message, const std::vector<std::string> &list) : WindowModal("mwnet_dialog_list.layout")
 {
     center(); // center window
 

@@ -18,13 +18,13 @@
 #include <components/esm3/globalmap.hpp>
 
     /*
-    Start of tes3mp addition
+    Start of mwnet addition
 
     Include additional headers for multiplayer purposes
 */
 #include "../mwmp/Main.hpp"
 #include "../mwmp/GUIController.hpp"
-/* End of tes3mp addition */
+/* End of mwnet addition */
 #include <components/myguiplatform/myguitexture.hpp>
 #include <components/settings/values.hpp>
 
@@ -198,12 +198,12 @@ namespace MWGui
         mCustomMarkers.eventMarkersChanged += MyGUI::newDelegate(this, &LocalMapBase::updateCustomMarkers);
         
         /*
-            Start of tes3mp addition
+            Start of mwnet addition
 
             Add a MyGUI delegate for updating player markers
         */
         mwmp::Main::get().getGUIController()->mPlayerMarkers.eventMarkersChanged += MyGUI::newDelegate(this, &LocalMapBase::updatePlayerMarkers);
-        /* End of tes3mp addition */
+        /* End of mwnet addition */
     }
 
     LocalMapBase::~LocalMapBase()
@@ -211,12 +211,12 @@ namespace MWGui
         mCustomMarkers.eventMarkersChanged -= MyGUI::newDelegate(this, &LocalMapBase::updateCustomMarkers);
 
         /*
-            Start of tes3mp addition
+            Start of mwnet addition
 
             Remove a MyGUI delegate for updating player markers
         */
         mwmp::Main::get().getGUIController()->mPlayerMarkers.eventMarkersChanged -= MyGUI::newDelegate(this, &LocalMapBase::updatePlayerMarkers);
-        /* End of tes3mp addition */
+        /* End of mwnet addition */
     }
 
     MWGui::LocalMapBase::MapEntry& LocalMapBase::addMapEntry()
@@ -400,7 +400,7 @@ namespace MWGui
         redraw();
     }
 
-    /* Start of tes3mp addition */
+    /* Start of mwnet addition */
     void LocalMapBase::updatePlayerMarkers()
     {
         mwmp::Main::get().getGUIController()->updatePlayersMarkers(this);
@@ -411,7 +411,7 @@ namespace MWGui
 
         mwmp::Main::get().getGUIController()->updateGlobalMapMarkerTooltips(this);
     }
-    /* End of tes3mp addition */
+    /* End of mwnet addition */
 
     void LocalMapBase::setActiveCell(const MWWorld::Cell& cell)
     {
@@ -1246,7 +1246,7 @@ namespace MWGui
     }
 
         /*
-        Start of tes3mp addition
+        Start of mwnet addition
 
         Allow the setting of the image data for a global map tile from elsewhere
         in the code
@@ -1255,7 +1255,7 @@ namespace MWGui
     {
         mGlobalMapRender->setImage(cellX, cellY, imageData);
     }
-    /* End of tes3mp addition */
+    /* End of mwnet addition */
     void MapWindow::updateCustomMarkers()
     {
         LocalMapBase::updateCustomMarkers();

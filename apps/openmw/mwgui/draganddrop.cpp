@@ -154,13 +154,13 @@ namespace MWGui
     void DragAndDrop::finish(bool deleteDragItems)
     {
         /*
-            Start of tes3mp addition
+            Start of mwnet addition
 
             Make it possible to entirely delete the items in the drag
         */
         if (deleteDragItems)
             mSourceModel->removeItem(mItem, mDraggedCount);
-        /* End of tes3mp addition */
+        /* End of mwnet addition */
 
         mIsOnDragAndDrop = false;
         mSourceSortModel->clearDragItems();

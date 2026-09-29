@@ -34,7 +34,7 @@
 #include <components/sceneutil/positionattitudetransform.hpp>
 
 /*
-    Start of tes3mp addition
+    Start of mwnet addition
 
     Include additional headers for multiplayer purposes
 */
@@ -46,7 +46,7 @@
 #include "../mwmp/DedicatedPlayer.hpp"
 #include "../mwmp/CellController.hpp"
 #include "../mwmp/MechanicsHelper.hpp"
-/* End of tes3mp addition */
+/* End of mwnet addition */
 
 #include "../mwrender/animation.hpp"
 
@@ -1677,7 +1677,7 @@ namespace MWMechanics
                         }
 
                         /*
-                            Start of tes3mp addition
+                            Start of mwnet addition
 
                             Record the attack animation chosen so we can send it in the next PlayerAttack packet
                         */
@@ -1685,7 +1685,7 @@ namespace MWMechanics
 
                         if (localAttack)
                             localAttack->attackAnimation = mAttackType;
-                        /* End of tes3mp addition */
+                        /* End of mwnet addition */
                     }
                 }
                 else
@@ -1726,7 +1726,7 @@ namespace MWMechanics
                             if (mAttackType == "")
                                 mAttackType = getRandomAttackType();
                         }
-                        /* Start of tes3mp addition */
+                        /* Start of mwnet addition */
                         else if (mwmp::Main::get().getCellController()->isDedicatedActor(mPtr))
                         {
                             mwmp::Attack *dedicatedAttack = MechanicsHelper::getDedicatedAttack(mPtr);
@@ -1739,7 +1739,7 @@ namespace MWMechanics
                             if (mAttackType.empty())
                                 mAttackType = getRandomAttackType();
                         }
-                        /* End of tes3mp addition */
+                        /* End of mwnet addition */
 
                         // else if (mPtr != getPlayer()) use mAttackType set by AiCombat
                         startKey = mAttackType + ' ' + startKey;
@@ -2726,7 +2726,7 @@ namespace MWMechanics
         if (playImmediately)
             playAnimQueue(mode == 2);
 
-        /* Start of tes3mp addition */
+        /* Start of mwnet addition */
         if (mwmp::Main::get().getCellController()->isLocalActor(mPtr))
         {
             mwmp::LocalActor *actor = mwmp::Main::get().getCellController()->getLocalActor(mPtr);
@@ -2739,7 +2739,7 @@ namespace MWMechanics
             }
             else Log(Debug::Warning) << "character::playGroup: getLocalActor returned nullptr for " << mPtr.getCellRef().getRefId();
         }
-        /* End of tes3mp addition */
+        /* End of mwnet addition */
 
         return true;
     }
@@ -2912,14 +2912,14 @@ namespace MWMechanics
             mAnimation->runAnimation(0.f);
         }
 
-        /* Start of tes3mp addition */
+        /* Start of mwnet addition */
         if (mwmp::Main::get().getCellController()->isLocalActor(mPtr))
         {
             mwmp::LocalActor *deathActor = mwmp::Main::get().getCellController()->getLocalActor(mPtr);
             if (deathActor) deathActor->creatureStats.mDeathAnimationFinished = true;
             else Log(Debug::Warning) << "character::deathAnimation: getLocalActor returned nullptr for " << mPtr.getCellRef().getRefId();
         }
-        /* End of tes3mp addition */
+        /* End of mwnet addition */
     }
 
     void CharacterController::updateContinuousVfx() const

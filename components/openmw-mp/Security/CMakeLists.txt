@@ -1,4 +1,4 @@
-add_library(tes3mp-security STATIC
+add_library(mwnet-security STATIC
     AccountAuthentication.cpp
     AccountStore.cpp
     AuthenticationMessages.cpp
@@ -11,12 +11,12 @@ add_library(tes3mp-security STATIC
     TrustStore.cpp
 )
 
-target_include_directories(tes3mp-security PUBLIC ${CMAKE_SOURCE_DIR})
-target_compile_features(tes3mp-security PUBLIC cxx_std_20)
-target_link_libraries(tes3mp-security PUBLIC tes3mp-persistence tes3mp-protocol-codec sodium::sodium)
+target_include_directories(mwnet-security PUBLIC ${CMAKE_SOURCE_DIR})
+target_compile_features(mwnet-security PUBLIC cxx_std_20)
+target_link_libraries(mwnet-security PUBLIC mwnet-persistence mwnet-protocol-codec sodium::sodium)
 
 if (MSVC)
-    target_compile_options(tes3mp-security PRIVATE /W4 /WX)
+    target_compile_options(mwnet-security PRIVATE /W4 /WX)
 else()
-    target_compile_options(tes3mp-security PRIVATE -Wall -Wextra -Wpedantic -Werror)
+    target_compile_options(mwnet-security PRIVATE -Wall -Wextra -Wpedantic -Werror)
 endif()

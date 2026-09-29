@@ -1,11 +1,13 @@
 # Sanitizer soak memory investigation, 2026-09-09
 
+> Historical pre-rebrand evidence: LegacyMP/legacy-mp are display aliases for the former fork name in identifiers, commands, and artifact paths. They are not renamed artifacts or MWNet validation results. Hashes, revisions, measurements, and exit codes are unchanged; consult Git history for the original labels.
+
 ## Failed candidate
 
 The ASan/UBSan/LeakSanitizer soak for
 `93c1b0496810e2e3b9ccaf4ff3338fa0b3453739` ran from
 2026-09-07 21:55:10 UTC to 2026-09-08 21:55:19 UTC. The container
-`tes3mp-alpha1-sanitizer-soak-93c1b04968` exited with status 1 after 5,653
+`legacy-mp-alpha1-sanitizer-soak-93c1b04968` exited with status 1 after 5,653
 eight-client cycles with 75 ms simulated latency and 2% snapshot loss.
 Post-warm-up average RSS grew from 401.05 MiB to 410.71 MiB (+2.40959%),
 exceeding the existing 1% limit. The retained log contains no sanitizer
@@ -50,8 +52,8 @@ fix in `93c1b04968`.
 A negative control adds the new per-cycle assertion to the old cleanup.
 It fails after one two-client cycle with
 `disconnected peers retained connection metrics`. The corrected final source
-passes all three sanitizer CTest targets: `tes3mp-headless`, `tes3mp-unit`
-and `tes3mp-persistence-fault`, with leak detection enabled.
+passes all three sanitizer CTest targets: `legacy-mp-headless`, `legacy-mp-unit`
+and `legacy-mp-persistence-fault`, with leak detection enabled.
 
 Diagnostic source variants and configuration are retained under
 `build/soak-memory-investigation/`. They use LLVM's

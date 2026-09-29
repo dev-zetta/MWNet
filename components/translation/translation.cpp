@@ -110,7 +110,7 @@ namespace Translation
     }
 
     /*
-        Start of tes3mp addition
+        Start of mwnet addition
 
         Get the localized version of an English topic ID
     */
@@ -124,5 +124,5 @@ namespace Translation
 
         return "";
     }
-    /* End of tes3mp addition */
+    /* End of mwnet addition */
 }

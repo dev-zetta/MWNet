@@ -1,7 +1,7 @@
 #include "soundextensions.hpp"
 
 /*
-    Start of tes3mp addition
+    Start of mwnet addition
 
     Include additional headers for multiplayer purposes
 */
@@ -9,7 +9,7 @@
 #include "../mwmp/Networking.hpp"
 #include "../mwmp/ObjectList.hpp"
 #include "../mwmp/ScriptController.hpp"
-/* End of tes3mp addition */
+/* End of mwnet addition */
 
 #include <components/compiler/opcodes.hpp>
 
@@ -81,7 +81,7 @@ namespace MWScript
                     Misc::ResourceHelpers::correctMusicPath(music), MWSound::MusicType::MWScript);
 
                 /*
-                    Start of tes3mp addition
+                    Start of mwnet addition
 
                     Send an ID_MUSIC_PLAY packet every time new music is streamed through
                     a script
@@ -94,7 +94,7 @@ namespace MWScript
                     objectList->addMusicPlay(std::string(music));
                     objectList->sendMusicPlay();
                 }
-                /* End of tes3mp addition */
+                /* End of mwnet addition */
             }
         };
 

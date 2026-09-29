@@ -5,7 +5,7 @@
 #include <MyGUI_LanguageManager.h>
 
 /*
-    Start of tes3mp addition
+    Start of mwnet addition
 
     Include additional headers for multiplayer purposes
 */
@@ -16,7 +16,7 @@
 #include "../mwmp/ObjectList.hpp"
 #include "../mwmp/ScriptController.hpp"
 #include <components/interpreter/context.hpp>
-/* End of tes3mp addition */
+/* End of mwnet addition */
 
 #include <components/debug/debuglog.hpp>
 
@@ -126,7 +126,7 @@ namespace MWScript
                     item = MWWorld::ContainerStore::sGoldId;
 
                 /*
-                    Start of tes3mp addition
+                    Start of mwnet addition
 
                     Send an ID_CONTAINER packet every time an item is added to a Ptr
                     that doesn't belong to a DedicatedPlayer
@@ -147,7 +147,7 @@ namespace MWScript
                     objectList->addBaseObject(baseObject);
                     objectList->sendContainer();
                 }
-                /* End of tes3mp addition */
+                /* End of mwnet addition */
 
                 // Check if "item" can be placed in a container
                 MWWorld::ManualRef manualRef(*MWBase::Environment::get().getESMStore(), item, 1);
@@ -319,7 +319,7 @@ namespace MWScript
                 }
 
                 /*
-                    Start of tes3mp addition
+                    Start of mwnet addition
 
                     Send an ID_CONTAINER packet every time an item is removed from a Ptr
                     that doesn't belong to a DedicatedPlayer
@@ -341,7 +341,7 @@ namespace MWScript
                     objectList->addBaseObject(baseObject);
                     objectList->sendContainer();
                 }
-                /* End of tes3mp addition */
+                /* End of mwnet addition */
 
                 int numRemoved = store.remove(item, count);
 

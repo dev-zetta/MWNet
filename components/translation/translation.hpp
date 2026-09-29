@@ -29,12 +29,12 @@ namespace Translation
         bool hasTranslation() const;
 
         /*
-            Start of tes3mp addition
+            Start of mwnet addition
 
             Get the localized version of an English topic ID
         */
         std::string getLocalizedTopicId(const std::string& englishTopicId) const;
-        /* End of tes3mp addition */
+        /* End of mwnet addition */
 
     private:
         typedef std::map<std::string, std::string, std::less<>> ContainerType;

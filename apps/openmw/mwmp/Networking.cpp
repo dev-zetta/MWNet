@@ -420,7 +420,7 @@ bool Networking::preInit(std::vector<std::string>& content, Files::Collections& 
         {
             std::string errmsg = "Plugin not found: \"" + *it + "\" (extension: \"" + filename.extension().string() + "\")";
             LOG_MESSAGE_SIMPLE(TimedLog::LOG_ERROR, "%s", errmsg.c_str());
-            SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR, "tes3mp - Plugin not found", errmsg.c_str(), 0);
+            SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR, "mwnet - Plugin not found", errmsg.c_str(), 0);
             return failConnection(errmsg);
         }
     }
@@ -601,7 +601,7 @@ bool Networking::confirmServerFingerprint(std::string_view host, unsigned short 
     };
     SDL_MessageBoxData box{};
     box.flags = SDL_MESSAGEBOX_WARNING;
-    box.title = "TES3MP server identity";
+    box.title = "MWNet server identity";
     box.message = message.c_str();
     box.numbuttons = 2;
     box.buttons = buttons;

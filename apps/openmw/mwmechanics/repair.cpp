@@ -5,7 +5,7 @@
 
 
     /*
-    Start of tes3mp addition
+    Start of mwnet addition
 
     Include additional headers for multiplayer purposes
 */
@@ -13,7 +13,7 @@
 #include "../mwmp/Networking.hpp"
 #include "../mwmp/LocalPlayer.hpp"
 #include "../mwmp/MechanicsHelper.hpp"
-/* End of tes3mp addition */
+/* End of mwnet addition */
 #include "../mwbase/environment.hpp"
 #include "../mwbase/windowmanager.hpp"
 #include "../mwbase/world.hpp"
@@ -85,7 +85,7 @@ namespace MWMechanics
 
             MWBase::Environment::get().getWindowManager()->playSound(ESM::RefId::stringRefId("Repair"));
             MWBase::Environment::get().getWindowManager()->messageBox("#{sRepairSuccess}");
-            /* Start of tes3mp addition */
+            /* Start of mwnet addition */
             {
                 mwmp::ObjectList *objectList = mwmp::Main::get().getNetworking()->getObjectList();
                 objectList->reset();
@@ -93,13 +93,13 @@ namespace MWMechanics
                 objectList->addObjectSound(MWMechanics::getPlayer(), "Repair", 1.0, 1.0);
                 objectList->sendObjectSound();
             }
-            /* End of tes3mp addition */
+            /* End of mwnet addition */
         }
         else
         {
             MWBase::Environment::get().getWindowManager()->playSound(ESM::RefId::stringRefId("Repair Fail"));
             MWBase::Environment::get().getWindowManager()->messageBox("#{sRepairFailed}");
-            /* Start of tes3mp addition */
+            /* Start of mwnet addition */
             {
                 mwmp::ObjectList *objectList = mwmp::Main::get().getNetworking()->getObjectList();
                 objectList->reset();
@@ -107,7 +107,7 @@ namespace MWMechanics
                 objectList->addObjectSound(MWMechanics::getPlayer(), "Repair Fail", 1.0, 1.0);
                 objectList->sendObjectSound();
             }
-            /* End of tes3mp addition */
+            /* End of mwnet addition */
         }
 
         // tool used up?

@@ -1,5 +1,7 @@
 # RSS sample storage correction, 2026-09-15
 
+> Historical pre-rebrand evidence: LegacyMP/legacy-mp are display aliases for the former fork name in identifiers, commands, and artifact paths. They are not renamed artifacts or MWNet validation results. Hashes, revisions, measurements, and exit codes are unchanged; consult Git history for the original labels.
+
 ## Completed paired gate
 
 The paired soak for `84c4314a5ce9edad4ffe258db6679148cca7e4e0` finished on
@@ -14,7 +16,7 @@ increase of 132,956.31 bytes (129.84 KiB). Kernel process peaks were
 memory-limit and OOM event counters remained zero under the 2 GiB/no-swap
 budget. Increasing that budget would not repair the relative-growth failure.
 
-Artifacts are retained in `tes3mp-alpha1-paired-soak-84c4314a5c` and locally
+Artifacts are retained in `legacy-mp-alpha1-paired-soak-84c4314a5c` and locally
 under `build/release-soak-84c4314a5c-results/`. The analysis and hashes are in
 `build/soak-memory-journal-investigation/failed-run-analysis.json`.
 

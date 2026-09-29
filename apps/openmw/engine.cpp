@@ -45,7 +45,7 @@
 #include <components/loadinglistener/loadinglistener.hpp>
 
     /*
-    Start of tes3mp addition
+    Start of mwnet addition
 
     Include additional headers for multiplayer purposes
 */
@@ -53,7 +53,7 @@
 #include "mwmp/Main.hpp"
 #include "mwmp/GUIController.hpp"
 #include "mwmp/LocalPlayer.hpp"
-/* End of tes3mp addition */
+/* End of mwnet addition */
 #include <components/misc/frameratelimiter.hpp>
 
 #include <components/sceneutil/color.hpp>
@@ -197,20 +197,20 @@ void OMW::Engine::executeLocalScripts()
         mScriptManager->run(script.first, interpreterContext);
 
             /*
-            Start of tes3mp addition
+            Start of mwnet addition
 
             By comparing its name with a list of script names, check if this script
             is allowed to send packets about its value changes
 
-            If it is, set a tes3mp-only boolean to true in its interpreterContext
+            If it is, set a mwnet-only boolean to true in its interpreterContext
         */
         if (mwmp::Main::isValidPacketScript(script.first.getRefIdString()))
         {
             interpreterContext.sendPackets = true;
         }
-        /* End of tes3mp addition */
+        /* End of mwnet addition */
             /*
-            Start of tes3mp addition
+            Start of mwnet addition
 
             Mark this InterpreterContext as having a SCRIPT_LOCAL context
             and as currently running the script with this name, so that
@@ -219,7 +219,7 @@ void OMW::Engine::executeLocalScripts()
         */
         interpreterContext.trackContextType(Interpreter::Context::SCRIPT_LOCAL);
         interpreterContext.trackCurrentScriptName(script.first.getRefIdString());
-        /* End of tes3mp addition */
+        /* End of mwnet addition */
     }
 }
 
@@ -272,12 +272,12 @@ bool OMW::Engine::frame(unsigned frameNumber, float frametime)
         }
 
             /*
-            Start of tes3mp addition
+            Start of mwnet addition
 
             Update multiplayer processing for the current frame
         */
         mwmp::Main::frame(frametime);
-        /* End of tes3mp addition */
+        /* End of mwnet addition */
         // update game state
         {
             ScopedProfile<UserStatsType::State> profile(frameStart, frameNumber, *timer, *stats);
@@ -329,7 +329,7 @@ bool OMW::Engine::frame(unsigned frameNumber, float frametime)
                 if (!paused && player.getClass().getCreatureStats(player).isDead())
                 {
                     /*
-                        Start of tes3mp change (major)
+                        Start of mwnet change (major)
 
                         Instead of ending the game on player death, send ID_PLAYER_DEATH to
                         the server and wait for ID_PLAYER_RESURRECT. The server will respond
@@ -339,7 +339,7 @@ bool OMW::Engine::frame(unsigned frameNumber, float frametime)
                     mwmp::LocalPlayer *localPlayer = mwmp::Main::get().getLocalPlayer();
                     if (localPlayer && !localPlayer->waitingForResurrect)
                         localPlayer->sendDeath(1);
-                    /* End of tes3mp change (major) */
+                    /* End of mwnet change (major) */
                 }
             }
         }
@@ -475,14 +475,14 @@ OMW::Engine::~Engine()
     mJournal = nullptr;
 
         /*
-        Start of tes3mp addition
+        Start of mwnet addition
 
         Free up memory allocated by multiplayer's GUIController before mWindowManager
         is destroyed, to prevent use-after-free in GUIChat/MyGUI widget destruction.
     */
     if (mwmp::Main::isInitialized())
         mwmp::Main::get().getGUIController()->cleanUp();
-    /* End of tes3mp addition */
+    /* End of mwnet addition */
 
     mWindowManager = nullptr;
     mScriptManager = nullptr;
@@ -495,12 +495,12 @@ OMW::Engine::~Engine()
     try { mLuaManager = nullptr; } catch (...) {}
     mL10nManager = nullptr;
         /*
-        Start of tes3mp addition
+        Start of mwnet addition
 
         Free up memory allocated by multiplayer's Main class
     */
     mwmp::Main::destroy();
-    /* End of tes3mp addition */
+    /* End of mwnet addition */
     mScriptContext = nullptr;
 
     mUnrefQueue = nullptr;
@@ -521,12 +521,12 @@ OMW::Engine::~Engine()
     SDL_Quit();
 
         /*
-        Start of tes3mp addition
+        Start of mwnet addition
 
         Free up memory allocated by multiplayer's logger
     */
     LOG_QUIT();
-    /* End of tes3mp addition */
+    /* End of mwnet addition */
     Log(Debug::Info) << "Quitting peacefully.";
 }
 
@@ -629,7 +629,7 @@ void OMW::Engine::createWindow()
     {
         while (!mWindow)
         {
-            mWindow = SDL_CreateWindow("OpenMW", posX, posY, width, height, flags);
+            mWindow = SDL_CreateWindow("MWNet", posX, posY, width, height, flags);
             if (!mWindow)
             {
                 // Try with a lower AA
@@ -787,7 +787,7 @@ void OMW::Engine::createWindow()
 void OMW::Engine::setWindowIcon()
 {
     std::ifstream windowIconStream;
-    const auto windowIcon = mResDir / "openmw.png";
+    const auto windowIcon = mResDir / "mwnet.png";
     windowIconStream.open(windowIcon, std::ios_base::in | std::ios_base::binary);
     if (windowIconStream.fail())
         Log(Debug::Error) << "Error: Failed to open " << windowIcon;
@@ -1024,10 +1024,10 @@ void OMW::Engine::go()
     assert(!mContentFiles.empty());
 
     /*
-        Start of tes3mp change (major)
+        Start of mwnet change (major)
 
         Attempt multiplayer initialization and proceed no further if it fails.
-        Strip OpenMW-internal entries (builtin.omwscripts) that TES3MP 0.8.1
+        Strip OpenMW-internal entries (builtin.omwscripts) that Upstream 0.8.1
         servers don't know about before sending the content list.
     */
     std::vector<std::string> mpContentFiles;
@@ -1036,7 +1036,7 @@ void OMW::Engine::go()
             mpContentFiles.push_back(f);
     if (!mwmp::Main::init(mpContentFiles, mFileCollections))
         return;
-    /* End of tes3mp change (major)*/
+    /* End of mwnet change (major)*/
 
     Log(Debug::Info) << "OSG version: " << osgGetVersion();
     SDL_version sdlVersion;
@@ -1065,7 +1065,7 @@ void OMW::Engine::go()
     mEnvironment.setFrameRateLimit(Settings::video().mFramerateLimit);
 
     /*
-        Start of tes3mp change (minor)
+        Start of mwnet change (minor)
 
         When --connect was provided, skip the main menu entirely.
         When no --connect was given, show the main menu so the direct-connect screen
@@ -1074,7 +1074,7 @@ void OMW::Engine::go()
     */
     if (!mwmp::Main::getAddress().empty())
         mSkipMenu = true;
-    /* End of tes3mp change (minor) */
+    /* End of mwnet change (minor) */
 
     prepareEngine();
 
@@ -1100,20 +1100,20 @@ void OMW::Engine::go()
     }
 
     /*
-        Start of tes3mp addition
+        Start of mwnet addition
 
         Handle post-initialization for multiplayer classes
     */
     mwmp::Main::postInit();
-    /* End of tes3mp addition */
+    /* End of mwnet addition */
 
     /*
-        Start of tes3mp change (major)
+        Start of mwnet change (major)
 
         Always skip the main menu in multiplayer (mSkipMenu already set before prepareEngine)
     */
     // mSkipMenu already set to true before prepareEngine() above
-    /* End of tes3mp change (major)*/
+    /* End of mwnet change (major)*/
 
     // Setup profiler
     osg::ref_ptr<Resource::Profiler> statsHandler = new Resource::Profiler(stats.is_open(), *mVFS);
@@ -1144,7 +1144,7 @@ void OMW::Engine::go()
             Log(Debug::Warning) << "Title music not found";
 
         /*
-            Start of tes3mp change (minor)
+            Start of mwnet change (minor)
 
             Skip the Morrowind title video in multiplayer — its inner render loop
             calls Main::frame() before the world is ready, causing a crash.
@@ -1155,18 +1155,18 @@ void OMW::Engine::go()
             if (!logo.empty())
                 mWindowManager->playVideo(logo, /*allowSkipping*/ true, /*overrideSounds*/ false);
         }
-        /* End of tes3mp change (minor) */
+        /* End of mwnet change (minor) */
     }
     else if (!mwmp::Main::isInitialized() || mStateManager->getState() != MWState::StateManager::State_Running)
     {
         /*
-            Start of tes3mp change (minor)
+            Start of mwnet change (minor)
 
-            Skip redundant newGame() if TES3MP postInit() already started the game.
+            Skip redundant newGame() if MWNet postInit() already started the game.
             The cleanup() inside newGame() would destroy the multiplayer state.
         */
         mStateManager->newGame(!mNewGame);
-        /* End of tes3mp change (minor) */
+        /* End of mwnet change (minor) */
     }
 
     if (!mStartupScript.empty() && mStateManager->getState() == MWState::StateManager::State_Running)
@@ -1181,7 +1181,7 @@ void OMW::Engine::go()
     while (!mViewer->done() && !mStateManager->hasQuitRequest())
     {
         /*
-            Start of tes3mp addition
+            Start of mwnet addition
 
             If the in-game direct-connect screen connected to a server, start the
             game world from here (the main loop) rather than from the GUI
@@ -1207,7 +1207,7 @@ void OMW::Engine::go()
             mWindowManager->pushGuiMode(MWGui::GM_MainMenu);
             mwmp::Main::get().getGUIController()->showServerBrowser();
         }
-        /* End of tes3mp addition */
+        /* End of mwnet addition */
 
         const double dt = std::chrono::duration_cast<std::chrono::duration<double>>(
                               std::min(frameRateLimiter.getLastFrameDuration(), maxSimulationInterval))

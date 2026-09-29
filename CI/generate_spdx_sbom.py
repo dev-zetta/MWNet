@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-"""Generate the source-oriented TES3MP SPDX 2.3 software bill of materials."""
+"""Generate the source-oriented MWNet SPDX 2.3 software bill of materials."""
 
 from __future__ import annotations
 
@@ -15,7 +15,7 @@ import subprocess
 import sys
 
 
-REPOSITORY = "https://github.com/dev-zetta/TES3MP"
+REPOSITORY = os.environ.get("MWNET_REPOSITORY", "https://github.com/dev-zetta/MWNet").rstrip("/")
 
 
 def read_match(path: pathlib.Path, pattern: str, description: str) -> str:
@@ -80,10 +80,10 @@ def package(
 
 
 def generate(root: pathlib.Path) -> dict[str, object]:
-    tes3mp_version = read_match(
+    mwnet_version = read_match(
         root / "components/openmw-mp/Version.hpp",
-        r'#define\s+TES3MP_VERSION\s+"([^"]+)"',
-        "TES3MP version",
+        r'#define\s+MWNET_VERSION\s+"([^"]+)"',
+        "MWNet version",
     )
     openmw_version = ".".join(
         read_match(
@@ -94,7 +94,7 @@ def generate(root: pathlib.Path) -> dict[str, object]:
         for part in ("MAJOR", "MINOR", "RELEASE")
     )
     gns_revision = read_match(
-        root / "cmake/TES3MPDependencies.cmake",
+        root / "cmake/MWNetDependencies.cmake",
         r"GIT_TAG\s+([0-9a-f]{40})",
         "GameNetworkingSockets revision",
     )
@@ -102,15 +102,15 @@ def generate(root: pathlib.Path) -> dict[str, object]:
 
     packages = [
         package(
-            "SPDXRef-Package-TES3MP",
-            "TES3MP",
-            tes3mp_version,
-            f"git+{REPOSITORY}.git@{revision}",
+            "SPDXRef-Package-MWNet",
+            "MWNet",
+            mwnet_version,
+            f"git+{REPOSITORY}.git@{revision}" if REPOSITORY else "NOASSERTION",
             comment=(
                 "License terms are recorded in LICENSE. Specialist review of the "
-                "TES3MP additional GPL terms remains a stable-release gate."
+                "MWNet additional GPL terms remains a stable-release gate."
             ),
-            purl=f"pkg:github/dev-zetta/TES3MP@{revision}",
+            purl=f"pkg:generic/mwnet@{mwnet_version}?vcs_revision={revision}",
         ),
         package(
             "SPDXRef-Package-OpenMW",
@@ -147,14 +147,16 @@ def generate(root: pathlib.Path) -> dict[str, object]:
         packages.append(package(f"SPDXRef-Package-{name}", name, version, url, license_id,
                                 comment="Public discovery dependency; resolve the exact binary package in release artifacts."))
 
+    packages[0]["sourceInfo"] = f"Git revision: {revision}"
+
     relationships = [
         {
             "spdxElementId": "SPDXRef-DOCUMENT",
             "relationshipType": "DESCRIBES",
-            "relatedSpdxElement": "SPDXRef-Package-TES3MP",
+            "relatedSpdxElement": "SPDXRef-Package-MWNet",
         },
         {
-            "spdxElementId": "SPDXRef-Package-TES3MP",
+            "spdxElementId": "SPDXRef-Package-MWNet",
             "relationshipType": "VARIANT_OF",
             "relatedSpdxElement": "SPDXRef-Package-OpenMW",
         },
@@ -164,7 +166,7 @@ def generate(root: pathlib.Path) -> dict[str, object]:
     for dependency in ("GameNetworkingSockets", "libsodium", "libcurl", "Boost", "SQLite3", "Caddy"):
         relationships.append(
             {
-                "spdxElementId": "SPDXRef-Package-TES3MP",
+                "spdxElementId": "SPDXRef-Package-MWNet",
                 "relationshipType": "DEPENDS_ON",
                 "relatedSpdxElement": f"SPDXRef-Package-{dependency}",
             }
@@ -188,26 +190,26 @@ def generate(root: pathlib.Path) -> dict[str, object]:
         )
         relationships.append(
             {
-                "spdxElementId": "SPDXRef-Package-TES3MP",
+                "spdxElementId": "SPDXRef-Package-MWNet",
                 "relationshipType": "CONTAINS",
                 "relatedSpdxElement": spdx_id,
             }
         )
 
     namespace_digest = hashlib.sha256(
-        f"{revision}:{tes3mp_version}".encode("utf-8")
+        f"{revision}:{mwnet_version}".encode("utf-8")
     ).hexdigest()
     return {
         "spdxVersion": "SPDX-2.3",
         "dataLicense": "CC0-1.0",
         "SPDXID": "SPDXRef-DOCUMENT",
-        "name": f"TES3MP-{tes3mp_version}-source",
-        "documentNamespace": f"{REPOSITORY}/sbom/{namespace_digest}",
+        "name": f"MWNet-{mwnet_version}-source",
+        "documentNamespace": f"https://spdx.org/spdxdocs/mwnet-{namespace_digest}",
         "creationInfo": {
             "created": creation_time(),
-            "creators": ["Tool: TES3MP-CI-generate-spdx-sbom"],
+            "creators": ["Tool: MWNet-CI-generate-spdx-sbom"],
             "comment": (
-                "Source inventory for TES3MP additions and bundled extern components. "
+                "Source inventory for MWNet additions and bundled extern components. "
                 "Release packaging must merge resolved platform and binary dependency metadata."
             ),
         },
@@ -225,7 +227,7 @@ def validate(document: dict[str, object]) -> None:
         raise RuntimeError("packages and relationships must be arrays")
     identifiers = {entry.get("SPDXID") for entry in packages if isinstance(entry, dict)}
     required = {
-        "SPDXRef-Package-TES3MP",
+        "SPDXRef-Package-MWNet",
         "SPDXRef-Package-OpenMW",
         "SPDXRef-Package-GameNetworkingSockets",
         "SPDXRef-Package-libsodium",
@@ -245,7 +247,7 @@ def main() -> int:
         "--root",
         type=pathlib.Path,
         default=pathlib.Path(__file__).resolve().parent.parent,
-        help="TES3MP source tree",
+        help="MWNet source tree",
     )
     args = parser.parse_args()
 

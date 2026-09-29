@@ -112,12 +112,12 @@ namespace MWBase
             = 0;
 
         /*
-            Start of tes3mp addition
+            Start of mwnet addition
 
             Make it possible to set the number of deaths for an actor with the given refId
         */
         virtual void setDeaths(const ESM::RefId& refId, int number) = 0;
-        /* End of tes3mp addition */
+        /* End of mwnet addition */
 
         /// Removes an actor and its allies from combat with the actor's targets.
         virtual void stopCombat(const MWWorld::Ptr& ptr) = 0;
@@ -264,12 +264,12 @@ namespace MWBase
         virtual bool isAggressive(const MWWorld::Ptr& ptr, const MWWorld::Ptr& target) = 0;
 
         /*
-            Start of tes3mp addition
+            Start of mwnet addition
 
             Make it possible to set the attackingOrSpell state from elsewhere in the code
         */
         virtual void setAttackingOrSpell(const MWWorld::Ptr& ptr, bool state) const = 0;
-        /* End of tes3mp addition */
+        /* End of mwnet addition */
 
         /// Resurrects the player if necessary
         virtual void resurrect(const MWWorld::Ptr& ptr) = 0;
@@ -303,12 +303,12 @@ namespace MWBase
         virtual bool isBoundItem(const MWWorld::Ptr& item) = 0;
 
         /*
-            Start of tes3mp addition
+            Start of mwnet addition
 
             Make it possible to check if an itemId corresponds to a bound item
         */
         virtual bool isBoundItem(const ESM::RefId& itemId) = 0;
-        /* End of tes3mp addition */
+        /* End of mwnet addition */
 
         virtual bool isAllowedToUse(const MWWorld::Ptr& ptr, const MWWorld::Ptr& target, MWWorld::Ptr& victim) = 0;
 

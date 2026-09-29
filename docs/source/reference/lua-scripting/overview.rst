@@ -82,7 +82,7 @@ Local scripts
 Player scripts
     A specific kind of local scripts; *player script* is a local script that is attached to a player. It can do everything that a normal local script can do, plus some player-specific functionality (e.g. control UI and camera).
 
-This scripting API was developed to be conceptually compatible with `multiplayer <https://github.com/TES3MP/openmw-tes3mp>`__. In multiplayer the server is lightweight and delegates most of the work to clients. Each client processes some part of the game world. Global scripts are server-side and local scripts are client-side. Because of this, there are several rules for the Lua scripting API:
+This scripting API was developed to be conceptually compatible with multiplayer. In multiplayer the server is lightweight and delegates most of the work to clients. Each client processes some part of the game world. Global scripts are server-side and local scripts are client-side. Because of this, there are several rules for the Lua scripting API:
 
 1. A local script can see only some area of the game world (cells that are active on a specific client). Any data from inactive cells can't be used, as they are not synchronized and could be already changed on another client.
 2. A local script can only modify the object it is attached to. Other objects can theoretically be processed by another client. To prevent synchronization problems the access to them is read-only.

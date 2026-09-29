@@ -21,7 +21,7 @@
 #include "spelleffects.hpp"
 
 /*
-    Start of tes3mp addition
+    Start of mwnet addition
 
     Include additional headers for multiplayer purposes
 */
@@ -32,7 +32,7 @@
 #include "../mwmp/LocalPlayer.hpp"
 #include "../mwmp/CellController.hpp"
 #include "../mwmp/MechanicsHelper.hpp"
-/* End of tes3mp addition */
+/* End of mwnet addition */
 
 #include "../mwbase/environment.hpp"
 #include "../mwbase/luamanager.hpp"
@@ -291,7 +291,7 @@ namespace MWMechanics
                         break;
 
                     /*
-                        Start of tes3mp addition
+                        Start of mwnet addition
 
                         Whenever the local player loses an active spell, send an ID_PLAYER_SPELLS_ACTIVE packet to the server with it
 
@@ -314,7 +314,7 @@ namespace MWMechanics
                             else Log(Debug::Warning) << "activespells: getLocalActor returned nullptr for " << actorPtr.getCellRef().getRefId();
                         }
                     }
-                    /* End of tes3mp addition */
+                    /* End of mwnet addition */
                 }
                 else
                 {
@@ -585,7 +585,7 @@ namespace MWMechanics
         mQueue.emplace_back(params);
     }
 
-    /* Start of tes3mp addition */
+    /* Start of mwnet addition */
     void ActiveSpells::addSpell(const ESM::RefId& id, bool stack, std::vector<ActiveEffect> effects,
                                 const std::string& displayName, int casterActorId)
     {
@@ -596,7 +596,7 @@ namespace MWMechanics
         params.mServerAuthoritative = true;
         mQueue.emplace_back(std::move(params));
     }
-    /* End of tes3mp addition */
+    /* End of mwnet addition */
 
     void ActiveSpells::addSpell(const ESM::Spell* spell, const MWWorld::Ptr& actor, bool ignoreResistances)
     {
@@ -731,7 +731,7 @@ namespace MWMechanics
         }
     }
 
-    /* Start of tes3mp addition */
+    /* Start of mwnet addition */
     bool ActiveSpells::removeSpellByTimestamp(const ESM::RefId& id, MWWorld::TimeStamp timestamp)
     {
         for (auto spell = mSpells.begin(); spell != mSpells.end(); ++spell)
@@ -744,7 +744,7 @@ namespace MWMechanics
         }
         return false;
     }
-    /* End of tes3mp addition */
+    /* End of mwnet addition */
 
     void ActiveSpells::writeState(ESM::ActiveSpells& state) const
     {
@@ -790,16 +790,16 @@ namespace MWMechanics
 
     }
 
-    /* Start of tes3mp addition */
+    /* Start of mwnet addition */
     void ActiveSpells::purgeEffectByArg(const ESM::RefId& effectId, int effectArg)
     {
         const int idx = ESM::MagicEffect::refIdToIndex(effectId);
         if (idx >= 0)
             purgeEffectByArg(static_cast<short>(idx), effectArg);
     }
-    /* End of tes3mp addition */
+    /* End of mwnet addition */
 
-    /* Start of tes3mp addition */
+    /* Start of mwnet addition */
     void ActiveSpells::purgeEffectByArg(short effectId, int effectArg)
     {
         const ESM::RefId effectRefId = ESM::MagicEffect::indexToRefId(effectId);
@@ -844,5 +844,5 @@ namespace MWMechanics
     {
         mActorId = actorId;
     }
-    /* End of tes3mp addition */
+    /* End of mwnet addition */
 }

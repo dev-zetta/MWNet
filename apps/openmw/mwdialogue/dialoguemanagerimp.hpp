@@ -95,13 +95,13 @@ namespace MWDialogue
         bool inJournal(const ESM::RefId& topicId, const ESM::RefId& infoId) const override;
 
                 /*
-                Start of tes3mp addition
+                Start of mwnet addition
 
                 Make it possible to check whether a topic is known by the player from elsewhere
                 in the code
             */
             virtual bool isNewTopic(const ESM::RefId& topic);
-            /* End of tes3mp addition */
+            /* End of mwnet addition */
         void addTopic(const ESM::RefId& topic) override;
 
         void addChoice(std::string_view text, int choice) override;
@@ -145,12 +145,12 @@ namespace MWDialogue
         void clearInfoActor(const MWWorld::Ptr& actor) const override;
 
                 /*
-                Start of tes3mp addition
+                Start of mwnet addition
 
                 Make it possible to get the caption of a voice dialogue
             */
             ESM::RefId getVoiceCaption(const ESM::RefId& sound) const override;
-            /* End of tes3mp addition */
+            /* End of mwnet addition */
     };
 }
 

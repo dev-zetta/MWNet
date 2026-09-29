@@ -1,4 +1,4 @@
-add_library(tes3mp-transport STATIC
+add_library(mwnet-transport STATIC
     ApplicationPacketBridge.cpp
     ApplicationPacketDispatcher.cpp
     ApplicationPacketReceiver.cpp
@@ -7,29 +7,29 @@ add_library(tes3mp-transport STATIC
     TransportQueue.cpp
 )
 
-target_include_directories(tes3mp-transport PUBLIC ${CMAKE_SOURCE_DIR})
-target_compile_features(tes3mp-transport PUBLIC cxx_std_20)
-target_link_libraries(tes3mp-transport PUBLIC tes3mp-metrics tes3mp-protocol-codec)
+target_include_directories(mwnet-transport PUBLIC ${CMAKE_SOURCE_DIR})
+target_compile_features(mwnet-transport PUBLIC cxx_std_20)
+target_link_libraries(mwnet-transport PUBLIC mwnet-metrics mwnet-protocol-codec)
 
 if (MSVC)
-    target_compile_options(tes3mp-transport PRIVATE /W4 /WX)
+    target_compile_options(mwnet-transport PRIVATE /W4 /WX)
 else()
-    target_compile_options(tes3mp-transport PRIVATE -Wall -Wextra -Wpedantic -Werror)
+    target_compile_options(mwnet-transport PRIVATE -Wall -Wextra -Wpedantic -Werror)
 endif()
 
-if (TES3MP_GNS_TARGET)
-    add_library(tes3mp-gns-transport STATIC
+if (MWNET_GNS_TARGET)
+    add_library(mwnet-gns-transport STATIC
         GameNetworkingSocketsTransport.cpp
         SecureTransport.cpp
     )
 
-    target_include_directories(tes3mp-gns-transport PUBLIC ${CMAKE_SOURCE_DIR})
-    target_compile_features(tes3mp-gns-transport PUBLIC cxx_std_20)
-    target_link_libraries(tes3mp-gns-transport PUBLIC tes3mp-transport tes3mp-security ${TES3MP_GNS_TARGET})
+    target_include_directories(mwnet-gns-transport PUBLIC ${CMAKE_SOURCE_DIR})
+    target_compile_features(mwnet-gns-transport PUBLIC cxx_std_20)
+    target_link_libraries(mwnet-gns-transport PUBLIC mwnet-transport mwnet-security ${MWNET_GNS_TARGET})
 
     if (MSVC)
-        target_compile_options(tes3mp-gns-transport PRIVATE /W4 /WX)
+        target_compile_options(mwnet-gns-transport PRIVATE /W4 /WX)
     else()
-        target_compile_options(tes3mp-gns-transport PRIVATE -Wall -Wextra -Wpedantic -Werror)
+        target_compile_options(mwnet-gns-transport PRIVATE -Wall -Wextra -Wpedantic -Werror)
     endif()
 endif()

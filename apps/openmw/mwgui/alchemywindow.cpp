@@ -14,14 +14,14 @@
 #include <components/esm3/loadmgef.hpp>
 
 /*
-    Start of tes3mp addition
+    Start of mwnet addition
 
     Include additional headers for multiplayer purposes
 */
 #include "../mwmp/Main.hpp"
 #include "../mwmp/Networking.hpp"
 #include "../mwmp/ObjectList.hpp"
-/* End of tes3mp addition */
+/* End of mwnet addition */
 
 #include "../mwbase/environment.hpp"
 #include "../mwbase/windowmanager.hpp"
@@ -141,12 +141,12 @@ namespace MWGui
         MWBase::WindowManager* winMgr = MWBase::Environment::get().getWindowManager();
 
         /*
-            Start of tes3mp addition
+            Start of mwnet addition
 
             Declare objectList here so we can use it below
         */
         mwmp::ObjectList *objectList = mwmp::Main::get().getNetworking()->getObjectList();
-        /* End of tes3mp addition */
+        /* End of mwnet addition */
 
         switch (result)
         {
@@ -174,7 +174,7 @@ namespace MWGui
                 break;
 
                 /*
-                Start of tes3mp addition
+                Start of mwnet addition
 
                 Send an ID_OBJECT_SOUND packet every time the player makes a sound here
             */
@@ -182,9 +182,9 @@ namespace MWGui
             objectList->packetOrigin = mwmp::CLIENT_GAMEPLAY;
             objectList->addObjectSound(MWMechanics::getPlayer(), "potion success", 1.0, 1.0);
             objectList->sendObjectSound();
-            /* End of tes3mp addition */
+            /* End of mwnet addition */
                 /*
-                Start of tes3mp addition
+                Start of mwnet addition
 
                 Send an ID_OBJECT_SOUND packet every time the player makes a sound here
             */
@@ -192,7 +192,7 @@ namespace MWGui
             objectList->packetOrigin = mwmp::CLIENT_GAMEPLAY;
             objectList->addObjectSound(MWMechanics::getPlayer(), "potion fail", 1.0, 1.0);
             objectList->sendObjectSound();
-            /* End of tes3mp addition */
+            /* End of mwnet addition */
         }
 
         // remove ingredient slots that have been fully used up

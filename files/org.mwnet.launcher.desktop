@@ -1,0 +1,11 @@
+[Desktop Entry]
+Type=Application
+Name=MWNet Launcher
+GenericName=Role Playing Game
+Comment=Multiplayer Morrowind powered by OpenMW
+Keywords=Morrowind;Reimplementation Mods;esm;bsa;
+TryExec=openmw-launcher
+Exec=openmw-launcher
+Icon=mwnet
+Categories=Game;RolePlaying;
+StartupWMClass=openmw-launcher

@@ -30,9 +30,9 @@ namespace ESM
         // Note: Currently unused for items in containers
         RefNum mRefNum;
 
-        /* Start of tes3mp addition */
+        /* Start of mwnet addition */
         unsigned int mMpNum = 0;
-        /* End of tes3mp addition */
+        /* End of mwnet addition */
 
         ESM::RefId mRefID; // ID of object being referenced
 

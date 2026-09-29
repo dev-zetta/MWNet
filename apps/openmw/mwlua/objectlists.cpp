@@ -54,7 +54,7 @@ namespace MWLua
 
     void ObjectLists::objectAddedToScene(const MWWorld::Ptr& ptr)
     {
-        /* Start of tes3mp addition - skip DedicatedPlayer objects with Generated RefIds */
+        /* Start of mwnet addition - skip DedicatedPlayer objects with Generated RefIds */
         {
             const ESM::RefId& refId = ptr.getCellRef().getRefId();
             if (!refId.is<ESM::StringRefId>() && !refId.is<ESM::EmptyRefId>())
@@ -63,7 +63,7 @@ namespace MWLua
                 return;
             }
         }
-        /* End of tes3mp addition */
+        /* End of mwnet addition */
         MWBase::Environment::get().getWorldModel()->registerPtr(ptr);
         ObjectGroup* group = chooseGroup(ptr);
         if (group)

@@ -19,7 +19,7 @@
 namespace mwmp
 {
     GUIChat::GUIChat(int x, int y, int w, int h)
-            : WindowBase("tes3mp_chat.layout")
+            : WindowBase("mwnet_chat.layout")
     {
         setCoord(x, y, w, h);
 

@@ -52,7 +52,7 @@ namespace MWInput
             SDL_StopTextInput();
 
         /*
-            Start of tes3mp addition
+            Start of mwnet addition
 
             Handle multiplayer GUI shortcuts before MyGUI gets a chance to consume
             them. The chat overlay is visible during gameplay and OpenMW 0.52 routes
@@ -67,14 +67,14 @@ namespace MWInput
             input->setJoystickLastUsed(false);
             return;
         }
-        /* End of tes3mp addition */
+        /* End of mwnet addition */
 
         const bool chatEditing = guiController && guiController->getChatEditState();
         const bool isFunctionKey
             = arg.keysym.scancode >= SDL_SCANCODE_F1 && arg.keysym.scancode <= SDL_SCANCODE_F12;
 
         /*
-            Start of tes3mp addition
+            Start of mwnet addition
 
             Dispatch chat editing keys only after restoring the chat widget's focus.
             Function keys deliberately bypass this path and retain their normal bindings.
@@ -88,7 +88,7 @@ namespace MWInput
             input->setJoystickLastUsed(false);
             return;
         }
-        /* End of tes3mp addition */
+        /* End of mwnet addition */
 
         bool consumed = SDL_IsTextInputActive() && // Little trick to check if key is printable
             (!(SDLK_SCANCODE_MASK & arg.keysym.sym)

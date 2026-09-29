@@ -17,7 +17,7 @@
 #include "../mwmechanics/creaturecustomdataresetter.hpp"
 
     /*
-    Start of tes3mp addition
+    Start of mwnet addition
 
     Include additional headers for multiplayer purposes
 */
@@ -29,7 +29,7 @@
 #include "../mwmp/ObjectList.hpp"
 #include "../mwmp/CellController.hpp"
 #include "../mwmp/MechanicsHelper.hpp"
-/* End of tes3mp addition */
+/* End of mwnet addition */
 #include "../mwmechanics/creaturestats.hpp"
 #include "../mwmechanics/difficultyscaling.hpp"
 #include "../mwmechanics/disease.hpp"
@@ -245,7 +245,7 @@ namespace MWClass
         hitPosition = osg::Vec3f();
 
             /*
-            Start of tes3mp addition
+            Start of mwnet addition
 
             Ignore hit calculations on this client from DedicatedPlayers and DedicatedActors
         */
@@ -253,7 +253,7 @@ namespace MWClass
         {
             return false;
         }
-        /* End of tes3mp addition */
+        /* End of mwnet addition */
         // Get the weapon used (if hand-to-hand, weapon = inv.end())
         MWWorld::Ptr weapon;
         if (hasInventoryStore(ptr))
@@ -311,7 +311,7 @@ namespace MWClass
             return;
 
         /*
-            Start of tes3mp addition
+            Start of mwnet addition
 
             If the attacker is a LocalPlayer or LocalActor, get their Attack to assign its
             hit position and target. This has to happen before the failed-hit branch so a
@@ -326,7 +326,7 @@ namespace MWClass
             localAttack->hitPosition = MechanicsHelper::getPositionFromVector(hitPosition);
             MechanicsHelper::assignAttackTarget(localAttack, victim);
         }
-        /* End of tes3mp addition */
+        /* End of mwnet addition */
 
         if (!success)
         {
@@ -334,7 +334,7 @@ namespace MWClass
                 attackWindUp, 0.0f, false, hitPosition, false, MWMechanics::DamageSourceType::Melee);
 
             /*
-                Start of tes3mp addition
+                Start of mwnet addition
 
                 If this was a failed attack by the LocalPlayer or LocalActor, send a
                 packet about it
@@ -353,7 +353,7 @@ namespace MWClass
                 objectList->addObjectHit(victim, ptr, *localAttack);
                 objectList->sendObjectHit();
             }
-            /* End of tes3mp addition */
+            /* End of mwnet addition */
             MWMechanics::reduceWeaponCondition(0.f, false, weapon, ptr);
             return;
         }
@@ -399,7 +399,7 @@ namespace MWClass
             // Apply "On hit" enchanted weapons
 
             /*
-                Start of tes3mp change (minor)
+                Start of mwnet change (minor)
 
                 Track whether the strike enchantment is successful for attacks by the
                 LocalPlayer or LocalActors
@@ -409,7 +409,7 @@ namespace MWClass
 
             if (localAttack)
                 localAttack->applyWeaponEnchantment = appliedEnchantment;
-            /* End of tes3mp change (minor)*/
+            /* End of mwnet change (minor)*/
         }
         else if (isBipedal(ptr))
         {
@@ -454,7 +454,7 @@ namespace MWClass
             MWMechanics::CreatureStats& statsAttacker = attacker.getClass().getCreatureStats(attacker);
 
             /*
-                Start of tes3mp change (minor)
+                Start of mwnet change (minor)
 
                 Instead of only checking whether an attacker is the LocalPlayer, also
                 check if they are a DedicatedPlayer
@@ -473,7 +473,7 @@ namespace MWClass
                 && (statsAttacker.getAiSequence().isInCombat(ptr) || attacker == MWMechanics::getPlayer()))
                 statsAttacker.setHitAttemptActor(ptr.getCellRef().getRefNum());
 
-            /* End of tes3mp change (minor)*/
+            /* End of mwnet change (minor)*/
         }
 
         if (!object.empty())
@@ -527,7 +527,7 @@ namespace MWClass
             }
         }
         /*
-            Start of tes3mp addition
+            Start of mwnet addition
 
             If the attacker was the LocalPlayer or LocalActor, record their target and send an
             attack packet about it
@@ -564,7 +564,7 @@ namespace MWClass
                 else Log(Debug::Warning) << "creature.cpp: getLocalActor returned nullptr for " << ptr.getCellRef().getRefId();
             }
         }
-        /* End of tes3mp addition */
+        /* End of mwnet addition */
     }
 
     std::unique_ptr<MWWorld::Action> Creature::activate(const MWWorld::Ptr& ptr, const MWWorld::Ptr& actor) const

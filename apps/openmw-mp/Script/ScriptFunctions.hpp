@@ -64,8 +64,8 @@ public:
     *        certain arguments to it.
     *
     * Example usage:
-    * - tes3mp.CreateTimerEx("OnTimerTest1", 250, "i", 90)
-    * - tes3mp.CreateTimerEx("OnTimerTest2", 500, "sif", "Test string", 60, 77.321)
+    * - mwnet.CreateTimerEx("OnTimerTest1", 250, "i", 90)
+    * - mwnet.CreateTimerEx("OnTimerTest2", 500, "sif", "Test string", 60, 77.321)
     *
     * \param callback The Lua script function.
     * \param msec The interval in miliseconds.

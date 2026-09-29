@@ -1,9 +1,9 @@
-# This script re-signs OpenMW.app and OpenMW-CS.app after CPack packages them. This is necessary because CPack modifies
+# This script re-signs MWNet.app and OpenMW-CS.app after CPack packages them. This is necessary because CPack modifies
 # the library references used by OpenMW to App relative paths, invalidating the code signature.
 
 # Obviously, we only need to run this on Apple targets.
 if (APPLE)
-    set(OPENMW_APP "OpenMW")
+    set(OPENMW_APP "MWNet")
     set(OPENMW_CS_APP "OpenMW-CS")
 
     set(APPLICATIONS "${OPENMW_APP}" "${OPENMW_CS_APP}")

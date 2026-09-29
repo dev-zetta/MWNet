@@ -4,14 +4,14 @@
 #include <MyGUI_UString.h>
 
     /*
-    Start of tes3mp addition
+    Start of mwnet addition
 
     Include additional headers for multiplayer purposes
 */
 #include <components/openmw-mp/Utils.hpp>
 #include "../mwmp/Main.hpp"
 #include "../mwmp/Networking.hpp"
-/* End of tes3mp addition */
+/* End of mwnet addition */
 #include "../mwbase/environment.hpp"
 #include "../mwbase/windowmanager.hpp"
 #include "../mwbase/world.hpp"

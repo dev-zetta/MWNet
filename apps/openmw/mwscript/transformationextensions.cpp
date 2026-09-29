@@ -1,7 +1,7 @@
 #include <components/debug/debuglog.hpp>
 
 /*
-    Start of tes3mp addition
+    Start of mwnet addition
 
     Include additional headers for multiplayer purposes
 */
@@ -14,7 +14,7 @@
 #include "../mwmp/ObjectList.hpp"
 #include "../mwmp/CellController.hpp"
 #include "../mwmp/ScriptController.hpp"
-/* End of tes3mp addition */
+/* End of mwnet addition */
 
 #include <components/sceneutil/positionattitudetransform.hpp>
 
@@ -136,7 +136,7 @@ namespace MWScript
                 runtime.pop();
 
                 /*
-                    Start of tes3mp addition
+                    Start of mwnet addition
 
                     Prevent players from changing their own scale
 
@@ -169,7 +169,7 @@ namespace MWScript
                         }
                     }
                 }
-                /* End of tes3mp addition */
+                /* End of mwnet addition */
             }
         };
 
@@ -589,7 +589,7 @@ namespace MWScript
                 placed.getClass().adjustPosition(placed, true);
 
                 /*
-                    Start of tes3mp addition
+                    Start of mwnet addition
 
                     Send an ID_OBJECT_PLACE or ID_OBJECT_SPAWN packet every time an object is placed
                     in the world through a script
@@ -611,7 +611,7 @@ namespace MWScript
                         objectList->sendObjectPlace();
                     }
                 }
-                /* End of tes3mp addition */
+                /* End of mwnet addition */
             }
         };
 
@@ -660,7 +660,7 @@ namespace MWScript
                 placed.getClass().adjustPosition(placed, true);
 
                 /*
-                    Start of tes3mp addition
+                    Start of mwnet addition
 
                     Send an ID_OBJECT_PLACE or ID_OBJECT_SPAWN packet every time an object is placed
                     in the world through a script
@@ -682,7 +682,7 @@ namespace MWScript
                         objectList->sendObjectPlace();
                     }
                 }
-                /* End of tes3mp addition */
+                /* End of mwnet addition */
             }
         };
 
@@ -724,7 +724,7 @@ namespace MWScript
                     MWBase::Environment::get().getWorld()->scaleObject(ptr, actor.getCellRef().getScale());
 
                             /*
-                            Start of tes3mp addition
+                            Start of mwnet addition
 
                             Send an ID_OBJECT_PLACE or ID_OBJECT_SPAWN packet every time an object is placed
                             in the world through a script
@@ -747,7 +747,7 @@ namespace MWScript
                                 objectList->sendObjectPlace();
                             }
                         }
-                        /* End of tes3mp addition */
+                        /* End of mwnet addition */
                 }
             }
         };

@@ -10,7 +10,7 @@
 namespace mwmp
 {
     TextInputDialog::TextInputDialog()
-            : MWGui::WindowModal("tes3mp_text_input.layout")
+            : MWGui::WindowModal("mwnet_text_input.layout")
     {
         // Centre dialog
         center();

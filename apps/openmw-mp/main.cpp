@@ -91,8 +91,8 @@ void breakpad_close(){}
 
 std::filesystem::path loadSettings(const Files::ConfigurationManager& cfgMgr)
 {
-    const std::filesystem::path localDefault = cfgMgr.getLocalPath() / "tes3mp-server-default.cfg";
-    const std::filesystem::path globalDefault = cfgMgr.getGlobalPath() / "tes3mp-server-default.cfg";
+    const std::filesystem::path localDefault = cfgMgr.getLocalPath() / "mwnet-server-default.cfg";
+    const std::filesystem::path globalDefault = cfgMgr.getGlobalPath() / "mwnet-server-default.cfg";
 
     const std::filesystem::path* defaultSettings = nullptr;
     if (std::filesystem::exists(localDefault))
@@ -101,12 +101,12 @@ std::filesystem::path loadSettings(const Files::ConfigurationManager& cfgMgr)
         defaultSettings = &globalDefault;
     else
         throw std::runtime_error(
-            "No default settings file found! Make sure the file \"tes3mp-server-default.cfg\" was properly installed.");
+            "No default settings file found! Make sure the file \"mwnet-server-default.cfg\" was properly installed.");
 
     Settings::SettingsFileParser parser;
     parser.loadSettingsFile(*defaultSettings, Settings::Manager::mDefaultSettings);
 
-    const std::filesystem::path userSettings = cfgMgr.getUserConfigPath() / "tes3mp-server.cfg";
+    const std::filesystem::path userSettings = cfgMgr.getUserConfigPath() / "mwnet-server.cfg";
     if (std::filesystem::exists(userSettings))
         parser.loadSettingsFile(userSettings, Settings::Manager::mUserSettings);
 
@@ -261,10 +261,10 @@ int main(int argc, char *argv[])
 
     if (!variables["no-logs"].as<bool>())
     {
-        // Redirect cout and cerr to tes3mp server log
+        // Redirect cout and cerr to mwnet server log
 
         logfile.open(boost::filesystem::path(
-                cfgMgr.getLogPath() / "/tes3mp-server-" += TimedLog::getFilenameTimestamp() += ".log"));
+                cfgMgr.getLogPath() / "/mwnet-server-" += TimedLog::getFilenameTimestamp() += ".log"));
 
         coutsb.open(Tee(logfile, oldcout));
         cerrsb.open(Tee(logfile, oldcerr));
@@ -286,9 +286,9 @@ int main(int argc, char *argv[])
     const std::string contentEncoding = mgr.getString("encoding", "Content");
     const double maximumTouchRange = mgr.getDouble("maximumTouchRange", "Content");
     const double maximumTargetRange = mgr.getDouble("maximumTargetRange", "Content");
-    if (const char* value = std::getenv("TES3MP_CONTENT_DATA_DIR"))
+    if (const char* value = std::getenv("MWNET_CONTENT_DATA_DIR"))
         contentData = value;
-    if (const char* value = std::getenv("TES3MP_CONTENT_FILES"))
+    if (const char* value = std::getenv("MWNET_CONTENT_FILES"))
         contentFilesSetting = value;
 
     std::string passwordHash = mgr.getString("passwordHash", "General");
@@ -298,11 +298,11 @@ int main(int argc, char *argv[])
 
     std::vector<std::string> plugins(Utils::split(mgr.getString("plugins", "Plugins"), ','));
 
-    LOG_MESSAGE_SIMPLE(TimedLog::LOG_INFO, "TES3MP dedicated server %s (%s %s)",
-        TES3MP_VERSION, Utils::getOperatingSystemType().c_str(),
+    LOG_MESSAGE_SIMPLE(TimedLog::LOG_INFO, "MWNet dedicated server %s (%s %s)",
+        MWNET_VERSION, Utils::getOperatingSystemType().c_str(),
         Utils::getArchitectureType().c_str());
     LOG_APPEND(TimedLog::LOG_INFO, "Protocol version: %i",
-        TES3MP_PROTO_VERSION);
+        MWNET_PROTO_VERSION);
     const std::string buildCommit = commitHash.empty() ? "unavailable" : commitHash.substr(0, 10);
     LOG_APPEND(TimedLog::LOG_INFO, "Build commit: %s", buildCommit);
     LOG_APPEND(TimedLog::LOG_INFO,
@@ -450,8 +450,8 @@ int main(int argc, char *argv[])
                 if (publicPort < 1 || publicPort > 65535) throw std::runtime_error("invalid discovery port");
                 listing.port = static_cast<std::uint16_t>(publicPort);
                 listing.name = mgr.getString("hostname", "General");
-                listing.version = TES3MP_VERSION;
-                listing.protocol = TES3MP_PROTO_VERSION;
+                listing.version = MWNET_VERSION;
+                listing.protocol = MWNET_PROTO_VERSION;
                 listing.capacity = static_cast<std::uint16_t>(players);
                 listing.password = networking.isPassworded();
                 if (networking.getDataFileEnforcementState())

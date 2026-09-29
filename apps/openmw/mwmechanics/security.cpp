@@ -1,14 +1,14 @@
 #include "security.hpp"
 
 /*
-    Start of tes3mp addition
+    Start of mwnet addition
 
     Include additional headers for multiplayer purposes
 */
 #include "../mwmp/Main.hpp"
 #include "../mwmp/Networking.hpp"
 #include "../mwmp/ObjectList.hpp"
-/* End of tes3mp addition */
+/* End of mwnet addition */
 
 #include "../mwworld/cellstore.hpp"
 
@@ -75,16 +75,16 @@ namespace MWMechanics
             if (Misc::Rng::roll0to99(prng) <= x)
             {
                 /*
-                    Start of tes3mp change (major)
+                    Start of mwnet change (major)
 
                     Disable unilateral locking on this client and expect the server's reply to our
                     packet to do it instead
                 */
                 //lock.getCellRef().unlock();
-                /* End of tes3mp change (major)*/
+                /* End of mwnet change (major)*/
 
                 /*
-                    Start of tes3mp addition
+                    Start of mwnet addition
 
                     Send an ID_OBJECT_LOCK packet every time an object is unlocked here
                 */
@@ -93,7 +93,7 @@ namespace MWMechanics
                 objectList->packetOrigin = mwmp::CLIENT_GAMEPLAY;
                 objectList->addObjectLock(lock, 0);
                 objectList->sendObjectLock();
-                /* End of tes3mp addition */
+                /* End of mwnet addition */
 
                 resultMessage = "#{sLockSuccess}";
                 resultSound = "Open Lock";
@@ -151,7 +151,7 @@ namespace MWMechanics
                 mActor.getClass().skillUsageSucceeded(mActor, ESM::Skill::Security, ESM::Skill::Security_DisarmTrap);
 
                     /*
-                    Start of tes3mp addition
+                    Start of mwnet addition
 
                     Send an ID_OBJECT_TRAP packet every time a trap is disarmed
                 */
@@ -160,7 +160,7 @@ namespace MWMechanics
                 objectList->packetOrigin = mwmp::CLIENT_GAMEPLAY;
                 objectList->addObjectTrap(trap, trap.getRefData().getPosition(), true);
                 objectList->sendObjectTrap();
-                /* End of tes3mp addition */
+                /* End of mwnet addition */
             }
             else
                 resultMessage = "#{sTrapFail}";

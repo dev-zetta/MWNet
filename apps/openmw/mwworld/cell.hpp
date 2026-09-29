@@ -47,9 +47,9 @@ namespace MWWorld
         std::string_view getDescription() const { return mDescription; }
 
         /*
-            Start of tes3mp addition
+            Start of mwnet addition
 
-            Return the stable cell identifier used by the TES3MP protocol and scripts.
+            Return the stable cell identifier used by the MWNet protocol and scripts.
         */
         std::string getShortDescription() const
         {
@@ -58,7 +58,7 @@ namespace MWWorld
 
             return std::to_string(mGridPos.x()) + ", " + std::to_string(mGridPos.y());
         }
-        /* End of tes3mp addition */
+        /* End of mwnet addition */
 
         const MoodData& getMood() const { return mMood; }
         float getWaterHeight() const { return mWaterHeight; }

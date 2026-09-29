@@ -5,7 +5,7 @@
 #include <components/debug/debuglog.hpp>
 
 /*
-    Start of tes3mp addition
+    Start of mwnet addition
 
     Include additional headers for multiplayer purposes
 */
@@ -14,7 +14,7 @@
 #include "../mwmp/Networking.hpp"
 #include "../mwmp/ActorList.hpp"
 #include "../mwmp/MechanicsHelper.hpp"
-/* End of tes3mp addition */
+/* End of mwnet addition */
 
 #include <components/compiler/extensions.hpp>
 #include <components/compiler/opcodes.hpp>
@@ -329,7 +329,7 @@ namespace MWScript
                 {
 
                         /*
-                        Start of tes3mp addition
+                        Start of mwnet addition
 
                         Track the original stat value, to ensure we don't send repetitive packets to the server
                         about its changes
@@ -337,12 +337,12 @@ namespace MWScript
                     MWMechanics::Stat<int> stat = ptr.getClass().getCreatureStats(ptr).getAiSetting(mIndex);
 
                     int initialValue = stat.getBase();
-                    /* End of tes3mp addition */
+                    /* End of mwnet addition */
                     ptr.getClass().getCreatureStats(ptr).setAiSetting(mIndex, value);
                     ptr.getClass().setBaseAISetting(ptr.getCellRef().getRefId(), mIndex, value);
 
                     /*
-                        Start of tes3mp addition
+                        Start of mwnet addition
 
                         Setting an actor's AI_Fight to 100 is equivalent to starting combat with the local player,
                         so send a combat packet regardless of whether we're the cell authority or not; the server
@@ -356,7 +356,7 @@ namespace MWScript
                         actorList->addAiActor(ptr, MWBase::Environment::get().getWorld()->getPlayerPtr(), mwmp::BaseActorList::COMBAT);
                         actorList->sendAiActors();
                     }
-                    /* End of tes3mp addition */
+                    /* End of mwnet addition */
                 }
             }
         };
@@ -398,7 +398,7 @@ namespace MWScript
                 Log(Debug::Info) << "AiFollow: " << actorID << ", " << x << ", " << y << ", " << z << ", " << duration;
 
                 /*
-                    Start of tes3mp addition
+                    Start of mwnet addition
 
                     Send ActorAI packets when an actor becomes a follower, regardless of whether we're
                     the cell authority or not; the server can decide if it wants to comply with them by
@@ -413,7 +413,7 @@ namespace MWScript
                     actorList->addAiActor(ptr, targetPtr, mwmp::BaseActorList::FOLLOW);
                     actorList->sendAiActors();
                 }
-                /* End of tes3mp addition */
+                /* End of mwnet addition */
             }
         };
 
@@ -566,20 +566,20 @@ namespace MWScript
                 MWWorld::Ptr target = MWBase::Environment::get().getWorld()->searchPtr(targetID, true, false);
 
                 /*
-                    Start of tes3mp addition
+                    Start of mwnet addition
 
                     Track whether this actor is already in combat with its target, to ensure we don't
                     send repetitive packets to the server
                 */
                 bool alreadyInCombatWithTarget = !target.isEmpty() ? actor.getClass().getCreatureStats(actor).getAiSequence().isInCombat(target) : false;
-                /* End of tes3mp addition */
+                /* End of mwnet addition */
 
                 if (!target.isEmpty() && !target.getBase()->isDeleted()
                     && !target.getClass().getCreatureStats(target).isDead())
                     MWBase::Environment::get().getMechanicsManager()->startCombat(actor, target, nullptr);
 
                 /*
-                    Start of tes3mp addition
+                    Start of mwnet addition
 
                     Send ActorAI packets when an actor starts combat, regardless of whether we're the
                     cell authority or not; the server can decide if it wants to comply with them by
@@ -593,7 +593,7 @@ namespace MWScript
                     actorList->addAiActor(actor, target, mwmp::BaseActorList::COMBAT);
                     actorList->sendAiActors();
                 }
-                /* End of tes3mp addition */
+                /* End of mwnet addition */
             }
         };
 

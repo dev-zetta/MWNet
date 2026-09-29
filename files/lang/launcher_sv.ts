@@ -300,6 +300,13 @@ de ordinarie fonterna i Morrowind. Bocka denna ruta om du ändå föredrar ordin
     </message>
 </context>
 <context>
+    <name>Launcher::AdvancedPage</name>
+    <message>
+        <source>Text file (*.txt)</source>
+        <translation type="unfinished">Textfil (*.txt)</translation>
+    </message>
+</context>
+<context>
     <name>Launcher::DataFilesPage</name>
     <message>
         <source>English</source>
@@ -472,7 +479,7 @@ de ordinarie fonterna i Morrowind. Bocka denna ruta om du ändå föredrar ordin
     </message>
     <message>
         <source>Launch OpenMW</source>
-        <translation>Starta OpenMW</translation>
+        <translation type="vanished">Starta OpenMW</translation>
     </message>
     <message>
         <source>Help</source>
@@ -496,11 +503,11 @@ de ordinarie fonterna i Morrowind. Bocka denna ruta om du ändå föredrar ordin
     </message>
     <message>
         <source>OpenMW %1 release</source>
-        <translation>OpenMW version %1</translation>
+        <translation type="vanished">OpenMW version %1</translation>
     </message>
     <message>
         <source>OpenMW development (%1)</source>
-        <translation>OpenMW utvecklarversion (%1)</translation>
+        <translation type="vanished">OpenMW utvecklarversion (%1)</translation>
     </message>
     <message>
         <source>Compiled on %1 %2</source>
@@ -536,7 +543,7 @@ de ordinarie fonterna i Morrowind. Bocka denna ruta om du ändå föredrar ordin
     </message>
     <message>
         <source>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;b&gt;Welcome to OpenMW!&lt;/b&gt;&lt;/p&gt;&lt;p&gt;It is recommended to run the Installation Wizard.&lt;/p&gt;&lt;p&gt;The Wizard will let you select an existing Morrowind installation, or install Morrowind for OpenMW to use.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
-        <translation>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;b&gt;Välkommen till OpenMW!&lt;/b&gt;&lt;/p&gt;&lt;p&gt;Det är rekommenderat att du kör Installationsguiden.&lt;/p&gt;&lt;p&gt;Installationsguiden låter dig välja en befintlig Morrowindinstallation eller installera Morrowind för OpenMW.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
+        <translation type="vanished">&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;b&gt;Välkommen till OpenMW!&lt;/b&gt;&lt;/p&gt;&lt;p&gt;Det är rekommenderat att du kör Installationsguiden.&lt;/p&gt;&lt;p&gt;Installationsguiden låter dig välja en befintlig Morrowindinstallation eller installera Morrowind för OpenMW.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
     </message>
     <message>
         <source>&lt;br&gt;&lt;b&gt;Could not open %0 for reading:&lt;/b&gt;&lt;br&gt;&lt;br&gt;%1&lt;br&gt;&lt;br&gt;Please make sure you have the right permissions and try again.&lt;br&gt;</source>
@@ -569,6 +576,26 @@ de ordinarie fonterna i Morrowind. Bocka denna ruta om du ändå föredrar ordin
     <message>
         <source>&lt;br&gt;&lt;b&gt;Could not create directory %0&lt;/b&gt;&lt;br&gt;&lt;br&gt;%1&lt;br&gt;</source>
         <translation>&lt;br&gt;&lt;b&gt;Kunde inte skapa katalog %0&lt;/b&gt;&lt;br&gt;&lt;br&gt;%1&lt;br&gt;</translation>
+    </message>
+    <message>
+        <source>MWNet Launcher</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Launch MWNet</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;b&gt;Welcome to MWNet!&lt;/b&gt;&lt;/p&gt;&lt;p&gt;It is recommended to run the Installation Wizard.&lt;/p&gt;&lt;p&gt;The Wizard will let you select an existing Morrowind installation, or install Morrowind for MWNet to use.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>MWNet %1 (%2) — OpenMW %3</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>unavailable</source>
+        <translation type="unfinished"></translation>
     </message>
 </context>
 <context>

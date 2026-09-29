@@ -2,7 +2,7 @@
 # published only on loopback. The test runner owns/restarts its directory.
 services:
   test:
-    image: tes3mp-directory:test
+    image: mwnet-directory:test
     build:
       context: ../..
       dockerfile: docker/discovery/Dockerfile

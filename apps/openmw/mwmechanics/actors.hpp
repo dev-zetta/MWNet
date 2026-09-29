@@ -166,19 +166,19 @@ namespace MWMechanics
         GreetingState getGreetingState(const MWWorld::Ptr& ptr) const;
 
                 /*
-                Start of tes3mp addition
+                Start of mwnet addition
 
                 Make it possible to set the number of deaths for an actor with the given refId
             */
             void setDeaths(const ESM::RefId& refId, int number);
-            /* End of tes3mp addition */
+            /* End of mwnet addition */
                 /*
-                Start of tes3mp addition
+                Start of mwnet addition
 
                 Make it possible to set the attackingOrSpell state from elsewhere in the code
             */
             void setAttackingOrSpell(const MWWorld::Ptr& ptr, bool state) const;
-            /* End of tes3mp addition */
+            /* End of mwnet addition */
     private:
         std::map<ESM::RefId, int> mDeathCount;
         std::list<Actor> mActors;

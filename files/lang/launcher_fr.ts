@@ -297,6 +297,13 @@ to default Morrowind fonts. Check this box if you still prefer original fonts ov
     </message>
 </context>
 <context>
+    <name>Launcher::AdvancedPage</name>
+    <message>
+        <source>Text file (*.txt)</source>
+        <translation type="unfinished">Fichier texte (*.txt)</translation>
+    </message>
+</context>
+<context>
     <name>Launcher::DataFilesPage</name>
     <message>
         <source>English</source>
@@ -469,7 +476,7 @@ to default Morrowind fonts. Check this box if you still prefer original fonts ov
     </message>
     <message>
         <source>Launch OpenMW</source>
-        <translation>Lancer OpenMW</translation>
+        <translation type="vanished">Lancer OpenMW</translation>
     </message>
     <message>
         <source>Help</source>
@@ -493,11 +500,11 @@ to default Morrowind fonts. Check this box if you still prefer original fonts ov
     </message>
     <message>
         <source>OpenMW %1 release</source>
-        <translation>OpenMW %1 release</translation>
+        <translation type="vanished">OpenMW %1 release</translation>
     </message>
     <message>
         <source>OpenMW development (%1)</source>
-        <translation>OpenMW development (%1)</translation>
+        <translation type="vanished">OpenMW development (%1)</translation>
     </message>
     <message>
         <source>Compiled on %1 %2</source>
@@ -533,7 +540,7 @@ to default Morrowind fonts. Check this box if you still prefer original fonts ov
     </message>
     <message>
         <source>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;b&gt;Welcome to OpenMW!&lt;/b&gt;&lt;/p&gt;&lt;p&gt;It is recommended to run the Installation Wizard.&lt;/p&gt;&lt;p&gt;The Wizard will let you select an existing Morrowind installation, or install Morrowind for OpenMW to use.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
-        <translation>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;b&gt;Bienvenue sur OpenMW !&lt;/b&gt;&lt;/p&gt;&lt;p&gt;Il est recommandé de lancer l&apos;Assistant d&apos;installation .&lt;/p&gt;&lt;p&gt;L&apos;assistant vous permettra de sélectionner une installation de Morrowind existante, ou d&apos;installer Morrowind pour son utilisation dans OpenMW.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
+        <translation type="vanished">&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;b&gt;Bienvenue sur OpenMW !&lt;/b&gt;&lt;/p&gt;&lt;p&gt;Il est recommandé de lancer l&apos;Assistant d&apos;installation .&lt;/p&gt;&lt;p&gt;L&apos;assistant vous permettra de sélectionner une installation de Morrowind existante, ou d&apos;installer Morrowind pour son utilisation dans OpenMW.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
     </message>
     <message>
         <source>&lt;br&gt;&lt;b&gt;Could not open %0 for reading:&lt;/b&gt;&lt;br&gt;&lt;br&gt;%1&lt;br&gt;&lt;br&gt;Please make sure you have the right permissions and try again.&lt;br&gt;</source>
@@ -566,6 +573,26 @@ to default Morrowind fonts. Check this box if you still prefer original fonts ov
     <message>
         <source>&lt;br&gt;&lt;b&gt;Could not create directory %0&lt;/b&gt;&lt;br&gt;&lt;br&gt;%1&lt;br&gt;</source>
         <translation>&lt;br&gt;&lt;b&gt;Impossible de créer le dossier %0&lt;/b&gt;&lt;br&gt;&lt;br&gt;%1&lt;br&gt;</translation>
+    </message>
+    <message>
+        <source>MWNet Launcher</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Launch MWNet</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;b&gt;Welcome to MWNet!&lt;/b&gt;&lt;/p&gt;&lt;p&gt;It is recommended to run the Installation Wizard.&lt;/p&gt;&lt;p&gt;The Wizard will let you select an existing Morrowind installation, or install Morrowind for MWNet to use.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>MWNet %1 (%2) — OpenMW %3</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>unavailable</source>
+        <translation type="unfinished"></translation>
     </message>
 </context>
 <context>

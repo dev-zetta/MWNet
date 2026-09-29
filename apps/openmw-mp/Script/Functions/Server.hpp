@@ -171,7 +171,7 @@ public:
     static const char *GetArchitectureType();
 
     /**
-    * \brief Get the TES3MP version of the server.
+    * \brief Get the MWNet version of the server.
     *
     * \return The server version.
     */

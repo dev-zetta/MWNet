@@ -8,9 +8,20 @@ endif()
 
 project(OpenMW)
 
+file(STRINGS "${CMAKE_SOURCE_DIR}/components/openmw-mp/Version.hpp" MWNET_VERSION_LINE
+    REGEX "^#define MWNET_VERSION ")
+string(REGEX MATCH "[0-9]+\\.[0-9]+\\.[0-9]+[^\"]*" MWNET_VERSION "${MWNET_VERSION_LINE}")
+string(REGEX MATCH "^([0-9]+)\\.([0-9]+)\\.([0-9]+)" MWNET_VERSION_PARTS "${MWNET_VERSION}")
+set(MWNET_VERSION_MAJOR ${CMAKE_MATCH_1})
+set(MWNET_VERSION_MINOR ${CMAKE_MATCH_2})
+set(MWNET_VERSION_PATCH ${CMAKE_MATCH_3})
+
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
+# This project uses headers, not C++ modules. Avoid requiring clang-scan-deps
+# when configuring a clean Ninja build with the documented Clang packages.
+set(CMAKE_CXX_SCAN_FOR_MODULES OFF)
 
 include(GNUInstallDirs)
 
@@ -46,14 +57,14 @@ option(BUILD_NAVMESHTOOL        "Build navmesh tool" ON)
 option(BUILD_BULLETOBJECTTOOL   "Build Bullet object tool" ON)
 option(BUILD_OPENCS_TESTS       "Build OpenMW Construction Set tests" OFF)
 option(BUILD_OPENMW_TESTS       "Build OpenMW tests" OFF)
-option(BUILD_TES3MP_TESTS       "Build TES3MP protocol and server tests" OFF)
-option(BUILD_TES3MP_FUZZERS     "Build TES3MP libFuzzer targets" OFF)
-option(BUILD_TES3MP_DIRECTORY "Build the public discovery service" ${BUILD_OPENMW_MP})
-option(TES3MP_DIRECTORY_ONLY "Build the directory and headless tests without rendering dependencies" OFF)
-option(TES3MP_TESTS_ONLY        "Configure only dependency-free TES3MP protocol tests" OFF)
-option(TES3MP_TESTS_WITH_SECURITY "Include security tests in TES3MP_TESTS_ONLY builds" OFF)
-option(TES3MP_FETCH_DEPS        "Fetch pinned TES3MP dependencies that are not installed" OFF)
-option(TES3MP_GNS_UBSAN_COMPAT  "Exclude pinned GNS sources from UBSan while retaining ASan" OFF)
+option(BUILD_MWNET_TESTS       "Build MWNet protocol and server tests" OFF)
+option(BUILD_MWNET_FUZZERS     "Build MWNet libFuzzer targets" OFF)
+option(BUILD_MWNET_DIRECTORY "Build the public discovery service" ${BUILD_OPENMW_MP})
+option(MWNET_DIRECTORY_ONLY "Build the directory and headless tests without rendering dependencies" OFF)
+option(MWNET_TESTS_ONLY        "Configure only dependency-free MWNet protocol tests" OFF)
+option(MWNET_TESTS_WITH_SECURITY "Include security tests in MWNET_TESTS_ONLY builds" OFF)
+option(MWNET_FETCH_DEPS        "Fetch pinned MWNet dependencies that are not installed" OFF)
+option(MWNET_GNS_UBSAN_COMPAT  "Exclude pinned GNS sources from UBSan while retaining ASan" OFF)
 option(PRECOMPILE_HEADERS_WITH_MSVC "Precompile most common used headers with MSVC (alternative to ccache)" ON)
 
 set(OpenGL_GL_PREFERENCE LEGACY)  # Use LEGACY as we use GL2; GLNVD is for GL3 and up.
@@ -72,10 +83,10 @@ IF(NOT CMAKE_BUILD_TYPE)
     set_property(CACHE CMAKE_BUILD_TYPE PROPERTY STRINGS None Debug Release RelWithDebInfo MinSizeRel)
 ENDIF()
 
-if (TES3MP_DIRECTORY_ONLY)
+if (MWNET_DIRECTORY_ONLY)
     enable_testing()
     list(APPEND CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/cmake")
-    include(TES3MPDependencies)
+    include(MWNetDependencies)
     add_subdirectory(components/openmw-mp/Mechanics)
     add_subdirectory(components/openmw-mp/Metrics)
     add_subdirectory(components/openmw-mp/Protocol)
@@ -84,30 +95,30 @@ if (TES3MP_DIRECTORY_ONLY)
     add_subdirectory(components/openmw-mp/Transport)
     add_subdirectory(components/openmw-mp/Session)
     add_subdirectory(components/openmw-mp/Discovery)
-    add_subdirectory(apps/tes3mp-directory)
-    add_subdirectory(apps/tes3mp_tests)
+    add_subdirectory(apps/mwnet-directory)
+    add_subdirectory(apps/mwnet_tests)
     return()
 endif()
 
 # Keep the security-critical protocol tests runnable on clean builders without
 # first installing the complete OpenMW rendering and editor dependency stack.
-if (TES3MP_TESTS_ONLY)
+if (MWNET_TESTS_ONLY)
     enable_testing()
     list(APPEND CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/cmake")
     add_subdirectory(components/openmw-mp/Mechanics)
     add_subdirectory(components/openmw-mp/Metrics)
     add_subdirectory(components/openmw-mp/Protocol)
     add_subdirectory(components/openmw-mp/Persistence)
-    if (TES3MP_TESTS_WITH_SECURITY)
+    if (MWNET_TESTS_WITH_SECURITY)
         find_package(sodium REQUIRED)
         add_subdirectory(components/openmw-mp/Security)
     endif()
     add_subdirectory(components/openmw-mp/Transport)
     add_subdirectory(components/openmw-mp/Session)
-    add_subdirectory(apps/tes3mp_tests)
+    add_subdirectory(apps/mwnet_tests)
 
-    if (BUILD_TES3MP_FUZZERS)
-        add_subdirectory(apps/tes3mp_fuzz)
+    if (BUILD_MWNET_FUZZERS)
+        add_subdirectory(apps/mwnet_fuzz)
     endif()
 
     return()
@@ -115,7 +126,7 @@ endif()
 
 if (APPLE)
     set(CMAKE_FIND_FRAMEWORK LAST) # prefer dylibs over frameworks
-    set(APP_BUNDLE_NAME "${CMAKE_PROJECT_NAME}.app")
+    set(APP_BUNDLE_NAME "MWNet.app")
 
     set(APP_BUNDLE_DIR "${OpenMW_BINARY_DIR}/${APP_BUNDLE_NAME}")
 endif (APPLE)
@@ -347,11 +358,11 @@ if (USE_QT)
     #set(CMAKE_AUTOMOC ON)
 endif()
 
-# Start of tes3mp addition
+# Start of mwnet addition
 #
 # Don't require certain dependencies for the server
 IF(BUILD_OPENMW OR BUILD_OPENMW_TESTS OR BUILD_OPENCS OR BUILD_OPENCS_TESTS)
-# End of tes3mp addition
+# End of mwnet addition
 set(USED_OSG_COMPONENTS
     osgAnimation
     osgDB
@@ -374,11 +385,11 @@ set(USED_OSG_PLUGINS
     osgdb_png
     osgdb_serializers_osg
     osgdb_tga)
-# Start of tes3mp addition
+# Start of mwnet addition
 #
 # Don't require certain dependencies for the server
 ENDIF(BUILD_OPENMW OR BUILD_OPENMW_TESTS OR BUILD_OPENCS OR BUILD_OPENCS_TESTS)
-# End of tes3mp addition
+# End of mwnet addition
 
 option(OPENMW_USE_SYSTEM_ICU "Use system ICU library instead of internal. If disabled, requires autotools" ON)
 if(OPENMW_USE_SYSTEM_ICU)
@@ -405,11 +416,11 @@ add_subdirectory(extern)
 
 # Sound setup
 
-# Start of tes3mp addition
+# Start of mwnet addition
 #
 # Don't require certain dependencies for the server
 IF(BUILD_OPENMW OR BUILD_OPENMW_TESTS OR BUILD_OPENCS OR BUILD_OPENCS_TESTS)
-# End of tes3mp addition
+# End of mwnet addition
 # Require at least ffmpeg 3.2 for now
 SET(FFVER_OK FALSE)
 
@@ -458,11 +469,11 @@ if (USE_SYSTEM_TINYXML)
     add_compile_definitions(TIXML_USE_STL)
     include_directories(SYSTEM ${TinyXML_INCLUDE_DIRS})
 endif()
-# Start of tes3mp addition
+# Start of mwnet addition
 #
 # Don't require certain dependencies for the server
 ENDIF(BUILD_OPENMW OR BUILD_OPENMW_TESTS OR BUILD_OPENCS OR BUILD_OPENCS_TESTS)
-# End of tes3mp addition
+# End of mwnet addition
 
 # Platform specific
 if (WIN32)
@@ -485,11 +496,11 @@ if (WIN32)
     )
 endif()
 
-# Start of tes3mp addition
+# Start of mwnet addition
 #
 # Don't require certain dependencies for the server
 IF(BUILD_OPENMW OR BUILD_OPENMW_TESTS OR BUILD_OPENCS OR BUILD_OPENCS_TESTS)
-# End of tes3mp addition
+# End of mwnet addition
 if(OPENMW_USE_SYSTEM_BULLET)
     set(REQUIRED_BULLET_VERSION 286) # Bullet 286 required due to runtime bugfixes for btCapsuleShape
     if (DEFINED ENV{TRAVIS_BRANCH} OR DEFINED ENV{APPVEYOR})
@@ -522,11 +533,11 @@ if(OPENMW_USE_SYSTEM_BULLET)
         message(FATAL_ERROR "Bullet does not uses double precision")
     endif()
 endif()
-# Start of tes3mp addition
+# Start of mwnet addition
 #
 # Don't require certain dependencies for the server
 ENDIF(BUILD_OPENMW OR BUILD_OPENMW_TESTS OR BUILD_OPENCS OR BUILD_OPENCS_TESTS)
-# End of tes3mp addition
+# End of mwnet addition
 
 if (NOT WIN32 AND BUILD_WIZARD) # windows users can just run the morrowind installer
     find_package(LIBUNSHIELD REQUIRED) # required only for non win32 when building openmw-wizard
@@ -546,12 +557,12 @@ if(NOT HAVE_STDINT_H)
     message(FATAL_ERROR "stdint.h was not found" )
 endif()
 
-# Start of tes3mp addition
+# Start of mwnet addition
 #
 # Don't require certain dependencies for the server
 # but keep OSG's headers (HACK)
 IF(BUILD_OPENMW OR BUILD_OPENMW_TESTS OR BUILD_OPENCS OR BUILD_OPENCS_TESTS)
-# End of tes3mp addition
+# End of mwnet addition
 if(OPENMW_USE_SYSTEM_OSG)
     find_package(OpenSceneGraph 3.6.5 REQUIRED ${USED_OSG_COMPONENTS})  # Bump to 3.6.6 when released
 
@@ -577,14 +588,14 @@ if(OSG_STATIC)
 
     add_compile_definitions(OSG_LIBRARY_STATIC)
 endif()
-# Start of tes3mp addition
+# Start of mwnet addition
 #
 # Don't require certain dependencies for the server
 # but keep OSG's headers (HACK)
 ELSE(BUILD_OPENMW OR BUILD_OPENMW_TESTS OR BUILD_OPENCS OR BUILD_OPENCS_TESTS)
     include_directories(${OPENSCENEGRAPH_INCLUDE_DIRS})
 ENDIF(BUILD_OPENMW OR BUILD_OPENMW_TESTS OR BUILD_OPENCS OR BUILD_OPENCS_TESTS)
-# End of tes3mp addition
+# End of mwnet addition
 
 include(cmake/CheckOsgMultiview.cmake)
 if(HAVE_MULTIVIEW)
@@ -596,11 +607,11 @@ set(BOOST_COMPONENTS iostreams program_options filesystem)
 find_package(Boost 1.70.0 CONFIG REQUIRED COMPONENTS ${BOOST_COMPONENTS} OPTIONAL_COMPONENTS ${BOOST_OPTIONAL_COMPONENTS})
 find_package(ZLIB REQUIRED)
 
-# Start of tes3mp addition
+# Start of mwnet addition
 #
 # Don't require certain dependencies for the server
 IF(BUILD_OPENMW OR BUILD_OPENMW_TESTS OR BUILD_OPENCS OR BUILD_OPENCS_TESTS)
-# End of tes3mp addition
+# End of mwnet addition
 find_package(SDL2 2.0.9 REQUIRED)
 
 # Create SDL2::SDL2 imported target if it doesn't exist
@@ -613,11 +624,11 @@ if(SDL2_FOUND AND NOT TARGET SDL2::SDL2)
 endif()
 
 find_package(OpenAL REQUIRED)
-# Start of tes3mp addition
+# Start of mwnet addition
 #
 # Don't require certain dependencies for the server
 ENDIF(BUILD_OPENMW OR BUILD_OPENMW_TESTS OR BUILD_OPENCS OR BUILD_OPENCS_TESTS)
-# End of tes3mp addition
+# End of mwnet addition
 
 # Set Sol2/Sol3 include directories
 set(SOL_INCLUDE_DIR ${CMAKE_SOURCE_DIR}/extern/sol3)
@@ -642,11 +653,11 @@ if(MYGUI_STATIC)
 endif (MYGUI_STATIC)
 
 if (APPLE)
-    configure_file(${OpenMW_SOURCE_DIR}/files/mac/openmw-Info.plist.in
+    configure_file(${OpenMW_SOURCE_DIR}/files/mac/mwnet-Info.plist.in
         "${APP_BUNDLE_DIR}/Contents/Info.plist")
 
-    configure_file(${OpenMW_SOURCE_DIR}/files/mac/openmw.icns
-        "${APP_BUNDLE_DIR}/Contents/Resources/OpenMW.icns" COPYONLY)
+    configure_file(${OpenMW_SOURCE_DIR}/files/mwnet/mwnet.icns
+        "${APP_BUNDLE_DIR}/Contents/Resources/MWNet.icns" COPYONLY)
 endif (APPLE)
 
 if (NOT APPLE)  # this is modified for macOS use later in "apps/open[mw|cs]/CMakeLists.txt"
@@ -669,17 +680,17 @@ endif (APPLE)
 
 # Other files
 
-configure_resource_file(${OpenMW_SOURCE_DIR}/files/tes3mp/tes3mp-client-default.cfg
-    "${OpenMW_BINARY_DIR}" "tes3mp-client-default.cfg")
+configure_resource_file(${OpenMW_SOURCE_DIR}/files/mwnet/mwnet-client-default.cfg
+    "${OpenMW_BINARY_DIR}" "mwnet-client-default.cfg")
 
-configure_resource_file(${OpenMW_SOURCE_DIR}/files/tes3mp/tes3mp-server-default.cfg
-    "${OpenMW_BINARY_DIR}" "tes3mp-server-default.cfg")
+configure_resource_file(${OpenMW_SOURCE_DIR}/files/mwnet/mwnet-server-default.cfg
+    "${OpenMW_BINARY_DIR}" "mwnet-server-default.cfg")
 
 pack_resource_file(${OpenMW_SOURCE_DIR}/files/settings-default.cfg
     "${OpenMW_BINARY_DIR}" "defaults.bin")
 
-configure_resource_file(${OpenMW_SOURCE_DIR}/files/openmw.appdata.xml
-    "${OpenMW_BINARY_DIR}" "openmw.appdata.xml")
+configure_resource_file(${OpenMW_SOURCE_DIR}/files/mwnet.appdata.xml
+    "${OpenMW_BINARY_DIR}" "mwnet.appdata.xml")
 
 if (APPLE)
     configure_file(${OpenMW_SOURCE_DIR}/files/openmw.cfg
@@ -707,10 +718,10 @@ configure_resource_file(${OpenMW_SOURCE_DIR}/files/gamecontrollerdb.txt
     "${OpenMW_BINARY_DIR}" "gamecontrollerdb.txt")
 
 if (NOT WIN32 AND NOT APPLE)
-    configure_file(${OpenMW_SOURCE_DIR}/files/org.openmw.launcher.desktop
-        "${OpenMW_BINARY_DIR}/org.openmw.launcher.desktop")
-    configure_file(${OpenMW_SOURCE_DIR}/files/openmw.appdata.xml
-        "${OpenMW_BINARY_DIR}/openmw.appdata.xml")
+    configure_file(${OpenMW_SOURCE_DIR}/files/org.mwnet.launcher.desktop
+        "${OpenMW_BINARY_DIR}/org.mwnet.launcher.desktop")
+    configure_file(${OpenMW_SOURCE_DIR}/files/mwnet.appdata.xml
+        "${OpenMW_BINARY_DIR}/mwnet.appdata.xml")
     configure_file(${OpenMW_SOURCE_DIR}/files/org.openmw.cs.desktop
         "${OpenMW_BINARY_DIR}/org.openmw.cs.desktop")
 endif()
@@ -735,32 +746,32 @@ if (APPLE)
 endif()
 
 # Extern
-# Start of tes3mp addition
+# Start of mwnet addition
 #
 # Don't require certain dependencies for the server
 IF(BUILD_OPENMW OR BUILD_OPENMW_TESTS OR BUILD_OPENCS OR BUILD_OPENCS_TESTS)
-# End of tes3mp addition
+# End of mwnet addition
 add_subdirectory (extern/osg-ffmpeg-videoplayer)
 add_subdirectory (extern/oics)
-# Start of tes3mp addition
+# Start of mwnet addition
 #
 # Don't require certain dependencies for the server
 ENDIF(BUILD_OPENMW OR BUILD_OPENMW_TESTS OR BUILD_OPENCS OR BUILD_OPENCS_TESTS)
-# End of tes3mp addition
+# End of mwnet addition
 add_subdirectory (extern/Base64)
-# Start of tes3mp addition
+# Start of mwnet addition
 #
 # Don't require certain dependencies for the server
 IF(BUILD_OPENMW OR BUILD_OPENMW_TESTS OR BUILD_OPENCS OR BUILD_OPENCS_TESTS)
-# End of tes3mp addition
+# End of mwnet addition
 if (BUILD_OPENCS OR BUILD_OPENCS_TESTS)
     add_subdirectory (extern/osgQt)
 endif()
-# Start of tes3mp addition
+# Start of mwnet addition
 #
 # Don't require certain dependencies for the server
 ENDIF(BUILD_OPENMW OR BUILD_OPENMW_TESTS OR BUILD_OPENCS OR BUILD_OPENCS_TESTS)
-# End of tes3mp addition
+# End of mwnet addition
 
 if (CMAKE_CXX_COMPILER_ID STREQUAL "MSVC" OR CMAKE_CXX_COMPILER_FRONTEND_VARIANT STREQUAL "MSVC")
     add_compile_options("/W4")
@@ -793,23 +804,23 @@ if (OPENMW_CXX_FLAGS)
 endif()
 
 # Components
-if (BUILD_OPENMW OR BUILD_OPENMW_TESTS OR BUILD_OPENMW_MP OR BUILD_TES3MP_DIRECTORY)
-    include(TES3MPDependencies)
+if (BUILD_OPENMW OR BUILD_OPENMW_TESTS OR BUILD_OPENMW_MP OR BUILD_MWNET_DIRECTORY)
+    include(MWNetDependencies)
 endif()
 
 add_subdirectory(components/openmw-mp/Mechanics)
 add_subdirectory(components/openmw-mp/Metrics)
 add_subdirectory(components/openmw-mp/Protocol)
 add_subdirectory(components/openmw-mp/Persistence)
-if (BUILD_OPENMW OR BUILD_OPENMW_TESTS OR BUILD_OPENMW_MP OR BUILD_TES3MP_DIRECTORY)
+if (BUILD_OPENMW OR BUILD_OPENMW_TESTS OR BUILD_OPENMW_MP OR BUILD_MWNET_DIRECTORY)
     add_subdirectory(components/openmw-mp/Security)
 endif()
 add_subdirectory(components/openmw-mp/Transport)
 add_subdirectory(components/openmw-mp/Session)
-if (TARGET tes3mp-game-endpoint)
+if (TARGET mwnet-game-endpoint)
     add_subdirectory(components/openmw-mp/Discovery)
-    if (BUILD_TES3MP_DIRECTORY)
-        add_subdirectory(apps/tes3mp-directory)
+    if (BUILD_MWNET_DIRECTORY)
+        add_subdirectory(apps/mwnet-directory)
     endif()
 endif()
 add_subdirectory(components)
@@ -868,13 +879,13 @@ if (BUILD_OPENMW_TESTS)
     add_subdirectory(apps/openmw_tests)
 endif()
 
-if (BUILD_TES3MP_TESTS)
+if (BUILD_MWNET_TESTS)
     enable_testing()
-    add_subdirectory(apps/tes3mp_tests)
+    add_subdirectory(apps/mwnet_tests)
 endif()
 
-if (BUILD_TES3MP_FUZZERS)
-    add_subdirectory(apps/tes3mp_fuzz)
+if (BUILD_MWNET_FUZZERS)
+    add_subdirectory(apps/mwnet_fuzz)
 endif()
 
 if (BUILD_BENCHMARKS)
@@ -897,16 +908,16 @@ if (WIN32 AND MSVC)
     endforeach()
 
     if (USE_DEBUG_CONSOLE AND BUILD_OPENMW)
-        set_target_properties(tes3mp PROPERTIES LINK_FLAGS_DEBUG "/SUBSYSTEM:CONSOLE")
-        set_target_properties(tes3mp PROPERTIES LINK_FLAGS_RELWITHDEBINFO "/SUBSYSTEM:CONSOLE")
+        set_target_properties(mwnet PROPERTIES LINK_FLAGS_DEBUG "/SUBSYSTEM:CONSOLE")
+        set_target_properties(mwnet PROPERTIES LINK_FLAGS_RELWITHDEBINFO "/SUBSYSTEM:CONSOLE")
     elseif (BUILD_OPENMW)
-        set_target_properties(tes3mp PROPERTIES LINK_FLAGS_DEBUG "/SUBSYSTEM:WINDOWS")
-        set_target_properties(tes3mp PROPERTIES LINK_FLAGS_RELWITHDEBINFO "/SUBSYSTEM:WINDOWS")
+        set_target_properties(mwnet PROPERTIES LINK_FLAGS_DEBUG "/SUBSYSTEM:WINDOWS")
+        set_target_properties(mwnet PROPERTIES LINK_FLAGS_RELWITHDEBINFO "/SUBSYSTEM:WINDOWS")
     endif()
 
     if (BUILD_OPENMW)
-        set_target_properties(tes3mp PROPERTIES LINK_FLAGS_RELEASE "/SUBSYSTEM:WINDOWS")
-        set_target_properties(tes3mp PROPERTIES LINK_FLAGS_MINSIZEREL "/SUBSYSTEM:WINDOWS")
+        set_target_properties(mwnet PROPERTIES LINK_FLAGS_RELEASE "/SUBSYSTEM:WINDOWS")
+        set_target_properties(mwnet PROPERTIES LINK_FLAGS_MINSIZEREL "/SUBSYSTEM:WINDOWS")
     endif()
 
     if (MSVC_VERSION GREATER_EQUAL 1915 AND MSVC_VERSION LESS 1920)
@@ -916,12 +927,12 @@ endif()
 
 
 # Core CPACK Setup
-set(CPACK_PACKAGE_VERSION ${OPENMW_VERSION})
-set(CPACK_PACKAGE_VERSION_MAJOR ${OPENMW_VERSION_MAJOR})
-set(CPACK_PACKAGE_VERSION_MINOR ${OPENMW_VERSION_MINOR})
-set(CPACK_PACKAGE_VERSION_PATCH ${OPENMW_VERSION_RELEASE})
-set(CPACK_PACKAGE_NAME "OpenMW")
-set(CPACK_PACKAGE_VENDOR "OpenMW.org")
+set(CPACK_PACKAGE_VERSION ${MWNET_VERSION})
+set(CPACK_PACKAGE_VERSION_MAJOR ${MWNET_VERSION_MAJOR})
+set(CPACK_PACKAGE_VERSION_MINOR ${MWNET_VERSION_MINOR})
+set(CPACK_PACKAGE_VERSION_PATCH ${MWNET_VERSION_PATCH})
+set(CPACK_PACKAGE_NAME "MWNet")
+set(CPACK_PACKAGE_VENDOR "MWNet contributors")
 set(CUSTOM_CPACK_OS_NAME "")
 set(CUSTOM_CPACK_ARCHITECTURE "")
 
@@ -1127,19 +1138,20 @@ elseif(NOT APPLE)
         INSTALL(FILES "${OpenMW_SOURCE_DIR}/README.md" DESTINATION "." RENAME "README.txt")
         INSTALL(FILES "${OpenMW_SOURCE_DIR}/LICENSE" DESTINATION "." RENAME "LICENSE.txt")
         INSTALL(FILES "${OpenMW_SOURCE_DIR}/AUTHORS.md" DESTINATION "." RENAME "AUTHORS.txt")
+        INSTALL(FILES "${OpenMW_SOURCE_DIR}/mwnet-credits.md" DESTINATION ".")
         INSTALL(FILES "${INSTALL_SOURCE}/defaults.bin" DESTINATION ".")
-        # Start of tes3mp addition
-        INSTALL(FILES "${INSTALL_SOURCE}/tes3mp-client-default.cfg" DESTINATION ".")
-        INSTALL(FILES "${INSTALL_SOURCE}/tes3mp-server-default.cfg" DESTINATION ".")
-        # End of tes3mp addition
+        # Start of mwnet addition
+        INSTALL(FILES "${INSTALL_SOURCE}/mwnet-client-default.cfg" DESTINATION ".")
+        INSTALL(FILES "${INSTALL_SOURCE}/mwnet-server-default.cfg" DESTINATION ".")
+        # End of mwnet addition
         INSTALL(FILES "${INSTALL_SOURCE}/gamecontrollerdb.txt" DESTINATION ".")
 
         INSTALL(DIRECTORY "${INSTALL_SOURCE}/resources" DESTINATION ".")
 
         SET(CPACK_GENERATOR "NSIS")
-        SET(CPACK_PACKAGE_EXECUTABLES "openmw;OpenMW")
+        SET(CPACK_PACKAGE_EXECUTABLES "mwnet;MWNet")
         IF(BUILD_LAUNCHER)
-            SET(CPACK_PACKAGE_EXECUTABLES "${CPACK_PACKAGE_EXECUTABLES};openmw-launcher;OpenMW Launcher")
+            SET(CPACK_PACKAGE_EXECUTABLES "${CPACK_PACKAGE_EXECUTABLES};openmw-launcher;MWNet Launcher")
         ENDIF(BUILD_LAUNCHER)
         IF(BUILD_OPENCS)
             SET(CPACK_PACKAGE_EXECUTABLES "${CPACK_PACKAGE_EXECUTABLES};openmw-cs;OpenMW Construction Set")
@@ -1155,16 +1167,15 @@ elseif(NOT APPLE)
         SET(CPACK_RESOURCE_FILE_README "${OpenMW_SOURCE_DIR}/README.md")
         SET(CPACK_PACKAGE_DESCRIPTION_FILE "${OpenMW_SOURCE_DIR}/README.md")
         SET(CPACK_NSIS_EXECUTABLES_DIRECTORY ".")
-        SET(CPACK_NSIS_DISPLAY_NAME "OpenMW ${OPENMW_VERSION}")
-        SET(CPACK_NSIS_HELP_LINK "https:\\\\\\\\www.openmw.org")
-        SET(CPACK_NSIS_URL_INFO_ABOUT "https:\\\\\\\\www.openmw.org")
+        SET(CPACK_NSIS_DISPLAY_NAME "MWNet ${MWNET_VERSION}")
+        # Upstream engine links are not the fork support destination.
         SET(CPACK_NSIS_INSTALLED_ICON_NAME "openmw-launcher.exe")
         SET(CPACK_NSIS_MUI_FINISHPAGE_RUN "openmw-launcher.exe")
-        # Start of tes3mp change (major)
-        SET(CPACK_NSIS_MUI_ICON "${OpenMW_SOURCE_DIR}/files/tes3mp/tes3mp.ico")
-        SET(CPACK_NSIS_MUI_UNIICON "${OpenMW_SOURCE_DIR}/files/tes3mp/tes3mp.ico")
-        # End of tes3mp change (major)
-        SET(CPACK_PACKAGE_ICON "${OpenMW_SOURCE_DIR}\\\\files\\\\openmw.bmp")
+        # Start of mwnet change (major)
+        SET(CPACK_NSIS_MUI_ICON "${OpenMW_SOURCE_DIR}/files/mwnet/mwnet.ico")
+        SET(CPACK_NSIS_MUI_UNIICON "${OpenMW_SOURCE_DIR}/files/mwnet/mwnet.ico")
+        # End of mwnet change (major)
+        SET(CPACK_PACKAGE_ICON "${OpenMW_SOURCE_DIR}\\\\files\\\\mwnet\\\\mwnet.bmp")
 
         SET(VCREDIST64 "${OpenMW_BINARY_DIR}/vcredist_x64.exe" CACHE FILEPATH "Path to vcredist_x64.exe")
         if(EXISTS ${VCREDIST64})
@@ -1186,19 +1197,19 @@ elseif(NOT APPLE)
 
         # Install binaries
         IF(BUILD_OPENMW)
-            # Start of tes3mp change (major)
+            # Start of mwnet change (major)
             #
-            # Use "tes3mp" as the target filename
-            INSTALL(PROGRAMS "$<TARGET_FILE:tes3mp>" DESTINATION "${BINDIR}" )
-            # End of tes3mp change (major)
+            # Use "mwnet" as the target filename
+            INSTALL(PROGRAMS "$<TARGET_FILE:mwnet>" DESTINATION "${BINDIR}" )
+            # End of mwnet change (major)
         ENDIF(BUILD_OPENMW)
-        # Start of tes3mp addition
+        # Start of mwnet addition
         #
         # Add a setting related to building the server
         IF(BUILD_OPENMW_MP)
-            INSTALL(PROGRAMS "${INSTALL_SOURCE}/tes3mp-server" DESTINATION "${BINDIR}")
+            INSTALL(PROGRAMS "${INSTALL_SOURCE}/mwnet-server" DESTINATION "${BINDIR}")
         ENDIF(BUILD_OPENMW_MP)
-        # End of tes3mp addition
+        # End of mwnet addition
         IF(BUILD_LAUNCHER)
             INSTALL(PROGRAMS "${INSTALL_SOURCE}/openmw-launcher" DESTINATION "${BINDIR}" )
         ENDIF(BUILD_LAUNCHER)
@@ -1231,9 +1242,9 @@ elseif(NOT APPLE)
         ENDIF(BUILD_BULLETOBJECTTOOL)
 
         # Install icon and desktop file
-        INSTALL(FILES "${OpenMW_BINARY_DIR}/org.openmw.launcher.desktop" DESTINATION "${DATAROOTDIR}/applications" COMPONENT "openmw")
-        INSTALL(FILES "${OpenMW_SOURCE_DIR}/files/launcher/images/openmw.png" DESTINATION "${ICONDIR}" COMPONENT "openmw")
-        INSTALL(FILES "${OpenMW_BINARY_DIR}/openmw.appdata.xml" DESTINATION "${DATAROOTDIR}/metainfo" COMPONENT "openmw")
+        INSTALL(FILES "${OpenMW_BINARY_DIR}/org.mwnet.launcher.desktop" DESTINATION "${DATAROOTDIR}/applications" COMPONENT "openmw")
+        INSTALL(FILES "${OpenMW_SOURCE_DIR}/files/mwnet/mwnet_logo.png" DESTINATION "${ICONDIR}" RENAME "mwnet.png" COMPONENT "openmw")
+        INSTALL(FILES "${OpenMW_BINARY_DIR}/mwnet.appdata.xml" DESTINATION "${DATAROOTDIR}/metainfo" COMPONENT "openmw")
         IF(BUILD_OPENCS)
             INSTALL(FILES "${OpenMW_BINARY_DIR}/org.openmw.cs.desktop" DESTINATION "${DATAROOTDIR}/applications" COMPONENT "opencs")
             INSTALL(FILES "${OpenMW_SOURCE_DIR}/files/opencs/openmw-cs.png" DESTINATION "${ICONDIR}" COMPONENT "opencs")
@@ -1244,10 +1255,10 @@ elseif(NOT APPLE)
         INSTALL(FILES "${INSTALL_SOURCE}/openmw.cfg.install" DESTINATION "${SYSCONFDIR}" RENAME "openmw.cfg" COMPONENT "openmw")
         INSTALL(FILES "${INSTALL_SOURCE}/gamecontrollerdb.txt" DESTINATION "${SYSCONFDIR}" COMPONENT "openmw")
 
-        # Start of tes3mp addition
-        INSTALL(FILES "${INSTALL_SOURCE}/tes3mp-client-default.cfg" DESTINATION "${SYSCONFDIR}" COMPONENT "openmw")
-        INSTALL(FILES "${INSTALL_SOURCE}/tes3mp-server-default.cfg" DESTINATION "${SYSCONFDIR}" COMPONENT "openmw-mp")
-        # End of tes3mp addition
+        # Start of mwnet addition
+        INSTALL(FILES "${INSTALL_SOURCE}/mwnet-client-default.cfg" DESTINATION "${SYSCONFDIR}" COMPONENT "openmw")
+        INSTALL(FILES "${INSTALL_SOURCE}/mwnet-server-default.cfg" DESTINATION "${SYSCONFDIR}" COMPONENT "openmw-mp")
+        # End of mwnet addition
 
         IF(BUILD_OPENCS)
             INSTALL(FILES "${INSTALL_SOURCE}/defaults-cs.bin" DESTINATION "${SYSCONFDIR}" COMPONENT "opencs")

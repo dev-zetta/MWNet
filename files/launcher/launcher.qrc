@@ -1,5 +1,6 @@
 <!DOCTYPE RCC><RCC version="1.0">
 <qresource prefix="images">
+    <file alias="mwnet.png">../mwnet/mwnet_logo.png</file>
     <file alias="openmw.png">images/openmw.png</file>
     <file alias="openmw-header.png">images/openmw-header.png</file>
     <file alias="openmw-plugin.png">images/openmw-plugin.png</file>

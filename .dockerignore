@@ -1,5 +1,6 @@
 .git
-.tes3mp-test
+.mwnet-test
+.*-test
 build
 build-*
 fuzz-artifacts

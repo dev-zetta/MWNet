@@ -1,6 +1,6 @@
 services:
   directory:
-    image: tes3mp-directory:${SOURCE_REVISION:-local}
+    image: mwnet-directory:${SOURCE_REVISION:-local}
     build:
       context: ../..
       dockerfile: docker/discovery/Dockerfile

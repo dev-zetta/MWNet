@@ -1,5 +1,5 @@
 -- Run from the repository root with Lua 5.2+ or LuaJIT.
-local root = "files/tes3mp/core-scripts/scripts/"
+local root = "files/mwnet/core-scripts/scripts/"
 config = { maxAttributeValue = 100, respawnAttributeFloor = 10 }
 package.loaded.config = config
 package.loaded.patterns = {}
@@ -15,7 +15,7 @@ local attributes = {
 local names = {}
 local sends, dynamicSends = 0, 0
 local fatigueBase, fatigueCurrent = 200, 200
-tes3mp = {
+mwnet = {
     GetAttributeCount = function() return #attributes end,
     GetAttributeName = function(i) return names[i+1] or tostring(i) end,
     GetAttributeModifier = function(_, i) return attributes[i+1].modifier or 0 end,

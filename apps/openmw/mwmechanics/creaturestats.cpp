@@ -11,13 +11,13 @@
 #include <components/esm3/loadmgef.hpp>
 
 /*
-    Start of tes3mp addition
+    Start of mwnet addition
 
     Include additional headers for multiplayer purposes
 */
 #include <components/openmw-mp/TimedLog.hpp>
 #include "summoning.hpp"
-/* End of tes3mp addition */
+/* End of mwnet addition */
 #include "../mwworld/class.hpp"
 #include "../mwworld/esmstore.hpp"
 #include "../mwworld/player.hpp"
@@ -130,12 +130,12 @@ namespace MWMechanics
     ActiveSpells& CreatureStats::getActiveSpells()
     {
         /*
-            Start of tes3mp addition
+            Start of mwnet addition
 
             Set the actorId associated with these ActiveSpells so it can be used inside them
         */
         mActiveSpells.setActorId(getActorId());
-        /* End of tes3mp addition */
+        /* End of mwnet addition */
         return mActiveSpells;
     }
 
@@ -314,7 +314,7 @@ namespace MWMechanics
     }
 
     /*
-        Start of tes3mp addition
+        Start of mwnet addition
 
         Make it possible to set the number of friendly hits from elsewhere
     */
@@ -322,7 +322,7 @@ namespace MWMechanics
     {
         mFriendlyHits = hits;
     }
-    /* End of tes3mp addition */
+    /* End of mwnet addition */
 
     void CreatureStats::friendlyHit()
     {
@@ -695,7 +695,7 @@ namespace MWMechanics
     }
 
     /*
-        Start of tes3mp addition
+        Start of mwnet addition
 
         No-op stub: summoned creature map now uses ESM::RefNum instead of int actorId.
         The RefNum is set directly via getSummonedCreatureMap().emplace() at spawn time.
@@ -705,7 +705,7 @@ namespace MWMechanics
         (void)refId;
         (void)actorId;
     }
-    /* End of tes3mp addition */
+    /* End of mwnet addition */
 
     void CreatureStats::updateAwareness(float duration)
     {

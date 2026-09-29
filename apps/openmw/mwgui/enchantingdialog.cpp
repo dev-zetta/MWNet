@@ -14,14 +14,14 @@
 #include <components/esm3/loadgmst.hpp>
 
 /*
-    Start of tes3mp addition
+    Start of mwnet addition
 
     Include additional headers for multiplayer purposes
 */
 #include "../mwmp/Main.hpp"
 #include "../mwmp/Networking.hpp"
 #include "../mwmp/ObjectList.hpp"
-/* End of tes3mp addition */
+/* End of mwnet addition */
 
 #include "../mwbase/environment.hpp"
 #include "../mwbase/mechanicsmanager.hpp"
@@ -387,7 +387,7 @@ namespace MWGui
             MWBase::Environment::get().getWindowManager()->messageBox("#{sEnchantmentMenu12}");
 
             /*
-                Start of tes3mp addition
+                Start of mwnet addition
 
                 Send an ID_OBJECT_SOUND packet every time the player makes a sound here
             */
@@ -398,7 +398,7 @@ namespace MWGui
                 objectList->addObjectSound(MWMechanics::getPlayer(), "enchant success", 1.0, 1.0);
                 objectList->sendObjectSound();
             }
-            /* End of tes3mp addition */
+            /* End of mwnet addition */
 
             MWBase::Environment::get().getWindowManager()->removeGuiMode(GM_Enchanting);
         }
@@ -408,7 +408,7 @@ namespace MWGui
             MWBase::Environment::get().getWindowManager()->messageBox("#{sNotifyMessage34}");
 
             /*
-                Start of tes3mp addition
+                Start of mwnet addition
 
                 Send an ID_OBJECT_SOUND packet every time the player makes a sound here
             */
@@ -419,7 +419,7 @@ namespace MWGui
                 objectList->addObjectSound(MWMechanics::getPlayer(), "enchant fail", 1.0, 1.0);
                 objectList->sendObjectSound();
             }
-            /* End of tes3mp addition */
+            /* End of mwnet addition */
 
             if (!mEnchanting.getGem().isEmpty() && !mEnchanting.getGem().getCellRef().getCount())
             {

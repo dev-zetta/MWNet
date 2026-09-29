@@ -585,7 +585,7 @@ Ubuntu_GCC_integration_tests_asan:
     - ccache -svv
   artifacts:
     paths:
-      - build/OpenMW-*.dmg
+      - build/MWNet-*.dmg
       - "**/CMakeCache.txt"
 
 macOS26_Xcode26_amd64:
