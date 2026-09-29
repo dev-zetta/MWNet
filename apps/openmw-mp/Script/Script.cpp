@@ -1,6 +1,8 @@
 #include "Script.hpp"
 #include "API/PublicFnAPI.hpp"
 #include "LangNative/LangNative.hpp"
+#include <filesystem>
+#include <fstream>
 
 #if defined (ENABLE_LUA)
 #include "LangLua/LangLua.hpp"
@@ -55,12 +57,12 @@ std::optional<unsigned short> Script::GetIntentPlayer() noexcept
 
 Script::Script(const char *path)
 {
-    FILE *file = fopen(path, "rb");
+    std::ifstream file(std::filesystem::u8path(path), std::ios::binary);
 
     if (!file)
         throw std::runtime_error("Script not found: " + std::string(path));
 
-    fclose(file);
+    file.close();
 
 #ifdef _WIN32
     if (strstr(path, ".dll"))

@@ -3,6 +3,8 @@
 #endif
 
 #include <stdexcept>
+#include <filesystem>
+#include <fstream>
 #include "LangNative.hpp"
 #include <Script/SystemInterface.hpp>
 #include <Script/Script.hpp>
@@ -20,15 +22,16 @@ bool SetScript(lib_t lib, const char *name, R value)
 
 void LangNative::LoadProgram(const char *filename)
 {
-    FILE *file = fopen(filename, "rb");
+    const auto path = std::filesystem::u8path(filename);
+    std::ifstream file(path, std::ios::binary);
 
     if (!file)
         throw std::runtime_error("Script not found: " + std::string(filename));
 
-    fclose(file);
+    file.close();
 
 #ifdef _WIN32
-    lib = LoadLibrary(filename);
+    lib = LoadLibraryW(path.c_str());
 #else
     lib = dlopen(filename, RTLD_LAZY);
 #endif
