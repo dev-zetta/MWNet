@@ -63,16 +63,16 @@ jobs:
       uses: actions/cache@v5
       with:
         path: deps/Qt
-        key: qt-6.6.3-macos-universal-v1
+        key: qt-6.10.3-macos-universal-v1
 
     - name: Install Qt SDK
       if: steps.qt-cache.outputs.cache-hit != 'true'
       run: |
-        python -m pip install aqtinstall==3.1.15
-        python -m aqt install-qt mac desktop 6.6.3 clang_64 --outputdir deps/Qt
+        python -m pip install aqtinstall==3.3.0
+        python -m aqt install-qt mac desktop 6.10.3 clang_64 --outputdir deps/Qt --archives qtbase qttools qtsvg qttranslations
 
     - name: Add Qt tools to PATH
-      run: echo "$PWD/deps/Qt/6.6.3/macos/bin" >> "$GITHUB_PATH"
+      run: echo "$PWD/deps/Qt/6.10.3/macos/bin" >> "$GITHUB_PATH"
 
     - name: Install building dependencies
       run: |
@@ -114,6 +114,20 @@ jobs:
         cp -R files/mwnet/core-scripts build/MWNet.app/Contents/Resources/server
         cp files/mwnet/core-scripts/defaults/*.json build/MWNet.app/Contents/Resources/server/data/
         mkdir -p build/MWNet.app/Contents/Resources/server/data/{cell,custom,map,player,recordstore,world}
+    - name: Check macOS framework dependencies before compiling
+      shell: python
+      run: |
+        from pathlib import Path
+        link = Path('build/apps/launcher/CMakeFiles/openmw-launcher.dir/link.txt').read_text()
+        if '-framework AGL' in link:
+            print(link)
+            for root in (Path('/tmp/openmw-deps'), Path('deps/Qt')):
+                for pattern in ('*.cmake', '*.prl'):
+                    for path in root.rglob(pattern):
+                        for number, line in enumerate(path.read_text(errors='replace').splitlines(), 1):
+                            if 'AGL' in line:
+                                print(f'{path}:{number}: {line}')
+            raise RuntimeError('Dependency SDK still references the removed AGL framework')
     - name: Build
       run: CI/macos/build.sh
 
