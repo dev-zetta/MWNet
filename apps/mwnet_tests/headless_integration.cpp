@@ -833,9 +833,10 @@ namespace
                 require(password.has_value(), "failed to prepare lockout password");
                 std::vector<std::byte> encoded;
                 mwmp::protocol::CodecError codecError;
-                require(mwmp::security::encodeAuthenticationRequest(
-                        mwmp::security::AuthenticationOperation::Login,
-                        peer.account, *password, nullptr, encoded, codecError),
+                const bool encodedRequest = mwmp::security::encodeAuthenticationRequest(
+                    mwmp::security::AuthenticationOperation::Login,
+                    peer.account, *password, nullptr, encoded, codecError);
+                require(encodedRequest,
                     "failed to encode lockout request: "
                         + std::string(mwmp::protocol::describe(codecError)));
                 const auto event = transmit(*peer.client, peer.clientConnection,
