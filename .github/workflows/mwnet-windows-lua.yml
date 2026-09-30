@@ -1,0 +1,43 @@
+name: MWNet Windows Lua validation
+
+on:
+  workflow_dispatch:
+    inputs:
+      source-ref:
+        description: Source commit to validate
+        required: true
+        type: string
+
+permissions:
+  contents: read
+
+jobs:
+  lua:
+    runs-on: windows-2022
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          ref: ${{ inputs.source-ref }}
+      - uses: actions/setup-python@v6
+        with:
+          python-version: "3.12"
+      - name: Read dependency version
+        shell: bash
+        run: sed '/^\s*#/d; /^\s*$/d' CI/deps_versions.msvc.sh >> "$GITHUB_ENV"
+      - name: Download and verify the release SDK
+        shell: pwsh
+        run: |
+          New-Item -ItemType Directory deps
+          $manifest = "vcpkg-x64-windows-2022-$env:VCPKG_TAG-manifest.txt"
+          curl --fail --retry 3 -L -o "deps/$manifest" "https://gitlab.com/OpenMW/openmw-deps/-/raw/main/windows/$manifest"
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          $lines = Get-Content "deps/$manifest"
+          $split = -split $lines[1]
+          curl --fail --retry 3 -L -o deps/sdk.7z $lines[0]
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          if ((Get-FileHash deps/sdk.7z -Algorithm SHA512).Hash -ne $split[0]) { throw "SDK checksum mismatch" }
+          7z x -y -odeps/sdk deps/sdk.7z
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+      - name: Exercise Windows JSON file access with the release LuaJIT runtime
+        run: python CI/test_mwnet_windows_io.py deps/sdk/installed/x64-windows/bin/lua51.dll

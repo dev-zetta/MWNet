@@ -4,10 +4,10 @@ tableHelper = require("tableHelper")
 class = require("classy")
 jsonInterface = require("jsonInterface")
 
--- Lua's default io library for input/output can't open Unicode filenames on Windows,
--- which is why on Windows it's replaced by the bundled io2 compatibility module
+-- Read UTF-8 JSON filenames on Windows through the bundled LuaJIT reader.
+-- Writes use the native atomic persistence API on every platform.
 if mwnet.GetOperatingSystemType() == "Windows" then
-    jsonInterface.setLibrary(require("io2"))
+    jsonInterface.setLibrary(require("windowsIO"))
 else
     jsonInterface.setLibrary(io)
 end
