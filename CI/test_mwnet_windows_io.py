@@ -26,11 +26,13 @@ def main():
     state_type = ctypes.c_void_p
     lua.luaL_newstate.restype = state_type
     lua.luaL_openlibs.argtypes = [state_type]
+    lua.luaL_openlibs.restype = None
     lua.luaL_loadstring.argtypes = [state_type, ctypes.c_char_p]
     lua.lua_pcall.argtypes = [state_type, ctypes.c_int, ctypes.c_int, ctypes.c_int]
     lua.lua_tolstring.argtypes = [state_type, ctypes.c_int, ctypes.POINTER(ctypes.c_size_t)]
     lua.lua_tolstring.restype = ctypes.c_char_p
     lua.lua_close.argtypes = [state_type]
+    lua.lua_close.restype = None
     with tempfile.TemporaryDirectory(prefix='mwnet-windows-io-') as tmp:
         data = Path(tmp) / 'Žluťoučký_玩家_🧪'
         data.mkdir()

@@ -4,6 +4,7 @@
 * Fix ARM architecture reporting to format the architecture number without reading past a string literal.
 * Avoid GNU-only linker options with the Apple and Microsoft linkers.
 * Preserve POSIX script paths on macOS so the packaged server can load CoreScripts.
+* Bundle a LuaJIT reader for Windows UTF-8 JSON filenames, removing the missing external io2 module dependency.
 * Invoke Lua API functions through their original C++ signatures, preserving Apple Silicon argument passing and narrow integer types.
 * Fix Qt resource initialization and framework bundling, and enable the Windows preprocessor and timer declarations required by the networking code.
 * Build Windows and Intel/Apple Silicon macOS packages from an explicit source tag, using a pinned Qt SDK and a C++20-capable macOS toolchain.

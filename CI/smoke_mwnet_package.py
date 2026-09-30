@@ -17,6 +17,7 @@ def main():
     parser.add_argument('root', type=Path)
     parser.add_argument('--commit', required=True)
     parser.add_argument('--source-dir', type=Path, default=Path('.'))
+    parser.add_argument('--server-only', action='store_true', help='Check a built server before the client build')
     args = parser.parse_args()
     header = (args.source_dir / 'components/openmw-mp/Version.hpp').read_text()
     expected_version = re.search(r'#define MWNET_VERSION "([^"]+)"', header).group(1)
@@ -34,16 +35,17 @@ def main():
         if not directory.is_dir() or list(directory.iterdir()):
             raise RuntimeError(f'Package must contain an empty server data directory: {directory}')
 
-    version = subprocess.run([str(binaries / ('mwnet' + suffix)), '--version'],
-                             capture_output=True, text=True, timeout=30, check=True)
-    output = version.stdout + version.stderr
-    print(output)
-    if (f'MWNet client {expected_version}' not in output
-            or f'Protocol version: {expected_protocol} ' not in output
-            or args.commit[:10] not in output):
-        raise RuntimeError('Packaged client does not match the requested alpha source')
-    if platform.machine() == 'arm64' and 'ARMv8 64-bit' not in output:
-        raise RuntimeError('Packaged client reported an unexpected ARM architecture')
+    if not args.server_only:
+        version = subprocess.run([str(binaries / ('mwnet' + suffix)), '--version'],
+                                 capture_output=True, text=True, timeout=30, check=True)
+        output = version.stdout + version.stderr
+        print(output)
+        if (f'MWNet client {expected_version}' not in output
+                or f'Protocol version: {expected_protocol} ' not in output
+                or args.commit[:10] not in output):
+            raise RuntimeError('Packaged client does not match the requested alpha source')
+        if platform.machine() == 'arm64' and 'ARMv8 64-bit' not in output:
+            raise RuntimeError('Packaged client reported an unexpected ARM architecture')
 
     with tempfile.TemporaryDirectory(prefix='mwnet-package-smoke-') as tmp:
         work = Path(tmp)
@@ -66,6 +68,10 @@ def main():
                     capture_output=True, text=True, timeout=60)
                 print(diagnostic.stdout + diagnostic.stderr)
             raise RuntimeError(f'Packaged server exited with {result.returncode}')
+        if (f'MWNet dedicated server {expected_version}' not in output
+                or f'Protocol version: {expected_protocol}\n' not in output
+                or f'Build commit: {args.commit[:10]}' not in output):
+            raise RuntimeError('Packaged server does not match the requested alpha source')
         for marker in ('Called "OnServerPostInit"', 'Quitting peacefully.', 'Error state: false'):
             if marker not in output:
                 raise RuntimeError(f'Packaged server did not report: {marker}')

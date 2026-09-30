@@ -183,14 +183,33 @@ jobs:
     - name: Check multiplayer test targets before the full build
       run: ctest --test-dir build --output-on-failure -R "^mwnet-(unit|headless|persistence-fault|discovery)$"
 
-    - name: Build OpenMW
-      run: cmake --build ${{ github.workspace }}/build
+    - name: Build the dedicated server
+      run: cmake --build ${{ github.workspace }}/build --target mwnet-server
 
     - name: Copy missing DLLs
       run: |
         cp ${{ github.workspace }}/deps/vcpkg-x64-windows-${{ inputs.msvc }}-${{ env.VCPKG_TAG }}/installed/x64-windows/bin/Release/MyGUIEngine.dll ${{ github.workspace }}/build
         cp -Filter *.dll -Recurse ${{ github.workspace }}/deps/vcpkg-x64-windows-${{ inputs.msvc }}-${{ env.VCPKG_TAG }}/installed/x64-windows/bin/osgPlugins-3.6.5 ${{ github.workspace }}/build
         cp ${{ github.workspace }}/deps/vcpkg-x64-windows-${{ inputs.msvc }}-${{ env.VCPKG_TAG }}/installed/x64-windows/bin/*.dll ${{ github.workspace }}/build
+
+    - name: Stage and verify server startup before the full client build
+      shell: python
+      run: |
+        from pathlib import Path
+        import shutil
+        import subprocess
+        profile = Path('build/server')
+        shutil.copytree('files/mwnet/core-scripts', profile, dirs_exist_ok=True)
+        for name in ('banlist.json', 'requiredDataFiles.json'):
+            shutil.copy2(profile / 'defaults' / name, profile / 'data' / name)
+        for name in ('cell', 'custom', 'map', 'player', 'recordstore', 'world'):
+            (profile / 'data' / name).mkdir(exist_ok=True)
+        revision = subprocess.check_output(['git', 'rev-parse', 'HEAD'], text=True).strip()
+        subprocess.run(['python', 'release-tools/CI/smoke_mwnet_package.py', 'build',
+                        '--commit', revision, '--server-only'], check=True)
+
+    - name: Build OpenMW
+      run: cmake --build ${{ github.workspace }}/build
 
     - name: Copy Qt DLLs
       working-directory: ${{ github.workspace }}/deps/Qt/${{ env.QT_VER }}/msvc2019_64
