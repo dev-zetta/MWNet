@@ -165,13 +165,19 @@ jobs:
         -D BUILD_OPENCS_TESTS=${{ ! inputs.package }}
         -D OPENMW_USE_SYSTEM_SQLITE3=OFF
         -D OPENMW_USE_SYSTEM_YAML_CPP=OFF
-        -D OPENMW_LTO_BUILD=ON
+        -D OPENMW_LTO_BUILD=OFF
         -D MWNET_FETCH_DEPS=ON
         -D BUILD_MWNET_TESTS=ON
         -D CMAKE_POLICY_DEFAULT_CMP0141=NEW
         -D CMAKE_MSVC_DEBUG_INFORMATION_FORMAT=ProgramDatabase
         ${{ inputs.package && '-D "VCREDIST64=$env:VCToolsRedistDir/vc_redist.x64.exe"' || '' }}
         -D CMAKE_EXPORT_COMPILE_COMMANDS=ON
+
+    - name: Build multiplayer test targets
+      run: cmake --build ${{ github.workspace }}/build --target mwnet-tests mwnet-headless-integration mwnet-persistence-fault mwnet-discovery-tests
+
+    - name: Check multiplayer test targets before the full build
+      run: ctest --test-dir build --output-on-failure -R "^mwnet-(unit|headless|persistence-fault|discovery)$"
 
     - name: Build OpenMW
       run: cmake --build ${{ github.workspace }}/build

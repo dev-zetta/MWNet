@@ -36,6 +36,7 @@ if (NOT MWNET_TESTS_ONLY)
     target_sources(mwnet-tests PRIVATE
         timed_log.cpp
         ../../components/openmw-mp/TimedLog.cpp)
+    target_link_libraries(mwnet-tests PRIVATE Boost::filesystem)
     target_compile_definitions(mwnet-tests PRIVATE MWNET_HAS_TIMED_LOG_TESTS=1)
 endif()
 
