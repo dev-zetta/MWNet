@@ -1,0 +1,33 @@
+services:
+  game:
+    image: mwnet-registration:alpha2-4a92d877b4
+    platform: linux/amd64
+    labels:
+      org.mwnet.registration-test: v1
+    build:
+      context: .
+    ports:
+      - "127.0.0.1:25565:25565/udp"
+    environment:
+      PUBLIC_ADDRESS: ${PUBLIC_ADDRESS:?Set PUBLIC_ADDRESS}
+      PUBLIC_PORT: ${PUBLIC_PORT:?Set PUBLIC_PORT}
+      DISCOVERY_URL: ${DISCOVERY_URL:-https://mwnet.playit.plus}
+      ANNOUNCE: ${ANNOUNCE:-true}
+    volumes:
+      - game-state:/state
+    restart: unless-stopped
+    stop_signal: SIGINT
+    stop_grace_period: 10s
+    read_only: true
+    tmpfs:
+      - /tmp:rw,noexec,nosuid,size=16m
+    cap_drop: [ALL]
+    security_opt: [no-new-privileges=true]
+    mem_limit: 512m
+    cpus: 1
+    pids_limit: 128
+    logging:
+      driver: json-file
+      options: {max-size: "10m", max-file: "3"}
+volumes:
+  game-state:
