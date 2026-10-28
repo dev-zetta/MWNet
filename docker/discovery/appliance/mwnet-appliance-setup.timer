@@ -1,0 +1,11 @@
+[Unit]
+Description=Schedule MWNet appliance preparation without blocking boot targets
+ConditionPathExists=!/var/lib/mwnet-appliance/ready
+
+[Timer]
+OnBootSec=30
+AccuracySec=1
+Unit=mwnet-appliance-setup.service
+
+[Install]
+WantedBy=timers.target

@@ -1,0 +1,16 @@
+[Unit]
+Description=Prepare MWNet directory appliance on first boot
+Wants=network-online.target
+After=network-online.target cloud-final.service
+ConditionPathExists=!/var/lib/mwnet-appliance/ready
+StartLimitIntervalSec=3600
+StartLimitBurst=3
+
+[Service]
+Type=oneshot
+ExecStart=/bin/bash /opt/mwnet/discovery-appliance/first-boot.sh
+TimeoutStartSec=30min
+Restart=on-failure
+RestartSec=120
+RemainAfterExit=yes
+UMask=0022

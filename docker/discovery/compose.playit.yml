@@ -1,0 +1,8 @@
+# Apply AFTER compose.yml, including the appliance's generated compose.yml.
+# !override is essential: normal Compose merging retains the public bindings.
+# The independently managed host-network playit agent reaches these listeners.
+services:
+  https:
+    ports: !override
+      - "127.0.0.1:80:80"
+      - "127.0.0.1:443:443"

@@ -1,0 +1,8 @@
+# Host credentials and local deployment overrides must never be committed.
+.env
+.env.*
+!.env.example
+*.env
+!*.env.example
+*.secret
+playit-secret

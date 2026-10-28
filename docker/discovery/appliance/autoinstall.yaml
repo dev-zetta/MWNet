@@ -1,0 +1,16 @@
+# Keep disk selection, account creation and all other installer screens interactive.
+# No shared passwords, SSH keys, Tailscale tokens or disk identifiers belong here.
+autoinstall:
+  version: 1
+  interactive-sections: ['*']
+  refresh-installer:
+    update: false
+  ssh:
+    install-server: true
+    allow-pw: false
+  late-commands:
+    - mkdir -p /target/opt/mwnet/discovery-appliance
+    - cp -a /cdrom/mwnet/. /target/opt/mwnet/discovery-appliance/
+    - install -m 0644 /cdrom/mwnet/mwnet-appliance-setup.service /target/etc/systemd/system/mwnet-appliance-setup.service
+    - install -m 0644 /cdrom/mwnet/mwnet-appliance-setup.timer /target/etc/systemd/system/mwnet-appliance-setup.timer
+    - systemctl --root=/target enable mwnet-appliance-setup.timer

@@ -32,7 +32,8 @@ target_include_directories(mwnet-tests PRIVATE ${CMAKE_SOURCE_DIR})
 target_link_libraries(mwnet-tests PRIVATE mwnet-mechanics mwnet-metrics mwnet-persistence
     mwnet-protocol-codec mwnet-session mwnet-transport)
 
-if (NOT MWNET_TESTS_ONLY)
+# TimedLog belongs to the full game build, which discovers Boost::filesystem.
+if (NOT MWNET_TESTS_ONLY AND NOT MWNET_DIRECTORY_ONLY)
     target_sources(mwnet-tests PRIVATE
         timed_log.cpp
         ../../components/openmw-mp/TimedLog.cpp)

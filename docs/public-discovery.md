@@ -74,6 +74,40 @@ Challenges are bounded to two per key/source and 2,048 globally. The service per
 
 Fresh/changed endpoints remain hidden until the encrypted identity handshake succeeds. Heartbeats refresh a 180-second lease. Verified endpoints are rechecked after five minutes; failures hide the entry and retry after 30 seconds. Verification schedules the least recently checked eligible entries first. Restarts retain unexpired signed records but discard all verification trust and challenges. First-use game trust remains separate. The production address policy rejects private, loopback, link-local, multicast, reserved, documentation and transition address ranges. `--local-test` is only for isolated fixtures.
 
+## Host installation and private administration
+
+For a bootable installation medium with the containers and bootstrap included, use the [directory appliance ISO builder](../docker/discovery/appliance/README.md). It retains interactive disk/account selection, downloads host packages on first boot and leaves public deployment disabled until the hostname and ingress are configured.
+
+Use Ubuntu Server 26.04 LTS on an amd64 machine with persistent SSD storage; Ubuntu Server 24.04 LTS is also supported by the bootstrap. The host release is independent of the directory image's pinned Ubuntu 24.04 userspace. The host does not need C++ build dependencies because Docker builds them inside the image. The bootstrap selects the matching `resolute` or `noble` package repositories and rejects unsupported OS/architecture combinations. Docker and Tailscale both provide official packages for these releases: [Docker Ubuntu installation](https://docs.docker.com/engine/install/ubuntu/) and [Tailscale stable packages](https://pkgs.tailscale.com/stable/).
+
+During OS installation, create a normal administrator account with sudo access and install OpenSSH with your SSH public key. First access can use the machine's console or SSH over your home LAN. Copy the checkout or just `docker/discovery/setup-host.sh` onto the server, review the script, and run these commands there (from the repository root when using a checkout):
+
+```bash
+bash docker/discovery/setup-host.sh --dry-run
+sudo bash docker/discovery/setup-host.sh
+sudo tailscale up
+tailscale ip -4
+```
+
+The script installs Docker Engine, Buildx, Compose, Tailscale, OpenSSH, Git, curl and CA certificates, enables their services, and checks Docker/Compose and SSH configuration. Downloads use HTTPS and apt repositories have scoped signing keys. It stops on conflicting container packages or customized repository definitions instead of removing workloads or overwriting those definitions. Rerunning it accepts its own repository files and can upgrade installed packages. It preserves existing SSH, firewall and Docker daemon settings, adds no docker-group members, and does not deploy a directory, enroll Tailscale, configure tunnels or reboot. A dry run only prints the plan; it does not validate the host. Install OS security updates separately and reboot when required. Bootstrap checks are syntax and offline safeguard tests; installation on the intended server still needs acceptance.
+
+Follow the authentication URL from `tailscale up`. Install Tailscale on your administration computer, join the same tailnet, then use ordinary OpenSSH through the encrypted Tailscale network:
+
+```bash
+ssh YOUR_LINUX_USER@SERVER_TAILSCALE_IP
+# Or use the server's MagicDNS name when enabled in your tailnet.
+```
+
+Tailscale supplies connectivity through NAT; OpenSSH supplies the Linux login and key authentication. Alternatively, run `sudo tailscale set --ssh` on the server to use Tailscale identity and SSH policy for tailnet logins without adding an OpenSSH public key. The bootstrap does not enable that feature automatically. Limit tailnet and SSH-policy access to your administrators and intended local account, and verify a second session before tightening authentication or firewall rules. Keep any ordinary SSH private key on your administration computer. Existing OpenSSH listeners remain as configured (normally all interfaces); installing Tailscale does not restrict SSH to the tailnet. Avoid forwarding port 22 from the internet; on a VPS, restrict public SSH with the provider firewall after validating tailnet access. Use sudo for Docker commands: membership in the docker group grants root-equivalent access. See [Tailscale quickstart](https://tailscale.com/docs/how-to/quickstart) and [Tailscale SSH](https://tailscale.com/docs/features/tailscale-ssh).
+
+Private administration and public hosting are separate. At home behind CGNAT, Tailscale lets administrators connect, but public players and directory clients still need a public ingress service. A game tunnel must carry UDP; discovery needs HTTPS for your chosen hostname. The base Compose deployment below expects externally reachable ports 80/443 for Caddy's certificate challenges and HTTPS. Choose and validate a tunnel and certificate arrangement before using it at home. Do not expose the directory backend on port 8080. Docker publishes the proxy ports on all interfaces by default and published ports can bypass UFW rules; use deliberate port bindings and upstream firewall controls. The host bootstrap leaves tunnel-provider installation and enrollment to the operator; the optional playit files below supply that deployment path.
+
+## Home hosting with playit Premium
+
+Use the optional [playit integration guide](../docker/discovery/playit.md) for the pinned agent Compose file, root-owned `/etc/playit/agent.env`, existing-agent adoption, HTTPS gateway/DNS configuration and separate directory activation. The `compose.playit.yml` overlay replaces Caddy's public host bindings with `127.0.0.1:80` and `127.0.0.1:443`. The agent uses host networking and a separate Compose project. Nothing publishes the directory backend or operational routes. The appliance builder includes the optional templates and guide, but no secret or playit image; existing installed machines can copy the files without reinstalling.
+
+Playit forwards TLS to Caddy. Accept certificate issuance and renewal through the selected gateway before public launch. Leave PROXY protocol disabled until a restricted receiving listener is implemented and tested. The current proxy overwrites client-supplied `X-Real-IP` with its TCP peer, which means tunneled clients share one observed-source rate bucket; do not claim per-client abuse isolation through the tunnel yet. The agent's host-network access and its credential are additional trust boundaries: keep the credential outside Git, do not mount the Docker socket, retain bounded container resources/logs, and protect the playit account. Agent/account compromise can redirect tunnels to other host services, so only configure the intended origins and do not treat host networking as container network isolation. Global directory bounds, signatures, endpoint verification and first-use game identity confirmation remain enforced.
+
 ## VPS deployment and operations
 
 Choose a new hostname and Linux VPS, point DNS at it, and copy `docker/discovery/.env.example` to `docker/discovery/.env` with the actual hostname and source revision. Then run `docker compose --env-file docker/discovery/.env -f docker/discovery/compose.yml up --build -d`. Caddy publishes ports 80/443, manages certificates, overwrites `X-Real-IP`, and forwards only `/v1/*`. The proxy applies bounded header/body/write/idle timeouts and an 8 KiB header limit, using [Caddy server options](https://caddyserver.com/docs/caddyfile/options#timeouts). The directory backend has no host port publication. Do not expose it directly while `--trust-proxy` is enabled. Its `/healthz` and `/metrics` endpoints remain private. Health fails if periodic storage maintenance fails.
