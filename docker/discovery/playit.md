@@ -68,6 +68,8 @@ In playit, create an **HTTPS** tunnel using the online agent. Add the public hos
 
 Playit forwards TLS; Caddy terminates it and owns the certificate. Caddy's TLS-ALPN-01 challenge requires public port 443 to pass the ACME handshake intact, while HTTP-01 requires public port 80 to reach local port 80. Confirm the selected gateway's forwarding before relying on automatic certificate issuance and renewal; use a separately configured DNS challenge if the gateway cannot carry either challenge. No DNS-provider token is included in these files. A tunnel showing online is not certificate acceptance.
 
+On first startup, a running/healthy container can precede certificate issuance. Clients may briefly receive a TLS internal-error alert while Caddy is still obtaining its first certificate. Keep normal certificate verification enabled and allow a bounded retry before inspecting Caddy's certificate logs; repeatedly recreating containers is not a substitute for diagnosing a persistent issuance error. For a local certificate/API check on the NUC, use `curl --resolve YOUR_HOST:443:127.0.0.1 https://YOUR_HOST/v1/servers`, replacing `YOUR_HOST` in both places. This preserves hostname and CA validation while avoiding an outbound trip back through the host's own tunnel. Test the public URL independently from another machine; a successful local check does not prove public routing.
+
 Once the hostname, DNS and gateway are configured, create or edit the root-owned `/etc/mwnet-directory.env` as described in the appliance guide. Apply the loopback overlay after the base configuration. It replaces the original 80/443 bindings rather than appending extra listeners, and leaves the backend unpublished:
 
 ```bash
