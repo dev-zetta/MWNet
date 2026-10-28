@@ -2,7 +2,7 @@
 
 The directory can use a playit Premium HTTPS tunnel behind CGNAT. Public HTTPS reaches the playit agent, then Caddy on the NUC, then the private directory container. Tailscale SSH remains the private administration path. A multiplayer game server needs its own UDP tunnel; installing this agent does not deploy a game server.
 
-The optional files work with Docker Compose 2.30 or newer. `compose.playit-agent.yml` pins the official image digest for the existing 1.0 deployment (1.0.12), uses host networking, restarts after reboot, and bounds memory, CPU, processes and logs. Image updates are explicit. The directory and agent use separate Compose projects, so directory restarts do not stop the tunnel. Host networking lets an agent origin of `127.0.0.1:443` reach Caddy's host loopback listener; the agent needs no published inbound ports or Docker socket mount.
+The optional files work with Docker Compose 2.30 or newer. `compose.playit-agent.yml` pins the official stable 1.1.0 image by digest, uses host networking, restarts after reboot, and bounds memory, CPU, processes and logs. Image updates are explicit. The directory and agent use separate Compose projects, so directory restarts do not stop the tunnel. Host networking lets an agent origin of `127.0.0.1:443` reach Caddy's host loopback listener; the agent needs no published inbound ports or Docker socket mount.
 
 ## Install or adopt the agent
 
@@ -26,7 +26,7 @@ sudo chmod 0600 /etc/playit/agent.env
 sudoedit /etc/playit/agent.env
 ```
 
-`playit.env.example` documents the format; it contains no usable credential. `env_file` passes the value directly to the container, including under sudo, and `format: raw` preserves literal dollar signs. The key remains visible to Docker administrators. Do not publish unredacted `docker inspect` or `docker compose config` output; use `config --quiet` when checking a real deployment. Playit 1.1 adds `SECRET_KEY_FILE` support, but this integration retains the existing 1.0 agent and environment-file format rather than silently migrating a working installation.
+`playit.env.example` documents the format; it contains no usable credential. `env_file` passes the value directly to the container, including under sudo, and `format: raw` preserves literal dollar signs. The key remains visible to Docker administrators. Do not publish unredacted `docker inspect` or `docker compose config` output; use `config --quiet` when checking a real deployment. Playit 1.1 also supports a raw-key file through `SECRET_KEY_FILE`; this deployment keeps the existing `SECRET_KEY` environment-file format so upgrading preserves the current credential.
 
 If you already followed the `/etc/playit/compose.yml` instructions and the agent is online, it can stay there. To adopt the repository configuration later, use the same project name `mwnet-playit`, service name `playit` and credential path. The `up` command may recreate that one container, briefly disconnecting tunnels; do not start a second copy of the same agent under a different project. First compare `sudo docker compose ls` with the intended project, then:
 
@@ -40,6 +40,27 @@ sudo docker compose -p mwnet-playit \
 ```
 
 The initial start downloads the pinned agent image. The ISO packages the optional configuration and guide but does not package this image, copy a host secret, create an agent, enroll an account or start the agent automatically. Check that the chosen agent appears online in the playit dashboard. Local container status alone does not prove account authentication or public tunnel operation. If you review logs with `logs --tail 50 playit`, keep any claim URLs or credentials private.
+
+## Update an existing NUC agent
+
+For the existing `/etc/playit/compose.yml` deployment under project `mwnet-playit`, copy `update-playit.sh`, `compose.playit-agent.yml`, `compose.playit.yml` and this guide into one folder on the server. Run the reviewed helper there with your local sudo password:
+
+```bash
+sudo bash "$DISCOVERY_DIR/update-playit.sh"
+```
+
+The helper requires exactly one existing project/service, validates Compose without printing credentials, downloads the pinned image before changing configuration, backs up the old Compose file, preserves the secret's contents, enforces root ownership/mode 0600, and recreates only the agent. It checks the running image ID, restart count and OOM state after five seconds. A failed start restores the old Compose configuration and uses the retained local image. It also installs the optional loopback overlay and guide under `/etc/playit`; when activating the directory from the appliance, use `-f /opt/mwnet/discovery-appliance/compose.yml -f /etc/playit/compose.playit.yml`. It does not activate the directory or change the original ISO payload. Check the dashboard for authenticated/online state afterward; process survival is not authentication acceptance.
+
+To update Docker and Tailscale host packages as well, include `setup-host.sh` and `update-host-and-playit.sh` in that folder. The wrapper runs the existing, supported host bootstrap followed by the agent updater; it can upgrade bootstrap-managed packages, including OpenSSH, but preserves existing configuration and Tailscale enrollment. Package changes are not rolled back if a later agent update fails. Run this maintenance through systemd so it survives the SSH interruption caused by a Tailscale or SSH service restart:
+
+```bash
+sudo systemd-run --unit=mwnet-maintenance --collect \
+  --property=Type=oneshot --property=TimeoutStartSec=30min \
+  /bin/bash "$DISCOVERY_DIR/update-host-and-playit.sh"
+journalctl -u mwnet-maintenance -f
+```
+
+Reconnect over Tailscale if needed and read `journalctl -u mwnet-maintenance --no-pager` for the final result. Inspect `systemctl show mwnet-maintenance -p Result -p ExecMainStatus` while the unit exists; `--collect` can unload it after completion, so use its journal to confirm success. This updates the bootstrap's package set, not every OS package, and does not reboot. Schedule broader OS maintenance and any required reboot separately.
 
 ## Configure the directory tunnel
 

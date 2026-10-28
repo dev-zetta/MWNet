@@ -20,7 +20,8 @@ import yaml
 HERE = Path(__file__).resolve().parent
 ROOT = HERE.parents[2]
 KEYRING = Path('/usr/share/keyrings/ubuntu-archive-keyring.gpg')
-TUNNEL_FILES = ('compose.playit-agent.yml', 'compose.playit.yml', 'playit.env.example', 'playit.md')
+TUNNEL_FILES = ('compose.playit-agent.yml', 'compose.playit.yml', 'playit.env.example', 'playit.md',
+                'update-playit.sh', 'update-host-and-playit.sh')
 
 
 def host_release(iso):

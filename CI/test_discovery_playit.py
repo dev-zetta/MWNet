@@ -93,7 +93,7 @@ class ComposeTests(unittest.TestCase):
         self.assertFalse(service.get('privileged'))
         self.assertNotIn('depends_on', service)
         self.assertEqual(service['restart'], 'unless-stopped')
-        self.assertRegex(service['image'], r'^ghcr\.io/playit-cloud/playit-agent:1\.0@sha256:[0-9a-f]{64}$')
+        self.assertRegex(service['image'], r'^ghcr\.io/playit-cloud/playit-agent:1\.1\.0@sha256:[0-9a-f]{64}$')
         self.assertGreater(int(service['mem_limit']), 0)
         self.assertGreater(float(service['cpus']), 0)
         self.assertGreater(service['pids_limit'], 0)
@@ -152,6 +152,114 @@ class PackagingTests(unittest.TestCase):
             result = subprocess.run(['git', '-C', str(ROOT), 'check-ignore', '--no-index',
                                      str(DISCOVERY / name)], capture_output=True, timeout=10)
             self.assertEqual(result.returncode, 1, name)
+
+
+class UpdateTests(unittest.TestCase):
+    def update(self, failure=''):
+        with tempfile.TemporaryDirectory() as temporary:
+            folder = Path(temporary)
+            state, source = folder / 'state', folder / 'source'
+            state.mkdir()
+            source.mkdir()
+            old_compose = 'previous compose configuration\n'
+            credential = 'SECRET_KEY=offline-test-credential\n'
+            (state / 'compose.yml').write_text(old_compose)
+            (state / 'agent.env').write_text(credential)
+            for name in ('compose.playit-agent.yml', 'compose.playit.yml', 'playit.md'):
+                (source / name).write_bytes((DISCOVERY / name).read_bytes())
+            image = yaml.safe_load((source / 'compose.playit-agent.yml').read_text())['services']['playit']['image']
+            wrapper = r'''
+set -euo pipefail
+source "$1"
+PLAYIT_SOURCE_DIR=$TEST_SOURCE
+PLAYIT_STATE_DIR=$TEST_STATE
+# All privileged commands are mocked. Actual writes stay in temporary folders.
+preflight() { validate_credentials; }
+chown() { return 0; }
+sleep() { return 0; }
+docker() {
+    case "$1 $2" in
+        'ps -aq') echo old-container ;;
+        'info ') return 0 ;;
+        'pull '*) [[ $TEST_FAILURE != pull ]] ;;
+        'image inspect') echo sha256:new ;;
+        'inspect --format')
+            case "$3" in
+                *com.docker.compose.project*) echo mwnet-playit ;;
+                *com.docker.compose.service*) echo playit ;;
+                '{{.Config.Image}}') echo old-image ;;
+                *State.Running*)
+                    [[ $TEST_FAILURE != inspect ]] || return 1
+                    case "$TEST_FAILURE" in
+                        status) echo 'false false false 0 sha256:new' ;;
+                        restart) echo 'true false false 1 sha256:new' ;;
+                        image) echo 'true false false 0 sha256:wrong' ;;
+                        *) echo 'true false false 0 sha256:new' ;;
+                    esac ;;
+            esac ;;
+        'compose -p')
+            shift 5
+            case "$1" in
+                config) if [[ ${2:-} == --images ]]; then echo "$TEST_IMAGE"; fi ;;
+                up)
+                    if grep -q 'image:' "$TEST_STATE/compose.yml"; then
+                        echo new-up >> "$TEST_STATE/calls"
+                        [[ $TEST_FAILURE != up ]]
+                    else echo old-up >> "$TEST_STATE/calls"; fi ;;
+                ps)
+                    [[ $TEST_FAILURE != ps ]] || return 1
+                    if [[ ${2:-} == -q ]]; then echo new-container; fi ;;
+                *) return 98 ;;
+            esac ;;
+        *) return 98 ;;
+    esac
+}
+main
+'''
+            environment = dict(os.environ, TEST_STATE=str(state), TEST_SOURCE=str(source),
+                               TEST_FAILURE=failure, TEST_IMAGE=image)
+            result = subprocess.run(['/bin/bash', '-c', wrapper, 'test', str(DISCOVERY / 'update-playit.sh')],
+                                    env=environment, text=True, capture_output=True, timeout=10)
+            return (result, (state / 'compose.yml').read_text(), (state / 'agent.env').read_text(),
+                    (state / 'calls').read_text() if (state / 'calls').exists() else '')
+
+    def test_update_preserves_key_and_verifies_pinned_running_image(self):
+        result, compose, credential, calls = self.update()
+        self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+        self.assertIn('playit-agent:1.1.0@sha256:', compose)
+        self.assertEqual(credential, 'SECRET_KEY=offline-test-credential\n')
+        self.assertEqual(calls, 'new-up\n')
+        self.assertNotIn('offline-test-credential', result.stdout + result.stderr)
+        self.assertIn('Verified running image:', result.stdout)
+
+    def test_failed_download_does_not_touch_running_configuration(self):
+        result, compose, credential, calls = self.update('pull')
+        self.assertNotEqual(result.returncode, 0)
+        self.assertEqual(compose, 'previous compose configuration\n')
+        self.assertEqual(calls, '')
+        self.assertEqual(credential, 'SECRET_KEY=offline-test-credential\n')
+
+    def test_failed_start_inspection_or_image_rolls_back(self):
+        for failure in ('up', 'status', 'restart', 'image', 'inspect', 'ps'):
+            with self.subTest(failure=failure):
+                result, compose, credential, calls = self.update(failure)
+                self.assertNotEqual(result.returncode, 0)
+                self.assertEqual(compose, 'previous compose configuration\n')
+                self.assertEqual(calls, 'new-up\nold-up\n')
+                self.assertEqual(credential, 'SECRET_KEY=offline-test-credential\n')
+                self.assertNotIn('offline-test-credential', result.stdout + result.stderr)
+
+    def test_credentials_are_data_and_invalid_keys_fail_without_printing_them(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            folder = Path(temporary)
+            for content in ('SECRET_KEY=\n', 'SECRET_KEY=offline\nSECRET_KEY=duplicate\n',
+                            'SECRET_KEY="offline"\n', 'SECRET_KEY=offline\nSECRET_KEY_FILE=/tmp/key\n'):
+                (folder / 'agent.env').write_text(content)
+                result = subprocess.run(['/bin/bash', '-c', 'source "$1"; PLAYIT_STATE_DIR=$2; validate_credentials',
+                                         'test', str(DISCOVERY / 'update-playit.sh'), str(folder)],
+                                        text=True, capture_output=True, timeout=10)
+                self.assertNotEqual(result.returncode, 0)
+                self.assertNotIn('offline', result.stdout + result.stderr)
 
 
 if __name__ == '__main__':
