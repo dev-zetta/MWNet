@@ -10,13 +10,11 @@ registration=/home/gmax/mwnet-registration
 settings=/etc/mwnet-gameplay
 cd "$bundle"
 sha256sum --check --status SHA256SUMS
-read -r fingerprint expected_image < <(python3 -c 'import json; d=json.load(open("content.json")); print(d["fingerprint"],d["imageConfigDigest"])')
+fingerprint=$(python3 -c 'import json; print(json.load(open("content.json"))["fingerprint"])')
 base=(docker compose -p mwnet-registration --env-file "$registration/.env" -f "$registration/compose.yml")
 "${base[@]}" config --quiet
 image=$("${base[@]}" config --images)
-[[ $(docker image inspect --format '{{.Id}}' "$image") == "$expected_image" ]] || {
-    echo 'The game image differs from the accepted registration image.' >&2; exit 1;
-}
+python3 "$bundle/verify_image.py" --manifest content.json --image "$image"
 owner=$(stat -c %u "$bundle")
 group=$(stat -c %g "$bundle")
 ((owner != 0)) || { echo 'The staged bundle must belong to the intended SSH operator.' >&2; exit 1; }

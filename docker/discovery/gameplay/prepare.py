@@ -7,6 +7,8 @@ from pathlib import Path
 import shutil
 import zlib
 
+from verify_image import DIGEST, FIELDS
+
 HERE = Path(__file__).resolve().parent
 ROOT = HERE.parents[2]
 NAMES = ('Morrowind.esm', 'Tribunal.esm', 'Bloodmoon.esm')
@@ -37,6 +39,9 @@ def prepare(data, output, receipt):
         files[name] = {'size': path.stat().st_size, 'sha256': sha256(path), 'crc32': f'{checksum:08X}'}
     if receipt['outcome'] != 'pass' or receipt['gameplayProtocol'] != 13:
         raise ValueError('A successful protocol 13 registration receipt is required')
+    digests = {name: receipt['image' + name.capitalize() + 'Digest'] for name in FIELDS}
+    if any(not DIGEST.fullmatch(value) for value in digests.values()):
+        raise ValueError('Invalid accepted image digests')
     output.mkdir(mode=0o700)
     content = output / 'content'
     content.mkdir(mode=0o755)
@@ -46,10 +51,10 @@ def prepare(data, output, receipt):
         target.chmod(0o644)
         if sha256(target) != files[name]['sha256']:
             raise ValueError('Content changed during preparation: ' + name)
-    for name in ('compose.content.yml', 'enable-gameplay.sh'):
+    for name in ('compose.content.yml', 'enable-gameplay.sh', 'verify_image.py'):
         shutil.copy2(HERE / name, output / name)
     manifest = {'files': files, 'fingerprint': receipt['fingerprint'],
-                'imageConfigDigest': receipt['imageConfigDigest'],
+                'imageDigests': digests, 'runtimeSourceCommit': receipt['runtimeSourceCommit'],
                 'origin': receipt['origin'], 'endpoint': receipt['gameEndpoint']}
     (output / 'content.json').write_text(json.dumps(manifest, indent=2) + '\n')
     inputs = sorted(p for p in output.rglob('*') if p.is_file())

@@ -3,6 +3,7 @@
 import importlib.util
 import json
 from pathlib import Path
+import sys
 import tempfile
 import unittest
 from unittest.mock import patch
@@ -11,6 +12,7 @@ import zlib
 ROOT = Path(__file__).resolve().parents[1]
 SPEC = importlib.util.spec_from_file_location('content_bundle', ROOT / 'docker/discovery/gameplay/prepare.py')
 BUNDLE = importlib.util.module_from_spec(SPEC)
+sys.path.insert(0, str(ROOT / 'docker/discovery/gameplay'))
 SPEC.loader.exec_module(BUNDLE)
 
 
@@ -32,7 +34,10 @@ class ContentBundleTests(unittest.TestCase):
         (self.data / 'private-account.json').write_text('must not be copied')
         self.output = self.root / 'bundle'
         self.receipt = {'outcome': 'pass', 'gameplayProtocol': 13, 'fingerprint': 'public-test',
-                        'imageConfigDigest': 'accepted-test-image', 'origin': 'https://example.test',
+                        'imageConfigDigest': 'sha256:' + 'a' * 64,
+                        'imageManifestDigest': 'sha256:' + 'b' * 64,
+                        'imageIndexDigest': 'sha256:' + 'c' * 64,
+                        'runtimeSourceCommit': 'd' * 40, 'origin': 'https://example.test',
                         'gameEndpoint': {'host': '209.25.141.17', 'port': 43133}}
         context = patch.object(BUNDLE, 'ROOT', self.root)
         context.start()

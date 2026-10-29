@@ -16,6 +16,8 @@
   "releaseArchiveSha256": "c2babddf4f06b4989e7790f5732073da17d71b74e70fd9abd9cb7745fec09a7d",
   "dockerfileSha256": "ecca1e17954328ce937d69c72b6eae56d3d3afefcc461dd891aa8e69323f1a09",
   "imageConfigDigest": "sha256:87e5250297f081ec7a7487feb117166f24bdac4c74e26e910666dbab0dd77115",
+  "imageManifestDigest": "sha256:13e63c7c74319328761bbbd26a5b90c7a0600fe5219c2dc4ec693b1364fc5ac0",
+  "imageIndexDigest": "sha256:62af237b48fc6d9914c4815eb97e1d23aad7bbb956931169252ea48aa4969f79",
   "systemdInvocationId": "f71e33c73ce641e6b5156f96f29c3e62",
   "terminalSystemdSuccess": true,
   "signedAnnouncementsBeforeStop": 4,
