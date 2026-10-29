@@ -1,0 +1,31 @@
+{
+  "scope": "nuc-live-reconnect-patch-deployment",
+  "outcome": "pass",
+  "completedUtc": "2026-10-29T22:54:46.071480+00:00",
+  "completedLocal": "2026-10-29T23:54:46.071480+01:00",
+  "systemdInvocationId": "5bae6085b6a74ff49b94cefe0414e03f",
+  "runtimeSourceCommit": "5f1e7503b342750897b52873d25a318de0796deb",
+  "binarySha256": "877892f3f5029420e65be30468f89398ae7a6f64c8acd3d4d8c965c56ea401fa",
+  "deploymentMethod": "read-only executable bind over accepted alpha.2 base image",
+  "baseImageRuntimeSourceCommit": "4a92d877b45a937686e38b8c3b55aab4964c9584",
+  "protocol": 13,
+  "fingerprint": "ed25519/Lk3WtO4wS_t4oKQ3iqKqtU8ijPkSpeX5rRCnlxT41jA",
+  "nativeInitializationAndRuntimeCommitVerifiedByHelper": true,
+  "runningExecutableHashVerifiedByHelper": true,
+  "containerStateAndLimitsVerifiedByHelper": {
+    "running": true,
+    "oomKilled": false,
+    "restartCount": 0,
+    "memoryLimitBytes": 2147483648,
+    "nanoCpus": 2000000000
+  },
+  "canonicalContentLoaded": true,
+  "signedHeartbeatsObserved": 2,
+  "publicListingIndependentlyVerifiedFromAdministrationPC": true,
+  "privateStateBackupPath": "/var/backups/mwnet-server-patch/20261029T225336Z/game-state.tar.gz",
+  "systemdFinishedSuccessfully": true,
+  "freshClientStarted": true,
+  "interactiveMovement": "pending",
+  "freshProcessReconnectAgainstRetainedActors": "pending",
+  "combatAndRespawn": "pending"
+}
