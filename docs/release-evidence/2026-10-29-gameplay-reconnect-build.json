@@ -1,0 +1,47 @@
+{
+  "scope": "actor-authority-reconnect-build-and-update-preparation",
+  "outcome": "pass-local-validation-deployment-pending",
+  "recordedUtc": "2026-10-29T14:56:03.603858+00:00",
+  "runtimeSourceCommit": "5f1e7503b342750897b52873d25a318de0796deb",
+  "binarySha256": "877892f3f5029420e65be30468f89398ae7a6f64c8acd3d4d8c965c56ea401fa",
+  "baseImageRuntimeSourceCommit": "4a92d877b45a937686e38b8c3b55aab4964c9584",
+  "deploymentMethod": "read-only server binary bind in existing canonical-content Compose overlay",
+  "protocol": 13,
+  "version": "1.0.0-alpha.2",
+  "protocolChanged": false,
+  "regressionFailedBeforeComparisonFix": true,
+  "nativeCTestTargets": {
+    "mwnet-headless": "pass",
+    "mwnet-unit": "pass",
+    "mwnet-actor-packets": "pass",
+    "mwnet-magic-content": "pass",
+    "mwnet-persistence-fault": "pass",
+    "mwnet-discovery": "pass"
+  },
+  "runtimeSmoke": {
+    "outcome": "pass",
+    "uid": 10001,
+    "rootReadOnly": true,
+    "networkIsolated": true,
+    "announcementEnabled": false,
+    "canonicalContentLoaded": true,
+    "childPeakRssKiB": 52296,
+    "nativeCoreScriptsStartup": true,
+    "cleanShutdown": true,
+    "privateStateMode": "0600",
+    "identityPreservedAcrossRestart": true
+  },
+  "patchHelperFixtures": [
+    "success",
+    "wrong-image-refused-before-stop",
+    "start-failure-rollback",
+    "discovery-failure-rollback",
+    "changed-overlay-refused-before-stop"
+  ],
+  "realComposeModelVerified": true,
+  "nucStagingChecksumsVerified": true,
+  "nucStagingPath": "/home/gmax/mwnet-reconnect-5f1e7503b3",
+  "liveDeployment": "pending-interactive-sudo",
+  "interactiveReconnect": "pending",
+  "movementCombatRespawn": "pending"
+}
