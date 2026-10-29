@@ -15,11 +15,24 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     && install -d -m 0700 -o 10001 -g 10001 /state
 COPY package /opt/mwnet
 COPY entrypoint.py verify_listing.py /opt/registration/
-RUN ldd /opt/mwnet/build/mwnet-server > /runtime-libraries.txt \
+# Private staging may restrict source files to 0600/0700. Image code is public,
+# root-owned and read-only at runtime; credentials live only in /state.
+RUN printf '%s\n' 'config = "/state/xdg-config/openmw"' > /opt/mwnet/build/openmw.cfg \
+    && find /opt/mwnet /opt/registration -type d -exec chmod 0755 {} + \
+    && find /opt/mwnet /opt/registration -type f -exec chmod 0644 {} + \
+    && chmod 0755 /opt/mwnet/build/mwnet-server /opt/mwnet/run-mwnet-server.sh \
+    && ldd /opt/mwnet/build/mwnet-server > /runtime-libraries.txt \
     && cat /runtime-libraries.txt \
     && ! grep -q 'not found' /runtime-libraries.txt
 USER 10001:10001
 ENV MWNET_TEST_ROOT=/state MWNET_BUILD_DIR=/opt/mwnet/build
 WORKDIR /state
+# Fail during the build if the actual runtime user cannot access the package.
+RUN test -x /opt/mwnet/build/mwnet-server \
+    && test -x /opt/mwnet/run-mwnet-server.sh \
+    && test -r /opt/mwnet/build/mwnet-server-default.cfg \
+    && test -r /opt/mwnet/files/mwnet/core-scripts/scripts/serverCore.lua \
+    && python3 -c 'import ast,pathlib; [ast.parse((pathlib.Path("/opt/registration") / n).read_text()) for n in ("entrypoint.py", "verify_listing.py")]' \
+    && /opt/mwnet/run-mwnet-server.sh --prepare-only
 STOPSIGNAL SIGINT
 ENTRYPOINT ["python3", "/opt/registration/entrypoint.py"]

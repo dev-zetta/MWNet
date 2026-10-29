@@ -4,6 +4,8 @@ This optional test deploys the validated MWNet 1.0.0-alpha.2 Linux dedicated ser
 
 The game uses a separate `mwnet-registration` Compose project and persistent `game-state` volume. It binds UDP 25565 inside its bridge network, publishes only `127.0.0.1:25565/udp` on the NUC, and is reached by the existing host-network playit agent. It runs as UID 10001 with a read-only root filesystem, dropped capabilities, no-new-privileges, one CPU, 512 MiB RAM, 128 PIDs and rotating logs. A random access password and Argon2id hash are generated privately inside `/state`; they and the server identity survive recreation. The image records installed package versions and resolved runtime libraries. No Docker socket is mounted into it.
 
+The image normalizes its public, root-owned code to readable files and traversable directories regardless of private staging permissions, and explicitly marks the native server and launcher executable. A minimal `openmw.cfg` anchors configuration discovery to `/state/xdg-config/openmw`, where the entrypoint writes the server configuration; an absent base configuration must not redirect identity creation into a read-only system directory. The build checks package access and launcher preparation as UID 10001. Host staging files and generated credentials can remain private.
+
 This is a registration test, not gameplay acceptance. Capacity is advertised as 16, but no populated-server load test runs. It preserves the ordered Morrowind/Tribunal/Bloodmoon requirements from the release defaults and does not include or load canonical game content. Spell mechanics fail closed until that content is supplied for a playable server. The test name explicitly identifies the server as temporary.
 
 ## Prepare
