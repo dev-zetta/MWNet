@@ -1,0 +1,62 @@
+{
+  "scope": "nuc-public-gameplay-interactive-acceptance",
+  "recordedUtc": "2026-10-29T23:07:52.493382+00:00",
+  "patchedSourceCommit": "5f1e7503b342750897b52873d25a318de0796deb",
+  "movementAndDoorTransition": {
+    "loginLogTime": "22:58:24.555",
+    "userConfirmedMovement": true,
+    "userConfirmedStillConnected": true,
+    "containerIntegrityErrors": 6,
+    "actorListIntegrityErrors": 0,
+    "unexpectedDisconnectInInspectedLog": false,
+    "log": "client-first-patched-session.log",
+    "userConfirmedDoorTransition": true
+  },
+  "freshClientReconnect": {
+    "loginLogTime": "23:03:08.911",
+    "userConfirmedMovement": true,
+    "userConfirmedStillConnected": true,
+    "containerIntegrityErrors": 0,
+    "actorListIntegrityErrors": 6,
+    "unexpectedDisconnectInInspectedLog": false,
+    "log": "client-fresh-reconnect-accepted.log"
+  },
+  "sameServerPidAcrossFreshClientRestart": 89849,
+  "postReconnectSignedPlayerCount": 1,
+  "fingerprint": "ed25519/Lk3WtO4wS_t4oKQ3iqKqtU8ijPkSpeX5rRCnlxT41jA",
+  "combatAndRespawn": {
+    "outcome": "pass",
+    "userConfirmedHitFeedbackAndDamageChanges": true,
+    "userConfirmedPostRespawnMovementAndConnection": true,
+    "killer": "Imperial Guard",
+    "deathUtc": "2026-10-29T23:05:59.203000+00:00",
+    "respawnUtc": "2026-10-29T23:06:04.201000+00:00",
+    "respawnDelaySeconds": 4.998,
+    "respawnLocation": "nearest Imperial shrine",
+    "resurrectionPacketObserved": true
+  },
+  "openFindings": [
+    {
+      "message": "Received ID_CONTAINER that failed integrity check and was ignored",
+      "initialSessionCount": 6,
+      "reconnectAndRespawnSessionCount": 7,
+      "status": "unresolved; root cause not established"
+    },
+    {
+      "message": "Received ID_ACTOR_LIST that failed integrity check and was ignored",
+      "reconnectSessionCount": 6,
+      "status": "unresolved; root cause not established"
+    }
+  ],
+  "outcome": "pass-scoped-gameplay-with-open-packet-findings",
+  "completedLocal": "2026-10-30T00:07:52.493458+01:00",
+  "sameServerPidAfterCombat": 89849,
+  "postCombatSignedPlayerCount": 1,
+  "gameLeftRunning": true,
+  "scopeLimits": [
+    "Single player and one death/respawn cycle",
+    "Specific fatigue/knockout/health sequence not separately qualified",
+    "Spell-effect cleanup and broader NPC AI behavior not exercised",
+    "No populated 16-player load acceptance"
+  ]
+}
