@@ -1,0 +1,14 @@
+services:
+  game:
+    environment:
+      MWNET_CONTENT_DATA_DIR: /game-content
+      MWNET_CONTENT_FILES: Morrowind.esm,Tribunal.esm,Bloodmoon.esm
+    volumes:
+      - type: bind
+        source: ${MWNET_CONTENT_HOST_DIR:?Set the verified content directory}
+        target: /game-content
+        read_only: true
+        bind:
+          create_host_path: false
+    mem_limit: 2g
+    cpus: 2
