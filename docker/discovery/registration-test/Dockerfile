@@ -5,7 +5,7 @@ LABEL org.opencontainers.image.version=1.0.0-alpha.2
 ENV DEBIAN_FRONTEND=noninteractive
 RUN apt-get update && apt-get install -y --no-install-recommends \
     ca-certificates curl python3 libluajit-5.1-2 \
-    libboost-filesystem1.83.0 libboost-program-options1.83.0 \
+    libboost-filesystem1.83.0 libboost-atomic1.83.0 libboost-program-options1.83.0 \
     libboost-iostreams1.83.0 libboost-system1.83.0 \
     libopenscenegraph161 libsdl2-2.0-0 libyaml-cpp0.8 libbullet3.24 \
     libsqlite3-0 libicu74 libcurl4t64 libsodium23 libprotobuf32t64 libssl3t64 \
@@ -16,6 +16,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 COPY package /opt/mwnet
 COPY entrypoint.py verify_listing.py /opt/registration/
 RUN ldd /opt/mwnet/build/mwnet-server > /runtime-libraries.txt \
+    && cat /runtime-libraries.txt \
     && ! grep -q 'not found' /runtime-libraries.txt
 USER 10001:10001
 ENV MWNET_TEST_ROOT=/state MWNET_BUILD_DIR=/opt/mwnet/build
