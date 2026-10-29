@@ -1,0 +1,39 @@
+{
+  "scope": "nuc-canonical-content-deployment",
+  "outcome": "pass",
+  "completedUtc": "2026-10-29T11:45:22.812413+00:00",
+  "completedLocal": "2026-10-29T12:45:22.812413+01:00",
+  "systemdInvocationId": "c02db8b01f674e60ad74c301aa36a4fe",
+  "acceptedImage": "Accepted game image: index=sha256:62af237b48fc6d9914c4815eb97e1d23aad7bbb956931169252ea48aa4969f79; linux/amd64; revision=4a92d877b45a937686e38b8c3b55aab4964c9584",
+  "fingerprint": "ed25519/Lk3WtO4wS_t4oKQ3iqKqtU8ijPkSpeX5rRCnlxT41jA",
+  "canonicalDefinitions": 1877,
+  "actorTemplates": 3437,
+  "recoveryAnchors": 3424,
+  "contentFiles": {
+    "Morrowind.esm": {
+      "size": 79837557,
+      "sha256": "5c3c8c2cbd20e25901b59b3ece33d36b7ef0e3d60ad8d11828bcc61a5ead1647",
+      "crc32": "7B6AF5B9"
+    },
+    "Tribunal.esm": {
+      "size": 4565686,
+      "sha256": "2ace511f23cc2a9ddd5f3aa59c7919789b9378cf4b17c8ae3375dd6b782f3f2b",
+      "crc32": "F481F334"
+    },
+    "Bloodmoon.esm": {
+      "size": 9631798,
+      "sha256": "bd27090d0e6ad4c1bf1abc83f1a2dac56fcc82cae7bfe8263c413fb301801357",
+      "crc32": "43DD2132"
+    }
+  },
+  "memoryLimitBytes": 2147483648,
+  "cpuLimit": 2,
+  "oomKilled": false,
+  "containerRestarts": 0,
+  "signedAnnouncementsObserved": 2,
+  "privateStateBackupPath": "/var/backups/mwnet-gameplay/20261029T114412Z/game-state.tar.gz",
+  "privateStateBackupArchiveReadable": true,
+  "resourceSample": "Container=mwnet-registration-game-1 Memory=35.61MiB / 2GiB CPU=33.21% Pids=5",
+  "independentPublicHttpsSignatureVerified": true,
+  "interactiveGameplayAcceptance": "pending"
+}
