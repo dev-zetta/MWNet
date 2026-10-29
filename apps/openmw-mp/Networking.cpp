@@ -703,6 +703,7 @@ namespace
             update.transform.directionRotation = { actor.direction.rot[0],
                 actor.direction.rot[1], actor.direction.rot[2] };
             update.sequence = sequence;
+            update.authorityLeaseId = actorList.authorityLeaseId;
             result.push_back(std::move(update));
         }
         return result;
@@ -728,6 +729,7 @@ namespace
             update.transform.directionRotation = { actor.direction.rot[0],
                 actor.direction.rot[1], actor.direction.rot[2] };
             update.sequence = sequence;
+            update.authorityLeaseId = actorList.authorityLeaseId;
             result.push_back(std::move(update));
         }
         return result;

@@ -58,7 +58,8 @@ namespace mwmp::mechanics
         for (const ActorPositionUpdate& update : updates)
         {
             ActorState& actor = mActors.try_emplace(update.identity).first->second;
-            actor.movement = ActorMovementState{ update.transform, update.sequence, now };
+            actor.movement = ActorMovementState{
+                update.transform, update.sequence, now, update.authorityLeaseId };
         }
         return { ActorStateDecision::Applied, mActors.size() };
     }
@@ -103,7 +104,7 @@ namespace mwmp::mechanics
             {
                 ActorState state = mActors.at(updates[index].source);
                 state.movement = ActorMovementState{ updates[index].transform,
-                    updates[index].sequence, now };
+                    updates[index].sequence, now, updates[index].authorityLeaseId };
                 mActors.emplace(destinations[index], std::move(state));
             }
         }
@@ -330,7 +331,11 @@ namespace mwmp::mechanics
                 continue;
 
             const ActorMovementState& previous = *actor->second.movement;
-            if (update.sequence <= previous.sequence)
+            // Application sequences belong to a sender. A server-validated
+            // authority handoff can start a new stream at a lower sequence,
+            // but must still obey the previous canonical position/speed bound.
+            if (update.authorityLeaseId == previous.authorityLeaseId
+                && update.sequence <= previous.sequence)
                 return { ActorStateDecision::StaleSequence, mActors.size() };
             const auto elapsed = std::max(Clock::duration::zero(), now - previous.observedAt);
             const double seconds

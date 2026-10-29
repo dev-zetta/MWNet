@@ -47,6 +47,8 @@ namespace mwmp::mechanics
         ActorIdentity identity;
         ActorTransform transform;
         std::uint64_t sequence = 0;
+        // Server-validated authority generation, scoped to this cell.
+        std::uint64_t authorityLeaseId = 0;
     };
 
     struct ActorCellChangeUpdate
@@ -55,6 +57,7 @@ namespace mwmp::mechanics
         std::string destinationCell;
         ActorTransform transform;
         std::uint64_t sequence = 0;
+        std::uint64_t authorityLeaseId = 0;
     };
 
     enum class ActorAiAction : std::uint8_t
@@ -223,6 +226,7 @@ namespace mwmp::mechanics
             ActorTransform transform;
             std::uint64_t sequence = 0;
             Clock::time_point observedAt;
+            std::uint64_t authorityLeaseId = 0;
         };
 
         struct ActorState

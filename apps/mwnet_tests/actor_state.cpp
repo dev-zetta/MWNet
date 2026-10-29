@@ -1,5 +1,6 @@
 #include <components/openmw-mp/Mechanics/ActorStateLedger.hpp>
 #include <components/openmw-mp/Mechanics/ActorRecovery.hpp>
+#include <components/openmw-mp/Session/AuthorityLease.hpp>
 
 #include <chrono>
 #include <iostream>
@@ -218,6 +219,51 @@ namespace
         return { { cell, refNum, 0 }, refId };
     }
 
+    void testMovementSequenceAfterAuthorityChange()
+    {
+        using namespace std::chrono_literals;
+        ActorStateLedger ledger;
+        const auto start = ActorStateLedger::Clock::time_point{};
+        mwmp::session::AuthorityLeaseManager leases;
+        const auto first = leases.grant("Balmora", 1, start);
+        EXPECT(first.lease.has_value());
+        auto update = position("Balmora", 1, 0, 1000);
+        update.authorityLeaseId = first.lease->leaseId;
+        EXPECT(ledger.applyPositions({ update }, 100, start).applied());
+
+        // A reconnected client or a different authority has its own sequence
+        // counter. Only the already-validated new lease changes its scope.
+        EXPECT(leases.release("Balmora", 1, first.lease->leaseId));
+        const auto second = leases.grant("Balmora", 2, start + 100ms);
+        EXPECT(second.lease.has_value());
+        EXPECT(leases.validate("Balmora", 2, second.lease->leaseId, start + 100ms)
+            == mwmp::session::LeaseValidation::Valid);
+        EXPECT(leases.validate("Balmora", 1, first.lease->leaseId, start + 100ms)
+            != mwmp::session::LeaseValidation::Valid);
+        update.sequence = 1;
+        update.authorityLeaseId = second.lease->leaseId;
+        update.transform.position.x = 10;
+        EXPECT(ledger.applyPositions({ update }, 100, start + 100ms).applied());
+        EXPECT(ledger.previewPositions({ update }, 100, start + 100ms).decision
+            == ActorStateDecision::StaleSequence);
+        EXPECT(ledger.recoverPosition(update.identity, update.transform, start + 100ms));
+        EXPECT(ledger.previewPositions({ update }, 100, start + 100ms).decision
+            == ActorStateDecision::StaleSequence);
+
+        // An authority handoff must retain the canonical spatial baseline.
+        EXPECT(leases.release("Balmora", 2, second.lease->leaseId));
+        const auto third = leases.grant("Balmora", 3, start + 200ms);
+        EXPECT(third.lease.has_value());
+        update.authorityLeaseId = third.lease->leaseId;
+        update.transform.position.x = 10000;
+        EXPECT(ledger.previewPositions({ update }, 100, start + 200ms).decision
+            == ActorStateDecision::SpeedExceeded);
+        EXPECT(ledger.position(update.identity)->position.x == 10);
+        update.sequence = 0;
+        EXPECT(ledger.previewPositions({ update }, 100, start + 200ms).decision
+            == ActorStateDecision::InvalidSequence);
+    }
+
     void testAtomicRosterUpdates()
     {
         ActorStateLedger ledger(2);
@@ -270,6 +316,27 @@ namespace
         update.transform.position.x = x;
         update.sequence = sequence;
         return update;
+    }
+
+    void testMovementSequenceAfterCellChange()
+    {
+        using namespace std::chrono_literals;
+        ActorStateLedger ledger;
+        const auto start = ActorStateLedger::Clock::time_point{};
+        auto update = position("Balmora", 1, 0, 1000);
+        update.authorityLeaseId = 41;
+        EXPECT(ledger.applyPositions({ update }, 100, start).applied());
+        auto change = cellChange("Balmora", "Ald-ruhn", 1, 10, 1001);
+        change.authorityLeaseId = 41;
+        EXPECT(ledger.applyCellChanges({ change }, start + 100ms).applied());
+
+        update.identity.cell = "Ald-ruhn";
+        update.transform.position.x = 10;
+        update.sequence = 5;
+        update.authorityLeaseId = 42;
+        EXPECT(ledger.applyPositions({ update }, 100, start + 200ms).applied());
+        EXPECT(ledger.previewPositions({ update }, 100, start + 200ms).decision
+            == ActorStateDecision::StaleSequence);
     }
 
     void testAtomicCellChanges()
@@ -368,8 +435,10 @@ int runActorStateTests()
     testIdentityAndLimits();
     testCleanup();
     testAtomicPositionUpdates();
+    testMovementSequenceAfterAuthorityChange();
     testAtomicRosterUpdates();
     testAtomicCellChanges();
+    testMovementSequenceAfterCellChange();
     testAtomicAiUpdates();
     return sFailures;
 }
