@@ -1,0 +1,65 @@
+{
+  "scope": "real-game-server-discovery-registration",
+  "outcome": "pass",
+  "completedUtc": "2026-10-29T09:04:03.909260+00:00",
+  "origin": "https://mwnet.playit.plus",
+  "gameEndpoint": {
+    "host": "209.25.141.17",
+    "port": 43133,
+    "transport": "UDP",
+    "localBinding": "127.0.0.1:25565"
+  },
+  "fingerprint": "ed25519/Lk3WtO4wS_t4oKQ3iqKqtU8ijPkSpeX5rRCnlxT41jA",
+  "runtimeSourceCommit": "4a92d877b45a937686e38b8c3b55aab4964c9584",
+  "version": "1.0.0-alpha.2",
+  "gameplayProtocol": 13,
+  "releaseArchiveSha256": "c2babddf4f06b4989e7790f5732073da17d71b74e70fd9abd9cb7745fec09a7d",
+  "dockerfileSha256": "ecca1e17954328ce937d69c72b6eae56d3d3afefcc461dd891aa8e69323f1a09",
+  "imageConfigDigest": "sha256:87e5250297f081ec7a7487feb117166f24bdac4c74e26e910666dbab0dd77115",
+  "systemdInvocationId": "f71e33c73ce641e6b5156f96f29c3e62",
+  "terminalSystemdSuccess": true,
+  "signedAnnouncementsBeforeStop": 4,
+  "heartbeatObservationSeconds": 193.356,
+  "stoppedObservationSeconds": 195.271,
+  "cleanupMetricsBeforeRestart": {
+    "listings": 0,
+    "visible": 0,
+    "pending": 0,
+    "challenges": 0,
+    "rateBuckets": 1,
+    "listingBytes": 0,
+    "verificationFailures": 2
+  },
+  "identityPreservedAcrossRestart": true,
+  "reregisteredWithinSeconds": 5.632,
+  "publicHttpsSignatureVerification": [
+    "before-expiry",
+    "after-restart"
+  ],
+  "publicOperationalRoutes": {
+    "/healthz": 404,
+    "/metrics": 404,
+    "/": 404
+  },
+  "restartResourceSample": "Container=mwnet-registration-game-1 Memory=8.48MiB / 512MiB CPU=29.91% Pids=5",
+  "canonicalContentLoaded": false,
+  "gameplayAcceptance": "not-tested",
+  "signedPublicEnvelopes": {
+    "before-expiry": {
+      "origin": "https://mwnet.playit.plus",
+      "operation": "announce",
+      "nonce": "6eb67c4b93d033bc6c1984450b40ad0072b8b8dac3dfbc30e9a4388f68859b9c",
+      "publicKey": "2e4dd6b4ee304bfb78a0a4378aa2aab54f228cf912a5e5f9ad10a79714f8d630",
+      "payload": "010000000d0000003230392e32352e3134312e31377da80000230000004d574e657420726567697374726174696f6e2074657374202874656d706f72617279290d000000312e302e302d616c7068612e320d000000000000001000000001000000030000000d0000004d6f72726f77696e642e65736d02000000b9f56a7b672d28340c00000054726962756e616c2e65736d0200000034f381f4ef2913210d000000426c6f6f646d6f6f6e2e65736d020000003221dd43262fb69e",
+      "signature": "932b960897fd1edd6fe3e5578320dab5226c5e6965069fd3110896eb19620b17ae5fc0531a07b6220a582bd906048bdd17d3e46ee898df8b9569778d9565ca0e"
+    },
+    "final": {
+      "origin": "https://mwnet.playit.plus",
+      "operation": "announce",
+      "nonce": "7f870d36e2fa2158ab336c4464669231f7083431c4dd58dbd492f63665191f7f",
+      "publicKey": "2e4dd6b4ee304bfb78a0a4378aa2aab54f228cf912a5e5f9ad10a79714f8d630",
+      "payload": "010000000d0000003230392e32352e3134312e31377da80000230000004d574e657420726567697374726174696f6e2074657374202874656d706f72617279290d000000312e302e302d616c7068612e320d000000000000001000000001000000030000000d0000004d6f72726f77696e642e65736d02000000b9f56a7b672d28340c00000054726962756e616c2e65736d0200000034f381f4ef2913210d000000426c6f6f646d6f6f6e2e65736d020000003221dd43262fb69e",
+      "signature": "499ff19653e4c5d67c55e9e233f84c397bf135cca5879da933d9282cd1217d0d9213fe7a10eaf900c1a2c21e25d8f2ec49d61d35ab9b40075e355f84b0fa6301"
+    }
+  }
+}
