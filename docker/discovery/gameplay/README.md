@@ -39,3 +39,19 @@ The disposable rootfs needs Python 3, Bash, coreutils, grep, tar, gzip and util-
 MWNET_GAMEPLAY_TEST_ROOTFS="$PWD/build/gameplay-helper-check/rootfs" \
   unshare --user --map-root-user --map-auto python3 CI/test_gameplay_deployment.py -v
 ```
+
+## Account password recovery
+
+`reset_account.py` is an offline administrator tool for the native credential store. It uses the existing dedicated server's Argon2id implementation, verifies the new hash, backs up an existing credential and atomically replaces only the hashed native account record. Character/world data and the separate server access password remain intact. Its account-name canonicalization matches the native byte-wise ASCII rules, including UTF-8 names. Passwords enter through stdin and never appear in command arguments, output or public checksum manifests.
+
+The NUC wrapper `run-account-reset.sh` requires a reviewed private bundle containing that script, `reset_account.py`, `verify_image.py`, a `deployment.json` copied from the accepted content manifest, and checksums for those public inputs. The operator's desired password belongs only in `.new-account-password`, mode `0600`, under the mode-0700 bundle directory. The wrapper pins the existing image, stops only the game, saves a root-private state backup, runs the reset as UID 10001 in a network-isolated container capped at one CPU and 512 MiB, and restarts the game. Restarting clears temporary in-memory authentication lockouts; rate-limit policy is unchanged. Failure restarts the previous game and keeps the private input for diagnosis/retry. Success removes the private input. If the target has no native credential, the wrapper explicitly creates one; normal login initializes or resumes character creation while retaining any existing profile.
+
+After preparing `/home/gmax/mwnet-account-reset`, run from the NUC SSH terminal:
+
+```bash
+sudo systemd-run --unit=mwnet-account-reset --collect \
+  --property=Type=oneshot --property=TimeoutStartSec=30min \
+  /bin/bash /home/gmax/mwnet-account-reset/run-account-reset.sh PublicGameplayTest
+```
+
+After a successful reset, choose **Log In** for that account and enter both the new account password and unchanged server access password. The current client clears both password fields after each attempt. `python3 CI/test_gameplay_account_reset.py` checks record/profile preservation, private backups, atomic-write failure, explicit creation, name/path validation, actual libsodium verification and native hash invocation through stdin. The disposable deployment suite also covers reset-wrapper success and failure/restart; native Argon2id execution is validated separately in the isolated runtime.

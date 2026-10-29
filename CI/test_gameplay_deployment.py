@@ -48,6 +48,11 @@ elif a[0]=='run':
     elif '/opt/registration/verify_listing.py' in a:
         if scenario=='verify-fail': sys.exit(28)
         assert '--observe' in a and a[a.index('--observe')+1]=='65'
+    elif '/opt/registration/reset_account.py' in a:
+        assert sys.stdin.buffer.read()==b'fixture-only-password\n'
+        assert a[a.index('--memory')+1]=='512m'
+        if scenario=='reset-fail': sys.exit(29)
+        print('PASS: account credential reset for FixturePlayer; Argon2id verified; gameplay profile preserved.')
     else: sys.exit('Unexpected docker run')
 elif a[0]=='inspect':
     if a[2].startswith('Running='): print('Running=true OOMKilled=false MemoryLimit=2147483648 NanoCpus=2000000000')
@@ -96,15 +101,16 @@ class DeploymentTests(unittest.TestCase):
         (self.fs / 'mockbin/docker').write_text(FAKE_DOCKER)
         (self.fs / 'mockbin/docker').chmod(0o755)
 
-    def invoke(self, scenario):
+    def invoke(self, scenario, command=None):
         (self.fs / 'mock/scenario').write_text(scenario)
         def enter():
             os.chroot(self.fs)
             os.chdir('/')
-        result = subprocess.run(['/bin/bash', '/home/gmax/mwnet-gameplay/enable-gameplay.sh'],
+        result = subprocess.run(command or ['/bin/bash', '/home/gmax/mwnet-gameplay/enable-gameplay.sh'],
                                 preexec_fn=enter, env={'PATH': '/mockbin:/usr/bin:/bin', 'HOME': '/root'},
                                 text=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, timeout=20)
         self.assertNotIn('fixture-only-access-token', result.stdout)
+        self.assertNotIn('fixture-only-password', result.stdout)
         commands = [json.loads(line) for line in (self.fs / 'mock/commands.jsonl').read_text().splitlines()]
         self.assertFalse(any(c[:2] in (['volume', 'rm'], ['system', 'prune']) for c in commands))
         return result, commands
@@ -158,6 +164,43 @@ class DeploymentTests(unittest.TestCase):
         self.assertNotEqual(result.returncode, 0)
         self.assertEqual((settings / 'compose.content.yml').read_text(), 'previous overlay\n')
         self.assertEqual((settings / 'content.env').read_text(), 'previous content location\n')
+
+    def prepare_reset(self):
+        bundle=self.fs/'home/gmax/mwnet-account-reset'
+        bundle.mkdir(mode=0o700)
+        for name in ('reset_account.py', 'run-account-reset.sh', 'verify_image.py'):
+            shutil.copy2(ROOT/'docker/discovery/gameplay'/name,bundle/name)
+        manifest=json.loads((self.bundle/'content.json').read_text())
+        (bundle/'deployment.json').write_text(json.dumps(manifest))
+        files=sorted(bundle.iterdir())
+        (bundle/'SHA256SUMS').write_text(''.join(hashlib.sha256(p.read_bytes()).hexdigest()+'  '+p.name+'\n' for p in files))
+        password=bundle/'.new-account-password'
+        password.write_bytes(b'fixture-only-password\n'); password.chmod(0o600)
+        settings=self.fs/'etc/mwnet-gameplay'
+        settings.mkdir(parents=True)
+        (settings/'content.env').write_text('unchanged content path\n')
+        (settings/'compose.content.yml').write_text('unchanged settings\n')
+        access=self.fs/'home/gmax/.mwnet-gameplay-access-password'
+        access.write_bytes(b'unchanged server access password\n')
+        return bundle,settings,access
+
+    def test_account_reset_restarts_game_and_deletes_private_input(self):
+        bundle,settings,access=self.prepare_reset()
+        result,commands=self.invoke('success',['/bin/bash','/home/gmax/mwnet-account-reset/run-account-reset.sh','FixturePlayer'])
+        self.assertEqual(result.returncode,0,result.stdout)
+        self.assertIn('temporary in-memory authentication lockouts cleared',result.stdout)
+        self.assertFalse((bundle/'.new-account-password').exists())
+        self.assertEqual(access.read_bytes(),b'unchanged server access password\n')
+        self.assertEqual((settings/'content.env').read_text(),'unchanged content path\n')
+        self.assertFalse(any('fixture-only-password' in json.dumps(c) for c in commands))
+        self.assertTrue(any((self.fs/'var/backups/mwnet-account-reset').glob('*/game-state.tar.gz')))
+
+    def test_failed_account_reset_restarts_previous_game(self):
+        bundle,_,_=self.prepare_reset()
+        result,commands=self.invoke('reset-fail',['/bin/bash','/home/gmax/mwnet-account-reset/run-account-reset.sh','FixturePlayer'])
+        self.assertNotEqual(result.returncode,0)
+        self.assertTrue((bundle/'.new-account-password').exists())
+        self.assertTrue(any(c[0]=='compose' and 'up' in c for c in commands))
 
 
 if __name__ == '__main__':
