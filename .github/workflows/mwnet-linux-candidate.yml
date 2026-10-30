@@ -31,8 +31,8 @@ jobs:
         run: docker build -f Dockerfile.mwnet -t mwnet-candidate-builder .
       - name: Build, test and package client and server
         run: |
-          mkdir -p build/linux-candidate
-          docker run --rm --entrypoint bash \
+          mkdir -p build/linux-candidate build/ccache
+          docker run --rm --user "$(id -u):$(id -g)" --entrypoint bash \
             -e GIT_CONFIG_COUNT=1 \
             -e GIT_CONFIG_KEY_0=safe.directory -e GIT_CONFIG_VALUE_0=/source \
             -e CMAKE_C_COMPILER_LAUNCHER=ccache -e CMAKE_CXX_COMPILER_LAUNCHER=ccache \
