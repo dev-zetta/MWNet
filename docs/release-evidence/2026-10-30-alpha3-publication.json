@@ -1,0 +1,99 @@
+{
+  "schemaVersion": 1,
+  "outcome": "pass",
+  "verifiedUtc": "2026-10-30T02:55:41.308519+00:00",
+  "releaseId": 428602871,
+  "releaseUrl": "https://github.com/dev-zetta/MWNet/releases/tag/v1.0.0-alpha.3",
+  "publishedAt": "2026-10-30T02:50:22Z",
+  "draft": false,
+  "prerelease": true,
+  "tag": "v1.0.0-alpha.3",
+  "tagTargetCommit": "d871d54894a0774db7dbcaedc3a0955bacbc08b3",
+  "assets": [
+    {
+      "name": "MWNet-1.0.0-alpha.3-Linux-x86_64-client-server-d871d54894.tar.gz",
+      "httpStatus": 200,
+      "bytes": 191402788,
+      "sha256": "49d78a8ef23c3965637e5b085e4091c8b318f87d2e6d855988943b6ca440ee72",
+      "githubDigestVerified": true
+    },
+    {
+      "name": "MWNet-1.0.0-alpha.3-Linux-x86_64-client-server-d871d54894.tar.gz.sha256",
+      "httpStatus": 200,
+      "bytes": 131,
+      "sha256": "b7c08cec5de15b417792f532a2c7c77fa3b064d6b0cb3773ba1b78e5006ff3c0",
+      "githubDigestVerified": true
+    },
+    {
+      "name": "MWNet-1.0.0-alpha.3-Windows-x64.zip",
+      "httpStatus": 200,
+      "bytes": 107544821,
+      "sha256": "100800c9376b4dcf8668e0b8f1984ba28c8d16563140b3837047983851a1b21e",
+      "githubDigestVerified": true
+    },
+    {
+      "name": "MWNet-1.0.0-alpha.3-Windows-x64.zip.sha256",
+      "httpStatus": 200,
+      "bytes": 103,
+      "sha256": "24eed313bcc0e50e898ebbc1a48e6449a102ecd7293a5e0ec46d95a6b19bac1f",
+      "githubDigestVerified": true
+    },
+    {
+      "name": "MWNet-1.0.0-alpha.3-macOS-arm64.dmg",
+      "httpStatus": 200,
+      "bytes": 156415100,
+      "sha256": "4973bf6caa1fc9e84e650f8b7bee069ecccc08c10fe2a55e14ad7d524bbd6814",
+      "githubDigestVerified": true
+    },
+    {
+      "name": "MWNet-1.0.0-alpha.3-macOS-arm64.dmg.sha256",
+      "httpStatus": 200,
+      "bytes": 102,
+      "sha256": "47ba1e47e412eeb80ccfded5a7f2da617215941dc71f3fb51fa1effc52f11ac0",
+      "githubDigestVerified": true
+    },
+    {
+      "name": "MWNet-1.0.0-alpha.3-macOS-x86_64.dmg",
+      "httpStatus": 200,
+      "bytes": 166436905,
+      "sha256": "279fea10652a60a7550f2214c7887120ff647d3847d507b887dfe131e4723891",
+      "githubDigestVerified": true
+    },
+    {
+      "name": "MWNet-1.0.0-alpha.3-macOS-x86_64.dmg.sha256",
+      "httpStatus": 200,
+      "bytes": 103,
+      "sha256": "21b57d019b29a5ae1b9b21ea8c21313e3936cdfe158f3c5e588d721d42c63300",
+      "githubDigestVerified": true
+    },
+    {
+      "name": "test-evidence.json",
+      "httpStatus": 200,
+      "bytes": 32559,
+      "sha256": "0c8fd08f27cc7a77ac55a083d63b0cf6bee8f71f16b47b53aec6edf607b6f824",
+      "githubDigestVerified": true
+    },
+    {
+      "name": "release-validation.json",
+      "httpStatus": 200,
+      "bytes": 9159,
+      "sha256": "4122f0b8115734107dc30884f978d3fbeb1b2cc48aa3acb8e5045f7144fb96f2",
+      "githubDigestVerified": true
+    },
+    {
+      "name": "SHA256SUMS",
+      "httpStatus": 200,
+      "bytes": 613,
+      "sha256": "7fbea955a22484b36a4d3daaeadb8c00ba79b10963bafe872b37fe6c301013d7",
+      "githubDigestVerified": true
+    }
+  ],
+  "redundantTagBuild": {
+    "runId": 40993997648,
+    "cancelledAsDuplicate": true,
+    "reason": "Exact runtime source has selected native/package, protocol/security and fresh isolated dedicated validation. Original tag workflow still has the documented dedicated target omission corrected by separate QA/CI tooling.",
+    "terminalStatus": "completed",
+    "conclusion": "cancelled"
+  },
+  "publicHttpVerification": "Unauthenticated curl with --disable, no user configuration or authentication arguments; HTTPS-only redirects and certificate verification enabled."
+}

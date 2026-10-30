@@ -8,7 +8,7 @@ MWNet 1.0 milestone acceptance proceeds sequentially. Passing a later implementa
 | --- | --- | --- |
 | `1.0.0-alpha.1` | Clean out-of-tree builds, protocol 12 only, fail-closed codec, unit/fuzz targets, loopback default | Implementation and earlier fuzz campaign present; paired native/sanitizer Linux soak passed at c978f30275; Linux discovery preview built and package-tested at e0b844eafa; cross-platform and remaining candidate evidence pending |
 | `1.0.0-alpha.2` | GameNetworkingSockets, encrypted identity handshake, TOFU and Argon2id migration | Implementation present in the development preview; milestone acceptance still requires the preceding and exact-candidate evidence |
-| `1.0.0-alpha.3` | Canonical authority, lifecycle gates, owned workers and atomic persistence | Implementation and automated encrypted integration/fault harnesses present; exact-candidate evidence pending |
+| `1.0.0-alpha.3` | Canonical authority, lifecycle gates, owned workers and atomic persistence | Development prerelease published with exact-source native/platform package validation and unattended Linux gameplay evidence; stable gates remain open |
 | `1.0.0-beta.1` | Sanitizer and fuzz gates, limited opt-in public test, independent security review | Blocked |
 | `1.0.0` | Cross-platform, soak, migration, public discovery, security, legal and documentation gates | Blocked |
 
@@ -34,6 +34,8 @@ Development candidates use the [autonomous graphical gameplay procedure](docs/AU
 CI artifacts, fuzz corpora, soak logs, performance reports and review records must identify the tested commit. Human or time-based gates may not be replaced with an unverified checklist entry.
 
 ## Recorded evidence
+
+- [October 30 alpha.3 release validation](docs/release-evidence/2026-10-30-alpha3-release.md) records the published runtime and separate QA revisions, four platform downloads, strict graphical acceptance, native/sanitizer scope and verified public asset digests. This development prerelease does not close the stable gates above.
 
 - [October 30 autonomous gameplay development validation](docs/release-evidence/2026-10-30-autonomous-gameplay.md) records the unattended procedure, regressions it found, strict rendered acceptance and canonical creation matrix. Development runs do not replace matching clean-source/package release evidence.
 

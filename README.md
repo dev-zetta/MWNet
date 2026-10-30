@@ -18,6 +18,8 @@ Current status
 
 MWNet 1.0.0-alpha.3 is a development alpha on OpenMW 0.52. Protocol 13 identifies the MWNet client/server pair and is intentionally incompatible with pre-rebrand clients, servers, and discovery signatures.
 
+[Download alpha.3](https://github.com/dev-zetta/MWNet/releases/tag/v1.0.0-alpha.3) for Linux, Windows, or Intel/Apple Silicon macOS. Checksums and scoped machine-readable test evidence accompany the packages. The [autonomous gameplay procedure](docs/AUTOMATED_GAMEPLAY.md) runs the rendered client without operator gameplay; [release validation](docs/release-evidence/2026-10-30-alpha3-release.md) records acceptance and remaining gates.
+
 The underlying OpenMW engine supports completing the main quests in Morrowind, Tribunal, and Bloodmoon. Multiplayer adds more state and authority boundaries than single-player OpenMW, so server scripts, load order, content files, and MWNet versions must match between the server and every client. A local server is recommended when testing gameplay or diagnosing synchronization problems.
 
 The major changes since the upstream 0.8.1 release include:

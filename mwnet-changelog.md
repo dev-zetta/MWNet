@@ -1,7 +1,7 @@
 1.0.0-alpha.3
 -------------
 
-This development candidate retains protocol 13. Its release evidence must identify the tested source and downloadable package hashes; the version number does not close the remaining stable-release gates.
+Published October 30, 2026 as a development prerelease retaining protocol 13. The [release record](docs/release-evidence/2026-10-30-alpha3-release.md) identifies the tested source, independent QA procedure and downloadable package hashes; the version number does not close the remaining stable-release gates.
 
 * Scope NPC movement sequences to the validated authority lease so a fresh client can reconnect without inheriting the previous authority's sequence counter, while retaining position, speed and replay checks.
 * Add opt-in loopback gameplay automation and a repeatable client/server acceptance procedure with machine-readable results and isolated test state.
