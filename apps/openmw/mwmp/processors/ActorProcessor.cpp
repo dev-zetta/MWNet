@@ -34,7 +34,13 @@ bool ActorProcessor::Process(const mwmp::transport::ReceivedApplicationPacket& p
                 myPacket->Read(packet.payload);
                 if (!decoded.isValid || !myPacket->isPacketValid())
                 {
-                    LOG_MESSAGE_SIMPLE(TimedLog::LOG_ERROR, "Received %s that failed integrity check and was ignored!", processor.second->strPacketID.c_str());
+                    LOG_MESSAGE_SIMPLE(TimedLog::LOG_ERROR,
+                        "Received %s that failed integrity check and was ignored! "
+                        "codec=%s payload_bytes=%llu model_valid=%s decoded_count=%u",
+                        processor.second->strPacketID.c_str(),
+                        protocol::describe(myPacket->getCodecError()),
+                        static_cast<unsigned long long>(packet.payload.size()),
+                        decoded.isValid ? "true" : "false", decoded.count);
                     return true;
                 }
                 static_cast<BaseActorList&>(actorList) = std::move(decoded);

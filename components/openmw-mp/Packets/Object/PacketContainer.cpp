@@ -35,6 +35,7 @@ void PacketContainer::Packet(bool send)
             || baseObject.refId.empty() || (baseObject.refNum != 0 && baseObject.mpNum != 0))
         {
             objectList->isValid = false;
+            invalidate(protocol::CodecError::InvalidValue);
             return;
         }
 

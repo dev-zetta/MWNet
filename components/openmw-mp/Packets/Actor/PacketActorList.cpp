@@ -29,6 +29,9 @@ void PacketActorList::Packet(bool send)
         if (actor.refId.empty() || (actor.refNum != 0 && actor.mpNum != 0))
         {
             actorList->isValid = false;
+            // The model flag alone does not stop prepareWrite(), or make an
+            // otherwise fully consumed invalid decode roll back atomically.
+            invalidate(protocol::CodecError::InvalidValue);
             return;
         }
 

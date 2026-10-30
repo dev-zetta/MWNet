@@ -4,6 +4,8 @@
 #include <components/openmw-mp/Packets/Actor/PacketActorSpellsActive.hpp>
 #include <components/openmw-mp/Packets/Player/PacketPlayerSpellsActive.hpp>
 #include <components/openmw-mp/Packets/Actor/PacketActorAttack.hpp>
+#include <components/openmw-mp/Packets/Actor/PacketActorList.hpp>
+#include <components/openmw-mp/Packets/Object/PacketContainer.hpp>
 #include <components/openmw-mp/Packets/Player/PacketPlayerAttack.hpp>
 
 #include <algorithm>
@@ -33,6 +35,8 @@ namespace
         {
             if constexpr (std::is_same_v<State, mwmp::BasePlayer>)
                 this->setPlayer(&state);
+            else if constexpr (std::is_same_v<State, mwmp::BaseObjectList>)
+                this->setObjectList(&state);
             else
                 this->setActorList(&state);
         }
@@ -42,6 +46,12 @@ namespace
             this->Packet(true);
             const auto bytes = this->writePayload();
             return { bytes.begin(), bytes.end() };
+        }
+        bool prepare(State& state)
+        {
+            bind(state);
+            this->Packet(true);
+            return this->prepareWrite();
         }
     };
 
@@ -254,6 +264,175 @@ namespace
         }
         return true;
     }
+
+    bool checkActorListSyncPackets()
+    {
+        EffectPacket<mwmp::PacketActorList, mwmp::BaseActorList> encoder, decoder;
+        mwmp::BaseActorList sent, received;
+        sent.cell.blank();
+        sent.cell.mData.mX = -2;
+        sent.cell.mData.mY = -9;
+        sent.authorityLeaseId = 10;
+        sent.action = mwmp::BaseActorList::SET;
+        mwmp::BaseActor actor;
+        actor.refId = "imperial guard";
+        actor.refNum = 1234;
+        auto generatedActor = actor;
+        generatedActor.refId = "rat";
+        generatedActor.refNum = 0;
+        generatedActor.mpNum = 8;
+        sent.baseActors = {actor, generatedActor};
+        received.isValid = true;
+        decoder.bind(received);
+        const auto populated = encoder.encode(sent);
+        decoder.Read(populated);
+        if (!encoder.isPacketValid() || !decoder.isPacketValid() || !received.isValid
+            || received.baseActors.size() != 2 || received.baseActors[0].refId != actor.refId
+            || received.baseActors[1].refId != "rat" || received.baseActors[1].mpNum != 8)
+            return false;
+
+        // The same reusable packet object handles a fresh authority's empty
+        // whole-cell request after it has decoded a populated cached roster.
+        sent.authorityLeaseId = 11;
+        sent.action = mwmp::BaseActorList::REQUEST;
+        sent.baseActors.clear();
+        const auto request = encoder.encode(sent);
+        decoder.Read(request);
+        if (!encoder.isPacketValid() || !decoder.isPacketValid() || !received.isValid
+            || received.action != mwmp::BaseActorList::REQUEST
+            || received.count != 0 || !received.baseActors.empty()
+            || received.authorityLeaseId != 11)
+            return false;
+
+        // A malformed follow-up may not partially replace that accepted state.
+        auto truncated = populated;
+        truncated.pop_back();
+        decoder.Read(truncated);
+        if (decoder.isPacketValid() || received.action != mwmp::BaseActorList::REQUEST
+            || !received.baseActors.empty() || received.authorityLeaseId != 11)
+            return false;
+        decoder.Read(populated);
+        return decoder.isPacketValid() && received.isValid
+            && received.baseActors.size() == 2 && received.authorityLeaseId == 10;
+    }
+
+    bool checkContainerSyncPackets()
+    {
+        EffectPacket<mwmp::PacketContainer, mwmp::BaseObjectList> encoder, decoder;
+        mwmp::BaseObjectList sent, received;
+        sent.cell.blank();
+        sent.cell.mData.mX = -2;
+        sent.cell.mData.mY = -9;
+        sent.packetOrigin = mwmp::SERVER_SCRIPT;
+        sent.action = mwmp::BaseObjectList::SET;
+        mwmp::BaseObject chest;
+        chest.refId = "com_chest_01";
+        chest.refNum = 125;
+        mwmp::ContainerItem item;
+        item.refId = "gold_001";
+        item.count = 20;
+        item.charge = -1;
+        item.enchantmentCharge = -1;
+        chest.containerItems = {item};
+        auto emptyGenerated = chest;
+        emptyGenerated.refId = "com_barrel_01";
+        emptyGenerated.refNum = 0;
+        emptyGenerated.mpNum = 9;
+        emptyGenerated.containerItems.clear();
+        sent.baseObjects = {chest, emptyGenerated};
+        received.isValid = true;
+        decoder.bind(received);
+        const auto populated = encoder.encode(sent);
+        decoder.Read(populated);
+        if (!encoder.isPacketValid() || !decoder.isPacketValid() || !received.isValid
+            || received.baseObjects.size() != 2
+            || received.baseObjects[0].containerItems.size() != 1
+            || received.baseObjects[0].containerItems[0].count != 20
+            || !received.baseObjects[1].containerItems.empty()
+            || received.baseObjects[1].mpNum != 9)
+            return false;
+
+        sent.action = mwmp::BaseObjectList::REQUEST;
+        sent.containerSubAction = mwmp::BaseObjectList::NONE;
+        sent.baseObjects.clear();
+        const auto request = encoder.encode(sent);
+        decoder.Read(request);
+        if (!encoder.isPacketValid() || !decoder.isPacketValid() || !received.isValid
+            || received.action != mwmp::BaseObjectList::REQUEST
+            || received.baseObjectCount != 0 || !received.baseObjects.empty())
+            return false;
+
+        auto truncated = populated;
+        truncated.pop_back();
+        decoder.Read(truncated);
+        if (decoder.isPacketValid() || received.action != mwmp::BaseObjectList::REQUEST
+            || !received.baseObjects.empty())
+            return false;
+        decoder.Read(populated);
+        return decoder.isPacketValid() && received.isValid
+            && received.baseObjects.size() == 2
+            && received.baseObjects[0].containerItems.size() == 1;
+    }
+
+    bool checkInvalidSyncPacketsCannotBeSent()
+    {
+        EffectPacket<mwmp::PacketActorList, mwmp::BaseActorList> actorEncoder;
+        EffectPacket<mwmp::PacketContainer, mwmp::BaseObjectList> objectEncoder;
+        EffectPacket<mwmp::PacketActorList, mwmp::BaseActorList> actorDecoder;
+        EffectPacket<mwmp::PacketContainer, mwmp::BaseObjectList> objectDecoder;
+        mwmp::BaseActorList acceptedActors;
+        acceptedActors.isValid = true;
+        acceptedActors.authorityLeaseId = 17;
+        actorDecoder.bind(acceptedActors);
+        mwmp::BaseObjectList acceptedObjects;
+        acceptedObjects.isValid = true;
+        acceptedObjects.action = mwmp::BaseObjectList::REQUEST;
+        objectDecoder.bind(acceptedObjects);
+        for (bool missingRefId : {false, true})
+        {
+            mwmp::BaseActorList actors;
+            actors.cell.blank();
+            actors.isValid = true;
+            mwmp::BaseActor actor;
+            actor.refId = missingRefId ? "" : "guard";
+            actor.refNum = 123;
+            actor.mpNum = missingRefId ? 0 : 456;
+            actors.baseActors = {actor};
+            if (actorEncoder.prepare(actors) || actorEncoder.isPacketValid()
+                || actorEncoder.getCodecError() != mwmp::protocol::CodecError::InvalidValue)
+            {
+                std::cerr << "Invalid actor roster can escape as a partial outbound packet\n";
+                return false;
+            }
+            // A peer may still send these malformed bytes. The decode must
+            // fail atomically rather than commit a model with isValid=false.
+            actorDecoder.Read(actorEncoder.encode(actors));
+            if (actorDecoder.isPacketValid() || !acceptedActors.isValid
+                || acceptedActors.authorityLeaseId != 17 || !acceptedActors.baseActors.empty())
+                return false;
+
+            mwmp::BaseObjectList objects;
+            objects.cell.blank();
+            objects.isValid = true;
+            mwmp::BaseObject object;
+            object.refId = actor.refId;
+            object.refNum = actor.refNum;
+            object.mpNum = actor.mpNum;
+            objects.baseObjects = {object};
+            if (objectEncoder.prepare(objects) || objectEncoder.isPacketValid()
+                || objectEncoder.getCodecError() != mwmp::protocol::CodecError::InvalidValue)
+            {
+                std::cerr << "Invalid container can escape as a partial outbound packet\n";
+                return false;
+            }
+            objectDecoder.Read(objectEncoder.encode(objects));
+            if (objectDecoder.isPacketValid() || !acceptedObjects.isValid
+                || acceptedObjects.action != mwmp::BaseObjectList::REQUEST
+                || !acceptedObjects.baseObjects.empty())
+                return false;
+        }
+        return true;
+    }
 }
 
 int main()
@@ -266,5 +445,10 @@ int main()
     const bool batch = checkCastBatchSurvivesScriptEvent();
     if (!batch)
         std::cerr << "Publishing NPC effects destroyed the remaining cast batch\n";
-    return forward && reverse && spells && batch && checkPlayerFistPackets() ? 0 : 1;
+    const bool actors = checkActorListSyncPackets();
+    const bool containers = checkContainerSyncPackets();
+    if (!actors || !containers)
+        std::cerr << "Actor/container synchronization request or cached-state round trip failed\n";
+    return forward && reverse && spells && batch && actors && containers
+        && checkInvalidSyncPacketsCannotBeSent() && checkPlayerFistPackets() ? 0 : 1;
 }
