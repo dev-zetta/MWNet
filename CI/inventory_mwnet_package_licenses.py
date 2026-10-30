@@ -30,6 +30,7 @@ MARKERS = {
     "yaml-cpp-Jesse-Beder": "2008-2015 Jesse Beder",
     "Recast-Mikko-Mononen": "2009 Mikko Mononen",
     "dkjson-David-Kolf": "2010-2013 David Heiko Kolf",
+    "MyGUI-Developers": "2007-2013 MyGUI Developers",
     "LGPL-title": "GNU LESSER GENERAL PUBLIC LICENSE",
     "OpenSSL": "OpenSSL",
 }

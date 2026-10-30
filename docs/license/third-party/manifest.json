@@ -28,6 +28,16 @@
       "sourcePinFile": "extern/CMakeLists.txt",
       "sourcePin": "03259f3287ff8330f0d66fcd98d022edddffaa97",
       "upstreamSourceArchive": "https://github.com/OpenMW/recastnavigation/archive/03259f3287ff8330f0d66fcd98d022edddffaa97.tar.gz"
+    },
+    {
+      "name": "MyGUI",
+      "licenseFile": "MyGUI-3.4.3-LICENSE.txt",
+      "sha256": "b1f990c5e6b217bd96b8b83be4627201cd0c566cb691b65140f8bdcb6c4397ee",
+      "upstreamNotice": "https://github.com/MyGUI/mygui/blob/MyGUI3.4.3/COPYING.MIT",
+      "sourcePinFile": "extern/CMakeLists.txt",
+      "sourcePin": "MyGUI3.4.3",
+      "upstreamSourceArchive": "https://github.com/MyGUI/mygui/archive/refs/tags/MyGUI3.4.3.zip",
+      "sourceArchiveSha512": "c804ef665e786076582367f171082cd2181fdbd214300ddcca4a4245c5a0f45e62e72778ee2d96ec46b393e22477dd729f9bb3006e6eecbf536674e34a057721"
     }
   ]
 }

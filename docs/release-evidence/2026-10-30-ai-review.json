@@ -29,13 +29,17 @@
     "apps/mwnet_tests/actor_packets.cpp": "a50b43f5399f4158b654d2fc5e3035ddc426b34d4213351b54cc75fcec036c4c",
     "apps/mwnet_tests/discovery.cpp": "45c325398340e378a2aa6f54c81b52af98b5c6fb74c74ed949bd201cd60e361f",
     "CI/package_mwnet_linux.py": "319a90877a01a2de21885ec564461cea1e35964591d0cbca03e4ce3bb7f7d903",
-    "CI/collect_mwnet_third_party_notices.py": "aa972cb19edbdf6b44de0f1d8facb48488835393a6e3ae13bfb0f1a03359c085",
-    "CI/inventory_mwnet_package_licenses.py": "f7c06fcf42220b2f59b75885814fe5b78d5f159850daff56201d579aae6d5ccf",
-    "CI/test_mwnet_package_notices.py": "9e9fb67019b1288e3ed29e4da8e24e922764097c336fdc83c57d2807c1ec5c8f",
-    "docs/license/third-party/manifest.json": "12e426aa40cf9e550f565db1337220ff5109fd0ca4f8c6ca96402549adb290f5",
+    "CI/collect_mwnet_third_party_notices.py": "0ca53c5e3edea526b38acafc3feaae9f93c20c82c30721379ae16b513a72afa1",
+    "CI/inventory_mwnet_package_licenses.py": "6a79bb36a2029bed9fa8fe3f7b1c734f21996aa31a5b31868745eb74de747065",
+    "CI/test_mwnet_package_notices.py": "2da22a50c3f325ac9de07999bb2c0fa5e303d1063476ba803d9a94d86c4d9aa8",
+    "docs/license/third-party/manifest.json": "9e53c5f37be9bb3dfef93fcc6fcac3ba10613daa90b05bb6ed2d3c8f4b19f1fc",
     "apps/mwnet-directory/CMakeLists.txt": "bc10de1074e9072cb13b02f2c2da6eb95789b83e6296f5f30796773d3e0f417b",
     ".github/workflows/mwnet-release-package.yml": "404a1a75931dd942794c24d0474123707072189cf8a3e9abd71d8a34f2af0c51",
-    ".github/workflows/push.yml": "b7fb8e2bb13cb79c9bec6ad2d6e23a65ab6d641d88dea42395c5ec581f4f40cc"
+    ".github/workflows/push.yml": "b7fb8e2bb13cb79c9bec6ad2d6e23a65ab6d641d88dea42395c5ec581f4f40cc",
+    "docs/license/third-party/GNS-LICENSE.txt": "6fedd796d51d7f996e0b3dc7c1c9f6a67603bec7a2cfb9f418e0c6607a1ca647",
+    "docs/license/third-party/yaml-cpp-LICENSE.txt": "aa6fcc27be034e41e21dd832f9175bfe694a48491d9e14ff0fa278e19ad14f1b",
+    "docs/license/third-party/Recast-LICENSE.txt": "ffad87821cce7cfd3be00b63ffadd01b04e83a4c6a0bcc68f06362ffd42d705e",
+    "docs/license/third-party/MyGUI-3.4.3-LICENSE.txt": "b1f990c5e6b217bd96b8b83be4627201cd0c566cb691b65140f8bdcb6c4397ee"
   },
   "localEvidenceSha256": {
     "build/ecc-review/installation.json": "ef670893b6e1615cea6ea4feeda315bdaaa8f72f944fd8c91ea3e3c25bc87364",
@@ -48,7 +52,9 @@
     "build/ecc-review/licensing/package-inventory.json": "db6aaf09b889182587ecd5b632e0393f7d8c88b73d4a1bc2f07a4b8aa6c215e3",
     "build/ecc-review/licensing/sdk-dependency-map.json": "568853d20179f65cfe1cd49fe5c4e8365af4e0fcf9f1a864529d212c072c6d7a",
     "build/ecc-review/licensing/linux-notices-final15-receipt.json": "429767a1e1a65e3072266b5da74f5baf104ed8f0521b0f96a6f7c69b7565d9de",
-    "build/ecc-review/licensing/gns-selected-implementation.json": "e171da2bffc41e65fcb0b720be140fa00f443bd2f650e821a3b2096766f1eb58"
+    "build/ecc-review/licensing/gns-selected-implementation.json": "e171da2bffc41e65fcb0b720be140fa00f443bd2f650e821a3b2096766f1eb58",
+    "build/ecc-review/licensing/linux-notices-final16-receipt.json": "93a6c08d0a2f7b6c1305b6ce7155aad0fd2679a9cd4531eabe9d2849781b77d9",
+    "build/ecc-review/licensing/mygui-static-gap.json": "ce7a411ec0cf6f40d68d20e8906398789dea8a6f576687ee9694deaa5470e7f2"
   },
   "regressions": {
     "nativeSuitesPassed": 6,
@@ -56,7 +62,7 @@
     "asanUbsanSuitesPassed": 2,
     "asanUbsanSeconds": 8.56,
     "operatorTestsPassed": 37,
-    "linuxPackagingTestsPassed": 4,
+    "linuxPackagingTestsPassed": 5,
     "authCapacityFailsBeforePassesAfter": true,
     "directoryStructureFailsBeforePassesAfter": true,
     "clientManifestCodecRoleCasesPassed": true,
@@ -67,11 +73,12 @@
     "mainLicenseSha256": "98f242648272e2e02aa9cf2d907eff760d32d6201080edb752367c57cbbc46f8",
     "inheritedFrom": "19998f841321891f461ae3dbe681b83d42389cc0",
     "mainLicenseChanged": false,
-    "noticeInputs": 15,
-    "stagedNoticeOnlyArchiveSha256": "b29a6c92cb21ade68a5ac5af72ccc0d2372c446f7b934af1bf2978483baf754f",
+    "noticeInputs": 16,
+    "stagedNoticeOnlyArchiveSha256": "2ad691a95f13bf64ae07ef407b86daa6b9bb4563cfa358955317eb502215dac7",
     "publishedArchiveModified": false,
     "windowsMacNoticeSourceDeliveryComplete": false,
-    "allHistoricalCopyrightAuthorityProven": false
+    "allHistoricalCopyrightAuthorityProven": false,
+    "staticMyGuiGapCorrected": true
   },
   "remaining": [
     "Clean corrected candidate rendered/package acceptance",

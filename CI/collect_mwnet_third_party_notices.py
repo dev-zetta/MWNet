@@ -85,11 +85,16 @@ def main() -> None:
         source = subprocess.check_output(["git", "-C", str(args.source_dir), "show", revision + ":" + entry["sourcePinFile"]])
         if entry["sourcePin"].encode() not in source:
             raise ValueError("Static notice pin differs from runtime source: " + entry["name"])
+        archive_sha512 = entry.get("sourceArchiveSha512")
+        if archive_sha512 is not None and ("SHA512=" + archive_sha512).encode() not in source:
+            raise ValueError("Static notice archive pin differs from runtime source: " + entry["name"])
         data = (args.static_manifest.parent / entry["licenseFile"]).read_bytes()
         if sha256(data) != entry["sha256"]:
             raise ValueError("Static notice bytes differ from reviewed input: " + entry["name"])
         add(entry["name"], entry["upstreamNotice"], data, data)
         inputs[-1]["sourceArchive"] = entry["upstreamSourceArchive"]
+        if archive_sha512 is not None:
+            inputs[-1]["sourceArchiveSha512"] = archive_sha512
     for root in args.sdk_root:
         for path in sorted(root.rglob("copyright")):
             if path.parent.parent.name != "share":

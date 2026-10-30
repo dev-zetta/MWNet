@@ -74,13 +74,15 @@ class NoticeDelivery(unittest.TestCase):
             provenance = json.loads(read("licenses/notice-inputs.json"))
             self.assertEqual(provenance["runtimeSourceCommit"], self.revision)
             self.assertEqual(provenance["noticeSha256"], hashlib.sha256(notices).hexdigest())
-            self.assertEqual(len(provenance["inputs"]), 15)
+            self.assertEqual(len(provenance["inputs"]), 16)
+            mygui = next(p for p in provenance["inputs"] if p["label"] == "MyGUI")
+            self.assertIn(mygui["sourceArchiveSha512"], (ROOT / "extern/CMakeLists.txt").read_text())
             dkjson_path = "files/mwnet/core-scripts/lib/lua/dkjson.lua"
             self.assertEqual(read(dkjson_path), (ROOT / dkjson_path).read_bytes())
             for key, marker in INVENTORY.MARKERS.items():
                 if key not in {"LGPL-title", "OpenSSL"}:
                     self.assertIn(marker.casefold().encode(), notices.lower())
-            for word in (b"yaml-cpp", b"RecastNavigation", b"GameNetworkingSockets"):
+            for word in (b"yaml-cpp", b"RecastNavigation", b"GameNetworkingSockets", b"MyGUI"):
                 self.assertIn(word, read("licenses/FETCHED_SOURCES.txt"))
             self.assertIn(self.revision.encode(), read("CORRESPONDING_SOURCE.txt"))
             self.assertIn(b"CI/build_mwnet_linux.sh and Dockerfile.mwnet", read("CORRESPONDING_SOURCE.txt"))
@@ -118,6 +120,9 @@ class NoticeDelivery(unittest.TestCase):
 
     def test_stale_dependency_pin_fails_before_output(self):
         self.reject_manifest(lambda j: j["entries"][0].update(sourcePin="invalid-source-pin"), "pin differs from runtime source")
+
+    def test_stale_mygui_archive_pin_fails_before_output(self):
+        self.reject_manifest(lambda j: next(e for e in j["entries"] if e["name"] == "MyGUI").update(sourceArchiveSha512="0" * 128), "archive pin differs from runtime source")
 
 
 if __name__ == "__main__":
