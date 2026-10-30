@@ -1,0 +1,5 @@
+# Corrected candidate CI completion
+
+The [Build and test run 41133325870](https://github.com/dev-zetta/MWNet/actions/runs/41133325870) completed successfully at 22:38:44 UTC on October 30, 2026 for frozen source `dd1fd12cebcaf8a880b1e56f559891315ec3f062`. All eleven jobs passed: SourceChecks, protocol GCC/Clang/MSVC, protocol ASan/UBSan, TSan, security fuzz smoke, Ubuntu, Windows 2022 and both macOS runner builds. The [structured receipt](2026-10-30-corrected-candidate-ci.json) records exact job identities and the metadata digest.
+
+This closes the pending CI outcomes noted in the [corrected candidate checkpoint](2026-10-30-post-review-candidate.md). The separate eight-hour synthetic transport/directory run remains running and unaccepted at this update; its full elapsed duration, resource, recovery, identity and cleanup criteria still apply. Platform builds do not establish Windows/macOS rendered gameplay or resolve their bundled notice/source delivery corrections. No source, binaries, public releases, live services or historical run evidence changed, and stable publication is not approved by this CI result.

@@ -1,0 +1,84 @@
+{
+  "schemaVersion": 1,
+  "recordedUtc": "2026-10-30T22:57:44.747249+00:00",
+  "runtimeSourceCommit": "dd1fd12cebcaf8a880b1e56f559891315ec3f062",
+  "workflow": "Build and test",
+  "runId": 41133325870,
+  "url": "https://github.com/dev-zetta/MWNet/actions/runs/41133325870",
+  "status": "completed",
+  "conclusion": "success",
+  "updatedAt": "2026-10-30T22:38:44Z",
+  "jobCount": 11,
+  "jobs": [
+    {
+      "name": "SourceChecks",
+      "status": "completed",
+      "conclusion": "success",
+      "databaseId": 124329537779
+    },
+    {
+      "name": "protocol-clang-asan-ubsan",
+      "status": "completed",
+      "conclusion": "success",
+      "databaseId": 124329538004
+    },
+    {
+      "name": "protocol-clang-tsan",
+      "status": "completed",
+      "conclusion": "success",
+      "databaseId": 124329538089
+    },
+    {
+      "name": "MacOS (macos-15) / macos-15",
+      "status": "completed",
+      "conclusion": "success",
+      "databaseId": 124329538094
+    },
+    {
+      "name": "protocol-security-fuzz-smoke",
+      "status": "completed",
+      "conclusion": "success",
+      "databaseId": 124329538166
+    },
+    {
+      "name": "Ubuntu",
+      "status": "completed",
+      "conclusion": "success",
+      "databaseId": 124329538239
+    },
+    {
+      "name": "protocol-gcc-none",
+      "status": "completed",
+      "conclusion": "success",
+      "databaseId": 124329538305
+    },
+    {
+      "name": "protocol-msvc",
+      "status": "completed",
+      "conclusion": "success",
+      "databaseId": 124329538377
+    },
+    {
+      "name": "MacOS (macos-15-intel) / macos-15-intel",
+      "status": "completed",
+      "conclusion": "success",
+      "databaseId": 124329538379
+    },
+    {
+      "name": "protocol-clang-none",
+      "status": "completed",
+      "conclusion": "success",
+      "databaseId": 124329538410
+    },
+    {
+      "name": "Windows (2022) / windows-2022",
+      "status": "completed",
+      "conclusion": "success",
+      "databaseId": 124329538484
+    }
+  ],
+  "metadataSha256": "438b5b13b7fe9b5e5b13117fe788f029b7c53a0b54afc68dd8f6dddd00b0dcfe",
+  "scope": "Source checks, protocol tests/sanitizers/fuzz smoke and platform build jobs; not graphical acceptance or licensing clearance for Windows/macOS",
+  "overnightAccepted": false,
+  "stableApproved": false
+}
