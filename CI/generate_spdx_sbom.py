@@ -107,8 +107,9 @@ def generate(root: pathlib.Path) -> dict[str, object]:
             mwnet_version,
             f"git+{REPOSITORY}.git@{revision}" if REPOSITORY else "NOASSERTION",
             comment=(
-                "License terms are recorded in LICENSE. Specialist review of the "
-                "MWNet additional GPL terms remains a stable-release gate."
+                "License terms are recorded in LICENSE. The inherited TES3MP "
+                "additional terms and platform redistribution obligations are "
+                "tracked in RELEASE_GATES.md."
             ),
             purl=f"pkg:generic/mwnet@{mwnet_version}?vcs_revision={revision}",
         ),

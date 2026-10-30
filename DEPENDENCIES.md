@@ -15,7 +15,7 @@ The FetchContent fallback is disabled by default. Release and CI builds must res
 
 OpenMW's inherited dependencies remain documented by its build system, platform dependency manifests and third-party notices. The release SBOM supplements those sources; it does not replace license texts or attribution requirements.
 
-Stable release requires documented resolution of the inherited TES3MP additional terms and applicable third-party distribution notices under the [release policy](RELEASE_GATES.md). The [focused review brief](docs/RELEASE_REVIEW.md) identifies the concrete questions; specialist review is needed where their resolution depends on legal interpretation. The repository does not declare that work complete.
+Stable release requires documented resolution of the inherited TES3MP additional terms and applicable third-party distribution notices under the [release policy](RELEASE_GATES.md). The [AI assessment](docs/release-evidence/2026-10-30-ai-review.md) records inherited-term provenance and textual interpretation, Linux notice delivery and remaining Windows/macOS bundled source/notice corrections. Experimental platform labels do not waive distribution duties; an SBOM is not a substitute for those materials.
 
 Generate the source SPDX 2.3 inventory with:
 

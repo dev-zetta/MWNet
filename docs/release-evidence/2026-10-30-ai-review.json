@@ -1,0 +1,83 @@
+{
+  "schemaVersion": 1,
+  "date": "2026-10-30",
+  "method": "Maintainer-authorized AI engineering review; not independent human review or legal certification",
+  "baselineRuntime": "d871d54894a0774db7dbcaedc3a0955bacbc08b3",
+  "startingCheckout": "6d35f2ddd16841385e1759f45e892d2b07b3e629",
+  "securityRemediationCommit": "2b439461824448731136debc3ce5e13a886d2374",
+  "ecc": {
+    "repository": "https://github.com/affaan-m/ECC",
+    "sourceCommit": "b38be6a7f6350964d59328b52f0624e1d1d552d1",
+    "version": "2.2.3",
+    "nativePlugin": "ecc@ecc",
+    "selectedSkills": [
+      "security-review",
+      "production-audit",
+      "cpp-coding-standards",
+      "cpp-testing",
+      "verification-loop"
+    ],
+    "pinnedSkillBytesVerified": true
+  },
+  "reviewedFileSha256": {
+    "components/openmw-mp/Security/AuthenticationRateLimiter.cpp": "567f62821cb4b051b7cce0ca9f0a558410b0a4d1c34989a7c88f846959534fca",
+    "components/openmw-mp/Packets/PacketPreInit.cpp": "58300999e15656fecba0639554cc5b08aa13d4a94f8735b87a2624de0b229e48",
+    "components/openmw-mp/Packets/PacketPreInit.hpp": "521f078a1636f5770709598be90647b8e3d70aa83cff723e34eed9d2d6167ced",
+    "apps/openmw-mp/Networking.cpp": "3576540cf35e33087eeb305cb9fd69fafccf7cbb38d66685ab618592a5dfe46f",
+    "components/openmw-mp/Discovery/Protocol.cpp": "92feb3e209e0f3e77637b4c70e630fd63a64054c4cadd9617bf9492c87465052",
+    "apps/mwnet_tests/authentication.cpp": "f24410868e9ab708b9ec542562a2dda1acae3e10d6e293d2fe6a0d7e16ff398c",
+    "apps/mwnet_tests/actor_packets.cpp": "a50b43f5399f4158b654d2fc5e3035ddc426b34d4213351b54cc75fcec036c4c",
+    "apps/mwnet_tests/discovery.cpp": "45c325398340e378a2aa6f54c81b52af98b5c6fb74c74ed949bd201cd60e361f",
+    "CI/package_mwnet_linux.py": "319a90877a01a2de21885ec564461cea1e35964591d0cbca03e4ce3bb7f7d903",
+    "CI/collect_mwnet_third_party_notices.py": "aa972cb19edbdf6b44de0f1d8facb48488835393a6e3ae13bfb0f1a03359c085",
+    "CI/inventory_mwnet_package_licenses.py": "f7c06fcf42220b2f59b75885814fe5b78d5f159850daff56201d579aae6d5ccf",
+    "CI/test_mwnet_package_notices.py": "9e9fb67019b1288e3ed29e4da8e24e922764097c336fdc83c57d2807c1ec5c8f",
+    "docs/license/third-party/manifest.json": "12e426aa40cf9e550f565db1337220ff5109fd0ca4f8c6ca96402549adb290f5",
+    "apps/mwnet-directory/CMakeLists.txt": "bc10de1074e9072cb13b02f2c2da6eb95789b83e6296f5f30796773d3e0f417b",
+    ".github/workflows/mwnet-release-package.yml": "404a1a75931dd942794c24d0474123707072189cf8a3e9abd71d8a34f2af0c51",
+    ".github/workflows/push.yml": "b7fb8e2bb13cb79c9bec6ad2d6e23a65ab6d641d88dea42395c5ec581f4f40cc"
+  },
+  "localEvidenceSha256": {
+    "build/ecc-review/installation.json": "ef670893b6e1615cea6ea4feeda315bdaaa8f72f944fd8c91ea3e3c25bc87364",
+    "build/ecc-review/auth-rate-before.log": "b74a167acc104001c95d516667aa90cb39e186eb017a30cf32c52ac58f171121",
+    "build/ecc-review/native-after.log": "76a8d6fe89ad37b487716b2c84ed5c1efd009ba56d4bfdca919db2d84abc07d3",
+    "build/ecc-review/native-all-current.log": "9ca0817fefc85d9a17c9671bb00f26cd45e159c257183af1e802c66e7c7088a2",
+    "build/ecc-review/sanitizers-after.log": "d25399ddff344a37c63a6e1b99cf32339a0ad3947557b4680906cbd77876c93b",
+    "build/ecc-review/directory/review-receipt.json": "b3ef9d82875ad647ccad593a2c856ea6d3f78cbc665507ee48fcd747d5a7bba3",
+    "build/ecc-review/directory/full-regression-red.json": "9c89e76c94f4a5fbe1484a40cf63cea2c4677b35944073554ec4b3674017df69",
+    "build/ecc-review/licensing/package-inventory.json": "db6aaf09b889182587ecd5b632e0393f7d8c88b73d4a1bc2f07a4b8aa6c215e3",
+    "build/ecc-review/licensing/sdk-dependency-map.json": "568853d20179f65cfe1cd49fe5c4e8365af4e0fcf9f1a864529d212c072c6d7a",
+    "build/ecc-review/licensing/linux-notices-final15-receipt.json": "429767a1e1a65e3072266b5da74f5baf104ed8f0521b0f96a6f7c69b7565d9de",
+    "build/ecc-review/licensing/gns-selected-implementation.json": "e171da2bffc41e65fcb0b720be140fa00f443bd2f650e821a3b2096766f1eb58"
+  },
+  "regressions": {
+    "nativeSuitesPassed": 6,
+    "nativeSeconds": 18.15,
+    "asanUbsanSuitesPassed": 2,
+    "asanUbsanSeconds": 8.56,
+    "operatorTestsPassed": 37,
+    "linuxPackagingTestsPassed": 4,
+    "authCapacityFailsBeforePassesAfter": true,
+    "directoryStructureFailsBeforePassesAfter": true,
+    "clientManifestCodecRoleCasesPassed": true,
+    "allComponentSanitizerCoverage": false,
+    "cleanCandidateAcceptance": false
+  },
+  "licensing": {
+    "mainLicenseSha256": "98f242648272e2e02aa9cf2d907eff760d32d6201080edb752367c57cbbc46f8",
+    "inheritedFrom": "19998f841321891f461ae3dbe681b83d42389cc0",
+    "mainLicenseChanged": false,
+    "noticeInputs": 15,
+    "stagedNoticeOnlyArchiveSha256": "b29a6c92cb21ade68a5ac5af72ccc0d2372c446f7b934af1bf2978483baf754f",
+    "publishedArchiveModified": false,
+    "windowsMacNoticeSourceDeliveryComplete": false,
+    "allHistoricalCopyrightAuthorityProven": false
+  },
+  "remaining": [
+    "Clean corrected candidate rendered/package acceptance",
+    "Sustained-operation acceptance for corrected runtime",
+    "Verify selected distribution source/notices; complete native-platform bundled delivery before next native-platform release",
+    "Live update requires separately verified deployment; existing public archives and NUC were not changed"
+  ],
+  "stableApproved": false
+}

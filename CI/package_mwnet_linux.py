@@ -9,6 +9,7 @@ import platform
 import re
 import shutil
 import subprocess
+import sys
 import tarfile
 import tempfile
 
@@ -65,6 +66,27 @@ def main():
         shutil.copy2(binary, root / 'build/mwnet-server')
         for filename in ('mwnet-server-default.cfg', 'defaults.bin'):
             shutil.copy2(build / filename, root / 'build' / filename)
+        # Compiled header-only/static dependencies retain their own notice duties
+        # even though this preview does not redistribute shared runtime libraries.
+        # Read notices from the exact runtime revision; fetched dependency texts
+        # are hash checked against their source pins by the packaging tool.
+        subprocess.run([sys.executable, str(Path(__file__).with_name('collect_mwnet_third_party_notices.py')),
+                        '--source-dir', str(source), '--source-ref', args.commit,
+                        '--output-dir', str(root / 'licenses')], check=True)
+        (root / 'CORRESPONDING_SOURCE.txt').write_text(
+            f'MWNet runtime source revision: {args.commit}\n'
+            f'https://github.com/dev-zetta/MWNet/tree/{args.commit}\n'
+            f'https://github.com/dev-zetta/MWNet/archive/{args.commit}.tar.gz\n\n'
+            'The source tree contains the build/install scripts and pinned fetched dependency\n'
+            'locations in extern/CMakeLists.txt and cmake/MWNetDependencies.cmake. For a Git\n'
+            'checkout, use git submodule update --init --recursive before building. See\n'
+            'CI/build_mwnet_linux.sh and Dockerfile.mwnet for the Linux client build.\n'
+            'Pinned fetched component source archives are listed in\n'
+            'licenses/FETCHED_SOURCES.txt.\n\n'
+            'Shared runtime libraries are not included in this archive. The required system\n'
+            'libraries are listed in runtime-dependencies.txt. Obtain matching source from\n'
+            'the distributors of the system packages you install. Third-party copyright and\n'
+            'license texts for compiled source components are in licenses/.\n')
         for filename in ('run-mwnet-server.sh', 'LICENSE', 'mwnet-credits.md', 'AUTHORS.md', 'DEPENDENCIES.md',
                          'RELEASE_GATES.md', 'LUA_API_COMPATIBILITY.md'):
             shutil.copy2(source / filename, root / filename)

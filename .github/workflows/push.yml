@@ -31,6 +31,9 @@ jobs:
     - name: Check upstream Lua function compatibility
       run: CI/check_mwnet_lua_api.sh
 
+    - name: Verify Linux package notice and source delivery
+      run: python3 CI/test_mwnet_package_notices.py
+
     - name: Generate SPDX SBOM
       run: python3 CI/generate_spdx_sbom.py --output build-metadata/mwnet.spdx.json
 

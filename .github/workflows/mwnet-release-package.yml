@@ -65,6 +65,8 @@ jobs:
           test "${#image[@]}" -eq 1
           hdiutil attach "${image[0]}" -mountpoint "$PWD/mounted" -nobrowse
           ditto mounted package
+          rm -f package/bin/mwnet-directory
+          rmdir package/bin 2>/dev/null || true
           hdiutil detach "$PWD/mounted"
           echo "PACKAGE_NAME=$(basename "${image[0]}")" >> "$GITHUB_ENV"
       - name: Seed pristine server profile

@@ -1,0 +1,33 @@
+{
+  "schemaVersion": 1,
+  "scope": "Verbatim notice inputs for fetched compiled dependencies; does not replace platform SDK notices or corresponding source.",
+  "entries": [
+    {
+      "name": "GameNetworkingSockets",
+      "licenseFile": "GNS-LICENSE.txt",
+      "sha256": "6fedd796d51d7f996e0b3dc7c1c9f6a67603bec7a2cfb9f418e0c6607a1ca647",
+      "upstreamNotice": "https://github.com/ValveSoftware/GameNetworkingSockets/blob/fa489fd2cb0fc86ef2503e330935d3eb03a6a064/LICENSE",
+      "sourcePinFile": "cmake/MWNetDependencies.cmake",
+      "sourcePin": "fa489fd2cb0fc86ef2503e330935d3eb03a6a064",
+      "upstreamSourceArchive": "https://github.com/ValveSoftware/GameNetworkingSockets/archive/fa489fd2cb0fc86ef2503e330935d3eb03a6a064.tar.gz"
+    },
+    {
+      "name": "yaml-cpp",
+      "licenseFile": "yaml-cpp-LICENSE.txt",
+      "sha256": "aa6fcc27be034e41e21dd832f9175bfe694a48491d9e14ff0fa278e19ad14f1b",
+      "upstreamNotice": "https://github.com/jbeder/yaml-cpp/blob/c2680200486572baf8221ba052ef50b58ecd816e/LICENSE",
+      "sourcePinFile": "extern/CMakeLists.txt",
+      "sourcePin": "c2680200486572baf8221ba052ef50b58ecd816e",
+      "upstreamSourceArchive": "https://github.com/jbeder/yaml-cpp/archive/c2680200486572baf8221ba052ef50b58ecd816e.tar.gz"
+    },
+    {
+      "name": "RecastNavigation",
+      "licenseFile": "Recast-LICENSE.txt",
+      "sha256": "ffad87821cce7cfd3be00b63ffadd01b04e83a4c6a0bcc68f06362ffd42d705e",
+      "upstreamNotice": "https://github.com/OpenMW/recastnavigation/blob/03259f3287ff8330f0d66fcd98d022edddffaa97/License.txt",
+      "sourcePinFile": "extern/CMakeLists.txt",
+      "sourcePin": "03259f3287ff8330f0d66fcd98d022edddffaa97",
+      "upstreamSourceArchive": "https://github.com/OpenMW/recastnavigation/archive/03259f3287ff8330f0d66fcd98d022edddffaa97.tar.gz"
+    }
+  ]
+}

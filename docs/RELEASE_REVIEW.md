@@ -1,12 +1,12 @@
 # Focused stable-release review brief
 
-Prepared October 30, 2026 for the narrower [stable-release policy](../RELEASE_GATES.md). This is a handoff document and source inventory, not an independent security assessment or a legal signoff. No reviewer has been assigned and no external contact or paid engagement is authorized by this document.
+Prepared October 30, 2026 for the narrower [stable-release policy](../RELEASE_GATES.md). This was the initial review brief. The maintainer subsequently authorized AI review using ECC; its [completed assessment](release-evidence/2026-10-30-ai-review.md) records findings, corrections, licence provenance and remaining distribution work. No independent human assessment, legal certification, external contact or paid engagement is claimed.
 
 The initial runtime under review is `d871d54894a0774db7dbcaedc3a0955bacbc08b3`, released as `1.0.0-alpha.3`, protocol 13. Subsequent test tooling and policy revisions must be recorded separately. Review the selected stable candidate and any production changes since that source; do not treat a changed filename, version number or earlier report as evidence that a new runtime was reviewed.
 
 ## Security review scope
 
-One focused independent review can cover both the game protocol and public directory. A full engine audit is not requested. Reviewers should inspect the exposed boundaries below, reproduce the relevant automated tests and record findings with exact source references and remediation evidence. Our own implementation work, agents and automated tests do not supply the required independence.
+One focused recorded review can cover both the game protocol and public directory. A full engine audit is not requested. Reviewers should inspect the exposed boundaries below, reproduce the relevant automated tests and record findings with exact source references and remediation evidence. The accepted AI method must identify collaborating agents honestly, preserve reproduced findings and disclose scope limits; it must not claim human independence.
 
 | Boundary | Principal source | Questions to resolve |
 | --- | --- | --- |
@@ -19,7 +19,7 @@ One focused independent review can cover both the game protocol and public direc
 
 Existing evidence is linked from the [alpha.3 release record](release-evidence/2026-10-30-alpha3-release.md): actual Linux rendered tests, native malformed-input and fault tests, selected compiler/security jobs, scoped sanitizers and synthetic lifecycle checks. The overnight and recovery procedures add their own receipts when completed. These are inputs to review, not substitutes for it. No real account store, private key, password, cookie, personal player data or copyrighted game archive should be sent to a reviewer; isolated reproductions and redacted diagnostics are sufficient.
 
-Record the reviewer's identity and independence, reviewed source/dependencies/deployment scope, methods and date, findings/severity/reproduction, remediation commits and retests, unresolved issues and a clear acceptance decision for the stated scope. A report on protocol-only fuzzing cannot certify native Lua, full gameplay or directory deployment that it did not inspect.
+Record the reviewer/tool identity and whether the review is independent or AI-assisted, reviewed source/dependencies/deployment scope, methods and date, findings/severity/reproduction, remediation commits and retests, unresolved issues and a clear acceptance decision for the stated scope. A report on protocol-only fuzzing cannot certify native Lua, full gameplay or directory deployment that it did not inspect.
 
 ## Licensing and distribution questions
 
@@ -33,4 +33,4 @@ The repository's `LICENSE` contains the GPLv3 text followed by a block explicitl
 4. Inspect the actual per-platform dependency graph, linked/bundled libraries, fonts and redistribution notices, rather than relying solely on the direct-dependency table. Use `DEPENDENCIES.md`, source/platform SBOMs, `runtime-dependencies.txt` and the actual archives. Include the Windows redistributable and macOS bundles in scope if those platforms are distributed.
 5. Record the corresponding-source and notice delivery method for each distributed artifact, including any bundled dependency source/version requirements. Identify corrections and how they will be supplied before stable publication.
 
-The source dependency table and SBOM are inventories, not a complete legal clearance. Acceptance needs a named reviewer or documented maintainer resolution supported by appropriate authority, the exact license/notice/dependency revisions, the affected distribution scope, concrete answers and any approved corrections. Obtain specialist advice for conclusions requiring legal interpretation. The present status remains open; changing policy or running software tests does not close it.
+The source dependency table and SBOM are inventories, not a complete legal clearance. Acceptance needs a documented reviewer or maintainer-authorized AI assessment, the exact license/notice/dependency revisions, the affected distribution scope, concrete answers and any approved corrections. The AI assessment is a textual/provenance and distribution engineering review, not legal certification. Seek specialist advice if a concrete dispute or unresolved interpretation requires it. The completed report distinguishes the inherited-terms assessment from the still-open native-platform delivery corrections; running software tests alone cannot supply missing notices or corresponding source.

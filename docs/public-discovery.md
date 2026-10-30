@@ -2,7 +2,7 @@
 
 MWNet gameplay protocol 13 is incompatible with previous gameplay protocols. Discovery API v1 is independently versioned and introduces no gameplay packets. The old master service, RakNet transport and standalone browser remain removed. The current endpoint class is `GameEndpoint`; authentication and discovery signatures use MWNet domain labels, so directory services and gameplay peers must be rebuilt together.
 
-The new service provides opt-in public discovery, signed announcements, encrypted endpoint verification and an in-game browser. It does not relay game traffic, open NAT mappings, hold game accounts or certify advertised compatibility. Direct connections remain available during directory outages. Public deployment and independent security review remain release gates; no public directory hostname is configured by default.
+The new service provides opt-in public discovery, signed announcements, encrypted endpoint verification and an in-game browser. It does not relay game traffic, open NAT mappings, hold game accounts or certify advertised compatibility. Direct connections remain available during directory outages. Public deployment and the recorded security assessment remain release gates under the [current policy](../RELEASE_GATES.md); no public directory hostname is configured by default.
 
 ## Game configuration
 
