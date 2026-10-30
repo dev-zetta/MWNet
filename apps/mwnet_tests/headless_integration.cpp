@@ -154,7 +154,7 @@ namespace
                 std::cout
                     << "Usage: mwnet-headless-integration [options]\n"
                     << "  --cycles N                  Full connect/death/disconnect cycles\n"
-                    << "  --clients N                 Concurrent clients (2-8)\n"
+                    << "  --clients N                 Concurrent clients (2-16)\n"
                     << "  --duration-seconds N        Minimum elapsed run time\n"
                     << "  --latency-ms N              Deterministic delay before messages\n"
                     << "  --packet-loss-percent N     Deterministic unreliable loss (0-100)\n"
@@ -168,8 +168,8 @@ namespace
                 fail("unknown option: " + std::string(argument));
         }
         require(options.cycles > 0, "--cycles must be positive");
-        require(options.clients >= 2 && options.clients <= 8,
-            "--clients must be between 2 and 8");
+        require(options.clients >= 2 && options.clients <= 16,
+            "--clients must be between 2 and 16");
         require(options.packetLossPercent <= 100,
             "--packet-loss-percent must not exceed 100");
         return options;
@@ -287,6 +287,9 @@ namespace
                 }
                 require(mMetrics.snapshot().connections.empty(),
                     "disconnected peers retained connection metrics");
+                require(mCombat.size() == 0 && mInventory.size() == 0
+                        && mJustice.size() == 0 && mLifecycle.size() == 0,
+                    "disconnected peers retained canonical ledger entries");
                 require(mCreatedClients == mOptions.clients,
                     "reconnect recreated client instances instead of reusing them");
                 mMetrics.observeQueueDepth(0);
@@ -1001,6 +1004,12 @@ namespace
                 << snapshot.serializationP99Microseconds << ",\n"
                 << "  \"maximumQueueDepth\": "
                 << snapshot.maximumQueueDepth << ",\n"
+                << "  \"cleanupVerifiedCycles\": " << mCompletedCycles << ",\n"
+                << "  \"finalConnectionMetricEntries\": " << snapshot.connections.size() << ",\n"
+                << "  \"finalCombatEntries\": " << mCombat.size() << ",\n"
+                << "  \"finalInventoryEntries\": " << mInventory.size() << ",\n"
+                << "  \"finalJusticeEntries\": " << mJustice.size() << ",\n"
+                << "  \"finalLifecycleEntries\": " << mLifecycle.size() << ",\n"
                 << "  \"residentMemoryBytes\": "
                 << snapshot.residentMemoryBytes << ",\n"
                 << "  \"initialResidentMemoryBytes\": "
