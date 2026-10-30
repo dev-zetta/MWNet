@@ -13,6 +13,9 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     ccache \
     cmake \
     python3 \
+    xvfb \
+    xauth \
+    ffmpeg \
     git \
     ca-certificates \
     libboost-all-dev \

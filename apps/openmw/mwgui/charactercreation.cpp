@@ -160,6 +160,47 @@ namespace MWGui
             mReviewDialog->onFrame(duration);
     }
 
+    bool CharacterCreation::isVisible() const
+    {
+        const auto visible = [](const auto& dialog) { return dialog && dialog->isVisible(); };
+        return visible(mNameDialog) || visible(mRaceDialog) || visible(mClassChoiceDialog)
+            || visible(mGenerateClassQuestionDialog) || visible(mGenerateClassResultDialog)
+            || visible(mPickClassDialog) || visible(mCreateClassDialog) || visible(mBirthSignDialog)
+            || visible(mReviewDialog);
+    }
+
+    bool CharacterCreation::completeStepForAutomation(const CharacterCreationSelection& selection)
+    {
+        const auto mode = MWBase::Environment::get().getWindowManager()->getMode();
+        if (mode == GM_Name && mNameDialog && mNameDialog->isVisible())
+        {
+            mNameDialog->setTextInput(selection.name);
+            mNameDialog->eventDone(mNameDialog.get());
+        }
+        else if (mode == GM_Race && mRaceDialog && mRaceDialog->isVisible())
+        {
+            mRaceDialog->setSelection(selection.raceId, selection.male ? RaceDialog::GM_Male : RaceDialog::GM_Female,
+                selection.headId, selection.hairId);
+            mRaceDialog->eventDone(mRaceDialog.get());
+        }
+        else if (mode == GM_Class && mClassChoiceDialog && mClassChoiceDialog->isVisible())
+            mClassChoiceDialog->eventButtonSelected(ClassChoiceDialog::Class_Pick);
+        else if (mode == GM_ClassPick && mPickClassDialog && mPickClassDialog->isVisible())
+        {
+            mPickClassDialog->setClassId(selection.classId);
+            mPickClassDialog->eventDone(mPickClassDialog.get());
+        }
+        else if (mode == GM_Birth && mBirthSignDialog && mBirthSignDialog->isVisible())
+        {
+            mBirthSignDialog->setBirthId(selection.birthSignId);
+            mBirthSignDialog->eventDone(mBirthSignDialog.get());
+        }
+        else if (mode == GM_Review && mReviewDialog && mReviewDialog->isVisible())
+            mReviewDialog->eventDone(mReviewDialog.get());
+        else return false;
+        return true;
+    }
+
     void CharacterCreation::spawnDialog(const GuiMode id)
     {
         try

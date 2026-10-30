@@ -2,6 +2,7 @@
 #define GAME_MWMECHANICS_ACTIVESPELLS_H
 
 #include <functional>
+#include <cstddef>
 #include <list>
 #include <queue>
 #include <string>
@@ -167,6 +168,16 @@ namespace MWMechanics
 
         /// Remove all spells
         void clear(const MWWorld::Ptr& ptr);
+
+        struct TemporaryClearResult
+        {
+            std::size_t queuedRemoved = 0;
+            std::size_t activeRemoved = 0;
+        };
+
+        /// Remove casts, potions and other unsourced effects, including queued
+        /// effects, while retaining spell-store abilities and equipped effects.
+        TemporaryClearResult clearTemporary(const MWWorld::Ptr& ptr);
 
         /// True if a spell associated with this id is active
         /// \note For enchantments, this is the id of the enchanted item, not the enchantment itself

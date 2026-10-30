@@ -24,6 +24,12 @@ cmake --build "$output_dir/build" --parallel "${MWNET_BUILD_JOBS:-4}" \
     --target mwnet mwnet-server mwnet-tests mwnet-persistence-fault mwnet-headless-integration \
         mwnet-actor-packet-tests mwnet-magic-content-tests mwnet-directory mwnet-discovery-tests
 ctest --test-dir "$output_dir/build" --output-on-failure
+python3 "$source_dir/CI/test_gameplay_content.py"
+python3 "$source_dir/CI/test_gameplay_runner.py"
+python3 "$source_dir/CI/test_gameplay_fixture.py"
+python3 "$source_dir/CI/test_mwnet_gameplay_controls.py" \
+    --client "$output_dir/build/mwnet" --resources "$output_dir/build/resources" \
+    --output "$output_dir/gameplay-controls"
 python3 "$source_dir/CI/generate_spdx_sbom.py" --root "$source_dir" \
     --output "$output_dir/mwnet-source.spdx.json"
 python3 "$source_dir/CI/package_mwnet_linux.py" \

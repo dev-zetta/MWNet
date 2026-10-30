@@ -172,7 +172,11 @@ namespace MWGui
         void addMessageBox(std::string_view text);
 
         void onFrame(float dt) override;
-        void clear() override { resetReference(); }
+        void clear() override
+        {
+            mPersuasionDialog.setVisible(false);
+            resetReference();
+        }
 
         void updateTopics();
 

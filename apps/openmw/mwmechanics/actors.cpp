@@ -1928,11 +1928,17 @@ namespace MWMechanics
                 // One case where we need this is to make sure bound items are removed upon death
                 const float vampirism
                     = stats.getMagicEffects().getOrDefault(ESM::MagicEffect::Vampirism).getMagnitude();
-                stats.getActiveSpells().clear(actor.getPtr());
+                const bool preservePlayerSources = isPlayer && mwmp::Main::isConnected();
+                if (preservePlayerSources)
+                    stats.getActiveSpells().clearTemporary(actor.getPtr());
+                else
+                    stats.getActiveSpells().clear(actor.getPtr());
                 // Make sure spell effects are removed
-                purgeSpellEffects(actor.getPtr().getCellRef().getRefNum());
+                purgeSpellEffects(actor.getPtr().getCellRef().getRefNum(), preservePlayerSources);
 
-                stats.getMagicEffects().add(EffectKey(ESM::MagicEffect::Vampirism), vampirism);
+                // Source-owned effects already remain applied for MP players.
+                if (!preservePlayerSources)
+                    stats.getMagicEffects().add(EffectKey(ESM::MagicEffect::Vampirism), vampirism);
 
                 if (isPlayer)
                 {
@@ -1983,7 +1989,7 @@ namespace MWMechanics
         purgeSpellEffects(creature);
     }
 
-    void Actors::purgeSpellEffects(ESM::RefNum creature) const
+    void Actors::purgeSpellEffects(ESM::RefNum creature, bool preservePlayerSources) const
     {
         for (const Actor& actor : mActors)
         {
@@ -1991,7 +1997,17 @@ namespace MWMechanics
                 continue;
             MWMechanics::ActiveSpells& spells
                 = actor.getPtr().getClass().getCreatureStats(actor.getPtr()).getActiveSpells();
-            spells.purge(actor.getPtr(), creature);
+            if (preservePlayerSources && actor.getPtr() == getPlayer())
+            {
+                spells.purge([=](const ActiveSpells::ActiveSpellParams& params)
+                    {
+                        return params.getCaster() == creature
+                            && !params.hasFlag(ESM::ActiveSpells::Flag_SpellStore)
+                            && !params.hasFlag(ESM::ActiveSpells::Flag_Equipment);
+                    }, actor.getPtr());
+            }
+            else
+                spells.purge(actor.getPtr(), creature);
         }
     }
 

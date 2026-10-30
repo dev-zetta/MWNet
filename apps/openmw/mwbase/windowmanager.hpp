@@ -56,6 +56,7 @@ namespace MWWorld
 
 namespace MWGui
 {
+    struct CharacterCreationSelection;
     class Layout;
 
     class Console;
@@ -132,6 +133,8 @@ namespace MWBase
         virtual bool containsMode(MWGui::GuiMode) const = 0;
 
         virtual bool isGuiMode() const = 0;
+        virtual bool isCharacterCreationVisible() const = 0;
+        virtual bool completeCharacterCreationForAutomation(const MWGui::CharacterCreationSelection& selection) = 0;
 
         virtual bool isConsoleMode() const = 0;
         virtual bool isPostProcessorHudVisible() const = 0;

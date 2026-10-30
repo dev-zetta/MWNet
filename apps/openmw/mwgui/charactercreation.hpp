@@ -5,6 +5,7 @@
 
 #include <map>
 #include <memory>
+#include <string>
 #include <vector>
 
 #include "mode.hpp"
@@ -22,6 +23,17 @@ namespace Resource
 
 namespace MWGui
 {
+    struct CharacterCreationSelection
+    {
+        std::string name;
+        ESM::RefId raceId;
+        bool male = true;
+        ESM::RefId headId;
+        ESM::RefId hairId;
+        ESM::RefId classId;
+        ESM::RefId birthSignId;
+    };
+
     class WindowBase;
 
     class TextInputDialog;
@@ -51,6 +63,10 @@ namespace MWGui
         void configureSkills(const std::vector<ESM::RefId>& major, const std::vector<ESM::RefId>& minor) override;
 
         void onFrame(float duration);
+
+        bool isVisible() const;
+        // Drive the same form selections and completion callbacks as the UI.
+        bool completeStepForAutomation(const CharacterCreationSelection& selection);
 
     private:
         osg::Group* mParent;

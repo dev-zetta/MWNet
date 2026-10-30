@@ -201,7 +201,7 @@ namespace MWMechanics
 
         void killDeadActors();
 
-        void purgeSpellEffects(ESM::RefNum creature) const;
+        void purgeSpellEffects(ESM::RefNum creature, bool preservePlayerSources = false) const;
 
         void predictAndAvoidCollisions(float duration) const;
 

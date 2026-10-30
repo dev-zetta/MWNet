@@ -116,7 +116,7 @@ add_openmw_dir (mwbase
     inputmanager windowmanager statemanager luamanager
     )
 
-add_openmw_dir (mwmp Main Networking LocalSystem LocalPlayer DedicatedPlayer PlayerList LocalActor DedicatedActor ActorList
+add_openmw_dir (mwmp Main GameplayTest Networking LocalSystem LocalPlayer DedicatedPlayer PlayerList LocalActor DedicatedActor ActorList
     ObjectList Worldstate Cell CellController GUIController MechanicsHelper RecordHelper ScriptController
     )
 

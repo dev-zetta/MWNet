@@ -39,6 +39,7 @@
 #include "../mwworld/worldimp.hpp"
 
 #include "Main.hpp"
+#include "GameplayTest.hpp"
 #include "Networking.hpp"
 #include "LocalSystem.hpp"
 #include "LocalPlayer.hpp"
@@ -132,7 +133,9 @@ void Main::optionsDesc(boost::program_options::options_description *desc)
             ("register-account", bpo::bool_switch()->default_value(false),
                         "register the MWNet account on first connection")
             ("trust-fingerprint", bpo::value<std::string>()->default_value(""),
-                        "require this server identity fingerprint");
+                        "require this server identity fingerprint")
+            ("gameplay-test-file", bpo::value<std::string>()->default_value(""),
+                        "run an explicit bounded loopback gameplay scenario from a private JSON file");
 }
 
 void Main::configure(const boost::program_options::variables_map &variables)
@@ -143,6 +146,16 @@ void Main::configure(const boost::program_options::variables_map &variables)
     Main::accountPasswordFile = variables["account-password-file"].as<std::string>();
     Main::registerAccount = variables["register-account"].as<bool>();
     Main::trustedFingerprint = variables["trust-fingerprint"].as<std::string>();
+    GameplayTest::configure(variables["gameplay-test-file"].as<std::string>());
+    if (GameplayTest::active())
+    {
+        Main::address = GameplayTest::address();
+        Main::accountName = GameplayTest::account();
+        Main::accountPasswordFile = GameplayTest::accountPasswordFile();
+        Main::serverPassword = GameplayTest::serverPassword();
+        Main::trustedFingerprint = GameplayTest::fingerprint();
+        Main::registerAccount = GameplayTest::registerAccount();
+    }
     resourceDir = variables["resources"].as<Files::MaybeQuotedPath>().string();
 }
 
@@ -222,17 +235,31 @@ bool Main::init(std::vector<std::string> &content, Files::Collections &collectio
     pMain->port = atoi(address.substr(delimPos + 1).c_str());
     get().mLocalSystem->serverPassword.clear();
     std::string credentialError;
-    auto connectionOptions = commandLineConnectionOptions(accountName,
-        accountPasswordFile, serverPassword, registerAccount, trustedFingerprint,
-        credentialError);
+    ClientConnectionOptions connectionOptions;
+    if (GameplayTest::active())
+    {
+        // Test inputs were read atomically from bounded private files. Avoid
+        // reopening the credential pathname between validation and use.
+        connectionOptions.accountName = accountName;
+        connectionOptions.accountPassword = GameplayTest::accountPassword();
+        connectionOptions.serverAccessPassword = serverPassword;
+        connectionOptions.registerAccount = registerAccount;
+        connectionOptions.trustedFingerprint = trustedFingerprint;
+    }
+    else
+        connectionOptions = commandLineConnectionOptions(accountName,
+            accountPasswordFile, serverPassword, registerAccount, trustedFingerprint,
+            credentialError);
     if (!credentialError.empty())
     {
         pMain->mNetworking->setLastError(credentialError);
+        GameplayTest::connectionFailed();
         return false;
     }
     pMain->mNetworking->connect(pMain->server, pMain->port, content, collections,
         std::move(connectionOptions));
 
+    if (!pMain->mNetworking->isConnected()) GameplayTest::connectionFailed();
     return pMain->mNetworking->isConnected();
 }
 
@@ -240,6 +267,12 @@ bool Main::connectTo(const std::string& host, unsigned short port,
     ClientConnectionOptions options)
 {
     assert(pMain);
+    if (GameplayTest::configured() && (host != "127.0.0.1"
+            || host + ":" + std::to_string(port) != GameplayTest::address()))
+    {
+        pMain->mNetworking->setLastError("Gameplay automation permits only its configured loopback endpoint.");
+        return false;
+    }
     pMain->server = host;
     pMain->port   = port;
     get().mLocalSystem->serverPassword.clear();
@@ -321,7 +354,10 @@ void Main::frame(float dt)
 {
     // Skip all world-dependent calls when not in-game (e.g. after cleanup() on disconnect)
     if (MWBase::Environment::get().getStateManager()->getState() == MWBase::StateManager::State_NoGame)
+    {
+        GameplayTest::frame(dt);
         return;
+    }
 
     /*
         Start of mwnet addition
@@ -344,6 +380,7 @@ void Main::frame(float dt)
         get().getCellController()->updateDedicated(dt);
         get().updateWorld(dt);
         get().getGUIController()->update(dt);
+        GameplayTest::frame(dt);
         return;
     }
     /* End of mwnet addition */
@@ -355,6 +392,7 @@ void Main::frame(float dt)
     get().updateWorld(dt);
 
     get().getGUIController()->update(dt);
+    GameplayTest::frame(dt);
 }
 
 void Main::updateWorld(float dt) const

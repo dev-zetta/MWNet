@@ -20,6 +20,7 @@
     Include the header of the multiplayer's Main class
 */
 #include "mwmp/Main.hpp"
+#include "mwmp/GameplayTest.hpp"
 /* End of mwnet addition */
 
 #if defined(_WIN32)
@@ -199,7 +200,7 @@ bool parseOptions(int argc, char** argv, OMW::Engine& engine, Files::Configurati
 
         Configure multiplayer using parsed variables
     */
-    mwmp::Main::configure(&variables);
+    mwmp::Main::configure(variables);
     /* End of mwnet addition */
 
     return true;
@@ -275,12 +276,23 @@ int runApplication(int argc, char* argv[])
 
     engine->setRecastMaxLogLevel(Debug::getRecastMaxLogLevel());
 
-    if (parseOptions(argc, argv, *engine, cfgMgr))
+    try
     {
-        if (!Misc::checkRequiredOSGPluginsArePresent())
-            return 1;
+        if (parseOptions(argc, argv, *engine, cfgMgr))
+        {
+            if (!Misc::checkRequiredOSGPluginsArePresent())
+                return 1;
 
-        engine->go();
+            engine->go();
+        }
+    }
+    catch (const std::exception& error)
+    {
+        // Headless test failures must not open the generic application's modal
+        // fatal-error dialog. Ordinary client startup keeps its usual behavior.
+        if (!mwmp::GameplayTest::requested()) throw;
+        Log(Debug::Error) << "Gameplay test rejected: " << mwmp::GameplayTest::diagnostic(error.what());
+        return 1;
     }
 
     return 0;

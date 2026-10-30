@@ -722,6 +722,28 @@ namespace MWMechanics
         purge([](const ActiveSpellParams& params) { return true; }, ptr);
     }
 
+    ActiveSpells::TemporaryClearResult ActiveSpells::clearTemporary(const MWWorld::Ptr& ptr)
+    {
+        const auto temporary = [](const ActiveSpellParams& params)
+        {
+            // These flags identify live sources that own permanent effects.
+            // Flag_Lua only controls presentation, and duration alone cannot
+            // distinguish a permanent ability from an unowned lasting cast.
+            return !params.hasFlag(ESM::ActiveSpells::Flag_SpellStore)
+                && !params.hasFlag(ESM::ActiveSpells::Flag_Equipment);
+        };
+        TemporaryClearResult result;
+        const auto queuedBefore = mQueue.size();
+        mQueue.erase(std::remove_if(mQueue.begin(), mQueue.end(), temporary), mQueue.end());
+        result.queuedRemoved = queuedBefore - mQueue.size();
+        const auto activeBefore = mSpells.size();
+        purge(temporary, ptr);
+        // During iteration purge is deferred until its usual safe point. Only
+        // report removals that have already happened when this method returns.
+        if (activeBefore > mSpells.size()) result.activeRemoved = activeBefore - mSpells.size();
+        return result;
+    }
+
     void ActiveSpells::skipWorsenings(double hours)
     {
         for (auto& spell : mSpells)

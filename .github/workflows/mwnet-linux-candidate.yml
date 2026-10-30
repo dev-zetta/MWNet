@@ -59,3 +59,4 @@ jobs:
           path: |
             build/linux-candidate/build/Testing/Temporary/LastTest.log
             build/linux-candidate/smoke/*.log
+            build/linux-candidate/gameplay-controls/control-validation.json

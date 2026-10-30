@@ -1,3 +1,21 @@
+1.0.0-alpha.3
+-------------
+
+This development candidate retains protocol 13. Its release evidence must identify the tested source and downloadable package hashes; the version number does not close the remaining stable-release gates.
+
+* Scope NPC movement sequences to the validated authority lease so a fresh client can reconnect without inheriting the previous authority's sequence counter, while retaining position, speed and replay checks.
+* Add opt-in loopback gameplay automation and a repeatable client/server acceptance procedure with machine-readable results and isolated test state.
+* Add private account-credential recovery using the native Argon2id implementation, consistent state backups and a controlled game restart to clear temporary authentication lockouts.
+* Prepare persistent canonical-content deployment for the directory appliance, preserving server identity, accounts and world state with bounded resources and rollback.
+* Accept the verified configuration, platform-manifest and image-index identities used by classic and containerd Docker image stores.
+* Include virtual-display and recording tools in the isolated Linux build image for unattended gameplay validation.
+* Derive and persist new-character statistics from canonical race, class and birthsign choices under server-owned one-shot creation admission, and initialize canonical inventory before requesting equipment.
+* Correct additive resource modifier serialization for canonical players and NPCs so health, magicka and fatigue capacities are not doubled or inferred from depleted current values.
+* Place server-directed exterior teleports without applying the client FixMe displacement, retaining the existing movement authorization bounds.
+* Clear active and queued temporary casts on death/respawn while retaining racial, birthsign and equipment effects, and close stale NPC interaction windows before gameplay resumes.
+* Read player spell attributes and school skills from base, modifier and damage values instead of the unrelated dynamic-current field.
+* Reject invalid outbound actor/container models before transmission and retain actionable, bounded integrity diagnostics.
+
 1.0.0-alpha.2
 -------------
 

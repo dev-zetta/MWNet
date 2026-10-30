@@ -17,6 +17,8 @@
 #include "../mwdialogue/dialoguemanagerimp.hpp"
 
 #include "../mwgui/inventorywindow.hpp"
+#include "../mwgui/dialogue.hpp"
+#include "../mwgui/windowbase.hpp"
 #include "../mwgui/windowmanagerimp.hpp"
 
 #include "../mwinput/inputmanagerimp.hpp"
@@ -50,6 +52,35 @@
 #include "RecordHelper.hpp"
 
 using namespace mwmp;
+
+namespace
+{
+    void closeDeathInteractionWindows()
+    {
+        auto& env = MWBase::Environment::get();
+        auto windows = env.getWindowManager();
+
+        // Death ends the previous conversation without answering an arrest or
+        // service choice. In multiplayer the game continues while menus are
+        // open, so the normal game-over teardown does not perform this work.
+        env.getDialogueManager()->goodbyeSelected();
+        windows->finishDragDrop();
+        for (const auto mode : { MWGui::GM_Barter, MWGui::GM_SpellBuying,
+                 MWGui::GM_Travel, MWGui::GM_SpellCreation, MWGui::GM_Enchanting,
+                 MWGui::GM_Training, MWGui::GM_MerchantRepair, MWGui::GM_Dialogue,
+                 MWGui::GM_Container, MWGui::GM_Companion, MWGui::GM_Inventory })
+        {
+            if (!windows->containsMode(mode))
+                continue;
+            // Retain normal window teardown (for example, abort uncommitted
+            // barter items) even when a choice would ordinarily prevent exit.
+            for (auto* window : windows->getGuiModeWindows(mode))
+                window->exit();
+            windows->removeGuiMode(mode);
+        }
+        windows->getDialogueWindow()->clear();
+    }
+}
 
 std::map<std::string, int> storedItemRemovals;
 
@@ -894,6 +925,7 @@ void LocalPlayer::removeSpellsActive()
 
 void LocalPlayer::die()
 {
+    closeDeathInteractionWindows();
     creatureStats.mDead = true;
 
     MWWorld::Ptr playerPtr = MWBase::Environment::get().getWorld()->getPlayerPtr();
@@ -907,6 +939,9 @@ void LocalPlayer::die()
 
 void LocalPlayer::resurrect()
 {
+    // Also cover a server-driven resurrection or a dialogue opened while a
+    // death update was in flight, before relocating away from its actor.
+    closeDeathInteractionWindows();
     creatureStats.mDead = false;
     waitingForResurrect = false; // allow sendDeath to fire again on next death
 
@@ -914,7 +949,9 @@ void LocalPlayer::resurrect()
 
     // Clear temporary casts immediately, including queued effects; permanent
     // abilities and equipment effects remain owned by their normal sources.
-    ptrPlayer.getClass().getCreatureStats(ptrPlayer).getActiveSpells().clear(ptrPlayer);
+    const auto cleared = ptrPlayer.getClass().getCreatureStats(ptrPlayer).getActiveSpells().clearTemporary(ptrPlayer);
+    LOG_MESSAGE_SIMPLE(TimedLog::LOG_INFO, "Respawn effects cleared: queuedRemoved=%zu activeRemoved=%zu",
+        cleared.queuedRemoved, cleared.activeRemoved);
 
     if (resurrectType == mwmp::RESURRECT_TYPE::IMPERIAL_SHRINE)
         MWBase::Environment::get().getWorld()->teleportToClosestMarker(ptrPlayer, ESM::RefId::stringRefId("divinemarker"));
@@ -1045,8 +1082,7 @@ void LocalPlayer::setDynamicStats()
     {
         dynamicStat = ptrCreatureStats->getDynamic(i);
         dynamicStat.setBase(creatureStats.mDynamic[i].mBase);
-        if (i == 2)
-            dynamicStat.setModifier(creatureStats.mDynamic[i].mMod);
+        dynamicStat.setModifier(creatureStats.mDynamic[i].mMod);
         // Negative fatigue is authoritative unconsciousness, not an invalid stat.
         dynamicStat.setCurrent(creatureStats.mDynamic[i].mCurrent, i == 2);
         ptrCreatureStats->setDynamic(i, dynamicStat);
@@ -1199,14 +1235,14 @@ void LocalPlayer::setCell()
         // The cell-change packet carries the authoritative destination.
         pos = position;
         ESM::RefId exteriorId = ESM::RefId::esm3ExteriorCell(x, y);
+        // Ground placement is handled by changeToCell. FixMe would deliberately
+        // move us horizontally away from the server's authorized destination.
         world->changeToCell(exteriorId, pos, true);
-        world->fixPosition();
     }
     else if (!world->findExteriorPosition(cell.mName, pos).empty())
     {
         ESM::RefId exteriorId = world->findExteriorPosition(cell.mName, pos);
         world->changeToCell(exteriorId, pos, true);
-        world->fixPosition();
     }
     else
     {
@@ -1348,7 +1384,11 @@ void LocalPlayer::setSpellsActive()
 {
     MWWorld::Ptr ptrPlayer = getPlayerPtr();
     MWMechanics::ActiveSpells& activeSpells = ptrPlayer.getClass().getCreatureStats(ptrPlayer).getActiveSpells();
-    activeSpells.clear(ptrPlayer);
+    // The network active-effect set contains temporary casts; abilities and
+    // constant enchantments remain owned by the spellbook and equipment.
+    const auto cleared = activeSpells.clearTemporary(ptrPlayer);
+    LOG_MESSAGE_SIMPLE(TimedLog::LOG_INFO, "Network effects replaced: queuedRemoved=%zu activeRemoved=%zu",
+        cleared.queuedRemoved, cleared.activeRemoved);
 
     // Proceed by adding spells active
     addSpellsActive();
@@ -1513,6 +1553,7 @@ void LocalPlayer::setSelectedSpell()
 
 void LocalPlayer::sendDeath(char newDeathState)
 {
+    closeDeathInteractionWindows();
     if (MechanicsHelper::isEmptyTarget(killer))
         killer = MechanicsHelper::getTarget(getPlayerPtr());
 

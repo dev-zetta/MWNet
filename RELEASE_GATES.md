@@ -12,7 +12,9 @@ MWNet 1.0 milestone acceptance proceeds sequentially. Passing a later implementa
 | `1.0.0-beta.1` | Sanitizer and fuzz gates, limited opt-in public test, independent security review | Blocked |
 | `1.0.0` | Cross-platform, soak, migration, public discovery, security, legal and documentation gates | Blocked |
 
-The current source version is `1.0.0-alpha.2`, a cross-platform development preview with protocol 13. Its release notes identify the tested source and package validation results. The version number does not certify milestone acceptance, interactive gameplay on every platform, or suitability for untrusted public hosting; the remaining gates above and below still apply.
+The current source version is `1.0.0-alpha.3`, a development candidate with protocol 13. Publication requires recorded build, package and test evidence for the release source. The version number does not certify milestone acceptance, gameplay on every platform, or suitability for untrusted public hosting; the remaining gates above and below still apply.
+
+Development candidates use the [autonomous graphical gameplay procedure](docs/AUTOMATED_GAMEPLAY.md) for reproducible gameplay checks without operator input. The alpha.3 release record must identify the tested package/source and include its machine-readable result, synchronization findings and optional captured video. Missing game assets or a skipped graphical test cannot be recorded as gameplay acceptance. Independent human reviews and time-based stable gates remain separate requirements.
 
 ## Required evidence
 
@@ -32,6 +34,8 @@ The current source version is `1.0.0-alpha.2`, a cross-platform development prev
 CI artifacts, fuzz corpora, soak logs, performance reports and review records must identify the tested commit. Human or time-based gates may not be replaced with an unverified checklist entry.
 
 ## Recorded evidence
+
+- [October 30 autonomous gameplay development validation](docs/release-evidence/2026-10-30-autonomous-gameplay.md) records the unattended procedure, regressions it found, strict rendered acceptance and canonical creation matrix. Development runs do not replace matching clean-source/package release evidence.
 
 - [`1.0.0-alpha.1` long-running validation](docs/release-evidence/1.0.0-alpha.1.md)
   records the exact-commit four-target sanitizer fuzz campaign, 24-hour

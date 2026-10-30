@@ -188,6 +188,8 @@ namespace MWGui
         MWGui::HUD* getHud() override;
         MWGui::PostProcessorHud* getPostProcessorHud() override;
         std::vector<MWGui::WindowBase*> getGuiModeWindows(GuiMode mode) override;
+        bool isCharacterCreationVisible() const override;
+        bool completeCharacterCreationForAutomation(const MWGui::CharacterCreationSelection& selection) override;
 
         /* Start of mwnet addition */
         virtual MWGui::ContainerWindow* getContainerWindow();

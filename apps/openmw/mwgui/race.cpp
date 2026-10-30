@@ -1,5 +1,9 @@
 #include "race.hpp"
 
+#include <algorithm>
+#include <iterator>
+#include <stdexcept>
+
 #include <MyGUI_Gui.h>
 #include <MyGUI_ImageBox.h>
 #include <MyGUI_ListBox.h>
@@ -218,6 +222,22 @@ namespace MWGui
 
         mPreviewTexture.reset(nullptr);
         mPreview.reset(nullptr);
+    }
+
+    void RaceDialog::setSelection(const ESM::RefId& raceId, Gender gender,
+        const ESM::RefId& headId, const ESM::RefId& hairId)
+    {
+        if (!isVisible() || !mPreview) throw std::runtime_error("Race selection requires an open dialog.");
+        setRaceId(raceId);
+        setGender(gender);
+        recountParts();
+        const auto head = std::find(mAvailableHeads.begin(), mAvailableHeads.end(), headId);
+        const auto hair = std::find(mAvailableHairs.begin(), mAvailableHairs.end(), hairId);
+        if (head == mAvailableHeads.end() || hair == mAvailableHairs.end())
+            throw std::runtime_error("Selected appearance does not belong to the chosen race and gender.");
+        mFaceIndex = std::distance(mAvailableHeads.begin(), head);
+        mHairIndex = std::distance(mAvailableHairs.begin(), hair);
+        updatePreview();
     }
 
     // widget controls

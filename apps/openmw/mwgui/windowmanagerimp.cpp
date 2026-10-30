@@ -29,6 +29,7 @@
 */
 #include <components/openmw-mp/TimedLog.hpp>
 #include "../mwmp/Main.hpp"
+#include "../mwmp/GameplayTest.hpp"
 #include "../mwmp/GUIController.hpp"
 /* End of mwnet addition */
 
@@ -1772,6 +1773,16 @@ namespace MWGui
     std::vector<MWGui::WindowBase*> WindowManager::getGuiModeWindows(GuiMode mode)
     {
         return mGuiModeStates[mode].mWindows;
+    }
+
+    bool WindowManager::isCharacterCreationVisible() const
+    {
+        return mCharGen && mCharGen->isVisible();
+    }
+
+    bool WindowManager::completeCharacterCreationForAutomation(const CharacterCreationSelection& selection)
+    {
+        return mwmp::GameplayTest::active() && mCharGen && mCharGen->completeStepForAutomation(selection);
     }
     MWGui::InventoryWindow* WindowManager::getInventoryWindow()
     {

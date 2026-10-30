@@ -43,6 +43,7 @@ namespace MWGui
         Gender getGender() const { return mGenderIndex == 0 ? GM_Male : GM_Female; }
 
         void setRaceId(const ESM::RefId& raceId);
+        void setSelection(const ESM::RefId& raceId, Gender gender, const ESM::RefId& headId, const ESM::RefId& hairId);
         void setGender(Gender gender) { mGenderIndex = gender == GM_Male ? 0 : 1; }
 
         void setNextButtonShow(bool shown);

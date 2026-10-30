@@ -480,7 +480,9 @@ namespace MWDialogue
     void DialogueManager::goodbyeSelected()
     {
         // Apply disposition change to NPC's base disposition if we **think** we need to change something
-        if ((mPermanentDispositionChange || mOriginalDisposition != mCurrentDisposition) && mActor.getClass().isNpc())
+        if (!mActor.isEmpty()
+            && (mPermanentDispositionChange || mOriginalDisposition != mCurrentDisposition)
+            && mActor.getClass().isNpc())
         {
             updateOriginalDisposition();
             MWMechanics::NpcStats& npcStats = mActor.getClass().getNpcStats(mActor);
@@ -498,6 +500,14 @@ namespace MWDialogue
         mPermanentDispositionChange = 0;
         mOriginalDisposition = 0;
         mCurrentDisposition = 0;
+        mActor = MWWorld::Ptr();
+        mActorKnownTopics.clear();
+        mLastTopic = ESM::RefId();
+        mChoice = -1;
+        mIsInChoice = false;
+        mGoodbye = false;
+        mTalkedTo = false;
+        mChoices.clear();
     }
 
     void DialogueManager::questionAnswered(int answer, ResponseCallback* callback)
