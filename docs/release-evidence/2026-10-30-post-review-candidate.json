@@ -1,0 +1,85 @@
+{
+  "schemaVersion": 1,
+  "recordedUtc": "2026-10-30T22:24:11.982115+00:00",
+  "scope": "Private corrected Linux candidate; no published release or live deployment mutation",
+  "runtimeSourceCommit": "dd1fd12cebcaf8a880b1e56f559891315ec3f062",
+  "procedureRevision": "dd1fd12cebcaf8a880b1e56f559891315ec3f062",
+  "version": "1.0.0-alpha.3",
+  "gameplayProtocol": 13,
+  "stableApproved": false,
+  "native": {
+    "suitesPassed": 6,
+    "seconds": 19.09,
+    "compiler": "Clang18 / Ubuntu24.04 builder",
+    "repositoryInputsVerifiedAcrossEightTargets": 1342,
+    "bundleRepositoryInputsVerified": 110
+  },
+  "linuxPackage": {
+    "archiveSha256": "0d9cc510ff29888d405a855421da989ae8e0f55f047370e728aa16fc9de1a079",
+    "manifestSha256": "da72e8dff4795613743145c06ad908abcec7ff9dc4f7032d6e12e83ca171813e",
+    "verifiedFiles": 463,
+    "noticeInputs": 16,
+    "binarySha256": {
+      "mwnet": "ef8369749048ed5e7faecd6848710cb0bf1866aaaa5c7251f4bc8bb145ed6777",
+      "mwnet-server": "efd4399fb1fefe0ba8dc6a9750a39360cf827bc012a13567be62a73414084cf5"
+    }
+  },
+  "rendered": {
+    "outcome": "pass",
+    "compiler": "GNU13.3 / Ubuntu24.04 builder",
+    "positiveCases": 4,
+    "expectedRejectionCases": 6,
+    "positiveNativeAssertions": 130,
+    "nativeControlBoundaryCases": 14,
+    "seconds": 62.939,
+    "repositoryInputsVerified": 2688,
+    "compileObjects": 1216,
+    "archives": 22,
+    "peakCgroupMemoryBytes": 1397612544,
+    "memoryLimitBytes": 12884901888,
+    "renderer": {
+      "vendor": "Mesa",
+      "renderer": "llvmpipe (LLVM 20.1.2, 256 bits)",
+      "version": "OpenGL4.5 Compatibility Profile Mesa25.2.8-0ubuntu0.24.04.2",
+      "audio": "ALSOFT_DRIVERS=null"
+    },
+    "videos": 3,
+    "framesReviewed": 9,
+    "assetsRedistributed": false,
+    "manualGameplayRequired": false,
+    "controlledDeathInjection": true,
+    "cleanBuildReproducibilityClaimed": false
+  },
+  "sustained": {
+    "statusAtRecord": "running",
+    "overnightAccepted": false,
+    "container": "mwnet-overnight-security-dd1fd12cebca",
+    "output": "build/overnight-runs/post-security-dd1fd12cebca/overnight",
+    "startedUtc": "2026-10-30T21:51:33.073185+00:00",
+    "requestedSeconds": 28800,
+    "clients": 16,
+    "latencyMs": 75,
+    "packetLossPercent": 2,
+    "memoryLimitBytes": 4294967296,
+    "cpuLimit": 4,
+    "cgroupConstraintsAtStart": {
+      "memory.max": "4294967296",
+      "memory.swap.max": "0"
+    },
+    "automationId": "watch-mwnet-corrected-acceptance",
+    "actualGameActors": false
+  },
+  "evidenceSha256": {
+    "build/ecc-review/rendered-candidate/rendered-acceptance-receipt.json": "45614ccd0da38726921826a39f11c5dc2c8de218b72d9978cf2035e8a1f57a91",
+    "build/ecc-review/rendered-provenance-dd1fd12cebca/read-only-check-receipt.json": "9e81a2b1a7b9e722d304b6347e0ced19f431925b0e66c72037e8ff42d5751f1f",
+    "build/ecc-review/overnight-tools-dd1fd12cebca/evidence/compiled-provenance.json": "cb82166122de323a3370146e58669db82d0f8afe5b04a110061dacd33b8b9009",
+    "build/ecc-review/overnight-tools-dd1fd12cebca/evidence/bundle-ready-receipt.json": "d62f01fe539fbbb0d74c25894db2006d879573f28a45973a430434dbcbb08f93",
+    "build/overnight-runs/post-security-dd1fd12cebca/preflight/result.json": "3443ea1542ee4f6501cf710f30f1db988cf374391aca060425e76b2ed4af8a66",
+    "build/ecc-review/licensing/upstream-license-verification.json": "72328a1a840d45eb1d9ddc271b3fd05a35667f673b510867ce7cebc7ed848a91"
+  },
+  "remaining": [
+    "Complete and verify all28800 seconds and terminal container/cleanup/resource verdict",
+    "Complete Windows/macOS bundled notice/source delivery before their next release",
+    "Select supported release identity and verify deployment separately; published assets and NUC unchanged"
+  ]
+}

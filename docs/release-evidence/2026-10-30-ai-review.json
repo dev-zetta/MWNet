@@ -54,7 +54,8 @@
     "build/ecc-review/licensing/linux-notices-final15-receipt.json": "429767a1e1a65e3072266b5da74f5baf104ed8f0521b0f96a6f7c69b7565d9de",
     "build/ecc-review/licensing/gns-selected-implementation.json": "e171da2bffc41e65fcb0b720be140fa00f443bd2f650e821a3b2096766f1eb58",
     "build/ecc-review/licensing/linux-notices-final16-receipt.json": "93a6c08d0a2f7b6c1305b6ce7155aad0fd2679a9cd4531eabe9d2849781b77d9",
-    "build/ecc-review/licensing/mygui-static-gap.json": "ce7a411ec0cf6f40d68d20e8906398789dea8a6f576687ee9694deaa5470e7f2"
+    "build/ecc-review/licensing/mygui-static-gap.json": "ce7a411ec0cf6f40d68d20e8906398789dea8a6f576687ee9694deaa5470e7f2",
+    "build/ecc-review/licensing/upstream-license-verification.json": "72328a1a840d45eb1d9ddc271b3fd05a35667f673b510867ce7cebc7ed848a91"
   },
   "regressions": {
     "nativeSuitesPassed": 6,
@@ -71,14 +72,16 @@
   },
   "licensing": {
     "mainLicenseSha256": "98f242648272e2e02aa9cf2d907eff760d32d6201080edb752367c57cbbc46f8",
-    "inheritedFrom": "19998f841321891f461ae3dbe681b83d42389cc0",
     "mainLicenseChanged": false,
     "noticeInputs": 16,
     "stagedNoticeOnlyArchiveSha256": "2ad691a95f13bf64ae07ef407b86daa6b9bb4563cfa358955317eb502215dac7",
     "publishedArchiveModified": false,
     "windowsMacNoticeSourceDeliveryComplete": false,
     "allHistoricalCopyrightAuthorityProven": false,
-    "staticMyGuiGapCorrected": true
+    "staticMyGuiGapCorrected": true,
+    "localHistoryOrigin": "19998f841321891f461ae3dbe681b83d42389cc0",
+    "canonicalUpstreamOrigin": "f6887559f6baa2aa94847ee8341045ffeffdac8f",
+    "officialUpstreamLicenseByteMatch": true
   },
   "remaining": [
     "Clean corrected candidate rendered/package acceptance",
@@ -86,5 +89,25 @@
     "Verify selected distribution source/notices; complete native-platform bundled delivery before next native-platform release",
     "Live update requires separately verified deployment; existing public archives and NUC were not changed"
   ],
-  "stableApproved": false
+  "stableApproved": false,
+  "followupCandidateCommit": "dd1fd12cebcaf8a880b1e56f559891315ec3f062",
+  "followupRecord": "2026-10-30-post-review-candidate.json",
+  "findings": [
+    {
+      "id": "AUTH-01",
+      "severity": "high availability",
+      "fixedIn": "2b439461824448731136debc3ce5e13a886d2374"
+    },
+    {
+      "id": "AUTH-02",
+      "severity": "high availability",
+      "fixedIn": "2b439461824448731136debc3ce5e13a886d2374",
+      "remoteCrashProbePerformed": false
+    },
+    {
+      "id": "DIR-01",
+      "severity": "medium resource cost",
+      "fixedIn": "2b439461824448731136debc3ce5e13a886d2374"
+    }
+  ]
 }
