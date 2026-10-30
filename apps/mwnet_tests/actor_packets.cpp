@@ -12,6 +12,7 @@
 #include <components/openmw-mp/Packets/Player/PacketPlayerAttribute.hpp>
 #include <components/openmw-mp/Packets/Player/PacketPlayerSkill.hpp>
 #include <components/openmw-mp/Packets/Player/PacketPlayerStatsDynamic.hpp>
+#include <components/openmw-mp/Packets/PacketPreInit.hpp>
 
 #include <apps/openmw/mwmechanics/stat.hpp>
 
@@ -25,6 +26,41 @@
 
 namespace
 {
+    class PreInitPacket : public mwmp::PacketPreInit
+    {
+    public:
+        std::vector<std::byte> encode(PluginContainer& values)
+        {
+            setChecksums(&values);
+            Packet(true);
+            const auto bytes = writePayload();
+            return {bytes.begin(), bytes.end()};
+        }
+    };
+
+    bool checkClientManifestPackets()
+    {
+        using Packet = mwmp::PacketPreInit;
+        const std::array<Packet::PluginContainer, 5> values{{
+            {}, {{"Morrowind.esm", {}}}, {{"Morrowind.esm", {1, 2}}},
+            {{"", {1}}}, {{"Morrowind.esm", {0}}}}};
+        PreInitPacket encoder;
+        Packet decoder;
+        for (std::size_t i = 0; i < values.size(); ++i)
+        {
+            auto source = values[i];
+            Packet::PluginContainer decoded;
+            decoder.setChecksums(&decoded);
+            decoder.Read(encoder.encode(source));
+            // Empty and multi-checksum lists remain valid server requirements;
+            // the authenticated client's input has the stricter role contract.
+            if (!decoder.isPacketValid() || decoded != source
+                || Packet::isValidClientManifest(decoded) != (i == values.size() - 1))
+                return false;
+        }
+        return true;
+    }
+
     class AttackPacket : public mwmp::PacketActorAttack
     {
     public:
@@ -660,5 +696,6 @@ int main()
         std::cerr << "Canonical dynamic resources changed capacity/current in client or actor packets\n";
     return forward && reverse && spells && batch && actors && containers
         && stats && dynamics && writtenDynamics
-        && checkInvalidSyncPacketsCannotBeSent() && checkPlayerFistPackets() ? 0 : 1;
+        && checkInvalidSyncPacketsCannotBeSent() && checkPlayerFistPackets()
+        && checkClientManifestPackets() ? 0 : 1;
 }

@@ -6570,7 +6570,7 @@ bool Networking::preInit(const transport::ReceivedApplicationPacket& packet)
     packetPreInit.setChecksums(&dataFiles);
     packetPreInit.Read(packet.payload);
 
-    if (!packetPreInit.isPacketValid() || dataFiles.empty())
+    if (!packetPreInit.isPacketValid() || !PacketPreInit::isValidClientManifest(dataFiles))
     {
         LOG_APPEND(TimedLog::LOG_ERROR, "- Packet was invalid");
         mEndpoint.disconnect({ packet.sender.value });

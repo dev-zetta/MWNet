@@ -18,6 +18,9 @@ namespace mwmp
 
         virtual void Packet(bool send);
         void setChecksums(PluginContainer *checksums);
+        // Clients report one actual checksum per file. Server requirements may
+        // instead contain zero (any checksum) or multiple acceptable checksums.
+        static bool isValidClientManifest(const PluginContainer& values) noexcept;
     private:
         PluginContainer *checksums;
         static inline constexpr uint32_t maxPlugins = 1000;

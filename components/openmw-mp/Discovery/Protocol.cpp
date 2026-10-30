@@ -243,15 +243,23 @@ namespace mwmp::discovery
     Json parseJson(std::string_view text)
     {
         require(text.size() <= maximumBody, "discovery body too large");
-        // Bound nesting before the recursive property-tree parser sees untrusted input.
+        // Bound nesting and breadth before the recursive property-tree parser allocates nodes.
+        // Each valid tree node is bounded by the root plus containers and separators;
+        // quoted punctuation does not contribute. Normal 100-envelope pages fit easily.
         bool quoted = false, escape = false;
         int depth = 0;
+        std::size_t nodes = 1;
         for (char c : text)
         {
             if (quoted) { if (escape) escape = false; else if (c == '\\') escape = true;
                 else if (c == '"') quoted = false; }
             else if (c == '"') quoted = true;
-            else if (c == '{' || c == '[') require(++depth <= 8, "discovery JSON too deeply nested");
+            else if (c == '{' || c == '[')
+            {
+                require(++depth <= 8, "discovery JSON too deeply nested");
+                require(++nodes <= 4096, "discovery JSON too complex");
+            }
+            else if (c == ',') require(++nodes <= 4096, "discovery JSON too complex");
             else if (c == '}' || c == ']') --depth;
         }
         std::istringstream stream{ std::string(text) };

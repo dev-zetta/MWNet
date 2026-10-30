@@ -143,6 +143,23 @@ namespace
             == AuthenticationAttemptDecision::CapacityReached);
         EXPECT(capacity.trackedAccountAddresses() == 1);
         EXPECT(capacity.trackedAddresses() == 1);
+
+        AuthenticationLimits throttledLimits;
+        throttledLimits.maximumTrackedEntries = 4;
+        throttledLimits.preKdfBurst = 1.0;
+        throttledLimits.preKdfAttemptsPerMinute = 1.0;
+        AuthenticationRateLimiter throttled(throttledLimits);
+        EXPECT(throttled.begin("accepted", "10.0.0.1", start)
+            == AuthenticationAttemptDecision::Allowed);
+        for (const auto* name : {"denied-one", "denied-two", "denied-three", "denied-four"})
+            EXPECT(throttled.begin(name, "10.0.0.1", start)
+                == AuthenticationAttemptDecision::PreKdfRateLimited);
+        EXPECT(throttled.trackedAccountAddresses() == 1);
+        EXPECT(throttled.begin("other-address", "10.0.0.2", start)
+            == AuthenticationAttemptDecision::Allowed);
+        EXPECT(throttled.trackedAccountAddresses() == 2);
+        EXPECT(throttled.begin("refilled", "10.0.0.1", start + 1min)
+            == AuthenticationAttemptDecision::Allowed);
     }
 
     std::string readFile(const std::filesystem::path& path)

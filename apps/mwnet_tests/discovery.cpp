@@ -57,6 +57,28 @@ namespace
         rejects([&]{ verify(e,"https://another.test"); });
         rejects([&]{ decode(std::vector<unsigned char>{1,0,0,0}); });
         rejects([&]{ parseJson(std::string(40,'[')); });
+        // A shallow near-body-limit array previously allocated over 320 MiB before
+        // request-shape validation. Reject its structure before property_tree runs.
+        std::string broadJson = "[";
+        while (broadJson.size()+3 < maximumBody) broadJson += "0,";
+        broadJson += "0]";
+        rejects([&]{ parseJson(broadJson); });
+        Json quoted;
+        std::string punctuation;
+        for (int i=0;i<5000;++i) punctuation += "\"\\[]{},";
+        quoted.put("text",punctuation);
+        check(parseJson(writeJson(quoted)).get<std::string>("text") == punctuation,
+            "quoted or escaped JSON punctuation counted as structure");
+        Json fullPage, fullPageServers;
+        for (int i=0;i<100;++i) fullPageServers.push_back({"",toJson(e)});
+        fullPage.add_child("servers",fullPageServers); fullPage.put("next","");
+        const auto parsedPage = parseJson(writeJson(fullPage));
+        check(parsedPage.get_child("servers").size() == 100,"maximum valid page rejected");
+        for (const auto& [index,item] : parsedPage.get_child("servers"))
+        {
+            check(index.empty() && verify(envelopeFromJson(item),origin) == f.listing,
+                "maximum page envelope changed");
+        }
         auto duplicate = toJson(e); duplicate.push_back({"origin",Json(origin)});
         rejects([&]{ envelopeFromJson(duplicate); });
         check(submit(directory,e).status == 202,"registration must be pending");

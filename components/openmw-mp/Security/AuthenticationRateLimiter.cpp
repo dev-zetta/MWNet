@@ -63,15 +63,14 @@ namespace mwmp::security
         prune(now);
         const AccountAddress accountAddress = key(account, address);
         auto failure = mFailures.find(accountAddress);
-        if (failure == mFailures.end())
+        if (failure == mFailures.end() && mFailures.size() >= mLimits.maximumTrackedEntries)
+            return AuthenticationAttemptDecision::CapacityReached;
+        if (failure != mFailures.end())
         {
-            if (mFailures.size() >= mLimits.maximumTrackedEntries)
-                return AuthenticationAttemptDecision::CapacityReached;
-            failure = mFailures.emplace(accountAddress, FailureState{}).first;
+            failure->second.lastSeen = now;
+            if (failure->second.lockedUntil > now)
+                return AuthenticationAttemptDecision::AccountAndAddressLocked;
         }
-        failure->second.lastSeen = now;
-        if (failure->second.lockedUntil > now)
-            return AuthenticationAttemptDecision::AccountAndAddressLocked;
 
         auto addressState = mAddresses.find(std::string(address));
         if (addressState == mAddresses.end())
@@ -94,6 +93,10 @@ namespace mwmp::security
         state.lastSeen = now;
         if (state.tokens < 1.0)
             return AuthenticationAttemptDecision::PreKdfRateLimited;
+        // A throttled request must not reserve shared account-tracking capacity.
+        if (failure == mFailures.end())
+            failure = mFailures.emplace(accountAddress, FailureState{}).first;
+        failure->second.lastSeen = now;
         state.tokens -= 1.0;
         return AuthenticationAttemptDecision::Allowed;
     }

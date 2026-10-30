@@ -2,6 +2,15 @@
 #include <components/openmw-mp/TimedLog.hpp>
 #include "PacketPreInit.hpp"
 
+#include <algorithm>
+
+bool mwmp::PacketPreInit::isValidClientManifest(const PluginContainer& values) noexcept
+{
+    return !values.empty() && std::all_of(values.begin(), values.end(), [](const auto& file) {
+        return !file.first.empty() && file.second.size() == 1;
+    });
+}
+
 mwmp::PacketPreInit::PacketPreInit()
     : BasePacket()
     , checksums(nullptr)
