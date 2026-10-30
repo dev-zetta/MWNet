@@ -438,7 +438,7 @@ The original OpenMW 0.50 integration resolved 237 merge conflicts while preservi
 
 ## License
 
-- MWNet: GPLv3 with additional allowed terms
+- MWNet: GPLv3 with inherited additional terms; see [LICENSE](LICENSE) and the pending [review questions](docs/RELEASE_REVIEW.md)
 - OpenMW: GPLv3
 
 See [LICENSE](LICENSE) for full details.

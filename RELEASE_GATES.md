@@ -1,58 +1,54 @@
 # MWNet 1.0 release gates
 
-MWNet 1.0 milestone acceptance proceeds sequentially. Passing a later implementation milestone does not skip the evidence required by an earlier milestone, and the stable version remains blocked until every gate below has recorded artifacts from the exact release candidate. Development previews can provide binaries for testing without closing these gates.
+This checklist defines the minimum evidence for a stable release. The maintainer adopted this narrower policy on October 30, 2026: preserve checks that address gameplay, data loss, security, licensing and sustained operation, while allowing a Linux-first release without requiring sequential alpha/beta labels or a fixed beta duration. The earlier alpha milestone sequence, fixed fuzz budget and numerical soak/performance thresholds are no longer prerequisites by themselves. Historical records retain their original criteria and outcomes.
 
-## Milestones
+## Release scope and current status
 
-| Milestone | Required scope | Current status |
-| --- | --- | --- |
-| `1.0.0-alpha.1` | Clean out-of-tree builds, protocol 12 only, fail-closed codec, unit/fuzz targets, loopback default | Implementation and earlier fuzz campaign present; paired native/sanitizer Linux soak passed at c978f30275; Linux discovery preview built and package-tested at e0b844eafa; cross-platform and remaining candidate evidence pending |
-| `1.0.0-alpha.2` | GameNetworkingSockets, encrypted identity handshake, TOFU and Argon2id migration | Implementation present in the development preview; milestone acceptance still requires the preceding and exact-candidate evidence |
-| `1.0.0-alpha.3` | Canonical authority, lifecycle gates, owned workers and atomic persistence | Development prerelease published with exact-source native/platform package validation and unattended Linux gameplay evidence; stable gates remain open |
-| `1.0.0-beta.1` | Sanitizer and fuzz gates, limited opt-in public test, independent security review | Blocked |
-| `1.0.0` | Cross-platform, soak, migration, public discovery, security, legal and documentation gates | Blocked |
+| Release scope | Current status |
+| --- | --- |
+| `1.0.0-alpha.3`, protocol 13 | Published development prerelease; exact-source native packages for Linux, Windows and both macOS architectures, with unattended graphical acceptance on Linux |
+| Linux stable client/server and public directory | Pending the required evidence below; the published alpha is not promoted by changing this checklist |
+| Windows and macOS | Experimental packages until real graphical gameplay and platform-specific acceptance pass; their pending graphical checks do not block an explicitly Linux-only stable release |
+| Public beta or release candidate | Optional rollout stage; no prescribed version label, participant count or waiting period |
 
-The current source version is `1.0.0-alpha.3`, a development candidate with protocol 13. Publication requires recorded build, package and test evidence for the release source. The version number does not certify milestone acceptance, gameplay on every platform, or suitability for untrusted public hosting; the remaining gates above and below still apply.
-
-Development candidates use the [autonomous graphical gameplay procedure](docs/AUTOMATED_GAMEPLAY.md) for reproducible gameplay checks without operator input. The alpha.3 release record must identify the tested package/source and include its machine-readable result, synchronization findings and optional captured video. Missing game assets or a skipped graphical test cannot be recorded as gameplay acceptance. Independent human reviews and time-based stable gates remain separate requirements.
+The current runtime source is `d871d54894a0774db7dbcaedc3a0955bacbc08b3`, published as `1.0.0-alpha.3`. Its independent test-controller revision and archive hashes are recorded in the [alpha.3 release validation](docs/release-evidence/2026-10-30-alpha3-release.md). Changing policy does not change those binaries, promote them to stable, or close an unfinished review. Stable release notes must name supported platforms, content limits and the load actually qualified; a synthetic transport workload does not establish populated game-server capacity.
 
 ## Required evidence
 
-- GCC, Clang and MSVC build and test results for the exact candidate.
-- ASan/UBSan and TSan runs with no relevant defects.
-- Round-trip coverage for every protocol message and malformed coverage for every truncation point, invalid UTF-8, trailing data and allocation limit.
-- At least 24 aggregate CPU-hours of decoder fuzzing under ASan/UBSan, with every finding retained as a regression fixture. Use `CI/run_mwnet_fuzz_campaign.sh --release-budget` with a complete Clang build; it runs the protocol, transport, authentication and encrypted-handshake targets concurrently while retaining their corpora, logs and crash artifacts.
-- Headless integration results for first trust, fingerprint mismatch, registration, legacy-account migration, lockout, duplicate initialization, reconnect, chat, movement, inventory, combat, jail, death and respawn. The `mwnet-headless-integration` CTest exercises these over real encrypted loopback connections.
-- Fault injection at every persistence stage showing that either the old or new complete record remains recoverable. The `mwnet-persistence-fault` CTest terminates a writer process at every stage and verifies both immediate recovery and the next atomic save.
-- One hundred connect/disconnect and death/respawn cycles.
-- A paired 24-hour, eight-client soak with latency and loss simulation and no sanitizer defect, deadlock, application RSS growth above 1% after warm-up, or queue-limit violation. Run `CI/run_mwnet_soak.sh --release-gates` against native and ASan/UBSan builds of the exact candidate. The native build supplies the unchanged RSS-growth measurement; sanitizer allocator/stack retention is recorded separately, and full leak/error detection remains enabled. Both processes must finish successfully with matching workload and commit metadata. Use at least a 2 GiB container memory limit. Shorter developer runs are allowed only without that flag.
-- Server tick p99, serialization p99, normalized inbound/outbound traffic and resident-memory comparison against the alpha.1 baseline. Compare like-for-like CI artifacts with `CI/compare_mwnet_performance.py`; a regression over 5% fails unless a non-empty reviewed justification is supplied explicitly.
-- Public discovery API v1: signed announcement/replay/expiry tests, encrypted endpoint verification, browser acceptance, directory-outage fallback, backup restoration, a two-hour bounded churn/outage run with resource and final-cleanup evidence, and independent review of the new service. Public launch requires a new domain, VPS, DNS and HTTPS staging acceptance.
-- Independent security review and remediation of release-blocking findings.
-- Specialist review of MWNet's additional GPL terms and third-party notices. The project does not declare those terms compliant before that review.
+| Gate | Minimum acceptance | Current evidence and remaining work |
+| --- | --- | --- |
+| Core gameplay and package integrity | Reproducible build/package identity and automated creation, movement, doors, inventory, reconnect, combat and death/respawn checks, with no known release-blocking crash, disconnect, authority or state-corruption defect | Alpha.3 has matching Linux rendered/package evidence and native packages on all four platform targets; evidence must be retained or refreshed for the selected stable runtime |
+| Data safety and recovery | Persistence fault tests plus an isolated, verified backup/restore and upgrade/rollback procedure for accounts, world/player data, configuration and server identity; preserve secrets and the original state | Native fault injection passed; complete profile recovery and upgrade/rollback evidence must be recorded separately |
+| Security and malformed inputs | Relevant codec/authentication/transport/discovery regressions, sanitizer runs and bounded fuzzing, with corpus retention and no unresolved release-blocking defect; a focused independent review covers exposed trust boundaries and remediation | Scoped native/protocol/sanitizer/fuzz-smoke results exist; the focused independent review remains open |
+| Sustained operation and outages | One completed automated overnight run on the selected runtime, with a declared workload, latency/loss and outage/recovery coverage, resource limits and final cleanup checks; demonstrate bounded memory, queues and retained state | Older long runs apply to older sources; the selected-runtime overnight record remains pending and must state whether it uses synthetic or actual game actors |
+| Advertised platform and capacity | Build/startup and real gameplay evidence for every platform advertised as stable, plus evidence for the player-load claim; explicitly mark other platforms or capacity levels experimental | Linux graphical acceptance exists; Windows/macOS graphical gameplay and populated sixteen-player capacity are not established |
+| Licensing and notices | Document resolution of the uncertainty around the inherited TES3MP additional GPL terms, preserved upstream attribution and third-party distribution notices; obtain specialist review where the resolution depends on legal interpretation | Resolution remains open; the project does not declare the additional terms compliant before that work is complete |
 
-CI artifacts, fuzz corpora, soak logs, performance reports and review records must identify the tested commit. Human or time-based gates may not be replaced with an unverified checklist entry.
+Development candidates use the [autonomous graphical gameplay procedure](docs/AUTOMATED_GAMEPLAY.md), which drives the real rendered client without operator gameplay. Missing game assets, a skipped scenario, successful compilation or a zero process exit without the required assertions cannot be recorded as gameplay acceptance. Recordings and machine-readable checks strengthen the evidence; physical audio playback, remote-avatar animation and broader content coverage remain explicitly outside a run unless actually exercised.
+
+The focused security review should address account authentication and lockout, handshake/identity pinning, hostile packet decoding and resource limits, server authority and persistence boundaries, directory signatures/challenges/reachability, and exposed deployment controls. One review can cover the game and directory together if its recorded scope does so. It need not be a comprehensive paid certification. Maintainer self-review or another agent pass provides preparation and regression findings; it does not close the independent-review gate.
+
+Discovery acceptance must include signed updates and replay/expiry rejection, identity-pinned endpoint verification, bounded resource handling, directory-outage recovery with direct connections preserved, and database backup restoration. The public deployment must have verified DNS/HTTPS, private operational endpoints and working operator abuse controls. It can use suitable existing hardware and a tunnel; a new VPS purchase is not a release prerequisite. Its automated churn/outage evidence may share an overnight campaign, but the receipt must distinguish each service and actual workload.
+
+The [focused review brief](docs/RELEASE_REVIEW.md) identifies the security boundaries, concrete inherited-license questions and required signoff records. Its prepared status does not close either review gate.
+
+## Lean validation and evidence reuse
+
+- Keep sanitizer coverage and targeted fuzzing of relevant trust boundaries; no fixed aggregate CPU-hour budget is required. Record targets, duration, limits and findings. Retain every discovered defect as a regression rather than replacing evidence with a clean summary.
+- Use one declared overnight profile with realistic limits and enough samples to distinguish startup/cache effects from continuing growth. Record memory, CPU, queue depth, retained connections/registrations and cleanup, and investigate sustained growth or exhausted limits. The historical paired 24-hour/eight-client profile remains available for deeper checks; it is not the required lean profile.
+- Memory growth of exactly 1% and performance change of exactly 5% are no longer automatic policy boundaries. Measurements need a comparable workload, adequate headroom, an explanation of noise and bounded steady-state behavior. Existing strict scripts can still enforce their own profiles; a run failing those criteria retains that failure and is not silently relabelled as passed.
+- A broad benchmark matrix, fixed beta duration, manual gameplay checklist and exhaustive hardware/audio coverage can be deferred when support claims and known limits are explicit. A short opt-in release-candidate rollout remains useful for deployment differences, but it is not a substitute for the required checks.
+- Reuse evidence when the tested runtime, relevant dependencies, content and deployed configuration remain applicable. Documentation, packaging metadata or test-tooling changes alone do not require repeating an overnight workload. Verify relevant file/binary hashes and record the separate tooling revision; investigate any changed verdict logic before accepting reused data.
+- Runtime, dependency or configuration changes require an impact assessment and the relevant tests again. Repeat sustained-operation checks when changes affect allocation/lifetimes, queues, transport/authentication, persistence or service recovery. A materially different platform or load needs evidence for that new claim.
+
+Every acceptance record must identify the tested source, actual binaries/packages, procedure revision, workload, resource limits, outcome and scope limitations. A failed or unfinished run remains failed or pending. A tolerance change needs an explicit rationale and review of the original measurements; it cannot invent missing runtime, recovery, security or licensing evidence. Independent review and an elapsed overnight workload must be completed before their gates close.
 
 ## Recorded evidence
 
-- [October 30 alpha.3 release validation](docs/release-evidence/2026-10-30-alpha3-release.md) records the published runtime and separate QA revisions, four platform downloads, strict graphical acceptance, native/sanitizer scope and verified public asset digests. This development prerelease does not close the stable gates above.
-
-- [October 30 autonomous gameplay development validation](docs/release-evidence/2026-10-30-autonomous-gameplay.md) records the unattended procedure, regressions it found, strict rendered acceptance and canonical creation matrix. Development runs do not replace matching clean-source/package release evidence.
-
-- [`1.0.0-alpha.1` long-running validation](docs/release-evidence/1.0.0-alpha.1.md)
-  records the exact-commit four-target sanitizer fuzz campaign, 24-hour
-  eight-client release soak, alpha.1 performance baseline and the gates those
-  results do not close.
-
-- [September 18 paired soak and Linux preparation](docs/release-evidence/2026-09-18-linux-candidate.md)
-  records the successful paired run at `c978f30275`, its resource caveat, and
-  the subsequent dedicated-server build fixes. The older soak does not certify
-  changes made while preparing the next candidate.
-
-- [September 18 graphical gameplay test](docs/release-evidence/2026-09-18-gameplay.md)
-  records real-client failures after authentication. Gameplay acceptance is
-  blocked despite successful compilation, package smoke checks and earlier soak.
-
-- [September 23 public discovery acceptance](docs/release-evidence/2026-09-23-discovery.md) records the local directory, graphical browser, transport cleanup and Lua transition checks. Its two-hour churn result and the remaining public deployment and release gates are tracked separately.
-
-- [September 23 committed Linux preview](docs/release-evidence/2026-09-23-linux-preview.md) records six native suites, three launcher regressions, source/SBOM/archive provenance and extracted-package smoke checks at `e0b844eafa`, including the corrected fresh-profile initialization failure.
+- [October 30 alpha.3 release validation](docs/release-evidence/2026-10-30-alpha3-release.md) records the published runtime and separate QA revisions, four platform downloads, strict graphical acceptance, native/sanitizer scope and verified public asset digests. The prerelease retains its recorded scope and does not automatically close the current stable gates.
+- [October 30 autonomous gameplay development validation](docs/release-evidence/2026-10-30-autonomous-gameplay.md) records the unattended procedure, regressions it found, strict rendered acceptance and canonical creation matrix. Diagnostic development runs are distinct from matching clean-source/package evidence.
+- [`1.0.0-alpha.1` long-running validation](docs/release-evidence/1.0.0-alpha.1.md) records its exact-commit four-target sanitizer fuzz campaign, 24-hour eight-client release soak and performance baseline under the earlier policy.
+- [September 18 paired soak and Linux preparation](docs/release-evidence/2026-09-18-linux-candidate.md) records the successful paired run at `c978f30275`, its resource caveat and subsequent build fixes. It does not certify later runtime changes.
+- [September 18 graphical gameplay test](docs/release-evidence/2026-09-18-gameplay.md) records earlier real-client failures after authentication. Later fixes and acceptance are recorded separately; the historical failures remain intact.
+- [September 23 public discovery acceptance](docs/release-evidence/2026-09-23-discovery.md) records its directory, graphical browser, transport cleanup and Lua transition scope, with churn and public deployment evidence tracked separately.
+- [September 23 committed Linux preview](docs/release-evidence/2026-09-23-linux-preview.md) records six native suites, launcher regressions, package provenance and extracted-package smoke checks at `e0b844eafa`.

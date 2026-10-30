@@ -1,0 +1,36 @@
+# Focused stable-release review brief
+
+Prepared October 30, 2026 for the narrower [stable-release policy](../RELEASE_GATES.md). This is a handoff document and source inventory, not an independent security assessment or a legal signoff. No reviewer has been assigned and no external contact or paid engagement is authorized by this document.
+
+The initial runtime under review is `d871d54894a0774db7dbcaedc3a0955bacbc08b3`, released as `1.0.0-alpha.3`, protocol 13. Subsequent test tooling and policy revisions must be recorded separately. Review the selected stable candidate and any production changes since that source; do not treat a changed filename, version number or earlier report as evidence that a new runtime was reviewed.
+
+## Security review scope
+
+One focused independent review can cover both the game protocol and public directory. A full engine audit is not requested. Reviewers should inspect the exposed boundaries below, reproduce the relevant automated tests and record findings with exact source references and remediation evidence. Our own implementation work, agents and automated tests do not supply the required independence.
+
+| Boundary | Principal source | Questions to resolve |
+| --- | --- | --- |
+| Encrypted identity and trust | `components/openmw-mp/Security/{SecureSession,ServerIdentity,TrustStore}.cpp`, `components/openmw-mp/Transport/{GameEndpoint,SecureTransport}.cpp` | Are ephemeral keys, signatures, identity pins, replay protection and failure transitions bound correctly? Can a mismatch, reconnect or directory listing bypass saved trust? Preserve the established cryptographic labels when reviewing protocol-version documentation. |
+| Accounts and authentication | `components/openmw-mp/Security/{ServerAuthenticationService,AccountAuthentication,AccountStore,PasswordHash,AuthenticationRateLimiter}.cpp` | Can unauthenticated peers cause excessive KDF work, enumerate or overwrite accounts, retain legacy credentials, inject identities or leak passwords through errors/logging? Check lockouts, migration and interrupted writes. |
+| Bounded untrusted messages | `components/openmw-mp/Protocol/`, `components/openmw-mp/Transport/`, packet decoders and server dispatch | Do malformed sizes, truncated fields, partial updates, asynchronous lifetimes, queue exhaustion and reconnect sequences fail closed before callbacks or canonical mutation? |
+| Gameplay authority and persistence | `apps/openmw-mp/Networking.cpp`, `components/openmw-mp/Mechanics/`, `files/mwnet/core-scripts/` | Can a client bypass creation admission, actor leases, inventory/combat/stat/respawn authority or persist a partial canonical state? Server Lua remains trusted operator code. |
+| Public directory | `components/openmw-mp/Discovery/{Protocol,Directory,Probe,Client}.cpp`, `apps/mwnet-directory/main.cpp`, `docker/discovery/` | Check exact-byte signatures and domain separation, challenge replay/expiry/binding, public-destination validation and probing, rate/concurrency/state limits, HTTPS validation, private operator endpoints and backup/restore. Directory metadata must not become a trust override. |
+| Opt-in test controls | `apps/openmw/mwmp/GameplayTest.cpp`, `CI/run_mwnet_gameplay.py`, `CI/gameplay_fixture.lua` | Confirm default-off operation, literal loopback/pinned identity, private bounded input files, bounded deadlines and cleanup, and absence of installed public fixture administration hooks. |
+
+Existing evidence is linked from the [alpha.3 release record](release-evidence/2026-10-30-alpha3-release.md): actual Linux rendered tests, native malformed-input and fault tests, selected compiler/security jobs, scoped sanitizers and synthetic lifecycle checks. The overnight and recovery procedures add their own receipts when completed. These are inputs to review, not substitutes for it. No real account store, private key, password, cookie, personal player data or copyrighted game archive should be sent to a reviewer; isolated reproductions and redacted diagnostics are sufficient.
+
+Record the reviewer's identity and independence, reviewed source/dependencies/deployment scope, methods and date, findings/severity/reproduction, remediation commits and retests, unresolved issues and a clear acceptance decision for the stated scope. A report on protocol-only fuzzing cannot certify native Lua, full gameplay or directory deployment that it did not inspect.
+
+## Licensing and distribution questions
+
+The repository's `LICENSE` contains the GPLv3 text followed by a block explicitly labelled as additional terms for TES3MP source. Its SHA256 at the runtime source is `98f242648272e2e02aa9cf2d907eff760d32d6201080edb752367c57cbbc46f8`; the block has not been changed by this policy work. It addresses warranty, liability, legal notices/origin/trademarks and indemnification. These terms are inherited; this inventory does not attribute their authorship to the MWNet maintainer.
+
+[GPLv3 section 7](https://www.gnu.org/licenses/gpl.en.html#section7) distinguishes additional permissions and specified additional requirements, including limits on who may add terms to contributed material. The [GNU licensing FAQ](https://www.gnu.org/licenses/gpl-faq.en.html#GPLIncompatibleLibs) discusses combined works and dependency permissions. Those primary references frame the questions below; matching a clause's subject to section 7 does not establish this particular fork's compliance.
+
+1. Determine which inherited contributions the appended terms cover, what copyright-holder authorization supports them, and whether the notices describe their scope over the combined OpenMW/TES3MP/MWNet work accurately.
+2. Resolve whether the exact additional wording and its placement satisfy the applicable GPL conditions; record any required clarification or authorized change. Do not remove inherited terms or claim relicensing authority without resolving provenance.
+3. Confirm preserved upstream authorship, origin/modification notices and trademark treatment in source, applications and archives. `AUTHORS.md`, `mwnet-credits.md`, package notices and source history are review inputs.
+4. Inspect the actual per-platform dependency graph, linked/bundled libraries, fonts and redistribution notices, rather than relying solely on the direct-dependency table. Use `DEPENDENCIES.md`, source/platform SBOMs, `runtime-dependencies.txt` and the actual archives. Include the Windows redistributable and macOS bundles in scope if those platforms are distributed.
+5. Record the corresponding-source and notice delivery method for each distributed artifact, including any bundled dependency source/version requirements. Identify corrections and how they will be supplied before stable publication.
+
+The source dependency table and SBOM are inventories, not a complete legal clearance. Acceptance needs a named reviewer or documented maintainer resolution supported by appropriate authority, the exact license/notice/dependency revisions, the affected distribution scope, concrete answers and any approved corrections. Obtain specialist advice for conclusions requiring legal interpretation. The present status remains open; changing policy or running software tests does not close it.

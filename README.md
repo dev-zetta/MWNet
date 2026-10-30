@@ -8,7 +8,7 @@ Stock OpenMW 0.52 is a single-player engine. MWNet adds a dedicated server, a mu
 * MWNet version: 1.0.0-alpha.3
 * OpenMW base version: 0.52.0
 * Network protocol version: 13
-* License: GPLv3 with additional allowed terms (see [LICENSE](LICENSE))
+* License: GPLv3 with inherited additional terms (see [LICENSE](LICENSE) and the pending [review questions](docs/RELEASE_REVIEW.md))
 * Upstream engine: [OpenMW on GitLab](https://gitlab.com/OpenMW/openmw)
 * Maintainer: Gabriel Max ([dev-zetta](https://github.com/dev-zetta))
 * Source code and issue tracker: [dev-zetta/MWNet on GitHub](https://github.com/dev-zetta/MWNet)

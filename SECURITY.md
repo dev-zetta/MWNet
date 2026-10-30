@@ -10,7 +10,7 @@ MWNet 1.0.0 is undergoing a security-focused protocol and authority rewrite. The
 | 0.8.1 and protocol 10 | Unsupported | Do not expose to untrusted peers |
 | Older releases | Unsupported | Do not expose |
 
-Stable 1.0.0 remains blocked until the cross-platform, sanitizer, fuzzing, soak, migration, independent security-review and legal-review gates in the release plan pass.
+Stable 1.0.0 remains blocked until the focused security, data recovery, sustained-operation, licensing and advertised-platform gates in [the release checklist](RELEASE_GATES.md) pass. The checklist permits a Linux-first stable release; Windows/macOS packages remain experimental until their real graphical gameplay is qualified. Scoped automated/agent review does not replace the recorded independent security review.
 
 ## Reporting a vulnerability
 
