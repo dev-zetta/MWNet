@@ -391,6 +391,8 @@ int main(int argc, char *argv[])
             static_cast<unsigned int>(movementViolationLimit));
         if (magicContent)
         {
+            networking.setCharacterCreationContent(
+                std::make_shared<CanonicalCharacterContent>(magicContent->characterCreation));
             if (!networking.installSpellDefinitions(magicContent->definitions))
                 throw std::runtime_error("Canonical magic definitions exceed server limits or are invalid");
             if (!networking.installActorMagicTemplates(

@@ -12,6 +12,7 @@
 #include <components/esm3/loadmgef.hpp>
 #include <components/esm3/loadnpc.hpp>
 #include <components/esm3/loadrace.hpp>
+#include <components/esm3/loadbsgn.hpp>
 #include <components/esm3/loadskil.hpp>
 #include <components/esm3/loadspel.hpp>
 #include <components/esm3/loadalch.hpp>
@@ -449,6 +450,182 @@ namespace mwmp
         }
     }
 
+    std::optional<CanonicalPlayerCharacter> deriveCanonicalPlayerCharacter(
+        const CanonicalCharacterContent& content, const ESM::NPC& appearance,
+        const ESM::Class& selectedClass, const std::string& birthsign, std::string& error)
+    {
+        error.clear();
+        const auto reject = [&error](const char* reason) -> std::optional<CanonicalPlayerCharacter> {
+            error = reason;
+            return std::nullopt;
+        };
+        if (!content.records || !std::isfinite(content.baseMagickaMultiplier)
+            || content.baseMagickaMultiplier < 0)
+            return reject("canonical character content is unavailable");
+        const auto& data = *content.records;
+        const ESM::Race* race = findRecord(data.mRaces, appearance.mRace);
+        if (!race || (race->mData.mFlags & ESM::Race::Playable) == 0)
+            return reject("character race is unknown or not playable");
+        const ESM::Class* characterClass = selectedClass.mId.empty()
+            ? &selectedClass : findRecord(data.mClasses, selectedClass.mId);
+        if (!characterClass || !characterClass->mData.mIsPlayable
+            || characterClass->mData.mSpecialization < ESM::Class::Combat
+            || characterClass->mData.mSpecialization > ESM::Class::Stealth)
+            return reject("character class is unknown or invalid");
+        const auto& classData = characterClass->mData;
+        std::array<bool, 8> favored{};
+        std::array<bool, 27> classSkills{};
+        for (const auto& attribute : classData.mAttribute)
+        {
+            const int index = ESM::Attribute::refIdToIndex(attribute);
+            if (index < 0 || index >= 8 || favored[index])
+                return reject("character class has invalid or duplicate favored attributes");
+            favored[index] = true;
+        }
+        for (const auto& pair : classData.mSkills)
+            for (const auto& skill : pair)
+            {
+                const int index = ESM::Skill::refIdToIndex(skill);
+                if (index < 0 || index >= 27 || classSkills[index])
+                    return reject("character class has invalid or duplicate skills");
+                classSkills[index] = true;
+            }
+        const ESM::BirthSign* sign = birthsign.empty() ? nullptr
+            : findRecord(data.mBirthSigns, ESM::RefId::stringRefId(birthsign));
+        if (!birthsign.empty() && !sign)
+            return reject("character birthsign is unknown");
+
+        CanonicalPlayerCharacter result;
+        // Player creation deliberately has no NPC level scaling or clamp to100.
+        for (int index = 0; index < 8; ++index)
+            result.progression.attributes[index].base = race->mData.getAttribute(
+                ESM::Attribute::indexToRefId(index), appearance.isMale()) + (favored[index] ? 10 : 0);
+        for (int index = 0; index < 27; ++index)
+        {
+            const auto id = ESM::Skill::indexToRefId(index);
+            const ESM::Skill* skill = findRecord(data.mSkills, id);
+            if (!skill)
+                return reject("canonical character skill definitions are incomplete");
+            float value = 5;
+            const auto bonus = std::find_if(race->mData.mBonus.begin(), race->mData.mBonus.end(),
+                [&id](const auto& entry) { return entry.mSkill == id; });
+            if (bonus != race->mData.mBonus.end()) value += bonus->mBonus;
+            for (const auto& pair : classData.mSkills)
+            {
+                if (pair[0] == id) value += 10;
+                if (pair[1] == id) value += 25;
+            }
+            if (skill->mData.mSpecialization == classData.mSpecialization) value += 5;
+            result.progression.skills[index].base = value;
+        }
+
+        // buildPlayer updates health before the first actor update applies
+        // racial/birthsign abilities to base values.
+        const float initialHealth = std::floor(0.5f * (result.progression.attributes[0].base
+            + result.progression.attributes[5].base));
+        float magickaFactor = content.baseMagickaMultiplier;
+        std::unordered_set<ESM::RefId> appliedAbilities;
+        const auto abilities = [&](const ESM::SpellList& powers) {
+            for (const auto& id : powers.mList)
+            {
+                const ESM::Spell* spell = findRecord(data.mSpells, id);
+                if (!spell || spell->mData.mType != ESM::Spell::ST_Ability
+                    || !appliedAbilities.insert(id).second) continue;
+                for (const auto& indexed : spell->mEffects.mList)
+                {
+                    const auto& effect = indexed.mData;
+                    // These need application-order/current-resource handling
+                    // beyond the supported starting passive-stat formulas.
+                    if (effect.mEffectID == ESM::MagicEffect::DamageAttribute
+                        || effect.mEffectID == ESM::MagicEffect::DamageSkill
+                        || effect.mEffectID == ESM::MagicEffect::RestoreAttribute
+                        || effect.mEffectID == ESM::MagicEffect::RestoreSkill
+                        || effect.mEffectID == ESM::MagicEffect::AbsorbAttribute
+                        || effect.mEffectID == ESM::MagicEffect::AbsorbSkill
+                        || effect.mEffectID == ESM::MagicEffect::DamageHealth
+                        || effect.mEffectID == ESM::MagicEffect::DamageMagicka
+                        || effect.mEffectID == ESM::MagicEffect::DamageFatigue
+                        || effect.mEffectID == ESM::MagicEffect::DrainHealth
+                        || effect.mEffectID == ESM::MagicEffect::DrainMagicka
+                        || effect.mEffectID == ESM::MagicEffect::DrainFatigue
+                        || effect.mEffectID == ESM::MagicEffect::FortifyHealth
+                        || effect.mEffectID == ESM::MagicEffect::FortifyMagicka
+                        || effect.mEffectID == ESM::MagicEffect::FortifyFatigue
+                        || effect.mEffectID == ESM::MagicEffect::RestoreHealth
+                        || effect.mEffectID == ESM::MagicEffect::RestoreMagicka
+                        || effect.mEffectID == ESM::MagicEffect::RestoreFatigue
+                        || effect.mEffectID == ESM::MagicEffect::AbsorbHealth
+                        || effect.mEffectID == ESM::MagicEffect::AbsorbMagicka
+                        || effect.mEffectID == ESM::MagicEffect::AbsorbFatigue
+                        || effect.mEffectID == ESM::MagicEffect::FireDamage
+                        || effect.mEffectID == ESM::MagicEffect::FrostDamage
+                        || effect.mEffectID == ESM::MagicEffect::ShockDamage
+                        || effect.mEffectID == ESM::MagicEffect::Poison
+                        || effect.mEffectID == ESM::MagicEffect::SunDamage)
+                    {
+                        error = "unsupported resource-changing starting ability";
+                        return false;
+                    }
+                    const bool attribute = effect.mEffectID == ESM::MagicEffect::FortifyAttribute
+                        || effect.mEffectID == ESM::MagicEffect::DrainAttribute;
+                    const bool skill = effect.mEffectID == ESM::MagicEffect::FortifySkill
+                        || effect.mEffectID == ESM::MagicEffect::DrainSkill;
+                    if (!attribute && !skill
+                        && effect.mEffectID != ESM::MagicEffect::FortifyMaximumMagicka) continue;
+                    if (effect.mMagnMin < 0 || effect.mMagnMin != effect.mMagnMax)
+                    {
+                        error = "nonconstant starting stat abilities are unsupported";
+                        return false;
+                    }
+                    const float magnitude = effect.mMagnMin;
+                    if (attribute)
+                    {
+                        const int index = ESM::Attribute::refIdToIndex(effect.mAttribute);
+                        if (index < 0 || index >= 8) return false;
+                        auto& stat = result.progression.attributes[index];
+                        if (effect.mEffectID == ESM::MagicEffect::FortifyAttribute) stat.base += magnitude;
+                        else stat.damage += magnitude;
+                    }
+                    else if (skill)
+                    {
+                        const int index = ESM::Skill::refIdToIndex(effect.mSkill);
+                        if (index < 0 || index >= 27) return false;
+                        auto& stat = result.progression.skills[index];
+                        if (effect.mEffectID == ESM::MagicEffect::FortifySkill) stat.base += magnitude;
+                        else stat.damage += magnitude;
+                    }
+                    else magickaFactor += magnitude * 0.1f;
+                }
+            }
+            return true;
+        };
+        if (!abilities(race->mPowers) || (sign && !abilities(sign->mPowers)))
+            return reject(error.empty() ? "invalid starting stat ability" : error.c_str());
+        const auto modified = [&](ESM::RefId id) {
+            const auto& stat = result.progression.attributes[ESM::Attribute::refIdToIndex(id)];
+            return std::max(0.0f, stat.base + stat.modifier - stat.damage);
+        };
+        result.dynamicBases = { initialHealth,
+            modified(ESM::Attribute::Intelligence) * magickaFactor,
+            modified(ESM::Attribute::Strength) + modified(ESM::Attribute::Willpower)
+                + modified(ESM::Attribute::Agility) + modified(ESM::Attribute::Endurance) };
+        mechanics::PlayerProgressionLedger validation(1);
+        if (!validation.set(1, result.progression).applied())
+            return reject("derived character progression is outside canonical bounds");
+        for (std::size_t index = 0; index < 3; ++index)
+        {
+            result.dynamicMaximums[index] = result.dynamicBases[index];
+            if (!std::isfinite(result.dynamicBases[index]) || result.dynamicBases[index] < 0
+                || result.dynamicBases[index] > mechanics::SpellResolver::MaximumStatValue
+                || !std::isfinite(result.dynamicMaximums[index])
+                || result.dynamicMaximums[index] > mechanics::SpellResolver::MaximumStatValue)
+                return reject("derived character resources are outside canonical bounds");
+        }
+        if (result.dynamicMaximums[0] <= 0)
+            return reject("derived character has no starting health");
+        return result;
+    }
+
     CanonicalMagicContent loadCanonicalMagicContent(
         const MagicContentOptions& options)
     {
@@ -646,6 +823,15 @@ namespace mwmp
                 result.consumableItems.insert(definition.id);
             result.definitions.push_back(std::move(definition));
         }
+        result.characterCreation.baseMagickaMultiplier = EsmLoader::getGameSetting(
+            data.mGameSettings, "fPCbaseMagickaMult").getFloat();
+        auto characterRecords = std::make_shared<EsmLoader::EsmData>();
+        characterRecords->mRaces = std::move(data.mRaces);
+        characterRecords->mClasses = std::move(data.mClasses);
+        characterRecords->mSkills = std::move(data.mSkills);
+        characterRecords->mBirthSigns = std::move(data.mBirthSigns);
+        characterRecords->mSpells = std::move(data.mSpells);
+        result.characterCreation.records = std::move(characterRecords);
         return result;
     }
 }

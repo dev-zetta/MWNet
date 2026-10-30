@@ -79,7 +79,8 @@ endif()
 add_test(NAME mwnet-unit COMMAND mwnet-tests)
 
 if (TARGET components)
-    add_executable(mwnet-actor-packet-tests actor_packets.cpp)
+    add_executable(mwnet-actor-packet-tests actor_packets.cpp
+        ../openmw/mwmechanics/stat.cpp)
     target_include_directories(mwnet-actor-packet-tests PRIVATE ${CMAKE_SOURCE_DIR})
     target_link_libraries(mwnet-actor-packet-tests PRIVATE components)
     add_test(NAME mwnet-actor-packets COMMAND mwnet-actor-packet-tests)

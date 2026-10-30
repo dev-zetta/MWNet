@@ -1,4 +1,5 @@
 #include <components/openmw-mp/Mechanics/PlayerProgressionLedger.hpp>
+#include <components/openmw-mp/Mechanics/CharacterCreationAdmission.hpp>
 
 #include <iostream>
 #include <limits>
@@ -95,6 +96,19 @@ namespace
 
 int runProgressionTests()
 {
+    CharacterCreationAdmission creation;
+    EXPECT(!creation.active());
+    EXPECT(!creation.complete(0, 0));
+    EXPECT(!creation.begin(1, 99));
+    EXPECT(creation.begin(1, 4));
+    EXPECT(creation.accepts(1, 4));
+    EXPECT(!creation.accepts(0, 0));
+    EXPECT(!creation.accepts(4, 5));
+    EXPECT(!creation.complete(3, 4));
+    EXPECT(creation.active());
+    EXPECT(creation.complete(4, 4));
+    EXPECT(!creation.active());
+    EXPECT(!creation.complete(4, 4));
     testAttributeIntentIsTransactional();
     testSkillAndLevelBounds();
     testInvalidValuesAndCapacity();

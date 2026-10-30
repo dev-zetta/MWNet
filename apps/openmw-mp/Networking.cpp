@@ -1,5 +1,6 @@
 #include <components/openmw-mp/ScopedActorList.hpp>
 #include <components/openmw-mp/Mechanics/AttackAnimation.hpp>
+#include <components/openmw-mp/Mechanics/EffectiveStat.hpp>
 #include "Player.hpp"
 #include "processors/ProcessorInitializer.hpp"
 
@@ -36,6 +37,7 @@
 #endif
 
 #include "Networking.hpp"
+#include "MagicContent.hpp"
 #include "Cell.hpp"
 #include "CellController.hpp"
 #include "processors/PlayerProcessor.hpp"
@@ -2856,28 +2858,13 @@ namespace
         return mwmp::mechanics::CastIntentDecision::Accepted;
     }
 
-    double currentStat(const std::map<ESM::RefId, ESM::StatState<float>>& stats,
-        const ESM::RefId& id) noexcept
-    {
-        const auto found = stats.find(id);
-        if (found == stats.end() || !std::isfinite(found->second.mCurrent))
-            return 0;
-        return std::clamp(static_cast<double>(found->second.mCurrent),
-            0.0, mwmp::mechanics::SpellResolver::MaximumStatValue);
-    }
-
     double effectiveCombatStat(const std::map<ESM::RefId, ESM::StatState<float>>& stats,
         const ESM::RefId& id) noexcept
     {
         const auto found = stats.find(id);
         if (found == stats.end())
             return 0;
-        // Attributes/skills serialize base, modifier and damage; mCurrent is
-        // only meaningful for dynamic resources (health, magicka, fatigue).
-        const auto& stat = found->second;
-        const double value = static_cast<double>(stat.mBase) + stat.mMod - stat.mDamage;
-        return std::isfinite(value)
-            ? std::clamp(value, 0.0, mwmp::mechanics::CombatResolver::MaximumStatValue) : 0;
+        return mwmp::mechanics::effectiveStatValue(found->second);
     }
 
     double activeEffectMagnitude(
@@ -2934,15 +2921,15 @@ namespace
         }
         state.fatigue = combat.fatigue;
         state.maximumFatigue = combat.maximumFatigue;
-        state.willpower = currentStat(
+        state.willpower = effectiveCombatStat(
             player.creatureStats.mAttributes, ESM::Attribute::Willpower);
-        state.intelligence = currentStat(
+        state.intelligence = effectiveCombatStat(
             player.creatureStats.mAttributes, ESM::Attribute::Intelligence);
-        state.luck = currentStat(
+        state.luck = effectiveCombatStat(
             player.creatureStats.mAttributes, ESM::Attribute::Luck);
-        state.alchemySkill = currentStat(
+        state.alchemySkill = effectiveCombatStat(
             player.npcStats.mSkills, ESM::Skill::Alchemy);
-        state.enchantSkill = currentStat(
+        state.enchantSkill = effectiveCombatStat(
             player.npcStats.mSkills, ESM::Skill::Enchant);
         state.fatigueTerm = std::max(0.0, fatigueBase
             - fatigueMultiplier * (1.0 - combat.fatigueRatio));
@@ -2951,7 +2938,7 @@ namespace
             const ESM::RefId skillId = ESM::MagicSchool::indexToSkillRefId(index);
             state.magicSkills.insert_or_assign(
                 Misc::StringUtils::lowerCase(skillId.getRefIdString()),
-                currentStat(player.npcStats.mSkills, skillId));
+                effectiveCombatStat(player.npcStats.mSkills, skillId));
         }
         applyMagicDefences(state, effects);
         return state;
@@ -4465,13 +4452,13 @@ namespace
             || !finiteBounded(stat.mCurrent) || !finiteBounded(stat.mDamage)
             || !finiteBounded(stat.mProgress))
             return false;
-        return !health || (stat.mBase >= 0 && stat.mMod >= 0 && stat.mCurrent >= 0);
+        return !health || (stat.mBase >= 0
+            && static_cast<double>(stat.mBase) + stat.mMod >= 0 && stat.mCurrent >= 0);
     }
 
     double dynamicMaximum(const ESM::StatState<float>& stat) noexcept
     {
-        return std::max({ 1.0, static_cast<double>(stat.mBase),
-            static_cast<double>(stat.mMod), static_cast<double>(stat.mCurrent) });
+        return mwmp::mechanics::dynamicStatMaximum(stat);
     }
 
     mwmp::mechanics::CombatantState playerCombatState(const Player& player,
@@ -4515,36 +4502,23 @@ namespace
     void applyCanonicalHealth(Player& player,
         const mwmp::mechanics::CombatantState& state) noexcept
     {
-        auto& health = player.creatureStats.mDynamic[0];
-        health.mBase = static_cast<float>(state.maximumHealth);
-        health.mMod = static_cast<float>(state.maximumHealth);
-        health.mCurrent = static_cast<float>(state.health);
-        health.mDamage = 0;
-        health.mProgress = 0;
+        mwmp::mechanics::setCanonicalDynamicStat(player.creatureStats.mDynamic[0],
+            state.maximumHealth, state.health);
         player.creatureStats.mDead = !state.alive;
     }
 
     void applyCanonicalMagicka(Player& player,
         const mwmp::mechanics::SpellCombatantState& state) noexcept
     {
-        auto& magicka = player.creatureStats.mDynamic[1];
-        magicka.mBase = static_cast<float>(state.maximumMagicka);
-        magicka.mMod = static_cast<float>(state.maximumMagicka);
-        magicka.mCurrent = static_cast<float>(state.magicka);
-        magicka.mDamage = 0;
-        magicka.mProgress = 0;
+        mwmp::mechanics::setCanonicalDynamicStat(player.creatureStats.mDynamic[1],
+            state.maximumMagicka, state.magicka);
     }
 
     void applyCanonicalFatigue(Player& player,
         const mwmp::mechanics::CombatantState& state) noexcept
     {
-        auto& fatigue = player.creatureStats.mDynamic[2];
-        fatigue.mBase = static_cast<float>(state.maximumFatigue);
-        // DynamicStat stores an additive modifier, not the modified maximum.
-        fatigue.mMod = 0;
-        fatigue.mCurrent = static_cast<float>(state.fatigue);
-        fatigue.mDamage = 0;
-        fatigue.mProgress = 0;
+        mwmp::mechanics::setCanonicalDynamicStat(player.creatureStats.mDynamic[2],
+            state.maximumFatigue, state.fatigue);
     }
 
     std::uint64_t actorReferenceValue(const mwmp::BaseActor& actor) noexcept
@@ -4603,36 +4577,23 @@ namespace
     void applyCanonicalHealth(mwmp::BaseActor& actor,
         const mwmp::mechanics::CombatantState& state) noexcept
     {
-        auto& health = actor.creatureStats.mDynamic[0];
-        health.mBase = static_cast<float>(state.maximumHealth);
-        health.mMod = static_cast<float>(state.maximumHealth);
-        health.mCurrent = static_cast<float>(state.health);
-        health.mDamage = 0;
-        health.mProgress = 0;
+        mwmp::mechanics::setCanonicalDynamicStat(actor.creatureStats.mDynamic[0],
+            state.maximumHealth, state.health);
         actor.creatureStats.mDead = !state.alive;
     }
 
     void applyCanonicalMagicka(mwmp::BaseActor& actor,
         const mwmp::mechanics::SpellCombatantState& state) noexcept
     {
-        auto& magicka = actor.creatureStats.mDynamic[1];
-        magicka.mBase = static_cast<float>(state.maximumMagicka);
-        magicka.mMod = static_cast<float>(state.maximumMagicka);
-        magicka.mCurrent = static_cast<float>(state.magicka);
-        magicka.mDamage = 0;
-        magicka.mProgress = 0;
+        mwmp::mechanics::setCanonicalDynamicStat(actor.creatureStats.mDynamic[1],
+            state.maximumMagicka, state.magicka);
     }
 
     void applyCanonicalFatigue(mwmp::BaseActor& actor,
         const mwmp::mechanics::CombatantState& state) noexcept
     {
-        auto& fatigue = actor.creatureStats.mDynamic[2];
-        fatigue.mBase = static_cast<float>(state.maximumFatigue);
-        // DynamicStat stores an additive modifier, not the modified maximum.
-        fatigue.mMod = 0;
-        fatigue.mCurrent = static_cast<float>(state.fatigue);
-        fatigue.mDamage = 0;
-        fatigue.mProgress = 0;
+        mwmp::mechanics::setCanonicalDynamicStat(actor.creatureStats.mDynamic[2],
+            state.maximumFatigue, state.fatigue);
     }
 }
 
@@ -4852,6 +4813,102 @@ namespace
                 stat->second = esmProgressionStat(state.skills[index]);
         }
     }
+}
+
+bool Networking::finalizePlayerCharacter(Player& player, std::string& error)
+{
+    if (!player.characterCreation().accepts(player.charGenState.currentStage, player.charGenState.endStage)
+        || player.charGenState.currentStage != player.charGenState.endStage)
+    {
+        error = "character creation was not authorized by the server";
+        return false;
+    }
+    if (!mCharacterCreationContent || (player.charGenState.endStage >= 4 && player.birthsign.empty()))
+    {
+        error = "canonical creation content or the selected birthsign is missing";
+        return false;
+    }
+    const auto derived = deriveCanonicalPlayerCharacter(*mCharacterCreationContent,
+        player.npc, player.charClass, player.birthsign, error);
+    if (!derived) return false;
+
+    // Prepare all allocating state and each ledger before consuming admission.
+    // A validation/capacity failure must not leave a partially seeded character.
+    Player candidate(player.guid);
+    static_cast<BasePlayer&>(candidate) = static_cast<const BasePlayer&>(player);
+    candidate.creatureStats.mAttributes.clear();
+    candidate.npcStats.mSkills.clear();
+    candidate.npcStats.mSkillIncrease.clear();
+    for (std::size_t index = 0; index < derived->progression.attributes.size(); ++index)
+    {
+        const auto id = ESM::Attribute::indexToRefId(index);
+        candidate.creatureStats.mAttributes[id] = esmProgressionStat(derived->progression.attributes[index]);
+        candidate.npcStats.mSkillIncrease[id] = 0;
+    }
+    for (std::size_t index = 0; index < derived->progression.skills.size(); ++index)
+        candidate.npcStats.mSkills[ESM::Skill::indexToRefId(index)]
+            = esmProgressionStat(derived->progression.skills[index]);
+    candidate.creatureStats.mLevel = 1;
+    candidate.npcStats.mLevelProgress = 0;
+    candidate.creatureStats.mDead = false;
+    for (std::size_t index = 0; index < 3; ++index)
+    {
+        auto& stat = candidate.creatureStats.mDynamic[index];
+        stat = {};
+        stat.mBase = derived->dynamicBases[index];
+        stat.mMod = derived->dynamicMaximums[index] - stat.mBase;
+        stat.mCurrent = derived->dynamicMaximums[index];
+    }
+    mechanics::PlayerProgressionLedger progression = mProgressionLedger;
+    mechanics::CombatResolver combat = mCombatResolver;
+    mechanics::SpellResolver spells = mSpellResolver;
+    const mechanics::CombatantId id{ mechanics::CombatantKind::Player, player.guid.value, {} };
+    auto combatState = playerCombatState(candidate, std::nullopt, true);
+    combatState.health = combatState.maximumHealth = derived->dynamicMaximums[0];
+    combatState.fatigue = combatState.maximumFatigue = derived->dynamicMaximums[2];
+    combatState.fatigueRecoveryPerSecond = std::min(mechanics::CombatResolver::MaximumStatValue,
+        mFatigueRecoveryBase + effectiveCombatStat(candidate.creatureStats.mAttributes, ESM::Attribute::Endurance)
+            * mFatigueRecoveryPerEndurance);
+    auto magicState = playerSpellState(candidate, combatState, std::nullopt,
+        mSpellFatigueBase, mSpellFatigueMultiplier);
+    magicState.magicka = magicState.maximumMagicka = derived->dynamicMaximums[1];
+    if (!progression.set(player.guid.value, derived->progression).applied()
+        || !combat.upsert(id, combatState) || !spells.upsertCombatant(id, magicState))
+    {
+        error = "canonical creation ledger validation or capacity failed";
+        return false;
+    }
+    if (!player.characterCreation().complete(player.charGenState.currentStage, player.charGenState.endStage))
+        return false;
+    mProgressionLedger.swap(progression);
+    mCombatResolver.swap(combat);
+    mSpellResolver.swap(spells);
+    player.creatureStats.mAttributes.swap(candidate.creatureStats.mAttributes);
+    player.npcStats.mSkills.swap(candidate.npcStats.mSkills);
+    player.npcStats.mSkillIncrease.swap(candidate.npcStats.mSkillIncrease);
+    player.creatureStats.mDynamic = candidate.creatureStats.mDynamic;
+    player.creatureStats.mLevel = 1;
+    player.npcStats.mLevelProgress = 0;
+    player.creatureStats.mDead = false;
+    player.charGenState.isFinished = true;
+    if (player.charClass.mId.empty()) player.charClass.mData.mServices = 0;
+
+    LOG_MESSAGE_SIMPLE(TimedLog::LOG_INFO,
+        "Canonical character creation committed for connection %llu: race %s; class %s; health %.3f; magicka %.3f; fatigue %.3f",
+        static_cast<unsigned long long>(player.guid.value), player.npc.mRace.getRefIdString().c_str(),
+        player.charClass.mId.empty() ? "custom" : player.charClass.mId.getRefIdString().c_str(),
+        static_cast<double>(derived->dynamicMaximums[0]), static_cast<double>(derived->dynamicMaximums[1]),
+        static_cast<double>(derived->dynamicMaximums[2]));
+    const bool previousExchange = player.exchangeFullInfo;
+    player.exchangeFullInfo = true;
+    for (const auto packetId : { ID_PLAYER_ATTRIBUTE, ID_PLAYER_SKILL, ID_PLAYER_LEVEL, ID_PLAYER_STATS_DYNAMIC })
+    {
+        PlayerPacket* packet = playerPacketController->GetPacket(packetId);
+        packet->setPlayer(&player);
+        packet->Send(false);
+    }
+    player.exchangeFullInfo = previousExchange;
+    return true;
 }
 
 bool Networking::validatePlayerAttributes(
@@ -6429,6 +6486,23 @@ void Networking::processPlayerPacket(const transport::ReceivedApplicationPacket&
         return;
     }
 
+    // Normal creation sends transient recalculations before the class choice
+    // and final stage arrive. They are not gameplay intents and never seed a
+    // ledger or mutate Player; only the server-owned completion path can do so.
+    if (player->characterCreation().active())
+    {
+        switch (static_cast<std::uint16_t>(packet.id))
+        {
+            case ID_PLAYER_ATTRIBUTE:
+            case ID_PLAYER_SKILL:
+            case ID_PLAYER_LEVEL:
+            case ID_PLAYER_STATS_DYNAMIC:
+            case ID_PLAYER_EQUIPMENT:
+            case ID_PLAYER_POSITION:
+            case ID_PLAYER_CELL_CHANGE:
+                return;
+        }
+    }
 
     if (!PlayerProcessor::Process(packet))
         LOG_MESSAGE_SIMPLE(TimedLog::LOG_WARN, "Unhandled PlayerPacket with identifier %i has arrived", static_cast<std::uint16_t>(packet.id));

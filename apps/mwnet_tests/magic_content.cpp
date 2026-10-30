@@ -5,13 +5,18 @@
 #include <components/esm3/loadgmst.hpp>
 #include <components/esm3/loadmgef.hpp>
 #include <components/esm3/loadnpc.hpp>
+#include <components/esm3/loadrace.hpp>
+#include <components/esm3/loadbsgn.hpp>
+#include <components/esmloader/esmdata.hpp>
 #include <components/esm3/loadskil.hpp>
 #include <components/esm/attr.hpp>
 #include <components/esm3/loadspel.hpp>
 
+#include <algorithm>
 #include <chrono>
 #include <fstream>
 #include <iostream>
+#include <string_view>
 
 namespace
 {
@@ -30,13 +35,66 @@ namespace
         // Legacy content reloads the engine's real fixed flags for WeaknessToFire.
         writer.setFormatVersion(ESM::DefaultFormatVersion);
         writer.save(stream);
-        for (const auto& id : { "fEffectCostMult", "fNPCbaseMagickaMult", "fFatigueBase", "fFatigueMult", "fMinHandToHandMult", "fMaxHandToHandMult", "fHandtoHandHealthPer", "fFatigueReturnBase", "fFatigueReturnMult" })
+        for (const auto& id : { "fEffectCostMult", "fNPCbaseMagickaMult", "fPCbaseMagickaMult", "fFatigueBase", "fFatigueMult", "fMinHandToHandMult", "fMaxHandToHandMult", "fHandtoHandHealthPer", "fFatigueReturnBase", "fFatigueReturnMult" })
         {
             ESM::GameSetting setting{};
             setting.mId = ESM::RefId::stringRefId(id);
             setting.mValue = ESM::Variant(1.0f);
             writeRecord(writer, setting);
         }
+        ESM::Race race;
+        race.blank();
+        race.mId = ESM::RefId::stringRefId("test race");
+        race.mData.mFlags = ESM::Race::Playable;
+        for (int index = 0; index < 8; ++index)
+        {
+            race.mData.setAttribute(ESM::Attribute::indexToRefId(index), true, 40);
+            race.mData.setAttribute(ESM::Attribute::indexToRefId(index), false, 30);
+        }
+        race.mData.mBonus[0] = { ESM::Skill::Block, 10 };
+        race.mPowers.mList = { ESM::RefId::stringRefId("test racial magicka") };
+        writeRecord(writer, race);
+        ESM::Class characterClass;
+        characterClass.blank();
+        characterClass.mId = ESM::RefId::stringRefId("test class");
+        characterClass.mData.mIsPlayable = true;
+        characterClass.mData.mSpecialization = ESM::Class::Combat;
+        characterClass.mData.mAttribute = { ESM::Attribute::Strength, ESM::Attribute::Endurance };
+        for (int index = 0; index < 5; ++index)
+        {
+            characterClass.mData.mSkills[index][1] = ESM::Skill::indexToRefId(index);
+            characterClass.mData.mSkills[index][0] = ESM::Skill::indexToRefId(index + 5);
+        }
+        writeRecord(writer, characterClass);
+        for (int index = 0; index < 27; ++index)
+        {
+            ESM::Skill skill;
+            skill.blank();
+            skill.mId = ESM::StringRefId(ESM::Skill::indexToRefId(index).getRefIdString());
+            skill.mData.mAttribute = ESM::Attribute::Strength;
+            skill.mData.mSpecialization = index % 3;
+            writeRecord(writer, skill);
+        }
+        ESM::Spell ability;
+        ability.blank();
+        ability.mId = ESM::RefId::stringRefId("test racial magicka");
+        ability.mData.mType = ESM::Spell::ST_Ability;
+        ESM::ENAMstruct passive{};
+        passive.mEffectID = ESM::MagicEffect::FortifyMaximumMagicka;
+        passive.mMagnMin = passive.mMagnMax = 10;
+        ability.mEffects.populate({ passive });
+        writeRecord(writer, ability);
+        ability.mId = ESM::RefId::stringRefId("test sign endurance");
+        passive.mEffectID = ESM::MagicEffect::FortifyAttribute;
+        passive.mAttribute = ESM::Attribute::Endurance;
+        passive.mMagnMin = passive.mMagnMax = 25;
+        ability.mEffects.populate({ passive });
+        writeRecord(writer, ability);
+        ESM::BirthSign sign;
+        sign.blank();
+        sign.mId = ESM::RefId::stringRefId("test sign");
+        sign.mPowers.mList = { ability.mId };
+        writeRecord(writer, sign);
         ESM::MagicEffect effect;
         effect.blank();
         effect.mId = ESM::MagicEffect::WeaknessToFire;
@@ -93,6 +151,122 @@ namespace
         ref.save(writer);
         writer.endRecord(ESM::Cell::sRecordId);
         writer.close();
+    }
+
+    bool checkCharacterCreation(const mwmp::CanonicalCharacterContent& content)
+    {
+        ESM::NPC appearance;
+        appearance.blank();
+        appearance.mRace = ESM::RefId::stringRefId("test race");
+        ESM::Class selected;
+        selected.blank();
+        selected.mId = ESM::RefId::stringRefId("test class");
+        std::string error;
+        const auto male = mwmp::deriveCanonicalPlayerCharacter(content, appearance, selected, "test sign", error);
+        if (!male || male->progression.attributes[0].base != 50
+            || male->progression.attributes[5].base != 75 || male->progression.attributes[5].modifier != 0
+            || male->progression.attributes[5].current != 0 || male->progression.skills[0].base != 45
+            || male->progression.skills[1].base != 30 || male->progression.skills[5].base != 15
+            || male->dynamicBases != std::array<float, 3>{ 50, 80, 205 }
+            || male->dynamicMaximums != male->dynamicBases || male->progression.level != 1)
+        {
+            std::cerr << "Canonical player creation formula mismatch: " << error << '\n';
+            return false;
+        }
+        appearance.setIsMale(false);
+        const auto female = mwmp::deriveCanonicalPlayerCharacter(content, appearance, selected, "test sign", error);
+        if (!female || female->dynamicBases != std::array<float, 3>{ 40, 60, 165 }) return false;
+        selected.mId = ESM::RefId::stringRefId("unknown class");
+        if (mwmp::deriveCanonicalPlayerCharacter(content, appearance, selected, "test sign", error)) return false;
+        selected = content.records->mClasses.front();
+        selected.mId = {};
+        if (!mwmp::deriveCanonicalPlayerCharacter(content, appearance, selected, "test sign", error)) return false;
+        selected.mData.mSkills[1][0] = selected.mData.mSkills[0][1];
+        if (mwmp::deriveCanonicalPlayerCharacter(content, appearance, selected, "test sign", error)) return false;
+        selected = content.records->mClasses.front();
+        selected.mId = {};
+        selected.mData.mAttribute[1] = selected.mData.mAttribute[0];
+        if (mwmp::deriveCanonicalPlayerCharacter(content, appearance, selected, "test sign", error)) return false;
+        selected = content.records->mClasses.front();
+        selected.mId = {};
+        selected.mData.mSpecialization = 3;
+        if (mwmp::deriveCanonicalPlayerCharacter(content, appearance, selected, "test sign", error)) return false;
+        selected = content.records->mClasses.front();
+        selected.mId = {};
+        selected.mData.mIsPlayable = false;
+        if (mwmp::deriveCanonicalPlayerCharacter(content, appearance, selected, "test sign", error)) return false;
+        selected.mId = ESM::RefId::stringRefId("test class");
+        // Default classes must use canonical definitions, not forged wire fields.
+        if (!mwmp::deriveCanonicalPlayerCharacter(content, appearance, selected, "test sign", error)) return false;
+        appearance.mRace = ESM::RefId::stringRefId("unknown race");
+        if (mwmp::deriveCanonicalPlayerCharacter(content, appearance, selected, "test sign", error)) return false;
+        appearance.mRace = ESM::RefId::stringRefId("test race");
+        if (mwmp::deriveCanonicalPlayerCharacter(content, appearance, selected, "unknown sign", error)) return false;
+        auto changed = std::make_shared<EsmLoader::EsmData>();
+        changed->mRaces = content.records->mRaces;
+        changed->mClasses = content.records->mClasses;
+        changed->mSkills = content.records->mSkills;
+        changed->mBirthSigns = content.records->mBirthSigns;
+        changed->mSpells = content.records->mSpells;
+        mwmp::CanonicalCharacterContent modified{ changed, content.baseMagickaMultiplier };
+        auto signAbility = std::find_if(changed->mSpells.begin(), changed->mSpells.end(),
+            [](const auto& spell) { return spell.mId == "test sign endurance"; });
+        auto& passive = signAbility->mEffects.mList[0].mData;
+        passive.mEffectID = ESM::MagicEffect::DrainAttribute;
+        passive.mMagnMin = passive.mMagnMax = 100;
+        const auto drained = mwmp::deriveCanonicalPlayerCharacter(modified, appearance, selected, "test sign", error);
+        if (!drained || drained->progression.attributes[5].damage != 100) return false;
+        for (const auto& unsupported : { ESM::MagicEffect::DrainHealth,
+                ESM::MagicEffect::DamageHealth, ESM::MagicEffect::FortifyMagicka,
+                ESM::MagicEffect::RestoreAttribute, ESM::MagicEffect::AbsorbSkill })
+        {
+            passive.mEffectID = unsupported;
+            if (mwmp::deriveCanonicalPlayerCharacter(modified, appearance, selected, "test sign", error)
+                || error.find("unsupported") == std::string::npos) return false;
+        }
+        passive.mEffectID = ESM::MagicEffect::FortifyAttribute;
+        passive.mMagnMax = 101;
+        if (mwmp::deriveCanonicalPlayerCharacter(modified, appearance, selected, "test sign", error)
+            || error.find("nonconstant") == std::string::npos) return false;
+        return true;
+    }
+
+    bool checkCanonicalChoices(const std::filesystem::path& directory)
+    {
+        mwmp::MagicContentOptions options;
+        options.dataDirectories = { directory };
+        options.contentFiles = { "Morrowind.esm" };
+        for (const auto* name : { "Tribunal.esm", "Bloodmoon.esm" })
+            if (std::filesystem::is_regular_file(directory / name)) options.contentFiles.emplace_back(name);
+        const auto content = mwmp::loadCanonicalMagicContent(options);
+        std::size_t choices = 0;
+        for (const auto& race : content.characterCreation.records->mRaces)
+        {
+            if ((race.mData.mFlags & ESM::Race::Playable) == 0) continue;
+            for (const auto& characterClass : content.characterCreation.records->mClasses)
+            {
+                if (!characterClass.mData.mIsPlayable) continue;
+                for (const auto& sign : content.characterCreation.records->mBirthSigns)
+                    for (bool male : { false, true })
+                    {
+                        ESM::NPC appearance;
+                        appearance.blank();
+                        appearance.mRace = race.mId;
+                        appearance.setIsMale(male);
+                        std::string error;
+                        if (!mwmp::deriveCanonicalPlayerCharacter(content.characterCreation, appearance,
+                                characterClass, sign.mId.getRefIdString(), error))
+                        {
+                            std::cerr << "Canonical creation rejected " << race.mId << '/' << characterClass.mId
+                                      << '/' << sign.mId << ": " << error << '\n';
+                            return false;
+                        }
+                        ++choices;
+                    }
+            }
+        }
+        std::cout << "Canonical race/class/birthsign/sex choices validated: " << choices << '\n';
+        return choices > 0;
     }
 
     bool checkContent(const std::filesystem::path& directory)
@@ -156,12 +330,17 @@ namespace
             || !ledger.advance(9).applied() || !ledger.snapshot(target)
             || !ledger.advance(1).applied() || ledger.snapshot(target))
             return false;
-        return true;
+        return checkCharacterCreation(content.characterCreation);
     }
 }
 
-int main()
+int main(int argc, char** argv)
 {
+    if (argc == 3 && std::string_view(argv[1]) == "--canonical-data")
+    {
+        try { return checkCanonicalChoices(argv[2]) ? 0 : 1; }
+        catch (const std::exception& error) { std::cerr << error.what() << '\n'; return 1; }
+    }
     const auto directory = std::filesystem::temp_directory_path()
         / ("mwnet-magic-content-" + std::to_string(std::chrono::steady_clock::now().time_since_epoch().count()));
     std::filesystem::create_directory(directory);

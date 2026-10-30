@@ -13,6 +13,7 @@
 
 #include <components/openmw-mp/TimedLog.hpp>
 #include <components/openmw-mp/Base/BasePlayer.hpp>
+#include <components/openmw-mp/Mechanics/CharacterCreationAdmission.hpp>
 #include <components/openmw-mp/Packets/Player/PlayerPacket.hpp>
 #include "Cell.hpp"
 #include "CellController.hpp"
@@ -84,7 +85,11 @@ public:
 
     void forEachLoaded(std::function<void(Player *pl, Player *other)> func);
 
+    mwmp::mechanics::CharacterCreationAdmission& characterCreation() noexcept { return mCharacterCreation; }
+    const mwmp::mechanics::CharacterCreationAdmission& characterCreation() const noexcept { return mCharacterCreation; }
+
 private:
+    mwmp::mechanics::CharacterCreationAdmission mCharacterCreation;
     CellController::TContainer cells;
     int loadState;
     int handshakeCounter;

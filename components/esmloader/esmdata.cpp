@@ -4,6 +4,7 @@
 
 #include <components/esm/defs.hpp>
 #include <components/esm3/loadacti.hpp>
+#include <components/esm3/loadbsgn.hpp>
 #include <components/esm3/loadcell.hpp>
 #include <components/esm3/loadclas.hpp>
 #include <components/esm3/loadcont.hpp>
@@ -75,6 +76,7 @@ namespace EsmLoader
         }
     }
 
+    EsmData::EsmData() = default;
     EsmData::~EsmData() {}
 
     VFS::Path::NormalizedView getModel(const EsmData& content, const ESM::RefId& refId, ESM::RecNameInts type)

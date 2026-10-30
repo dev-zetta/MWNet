@@ -4,14 +4,39 @@
 #include <components/openmw-mp/Mechanics/SpellResolver.hpp>
 #include <components/openmw-mp/Mechanics/ActorMagicRegistry.hpp>
 #include <components/openmw-mp/Mechanics/ActorRecovery.hpp>
+#include <components/openmw-mp/Mechanics/PlayerProgressionLedger.hpp>
+#include <components/esm3/loadclas.hpp>
+#include <components/esm3/loadnpc.hpp>
 
+#include <array>
 #include <filesystem>
+#include <memory>
+#include <optional>
 #include <string>
 #include <unordered_set>
 #include <vector>
 
+namespace EsmLoader { struct EsmData; }
+
 namespace mwmp
 {
+    struct CanonicalCharacterContent
+    {
+        std::shared_ptr<const EsmLoader::EsmData> records;
+        float baseMagickaMultiplier = 1;
+    };
+
+    struct CanonicalPlayerCharacter
+    {
+        mechanics::PlayerProgressionState progression;
+        std::array<float, 3> dynamicBases{};
+        std::array<float, 3> dynamicMaximums{};
+    };
+
+    std::optional<CanonicalPlayerCharacter> deriveCanonicalPlayerCharacter(
+        const CanonicalCharacterContent& content, const ESM::NPC& appearance,
+        const ESM::Class& selectedClass, const std::string& birthsign, std::string& error);
+
     struct MagicContentOptions
     {
         std::vector<std::filesystem::path> dataDirectories;
@@ -23,6 +48,7 @@ namespace mwmp
 
     struct CanonicalMagicContent
     {
+        CanonicalCharacterContent characterCreation;
         std::vector<mechanics::SpellDefinition> definitions;
         std::vector<mechanics::ActorMagicTemplate> actorTemplates;
         std::vector<mechanics::ActorRecoveryAnchor> recoveryAnchors;

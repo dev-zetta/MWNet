@@ -11,6 +11,7 @@
 namespace ESM
 {
     struct Activator;
+    struct BirthSign;
     struct Class;
     struct Creature;
     struct Enchantment;
@@ -49,6 +50,7 @@ namespace EsmLoader
     struct EsmData
     {
         std::vector<ESM::Activator> mActivators;
+        std::vector<ESM::BirthSign> mBirthSigns;
         std::vector<ESM::Cell> mCells;
         std::vector<ESM::Container> mContainers;
         std::vector<ESM::Door> mDoors;
@@ -68,7 +70,7 @@ namespace EsmLoader
         std::vector<ESM::Static> mStatics;
         std::vector<RefIdWithType> mRefIdTypes;
 
-        EsmData() = default;
+        EsmData();
         EsmData(const EsmData&) = delete;
         EsmData(EsmData&&) = default;
 

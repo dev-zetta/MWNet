@@ -102,6 +102,7 @@ namespace mwmp::mechanics
         std::optional<PlayerProgressionState> find(std::uint64_t player) const;
         bool erase(std::uint64_t player) noexcept;
         void clear() noexcept;
+        void swap(PlayerProgressionLedger& other) noexcept { mPlayers.swap(other.mPlayers); }
         std::size_t size() const noexcept;
 
     private:

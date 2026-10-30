@@ -1,15 +1,25 @@
 #include <components/openmw-mp/Mechanics/AttackAnimation.hpp>
+#include <components/openmw-mp/Mechanics/EffectiveStat.hpp>
 #include <components/openmw-mp/NetworkActiveSpell.hpp>
 #include <components/openmw-mp/ScopedActorList.hpp>
 #include <components/openmw-mp/Packets/Actor/PacketActorSpellsActive.hpp>
 #include <components/openmw-mp/Packets/Player/PacketPlayerSpellsActive.hpp>
 #include <components/openmw-mp/Packets/Actor/PacketActorAttack.hpp>
 #include <components/openmw-mp/Packets/Actor/PacketActorList.hpp>
+#include <components/openmw-mp/Packets/Actor/PacketActorStatsDynamic.hpp>
 #include <components/openmw-mp/Packets/Object/PacketContainer.hpp>
 #include <components/openmw-mp/Packets/Player/PacketPlayerAttack.hpp>
+#include <components/openmw-mp/Packets/Player/PacketPlayerAttribute.hpp>
+#include <components/openmw-mp/Packets/Player/PacketPlayerSkill.hpp>
+#include <components/openmw-mp/Packets/Player/PacketPlayerStatsDynamic.hpp>
+
+#include <apps/openmw/mwmechanics/stat.hpp>
 
 #include <algorithm>
+#include <array>
 #include <iostream>
+#include <iterator>
+#include <limits>
 #include <type_traits>
 #include <vector>
 
@@ -374,6 +384,196 @@ namespace
             && received.baseObjects[0].containerItems.size() == 1;
     }
 
+    bool checkAttributeAndSkillStatExtraction()
+    {
+        ESM::StatState<float> stat;
+        stat.mBase = 42;
+        stat.mMod = 5;
+        stat.mDamage = 3;
+        stat.mCurrent = 0;
+        if (mwmp::mechanics::effectiveStatValue(stat) != 44)
+            return false;
+        // Dynamic current is unrelated to an attribute/skill magnitude. A
+        // stale or non-finite value must not change canonical spell ability.
+        stat.mCurrent = 999;
+        if (mwmp::mechanics::effectiveStatValue(stat) != 44)
+            return false;
+        stat.mCurrent = std::numeric_limits<float>::quiet_NaN();
+        if (mwmp::mechanics::effectiveStatValue(stat) != 44)
+            return false;
+        stat.mDamage = 100;
+        if (mwmp::mechanics::effectiveStatValue(stat) != 0)
+            return false;
+        stat.mBase = 2 * mwmp::mechanics::CombatResolver::MaximumStatValue;
+        stat.mDamage = 0;
+        if (mwmp::mechanics::effectiveStatValue(stat)
+            != mwmp::mechanics::CombatResolver::MaximumStatValue)
+            return false;
+        stat.mBase = std::numeric_limits<float>::infinity();
+        if (mwmp::mechanics::effectiveStatValue(stat) != 0)
+            return false;
+        stat.mBase = 42;
+        stat.mMod = std::numeric_limits<float>::quiet_NaN();
+        if (mwmp::mechanics::effectiveStatValue(stat) != 0)
+            return false;
+
+        stat.mMod = 5;
+        stat.mDamage = 3;
+        stat.mCurrent = 999;
+        for (const bool full : { false, true })
+        {
+            mwmp::BasePlayer sent, received;
+            sent.exchangeFullInfo = full;
+            sent.attributeIndexChanges = {
+                static_cast<std::uint8_t>(ESM::Attribute::refIdToIndex(ESM::Attribute::Willpower)) };
+            sent.skillIndexChanges = {
+                static_cast<std::uint8_t>(ESM::Skill::refIdToIndex(ESM::Skill::Destruction)) };
+            sent.creatureStats.mAttributes[ESM::Attribute::Willpower] = stat;
+            sent.npcStats.mSkills[ESM::Skill::Destruction] = stat;
+            EffectPacket<mwmp::PacketPlayerAttribute, mwmp::BasePlayer> attributes, attributeDecoder;
+            attributeDecoder.bind(received);
+            attributeDecoder.Read(attributes.encode(sent));
+            if (!attributes.isPacketValid() || !attributeDecoder.isPacketValid()
+                || received.creatureStats.mAttributes[ESM::Attribute::Willpower].mCurrent != 999
+                || mwmp::mechanics::effectiveStatValue(
+                    received.creatureStats.mAttributes[ESM::Attribute::Willpower]) != 44)
+                return false;
+            EffectPacket<mwmp::PacketPlayerSkill, mwmp::BasePlayer> skills, skillDecoder;
+            skillDecoder.bind(received);
+            skillDecoder.Read(skills.encode(sent));
+            if (!skills.isPacketValid() || !skillDecoder.isPacketValid()
+                || received.npcStats.mSkills[ESM::Skill::Destruction].mCurrent != 999
+                || mwmp::mechanics::effectiveStatValue(
+                    received.npcStats.mSkills[ESM::Skill::Destruction]) != 44)
+                return false;
+        }
+        return true;
+    }
+
+    bool checkNativeDynamicStatPackets()
+    {
+        for (const bool full : { false, true })
+            for (const float healthCurrent : { 40.f, 500.f })
+            {
+                mwmp::BasePlayer sent, received;
+                sent.exchangeFullInfo = full;
+                sent.statsDynamicIndexChanges = { 0, 1, 2 };
+                auto& resources = sent.creatureStats.mDynamic;
+                resources[0].mBase = 100;
+                resources[0].mMod = 25;
+                resources[0].mCurrent = healthCurrent;
+                resources[1].mBase = 80;
+                resources[1].mMod = -20;
+                resources[1].mCurrent = 10;
+                resources[2].mBase = 200;
+                resources[2].mMod = 0;
+                resources[2].mCurrent = -35;
+                const std::array<float, 3> capacities{ 125, 60, 200 };
+                EffectPacket<mwmp::PacketPlayerStatsDynamic, mwmp::BasePlayer> encoder, decoder;
+                decoder.bind(received);
+                decoder.Read(encoder.encode(sent));
+                if (!encoder.isPacketValid() || !decoder.isPacketValid())
+                    return false;
+                for (std::size_t index = 0; index < std::size(resources); ++index)
+                {
+                    // Exercise the actual client implementation, not a second
+                    // arithmetic model of the packet's additive modifier.
+                    MWMechanics::DynamicStat<float> native;
+                    native.readState(received.creatureStats.mDynamic[index]);
+                    if (native.getModified() != capacities[index]
+                        || native.getCurrent() != resources[index].mCurrent
+                        || mwmp::mechanics::dynamicStatMaximum(received.creatureStats.mDynamic[index])
+                            != native.getModified())
+                        return false;
+                    ESM::StatState<float> written;
+                    native.writeState(written);
+                    if (written.mBase != resources[index].mBase
+                        || written.mMod != resources[index].mMod
+                        || written.mCurrent != resources[index].mCurrent)
+                        return false;
+                }
+            }
+
+        ESM::StatState<float> stat;
+        stat.mCurrent = 500;
+        if (mwmp::mechanics::dynamicStatMaximum(stat) != 1)
+            return false;
+        stat.mBase = 100;
+        stat.mMod = -200;
+        if (mwmp::mechanics::dynamicStatMaximum(stat) != 1)
+            return false;
+        stat.mBase = 2 * mwmp::mechanics::CombatResolver::MaximumStatValue;
+        stat.mMod = 0;
+        if (mwmp::mechanics::dynamicStatMaximum(stat)
+            != mwmp::mechanics::CombatResolver::MaximumStatValue)
+            return false;
+        stat.mBase = std::numeric_limits<float>::quiet_NaN();
+        if (mwmp::mechanics::dynamicStatMaximum(stat) != 1)
+            return false;
+        stat.mBase = 100;
+        stat.mMod = std::numeric_limits<float>::infinity();
+        if (mwmp::mechanics::dynamicStatMaximum(stat) != 1)
+            return false;
+        stat.mMod = 25;
+        stat.mCurrent = std::numeric_limits<float>::quiet_NaN();
+        return mwmp::mechanics::dynamicStatMaximum(stat) == 125;
+    }
+
+    bool checkCanonicalDynamicWriterPackets()
+    {
+        const std::array<float, 3> maxima{ 200, 90, 140 };
+        const std::array<float, 3> currents{ 195, 80, -35 };
+        const auto seed = [&](auto& resources) {
+            for (std::size_t index = 0; index < std::size(resources); ++index)
+            {
+                auto& stat = resources[index];
+                stat.mBase = 1;
+                stat.mMod = stat.mCurrent = 1000;
+                stat.mDamage = stat.mProgress = 5;
+                mwmp::mechanics::setCanonicalDynamicStat(stat, maxima[index], currents[index]);
+            }
+        };
+        const auto check = [&](const auto& resources) {
+            for (std::size_t index = 0; index < std::size(resources); ++index)
+            {
+                const auto& stat = resources[index];
+                MWMechanics::DynamicStat<float> native;
+                native.readState(stat);
+                if (native.getBase() != maxima[index] || native.getModifier() != 0
+                    || native.getModified() != maxima[index] || native.getCurrent() != currents[index]
+                    || stat.mDamage != 0 || stat.mProgress != 0
+                    || mwmp::mechanics::dynamicStatMaximum(stat) != maxima[index])
+                    return false;
+            }
+            return true;
+        };
+        for (const bool full : { false, true })
+        {
+            mwmp::BasePlayer sent, received;
+            sent.exchangeFullInfo = full;
+            sent.statsDynamicIndexChanges = { 0, 1, 2 };
+            seed(sent.creatureStats.mDynamic);
+            EffectPacket<mwmp::PacketPlayerStatsDynamic, mwmp::BasePlayer> encoder, decoder;
+            decoder.bind(received);
+            decoder.Read(encoder.encode(sent));
+            if (!encoder.isPacketValid() || !decoder.isPacketValid() || !check(received.creatureStats.mDynamic))
+                return false;
+        }
+        mwmp::BaseActorList sent, received;
+        sent.cell.blank();
+        sent.authorityLeaseId = 1;
+        sent.count = 1;
+        sent.baseActors.emplace_back();
+        sent.baseActors.front().refNum = 123;
+        seed(sent.baseActors.front().creatureStats.mDynamic);
+        EffectPacket<mwmp::PacketActorStatsDynamic, mwmp::BaseActorList> encoder, decoder;
+        decoder.bind(received);
+        decoder.Read(encoder.encode(sent));
+        return encoder.isPacketValid() && decoder.isPacketValid()
+            && received.baseActors.size() == 1 && received.baseActors.front().hasStatsDynamicData
+            && check(received.baseActors.front().creatureStats.mDynamic);
+    }
+
     bool checkInvalidSyncPacketsCannotBeSent()
     {
         EffectPacket<mwmp::PacketActorList, mwmp::BaseActorList> actorEncoder;
@@ -449,6 +649,16 @@ int main()
     const bool containers = checkContainerSyncPackets();
     if (!actors || !containers)
         std::cerr << "Actor/container synchronization request or cached-state round trip failed\n";
+    const bool stats = checkAttributeAndSkillStatExtraction();
+    if (!stats)
+        std::cerr << "Player spell stats did not use bounded base/modifier/damage values\n";
+    const bool dynamics = checkNativeDynamicStatPackets();
+    if (!dynamics)
+        std::cerr << "Dynamic stat capacity/current did not match native client packet semantics\n";
+    const bool writtenDynamics = checkCanonicalDynamicWriterPackets();
+    if (!writtenDynamics)
+        std::cerr << "Canonical dynamic resources changed capacity/current in client or actor packets\n";
     return forward && reverse && spells && batch && actors && containers
+        && stats && dynamics && writtenDynamics
         && checkInvalidSyncPacketsCannotBeSent() && checkPlayerFistPackets() ? 0 : 1;
 }

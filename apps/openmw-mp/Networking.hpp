@@ -48,6 +48,7 @@
 
 namespace  mwmp
 {
+    struct CanonicalCharacterContent;
     class Networking
     {
     public:
@@ -109,6 +110,9 @@ namespace  mwmp
         bool isPassworded() const;
         bool installSpellDefinitions(
             const std::vector<mechanics::SpellDefinition>& definitions);
+        void setCharacterCreationContent(std::shared_ptr<const CanonicalCharacterContent> content)
+        { mCharacterCreationContent = std::move(content); }
+        bool finalizePlayerCharacter(Player& player, std::string& error);
         bool installActorMagicTemplates(
             const std::vector<mechanics::ActorMagicTemplate>& actors);
         bool installActorRecoveryAnchors(const std::vector<mechanics::ActorRecoveryAnchor>& anchors)
@@ -292,6 +296,7 @@ namespace  mwmp
         mechanics::JusticeLedger mJusticeLedger;
         mechanics::ObjectStateLedger mObjectStateLedger;
         mechanics::PlayerProgressionLedger mProgressionLedger;
+        std::shared_ptr<const CanonicalCharacterContent> mCharacterCreationContent;
         mechanics::ShapeshiftLedger mShapeshiftLedger;
         mechanics::SpellbookLedger mSpellbookLedger;
         mechanics::SpellResolver mSpellResolver;

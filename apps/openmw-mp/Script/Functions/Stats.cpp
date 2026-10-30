@@ -603,6 +603,14 @@ void StatsFunctions::SetCharGenStage(unsigned short pid, int currentStage, int e
     Player *player;
     GET_PLAYER(pid, player,);
 
+    if (endStage > 1)
+    {
+        if (!player->characterCreation().begin(currentStage, endStage))
+            throw std::invalid_argument("invalid server-authored character creation stages");
+    }
+    else
+        player->characterCreation().cancel();
+
     player->charGenState.currentStage = currentStage;
     player->charGenState.endStage = endStage;
     player->charGenState.isFinished = false;

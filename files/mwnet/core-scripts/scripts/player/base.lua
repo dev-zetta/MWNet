@@ -191,6 +191,9 @@ function BasePlayer:RegisterAuthenticated()
     self.data.settings.consoleAllowed = "default"
 
     if not self.hasAccount then
+        -- Establish trusted starting inventory before any equipment requests.
+        self:LoadInventory()
+        self:LoadEquipment()
         mwnet.SetCharGenStage(self.pid, 1, 4)
     end
 end
@@ -348,6 +351,9 @@ function BasePlayer:EndCharGen()
     self:SaveCharacter()
     self:SaveClass(packetReader.GetPlayerPacketTables(self.pid, "PlayerClass"))
     self:SaveStatsDynamic(packetReader.GetPlayerPacketTables(self.pid, "PlayerStatsDynamic"))
+    -- Native creation has already derived and committed these from content.
+    self:SaveAttributes(packetReader.GetPlayerPacketTables(self.pid, "PlayerAttribute"))
+    self:SaveSkills(packetReader.GetPlayerPacketTables(self.pid, "PlayerSkill"))
     self:SaveEquipment(packetReader.GetPlayerPacketTables(self.pid, "PlayerEquipment"))
     self:SaveIpAddress()
     self:CreateAccount()

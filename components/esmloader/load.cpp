@@ -10,6 +10,7 @@
 #include <components/esm3/loadacti.hpp>
 #include <components/esm3/loadarmo.hpp>
 #include <components/esm3/loadbook.hpp>
+#include <components/esm3/loadbsgn.hpp>
 #include <components/esm3/loadcell.hpp>
 #include <components/esm3/loadclas.hpp>
 #include <components/esm3/loadclot.hpp>
@@ -145,6 +146,7 @@ namespace EsmLoader
         struct ShallowContent
         {
             Records<ESM::Activator> mActivators;
+            Records<ESM::BirthSign> mBirthSigns;
             CellRecords mCells;
             Records<ESM::Container> mContainers;
             Records<ESM::Door> mDoors;
@@ -194,6 +196,10 @@ namespace EsmLoader
                 case ESM::REC_CLAS:
                     if (query.mLoadActorMagic)
                         return loadRecord(reader, content.mClasses);
+                    break;
+                case ESM::REC_BSGN:
+                    if (query.mLoadActorMagic)
+                        return loadRecord(reader, content.mBirthSigns);
                     break;
                 case ESM::REC_CREA:
                     if (query.mLoadActorMagic)
@@ -432,6 +438,7 @@ namespace EsmLoader
             result.mGameSettings = prepareRecords(content.mGameSettings, GetKey{});
         if (query.mLoadActorMagic)
         {
+            result.mBirthSigns = prepareRecords(content.mBirthSigns, GetKey{});
             result.mClasses = prepareRecords(content.mClasses, GetKey{});
             result.mCreatures = prepareRecords(content.mCreatures, GetKey{});
             result.mNpcs = prepareRecords(content.mNpcs, GetKey{});
