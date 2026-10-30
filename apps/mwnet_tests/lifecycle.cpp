@@ -33,7 +33,7 @@ namespace
         const auto respawning = lifecycle.beginRespawn(7, 2);
         EXPECT(respawning.applied());
         EXPECT(respawning.state == PlayerLifeState::Respawning);
-        EXPECT(lifecycle.pendingRespawnType(7) == 2);
+        EXPECT(lifecycle.pendingRespawnType(7) == std::uint32_t{ 2 });
         EXPECT(lifecycle.beginRespawn(7, 2).decision == PlayerLifeDecision::NotDead);
         EXPECT(lifecycle.acknowledgeRespawn(7, 1).decision
             == PlayerLifeDecision::RespawnTypeMismatch);

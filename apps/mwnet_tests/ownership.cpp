@@ -1,5 +1,6 @@
 #include <components/openmw-mp/Base/BasePacketProcessor.hpp>
 
+#include <cstdint>
 #include <iostream>
 #include <memory>
 #include <stdexcept>
@@ -38,13 +39,13 @@ namespace
 
     void testDuplicateProcessorOwnership()
     {
-        TestProcessor::AddProcessor(std::make_unique<TestProcessor>(42));
+        TestProcessor::AddProcessor(std::make_unique<TestProcessor>(std::uint8_t{ 42 }));
         EXPECT(TestProcessor::destructionCount == 0);
 
         bool duplicateRejected = false;
         try
         {
-            TestProcessor::AddProcessor(std::make_unique<TestProcessor>(42));
+            TestProcessor::AddProcessor(std::make_unique<TestProcessor>(std::uint8_t{ 42 }));
         }
         catch (const std::logic_error&)
         {
