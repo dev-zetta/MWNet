@@ -1,0 +1,236 @@
+{
+  "schemaVersion": 1,
+  "outcome": "pass-scoped-component-overnight",
+  "verifiedUtc": "2026-10-30T12:57:10.716623+00:00",
+  "runtimeSourceCommit": "d871d54894a0774db7dbcaedc3a0955bacbc08b3",
+  "qaProcedureCommit": "5c50adf5ef45977e18f0b795be3963413a20bac8",
+  "procedureTrackedDirtyAtStart": false,
+  "startedUtc": "2026-10-30T04:38:51.050694+00:00",
+  "finishedUtc": "2026-10-30T12:40:01.470597+00:00",
+  "requestedSeconds": 28800,
+  "supervisorElapsedSeconds": 28870.363953056978,
+  "nativeElapsedSeconds": 28827.6,
+  "directoryElapsedSeconds": 28869.299923781015,
+  "workload": {
+    "concurrentSyntheticPeers": 16,
+    "actualRenderedGameActors": false,
+    "fullCoreScriptsGameServerCapacityAccepted": false,
+    "completedCycles": 943,
+    "syntheticLifecycles": 15088,
+    "delayMilliseconds": 75,
+    "unreliableLossPercent": 2,
+    "droppedSnapshots": 330,
+    "directoryChurnCycles": 14319,
+    "plannedBackendShutdownRestartEvents": 1,
+    "plannedOutageSeconds": 30,
+    "observedFailedRequestsDuringOutage": 15,
+    "outageCounterMeaning": "The raw directoryOutagesObserved field counts unsuccessful requests, not distinct backend outages.",
+    "addressSanitizerEnabled": false,
+    "observedFailedRequestHttpStatus": 502
+  },
+  "resources": {
+    "memoryLimitBytes": 4294967296,
+    "memorySwapRequestedTotalBytes": 4294967296,
+    "kernelReportedMemorySwapMax": "max",
+    "swapDisabledVerified": false,
+    "swapCaveat": "Docker requested total RAM+swap equal to its RAM budget, but cgroup memory.swap.max reported max. Swap use/disabled enforcement is not established; observed RSS and memory/cleanup checks passed.",
+    "peakCgroupMemoryBytes": 353251328,
+    "cpuLimit": 4.0,
+    "pidsLimit": 512,
+    "memoryEvents": {
+      "low": 0,
+      "high": 0,
+      "max": 0,
+      "oom": 0,
+      "oom_kill": 0,
+      "oom_group_kill": 0,
+      "sock_throttled": 0
+    },
+    "cpuStat": {
+      "usage_usec": 6813699644,
+      "user_usec": 4515333281,
+      "system_usec": 2298366363,
+      "nice_usec": 0,
+      "core_sched.force_idle_usec": 0,
+      "nr_periods": 288332,
+      "nr_throttled": 0,
+      "throttled_usec": 0,
+      "nr_bursts": 0,
+      "burst_usec": 0
+    },
+    "nativeFinalRssBytes": 14434304,
+    "nativeCyclePeakRssBytes": 14462976,
+    "legacyNativeGrowthPercent": 0.653952,
+    "legacyNativeMonotonicGrowthDetected": false,
+    "nativeMemoryAssessment": {
+      "accepted": true,
+      "samples": 943,
+      "warmupFraction": 0.25,
+      "windowMeanBytes": [
+        14364951.272727273,
+        14391503.101123596,
+        14406516.363636363,
+        14418564.314606741,
+        14438446.545454545,
+        14447512.449438203,
+        14453248,
+        14460214.651685392
+      ],
+      "lastMinusFirstWindowBytes": 95263.37895811908,
+      "linearTrendBytesPerHour": 17752.994211780617,
+      "risingWindowsBeyond64KiB": 0,
+      "maximumPostWarmupGrowthBytes": 8388608,
+      "sustainedTrendRule": ">4MiB growth, >=5/7 rises over64KiB and >0.5MiB/hour"
+    },
+    "directoryMemoryAssessment": {
+      "accepted": true,
+      "samples": 14379,
+      "warmupFraction": 0.25,
+      "windowMeanBytes": [
+        18579194.68249258,
+        18579456,
+        18579456,
+        18579456,
+        18579768.97329377,
+        18583904.47477745,
+        18587648,
+        18587648
+      ],
+      "lastMinusFirstWindowBytes": 8453.317507419735,
+      "linearTrendBytesPerHour": 1806.2161933024606,
+      "risingWindowsBeyond64KiB": 0,
+      "maximumPostWarmupGrowthBytes": 8388608,
+      "sustainedTrendRule": ">4MiB growth, >=5/7 rises over64KiB and >0.5MiB/hour"
+    },
+    "caddyMemoryAssessment": {
+      "accepted": true,
+      "samples": 14421,
+      "warmupFraction": 0.25,
+      "windowMeanBytes": [
+        59149675.55029586,
+        59146370.27218935,
+        58769859.40828402,
+        58345281.136094674,
+        58356566.34319527,
+        58175757.63313609,
+        57964853.01775148,
+        57913337.940828405
+      ],
+      "lastMinusFirstWindowBytes": -1236337.6094674543,
+      "linearTrendBytesPerHour": -259253.48661594815,
+      "risingWindowsBeyond64KiB": 0,
+      "maximumPostWarmupGrowthBytes": 8388608,
+      "sustainedTrendRule": ">4MiB growth, >=5/7 rises over64KiB and >0.5MiB/hour"
+    },
+    "directoryDatabaseSampleBytes": {
+      "firstSample": 82216,
+      "peakSample": 588856,
+      "finalSample": 584736
+    }
+  },
+  "cleanup": {
+    "components": {
+      "caddy": {
+        "exitCode": 0,
+        "forcedKill": false,
+        "remainingLiveGroupMembers": []
+      },
+      "native": {
+        "exitCode": 0,
+        "forcedKill": false,
+        "remainingLiveGroupMembers": []
+      },
+      "discovery": {
+        "exitCode": 0,
+        "forcedKill": false,
+        "remainingLiveGroupMembers": []
+      }
+    },
+    "nativeVerifiedCycles": 943,
+    "finalNativeCounts": {
+      "finalConnectionMetricEntries": 0,
+      "finalCombatEntries": 0,
+      "finalInventoryEntries": 0,
+      "finalJusticeEntries": 0,
+      "finalLifecycleEntries": 0
+    },
+    "directoryFinalCounters": {
+      "listings": 0,
+      "visible": 0,
+      "pending": 0,
+      "challenges": 0,
+      "rateBuckets": 0,
+      "listingBytes": 0
+    },
+    "sqliteIntegrity": "ok",
+    "sqliteListingRows": 0,
+    "directoryExitCodes": [
+      0,
+      0
+    ],
+    "sleepInhibitorReleased": true
+  },
+  "integrity": {
+    "binariesUnchanged": true,
+    "procedureFilesUnchanged": true,
+    "allCurrentProcedureContentsMatchPinnedGitBlobs": true,
+    "compiledRepositoryInputsVerified": 110,
+    "productionCompiledInputsMatchRuntime": true,
+    "soleModifiedCompiledRepositoryFile": "apps/mwnet_tests/headless_integration.cpp",
+    "compiledBeforeQaCommit": true,
+    "binarySha256": {
+      "native": "855e259cd41eba6404ba0abd0f990a9bc79f530b85c90fddd02957f9e6c41f56",
+      "directory": "ccea5b184f79a608a189de6faae09679b12337e2558a1b93a04cf61414cc6eb1",
+      "discoveryTests": "75f8dc080c05a2ef6a6f8b19841098ccdb83a7f27b268effdd3d1703a5e0a26c"
+    },
+    "caddySha256": "4ef1f68c70219536b2711fd16547a79841a2dec2d6b4e56b1e3e5e9da76028e6",
+    "procedureSha256": {
+      "CI/run_mwnet_overnight.py": "d5871ef552dc2cc01fcec61dbc49bc7094546d7cbac1e646e1b09bc1afc6116d",
+      "CI/run_mwnet_overnight_container.sh": "2210b4493e37c0aa33eec6d50126921a75269b600e138d7405ae65458461ae37",
+      "CI/run_mwnet_discovery_soak.py": "8a284dfa83f9663380150317dc7017023102f614acc18d7895226479b6a1cf9c",
+      "apps/mwnet_tests/headless_integration.cpp": "299800114a23a27c5486744cd44f873fc0331a88075fc0ea17c05d0423341593"
+    },
+    "compiledProofSha256": "b9e65faee7b1c668f219ccafb3c11c78659bc21ba6183adc4c8f0e2dae8eca6a"
+  },
+  "artifacts": {
+    "privateRoot": "build/overnight-runs/2026-10-30-candidate",
+    "resultSha256": "4f55e462b1c9e16a6c68ce440cb407109c867d49a519ca52a2f2fbe9e00e751e",
+    "nativeMetricsSha256": "1fb9aa2765d190b4522055f6d59d3c1b39ebcca5b19f80a805c03e04d11c8784",
+    "directoryResultSha256": "a4d3ff6b3bc8eb205545f214862a76839df442c4d313bc7c22b05ce9d9f077d9",
+    "resourceJournalSha256": "90714317acd1b03d400fa130b677917b660cd1d280171b2542a45931a96d5f74",
+    "directoryResourceJournalSha256": "1e7aa3933ea3bc67a1e493b9aa4964b2091f9b3702822dd8cb5b390cf41ecf38",
+    "finalContainerProofSha256": "5231bd21648515914ba589c5f356f9fbd2dfedfb2d96f189a85d12bd7d5cdd13",
+    "allRawResultsPreserved": true
+  },
+  "container": {
+    "state": {
+      "Dead": false,
+      "Error": "",
+      "ExitCode": 0,
+      "FinishedAt": "2026-10-30T12:40:01.560425252Z",
+      "OOMKilled": false,
+      "Paused": false,
+      "Pid": 0,
+      "Restarting": false,
+      "Running": false,
+      "StartedAt": "2026-10-30T04:38:50.90739818Z",
+      "Status": "exited"
+    },
+    "memory": 4294967296,
+    "memorySwap": 4294967296,
+    "nanoCpus": 4000000000,
+    "restart": {
+      "MaximumRetryCount": 0,
+      "Name": "no"
+    },
+    "pids": 512,
+    "image": "sha256:abbdee8b62e728bcb70828b84e0dff05c01a5c174667076e3af5d20e5c5a47fc"
+  },
+  "scopeLimits": [
+    "Synthetic native transport/lifecycle and local trusted-HTTPS directory components, not sixteen rendered players or full game-server capacity.",
+    "This native overnight run is not sanitizer-instrumented; separate scoped sanitizer evidence remains recorded for the runtime.",
+    "Independent security and licensing reviews remain pending at the user request; this audit is result-integrity verification, not review signoff.",
+    "No stable release promotion or live NUC deployment is authorized by this result.",
+    "No historical failed/partial run or original numerical criterion has been reclassified."
+  ]
+}
