@@ -1,0 +1,83 @@
+{
+  "schemaVersion": 1,
+  "recordedUtc": "2026-10-30T04:41:34.258142+00:00",
+  "runtimeSourceCommit": "d871d54894a0774db7dbcaedc3a0955bacbc08b3",
+  "qaProcedureCommit": "5c50adf5ef45977e18f0b795be3963413a20bac8",
+  "policyCommit": "265607196c",
+  "securityReview": "pending at user request",
+  "licensingReview": "pending at user request",
+  "recovery": {
+    "outcome": "pass",
+    "checks": {
+      "completeStateInventoryRestored": true,
+      "nativeCoreScriptsCharacterWorldReadback": true,
+      "serverIdentityPreserved": true,
+      "completeAccountCredentialFilesPreserved": true,
+      "corruptUpdateRetainedSeparately": true,
+      "truncatedBackupRefused": true,
+      "existingRestoreDestinationRefused": true,
+      "directoryNativeOnlineBackupIncludesCommittedWal": true,
+      "directoryStandaloneBackupIntegrity": true,
+      "directoryRestoredNativeHealth": true,
+      "corruptDatabaseRefused": true,
+      "unsupportedNewerSchemaRefused": true,
+      "nativeAtomicSixStageCrashRecovery": true,
+      "signedListingsRestoredHiddenUntilIdentityReverification": true,
+      "nativeSyntheticLegacyCredentialMigration": true
+    },
+    "rawReceiptSha256": "3f8552c086c31eaf0a9309b9acd18c133132e70d9482f563fdfabdc11b0ffa58",
+    "procedureRecordedBeforeQaCommit": true,
+    "procedureContentsMatchCommittedQa": true,
+    "committedProcedureSha256": {
+      "CI/run_mwnet_recovery.py": "cfdb3279b28baefef86f7bc5e3255b8c2045a192bf377a0b9e577e8918194a44",
+      "CI/mwnet_recovery_snapshot.py": "eb0a77486501716beda3b6d5a4e52d75d0c530ec9c781502896a3e70c9b1cc66",
+      "CI/run_mwnet_recovery_container.sh": "af80c8a6c4649c627c46b273dba1d54f2ed1cb096aa927723d45add5fdb45d89"
+    },
+    "oldRuntimeMigration": {
+      "outcome": "pass",
+      "fromCommit": "4a92d877b45a937686e38b8c3b55aab4964c9584",
+      "toCommit": "d871d54894a0774db7dbcaedc3a0955bacbc08b3",
+      "sourceArchiveSha256": "c2babddf4f06b4989e7790f5732073da17d71b74e70fd9abd9cb7745fec09a7d",
+      "actualOldRuntimeWroteWorldAndCharacter": true,
+      "newCoreScriptsReadbackMatchesOldData": true,
+      "oldRuntimeRollbackReadbackPasses": true,
+      "serverIdentityPreserved": true,
+      "scope": "Synthetic world/character written by old native CoreScripts; no old-version graphical character creation, account registration or full gameplay reconnect is claimed."
+    },
+    "scope": "Real isolated fixture byte restoration and native CoreScripts/identity readback; native directory/WAL/fault tests; scoped synthetic old-runtime persistence and credential migration. Full restored-account login and old-version graphical gameplay upgrade are not claimed."
+  },
+  "preflight": {
+    "outcome": "preflight-pass",
+    "rawReceiptSha256": "0112299a9ce0393185ab57d3c265d46db07512238b211b25a217f43ad15dc7d4",
+    "procedureContentsMatchCommittedQa": true,
+    "clients": 16,
+    "requestedSeconds": 30,
+    "elapsedSeconds": 98.20770053798333,
+    "cleanupAccepted": true,
+    "overnightAccepted": false
+  },
+  "compiledProof": {
+    "sha256": "b9e65faee7b1c668f219ccafb3c11c78659bc21ba6183adc4c8f0e2dae8eca6a",
+    "productionCompiledInputsMatchRuntime": true,
+    "compiledBeforeQaCommit": true,
+    "compiledRepositoryInputCount": 110,
+    "note": "Precommit diagnostic build facts retained; all compiled contents subsequently verified against committed QA, with production inputs also matching runtime source."
+  },
+  "overnight": {
+    "statusAtRecord": "running",
+    "overnightAccepted": false,
+    "containerName": "mwnet-overnight-20261030",
+    "containerId": "42872bd749a44b00abce26eb7a8c1f95c28f47c397de37639f7d0600bad90187",
+    "startedUtc": "2026-10-30T04:38:51.050694+00:00",
+    "requestedSeconds": 28800,
+    "clients": 16,
+    "latencyMilliseconds": 75,
+    "packetLossPercent": 2,
+    "memoryLimitBytes": 4294967296,
+    "cpus": 4,
+    "output": "build/overnight-runs/2026-10-30-candidate",
+    "sleepInhibitorUnit": "mwnet-overnight-awake-20261030.service",
+    "monitorAutomation": "watch-mwnet-eight-hour-acceptance",
+    "scope": "Synthetic transport lifecycle plus local trusted-HTTPS directory churn/outage; not sixteen rendered game actors or populated-server capacity."
+  }
+}
