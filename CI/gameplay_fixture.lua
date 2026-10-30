@@ -33,7 +33,8 @@ end
 local function state(pid, verb, label)
     return {event = verb, label = label, pid = pid, cell = mwnet.GetCell(pid),
         position = {mwnet.GetPosX(pid), mwnet.GetPosY(pid), mwnet.GetPosZ(pid)},
-        health = mwnet.GetHealthCurrent(pid), fatigue = mwnet.GetFatigueCurrent(pid)}
+        health = mwnet.GetHealthCurrent(pid), healthBase = mwnet.GetHealthBase(pid),
+        fatigue = mwnet.GetFatigueCurrent(pid)}
 end
 
 local function emit(pid, verb, label)
@@ -140,6 +141,38 @@ end
 
 local pendingCombat = {}
 local readyPlayers = {}
+local pendingIncomingHits = {}
+
+local function stopIncomingHit(pid)
+    local pending = pendingIncomingHits[pid]
+    pendingIncomingHits[pid] = nil
+    if pending then
+        mwnet.StopTimer(pending.timerId)
+        mwnet.FreeTimer(pending.timerId)
+    end
+end
+
+function MWNetGameplayFixtureWaitForHit(pid)
+    local pending = pendingIncomingHits[pid]
+    if not pending then return end
+    if not allowed(pid) then stopIncomingHit(pid) return end
+    pending.attempts = pending.attempts + 1
+    local health = mwnet.GetHealthCurrent(pid)
+    local healthBase = mwnet.GetHealthBase(pid)
+    if health > 0 and health < 199 and healthBase == 200 then
+        stopIncomingHit(pid)
+        -- A locally predicted hit can be rejected. Observe canonical state
+        -- without committing or resending resources to satisfy the oracle.
+        emit(pid, "wait_for_hit")
+    elseif pending.attempts >= 300 then
+        stopIncomingHit(pid)
+        mwnet.LogMessage(enumerations.log.ERROR,
+            "MWNET_GAMEPLAY_FIXTURE_ERROR incoming damage confirmation timed out")
+        mwnet.SendMessage(pid, "__mwnet_test_error wait_for_hit\n", false)
+    else
+        mwnet.RestartTimer(pending.timerId, 100)
+    end
+end
 
 local function ready(pid)
     for waitingPid in pairs(readyPlayers) do
@@ -253,6 +286,12 @@ customEventHooks.registerValidator("OnPlayerSendMessage", function(_, pid, messa
             pendingCombat[pid] = true
             local timer = mwnet.CreateTimerEx("MWNetGameplayFixtureCombatReady", 2000, "i", pid)
             mwnet.StartTimer(timer)
+        elseif verb == "wait_for_hit" then
+            stopIncomingHit(pid)
+            local timer = mwnet.CreateTimerEx("MWNetGameplayFixtureWaitForHit", 100, "i", pid)
+            assert(timer >= 0, "Could not allocate incoming damage confirmation timer")
+            pendingIncomingHits[pid] = {timerId = timer, attempts = 0}
+            mwnet.StartTimer(timer)
         elseif verb == "weakness" then
             local spell = fixture.weakness
             mwnet.ClearSpellsActiveChanges(pid)
@@ -282,6 +321,7 @@ customEventHooks.registerHandler("OnPlayerDisconnect", function(_, pid)
     readyPlayers[pid] = nil
     pendingCombat[pid] = nil
     queuedResurrections[pid] = nil
+    stopIncomingHit(pid)
 end)
 
 return fixture

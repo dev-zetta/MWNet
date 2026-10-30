@@ -22,6 +22,8 @@ The Python runner can also run directly in a prepared Linux environment using `-
 
 For release acceptance, extract the verified Linux archive, pass its `build` directory as the first wrapper argument, and set `MWNET_GAMEPLAY_PACKAGE_ROOT` to the extracted package root. The runner verifies the complete package file inventory and hashes, source/version/protocol metadata and the actual client/server binary hashes before testing the packaged launcher and CoreScripts. Supply the full source revision using `--expected-commit`; a development build with a dirty source tree is diagnostic evidence only.
 
+The test controller can advance independently of the packaged runtime. Use `--expected-procedure-revision` to pin its clean Git revision separately; the receipt records both revisions and hashes the procedure files. Incoming damage is confirmed by a bounded read-only server checkpoint before the punch sequence, so a locally predicted hit that is later corrected cannot establish acceptance.
+
 ## Scenarios and verdicts
 
 - Register an account through the normal encrypted authentication path, complete character creation, compare the native creation result with server-received and saved attributes, skills and resource capacities, move using normal Lua actor controls, open inventory and activate a real canonical teleport door.

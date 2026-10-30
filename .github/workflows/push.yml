@@ -215,7 +215,7 @@ jobs:
         -D MWNET_FETCH_DEPS=ON
 
     - name: Build dedicated server and protocol tests
-      run: cmake --build build-server --target mwnet-server mwnet-tests mwnet-headless-integration mwnet-persistence-fault mwnet-directory mwnet-discovery-tests --parallel $(nproc)
+      run: cmake --build build-server --target mwnet-server mwnet-tests mwnet-headless-integration mwnet-persistence-fault mwnet-actor-packet-tests mwnet-magic-content-tests mwnet-directory mwnet-discovery-tests --parallel $(nproc)
 
     - name: Run dedicated-server-only tests
       run: ctest --test-dir build-server --output-on-failure

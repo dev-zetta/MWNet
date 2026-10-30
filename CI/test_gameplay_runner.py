@@ -184,6 +184,20 @@ class GameplayRunnerTests(unittest.TestCase):
                 RUNNER.validate_server_gameplay('[WARN]: ' + marker)
         RUNNER.validate_server_gameplay('[INFO]: OnPlayerDisconnect\n[INFO]: canonical creation committed')
 
+    def test_incoming_damage_requires_unique_canonical_server_confirmation(self):
+        baseline = {'event': 'combat', 'pid': 1, 'health': 200, 'healthBase': 200}
+        hit = {'event': 'wait_for_hit', 'pid': 1, 'health': 193, 'healthBase': 200}
+        log = lambda rows: '\n'.join('[INFO]: MWNET_GAMEPLAY_FIXTURE ' + json.dumps(row) for row in rows)
+        self.assertEqual(RUNNER.confirmed_incoming_damage(log([baseline, hit]))['health'], 193)
+        bad_records = ([baseline], [baseline, hit, hit], [hit],
+                       [baseline, dict(hit, health=200)], [baseline, dict(hit, health=0)],
+                       [baseline, dict(hit, health=float('nan'))],
+                       [baseline, dict(hit, healthBase=400)], [baseline, dict(hit, pid=2)],
+                       [dict(baseline, health=100), hit])
+        for rows in bad_records:
+            with self.subTest(rows=rows), self.assertRaises(RuntimeError):
+                RUNNER.confirmed_incoming_damage(log(rows))
+
     def test_native_and_persisted_character_stats_cannot_silently_reset_or_double(self):
         native = {'healthBase': 50, 'magickaBase': 40, 'fatigueBase': 185,
                   'attributes': [{'id': f'attr{i}', 'base': 40 + i, 'modifier': 0, 'damage': 0}

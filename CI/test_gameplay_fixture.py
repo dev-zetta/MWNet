@@ -118,6 +118,84 @@ assert(player.saved.stats.fatigueBase==400 and player.saved.stats.fatigueCurrent
 print('PASS: fixture baseline persists actual readbacks through real packetReader and BasePlayer Save methods')
 """
 
+SERVER_CONFIRMED_HIT_CHECKS = FIXTURE_CHECKS + r"""
+local timers, timerCount, ackCount, statsSent, forbiddenSetters, timeoutErrors = {},0,0,0,0,0
+local expectTimeout = false
+mwnet.CreateTimerEx = function(callback, interval, types, pid)
+ assert(callback=='MWNetGameplayFixtureWaitForHit' and interval==100 and types=='i' and pid==0)
+ timerCount=timerCount+1
+ timers[timerCount]={restarts=0}
+ return timerCount
+end
+mwnet.StartTimer = function(id) timers[id].started=true end
+mwnet.RestartTimer = function(id,interval)
+ assert(interval==100 and not timers[id].freed)
+ timers[id].restarts=timers[id].restarts+1
+end
+mwnet.StopTimer = function(id) timers[id].stopped=true end
+mwnet.FreeTimer = function(id)
+ assert(timers[id].stopped and not timers[id].freed)
+ timers[id].freed=true
+end
+mwnet.SendStatsDynamic = function(pid) assert(pid==0) statsSent=statsSent+1 end
+mwnet.SetHealthBase = function() forbiddenSetters=forbiddenSetters+1 error('Health setter in probe') end
+mwnet.SetHealthCurrent = function() forbiddenSetters=forbiddenSetters+1 error('Health setter in probe') end
+mwnet.SendMessage = function(pid,message)
+ if message=='__mwnet_test_ack wait_for_hit\n' then ackCount=ackCount+1 end
+end
+mwnet.LogMessage = function(level,message)
+ if message:find('MWNET_GAMEPLAY_FIXTURE_ERROR') then
+  assert(expectTimeout and message:find('confirmation timed out'),message)
+  timeoutErrors=timeoutErrors+1
+ end
+end
+local nativeApi = mwnet
+local allowedCalls = {CreateTimerEx=true,StartTimer=true,RestartTimer=true,StopTimer=true,
+ FreeTimer=true,LogMessage=true,SendMessage=true}
+mwnet = setmetatable({}, {__index=function(_,name)
+ return function(...)
+  if not (name:match('^Get') or name:match('^Is') or allowedCalls[name]) then
+   forbiddenSetters=forbiddenSetters+1
+   error('Resource writer used by incoming damage probe: '..name)
+  end
+  return nativeApi[name](...)
+ end
+end})
+state.stats.healthBase,state.stats.healthCurrent=200,200
+validators.OnPlayerSendMessage({},0,'__mwnet_test wait_for_hit')
+assert(timerCount==1 and timers[1].started)
+for _,hp in ipairs({200,199,0}) do
+ state.stats.healthCurrent=hp
+ MWNetGameplayFixtureWaitForHit(0)
+ assert(ackCount==0 and statsSent==0)
+end
+state.stats.healthCurrent,state.stats.healthBase=193,201
+MWNetGameplayFixtureWaitForHit(0)
+assert(ackCount==0 and statsSent==0)
+state.stats.healthBase=200
+MWNetGameplayFixtureWaitForHit(0)
+assert(ackCount==1 and statsSent==0 and timers[1].freed and timerCount==1)
+MWNetGameplayFixtureWaitForHit(0)
+assert(ackCount==1 and statsSent==0)
+state.stats.healthCurrent=200
+validators.OnPlayerSendMessage({},0,'__mwnet_test wait_for_hit')
+expectTimeout=true
+for i=1,300 do MWNetGameplayFixtureWaitForHit(0) end
+assert(timerCount==2 and timers[2].freed and timers[2].restarts==299)
+assert(timeoutErrors==1 and ackCount==1 and statsSent==0)
+expectTimeout=false
+validators.OnPlayerSendMessage({},0,'__mwnet_test wait_for_hit')
+handlers.OnPlayerDisconnect({},0)
+MWNetGameplayFixtureWaitForHit(0)
+assert(timerCount==3 and timers[3].freed and ackCount==1)
+validators.OnPlayerSendMessage({},0,'__mwnet_test wait_for_hit')
+ip='192.0.2.1'
+MWNetGameplayFixtureWaitForHit(0)
+assert(timerCount==4 and timers[4].freed and ackCount==1)
+assert(forbiddenSetters==0)
+print('PASS: incoming damage probe requires canonical HP/capacity, never sets health and bounds/frees its timer')
+"""
+
 
 def lua_string(value: str) -> str:
     separator = ''
@@ -183,6 +261,23 @@ assert(mwnet.Resurrect == original)
 
     def test_queued_wrapper_and_native_readback_persistence(self):
         self.run_lua(FIXTURE_CHECKS)
+
+    def test_incoming_damage_confirmation_and_bounded_cleanup(self):
+        self.run_lua(SERVER_CONFIRMED_HIT_CHECKS)
+
+    def test_server_damage_log_requires_canonical_confirmation(self):
+        from run_mwnet_gameplay import confirmed_incoming_damage
+        baseline = {'event': 'combat', 'pid': 0, 'health': 200, 'healthBase': 200}
+        confirmed = {'event': 'wait_for_hit', 'pid': 0, 'health': 193, 'healthBase': 200}
+        text = lambda rows: '\n'.join('MWNET_GAMEPLAY_FIXTURE ' + json.dumps(row) for row in rows)
+        self.assertEqual(confirmed_incoming_damage(text([baseline, confirmed])), confirmed)
+        for changed in ({'health': 200}, {'health': 199}, {'health': 0},
+                        {'health': float('nan')}, {'healthBase': 201}, {'pid': 1}):
+            with self.subTest(changed=changed), self.assertRaises(RuntimeError):
+                confirmed_incoming_damage(text([baseline, dict(confirmed, **changed)]))
+        for rows in ([baseline], [confirmed], [baseline, confirmed, confirmed]):
+            with self.assertRaises(RuntimeError):
+                confirmed_incoming_damage(text(rows))
 
 
 if __name__ == '__main__':

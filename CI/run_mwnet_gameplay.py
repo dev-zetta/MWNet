@@ -30,6 +30,41 @@ FATAL = re.compile(r'\[ERR\]|failed integrity check|multiplayer connection lost|
                    r'falling into the void|'
                    r'AddressSanitizer|runtime error:|Segmentation fault')
 MAX_LOG = 32 * 1024 * 1024
+PROCEDURE_FILES = ('CI/run_mwnet_gameplay.py', 'CI/gameplay_content.py', 'CI/gameplay_fixture.lua')
+
+
+def procedure_state() -> tuple[str | None, bool | None]:
+    """Read the controller revision separately from the tested runtime revision."""
+    try:
+        revision = subprocess.run(['git', '-C', str(ROOT), 'rev-parse', 'HEAD'],
+                                  capture_output=True, text=True, timeout=5)
+        dirty = subprocess.run(['git', '-C', str(ROOT), 'diff', '--no-ext-diff', '--quiet',
+                                'HEAD', '--', *PROCEDURE_FILES], capture_output=True, timeout=5)
+        commit = revision.stdout.strip()
+        if revision.returncode or not re.fullmatch('[0-9a-f]{40}', commit) or dirty.returncode not in (0, 1):
+            return None, None
+        return commit, dirty.returncode == 1
+    except (OSError, subprocess.SubprocessError):
+        return None, None
+
+
+def confirmed_incoming_damage(server_text: str) -> dict:
+    records = []
+    for line in server_text.splitlines():
+        marker = 'MWNET_GAMEPLAY_FIXTURE '
+        if marker in line:
+            records.append(json.loads(line.split(marker, 1)[1]))
+    confirmations = [row for row in records if row.get('event') == 'wait_for_hit']
+    baselines = [row for row in records if row.get('event') == 'combat']
+    if len(confirmations) != 1 or len(baselines) != 1:
+        raise RuntimeError('Missing unique canonical incoming damage confirmation')
+    confirmed, baseline = confirmations[0], baselines[0]
+    health, capacity = float(confirmed['health']), float(confirmed['healthBase'])
+    if (not math.isfinite(health) or not math.isfinite(capacity) or not 0 < health < 199
+            or capacity != 200 or confirmed['pid'] != baseline['pid']
+            or float(baseline['health']) != 200 or float(baseline['healthBase']) != 200):
+        raise RuntimeError('Server did not confirm incoming NPC damage at unchanged capacity')
+    return confirmed
 
 
 def validate_server_gameplay(text: str) -> None:
@@ -235,8 +270,13 @@ class GameplayRun:
                         'clientSha256': digest(self.client), 'serverSha256': digest(self.server_binary),
                         'canonicalData': self.fixture['sourceEsm'], 'cases': self.cases,
                         'assetsRedistributed': False, 'manualGameplayRequired': False}
-        self.receipt['procedureSha256'] = {name: digest(ROOT / 'CI' / name) for name in
-            ('run_mwnet_gameplay.py', 'gameplay_content.py', 'gameplay_fixture.lua')}
+        revision, dirty = procedure_state()
+        expected_procedure = getattr(args, 'expected_procedure_revision', None)
+        self.receipt.update(procedureRevision=revision, procedureTrackedDirty=dirty,
+                            expectedProcedureRevision=expected_procedure)
+        self.receipt['procedureSha256'] = {Path(name).name: digest(ROOT / name) for name in PROCEDURE_FILES}
+        if expected_procedure and (revision != expected_procedure or dirty is not False):
+            raise RuntimeError('Gameplay procedure does not match the clean expected revision')
         if args.package_root:
             self.receipt['package'] = verify_package(self.package, self.client, self.server_binary,
                                                      args.version, args.expected_commit)
@@ -558,8 +598,11 @@ def run_scenarios(run: GameplayRun):
         {'action': 'snapshot', 'label': 'before_combat', **target_keys(target)}]
     phase2 += [{'action': 'attack', **target_keys(target), 'seconds': .8, 'stopOnDialogue': True},
                {'action': 'wait', 'seconds': .5}, {'action': 'resist_arrest', 'timeoutSeconds': 10},
-               {'action': 'expect_gameplay_input'},
-               {'action': 'expect_actor', 'maximumHealth': 199, 'minimumHealth': 1, 'timeoutSeconds': 30},
+               {'action': 'expect_gameplay_input'}]
+    incoming = run.commands('wait_for_hit')
+    incoming[1]['timeoutSeconds'] = 35
+    phase2 += incoming + [
+               {'action': 'expect_actor', 'maximumHealth': 199, 'minimumHealth': 1, 'timeoutSeconds': 10},
                {'action': 'snapshot', 'label': 'player_received_hit'}]
     for hit in range(10):
         phase2 += [{'action': 'attack', **target_keys(target), 'seconds': .5},
@@ -592,9 +635,15 @@ def run_scenarios(run: GameplayRun):
     if not any(int(active) > 0 for _, active in cleanups):
         raise RuntimeError('The native active temporary effect cleanup was not observed')
     states = {e.get('label'): e for e in combat_events if e.get('event') == 'snapshot'}
+    confirmed_hit = confirmed_incoming_damage(run.server.log.read_text(errors='replace'))
     if (states['player_received_hit']['health'] >= states['player_before_combat']['health']
             or states['player_received_hit']['healthBase'] != states['player_before_combat']['healthBase']):
         raise RuntimeError('NPC combat did not damage the player with an unchanged health capacity')
+    run.receipt['incomingDamageConfirmation'] = {
+        'serverHealth': confirmed_hit['health'], 'serverHealthBase': confirmed_hit['healthBase'],
+        'clientHealth': states['player_received_hit']['health'],
+        'clientHealthBase': states['player_received_hit']['healthBase'],
+        'confirmedBeforePunchLoop': True}
     matching_character_stats(local_creation[0], states['reconnected_character'])
     matching_character_stats(states['dialogue_before_death'], states['after_respawn'])
     remaining = set(states['after_respawn']['activeSpells'])
@@ -651,6 +700,7 @@ def main():
     parser.add_argument('--output', required=True, type=Path)
     parser.add_argument('--package-root', type=Path)
     parser.add_argument('--expected-commit')
+    parser.add_argument('--expected-procedure-revision')
     parser.add_argument('--version', default='1.0.0-alpha.3')
     parser.add_argument('--scenario', choices=('all', 'dialogue-respawn'), default='all')
     parser.add_argument('--timeout', type=int, default=900)
@@ -660,6 +710,8 @@ def main():
         parser.error('Timeout must be between 60 and 3600 seconds')
     if args.expected_commit and not re.fullmatch('[0-9a-f]{40}', args.expected_commit):
         parser.error('Expected commit must be a full Git revision')
+    if args.expected_procedure_revision and not re.fullmatch('[0-9a-f]{40}', args.expected_procedure_revision):
+        parser.error('Expected procedure revision must be a full Git revision')
     os.umask(0o077)
     run = None
     try:
