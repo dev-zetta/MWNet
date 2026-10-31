@@ -284,6 +284,47 @@ def cgroup_constraints():
     return result
 
 
+def host_memory_observation():
+    """Read kernel-wide pressure too: a global OOM can kill outside this cgroup."""
+    memory = {}
+    for line in Path('/proc/meminfo').read_text().splitlines():
+        key, value = line.split(':', 1)
+        if key in ('MemTotal', 'MemAvailable', 'SwapTotal', 'SwapFree', 'Shmem'):
+            fields = value.split()
+            if len(fields) != 2 or fields[1] != 'kB' or not fields[0].isdecimal():
+                raise ValueError('Invalid kernel memory observation: ' + key)
+            memory[key] = int(fields[0]) * 1024
+    counters = dict(line.split() for line in Path('/proc/vmstat').read_text().splitlines())
+    if ('MemAvailable' not in memory or 'MemTotal' not in memory
+            or not counters.get('oom_kill', '').isdecimal()):
+        raise ValueError('Missing kernel memory or global OOM observation')
+    return {'memoryBytes': memory, 'globalOomKills': int(counters['oom_kill'])}
+
+
+def validate_host_memory(observation, baseline, minimum_available_bytes=2048 * MIB):
+    available = observation['memoryBytes']['MemAvailable']
+    if type(available) is not int or available < minimum_available_bytes:
+        raise ValueError('Host memory headroom fell below the declared minimum')
+    count, initial = observation['globalOomKills'], baseline['globalOomKills']
+    if type(count) is not int or type(initial) is not int or count < initial:
+        raise ValueError('Host global OOM counter is invalid or changed generation')
+    if count != initial:
+        raise ValueError('Host global OOM event interrupted the acceptance environment')
+
+
+def checked_host_memory(report, baseline=None):
+    try:
+        observation = host_memory_observation()
+        report['lastHostMemoryObservation'] = observation
+        validate_host_memory(observation, observation if baseline is None else baseline,
+                             report['limits']['minimumHostAvailableBytes'])
+        return observation
+    except (OSError, ValueError) as error:
+        report['hostResourceChecksAccepted'] = False
+        report['hostResourceFailure'] = str(error)
+        raise
+
+
 def interrupted(_signal, _frame):
     raise KeyboardInterrupt
 
@@ -320,17 +361,20 @@ def run(args):
               'simulatedLatencyMilliseconds': args.latency_ms, 'simulatedPacketLossPercent': args.packet_loss_percent,
               'limits': {'wholeRunDeadlineSeconds': args.seconds + 900, 'maximumArtifactsBytes': 512 * MIB,
                          'maximumIndividualLogBytes': 32 * MIB, 'nativeRssBytes': 1024 * MIB,
-                         'discoveryProcessTreeRssBytes': 1024 * MIB, 'caddyRssBytes': 256 * MIB},
+                         'discoveryProcessTreeRssBytes': 1024 * MIB, 'caddyRssBytes': 256 * MIB,
+                         'minimumHostAvailableBytes': 2048 * MIB},
               'legacyReleaseGateReclassified': False, 'actualGameActors': False,
               'sixteenPlayerRenderedCapacityAccepted': False, 'processes': {},
               'temporaryStorage': {'path': str(scratch), 'filesystem': artifact_filesystem,
                                    'sameFilesystemAsArtifacts': True, 'includedInArtifactBound': True},
-              'cgroupConstraintsAtStart': cgroup_constraints()}
+              'cgroupConstraintsAtStart': cgroup_constraints(), 'hostResourceChecksAccepted': None}
     atomic_json(root / 'result.json', report)
     processes, streams = {}, []
     started = time.monotonic()
     failure = None
     try:
+        report['hostMemoryAtStart'] = checked_host_memory(report)
+        atomic_json(root / 'result.json', report)
         tls = root / 'tls'; tls.mkdir(mode=0o700)
         certificate, key = tls / 'localhost.crt', tls / 'localhost.key'
         result = subprocess.run(['openssl', 'req', '-x509', '-newkey', 'ed25519', '-nodes', '-days', '2',
@@ -384,7 +428,8 @@ def run(args):
                 elapsed = time.monotonic() - started
                 if elapsed > args.seconds + 900:
                     raise RuntimeError('Whole-run external deadline exceeded')
-                row = {'elapsedSeconds': elapsed}
+                row = {'elapsedSeconds': elapsed,
+                       'hostMemory': checked_host_memory(report, report['hostMemoryAtStart'])}
                 for name, process in processes.items():
                     if process.poll() is not None:
                         if name == 'caddy' or process.returncode != 0:
@@ -468,6 +513,18 @@ def run(args):
                                         for key in ('oom', 'oom_kill', 'oom_group_kill')}
         if any(report['oomEventsDuringRun'].values()):
             report.update(status='failed', failure='Container OOM event observed', overnightAccepted=False)
+        try:
+            if 'hostMemoryAtStart' not in report:
+                raise ValueError('Host initial memory observation was not captured')
+            report['hostMemoryAtFinish'] = checked_host_memory(report, report['hostMemoryAtStart'])
+            report['hostGlobalOomKillsDuringRun'] = (report['hostMemoryAtFinish']['globalOomKills']
+                                                    - report['hostMemoryAtStart']['globalOomKills'])
+            if report['hostResourceChecksAccepted'] is not False:
+                report['hostResourceChecksAccepted'] = True
+        except (OSError, ValueError) as error:
+            report['hostResourceChecksAccepted'] = False
+            report['hostResourceFailure'] = str(error)
+            report.update(status='failed', failure=str(error), overnightAccepted=False)
         report['binariesUnchanged'] = hashes_unchanged(executables | {'caddy': args.caddy},
                                                        report['binarySha256'] | {'caddy': report['caddySha256']})
         if not report['binariesUnchanged']:

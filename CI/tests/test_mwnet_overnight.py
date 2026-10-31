@@ -36,6 +36,53 @@ class OvernightVerdictTests(unittest.TestCase):
     def check_report(self, report, preflight=False):
         return MODULE.validate_native(report, 28800, 16, 75, 2, COMMIT, preflight)
 
+    def test_host_memory_observation_records_kernel_not_only_cgroup(self):
+        values = {'/proc/meminfo': 'MemTotal: 8192000 kB\nMemAvailable: 4096000 kB\n'
+                  'SwapTotal: 1024 kB\nSwapFree: 512 kB\nShmem: 64 kB\n',
+                  '/proc/vmstat': 'pgfault 42\noom_kill 7\n'}
+        with mock.patch.object(Path, 'read_text', lambda path: values[str(path)]):
+            sample = MODULE.host_memory_observation()
+        self.assertEqual(sample['globalOomKills'], 7)
+        self.assertEqual(sample['memoryBytes']['MemAvailable'], 4096000 * 1024)
+        MODULE.validate_host_memory(sample, sample)
+
+    def test_global_oom_outside_container_still_rejects_environment(self):
+        baseline = {'globalOomKills': 7, 'memoryBytes': {'MemAvailable': 4096 * MODULE.MIB}}
+        with self.assertRaisesRegex(ValueError, 'Host global OOM event'):
+            MODULE.validate_host_memory(baseline | {'globalOomKills': 8}, baseline)
+        with self.assertRaisesRegex(ValueError, 'changed generation'):
+            MODULE.validate_host_memory(baseline | {'globalOomKills': 6}, baseline)
+
+    def test_host_headroom_and_observation_types_fail_closed(self):
+        baseline = {'globalOomKills': 7, 'memoryBytes': {'MemAvailable': 4096 * MODULE.MIB}}
+        for available in (2048 * MODULE.MIB - 1, 0, True, '4294967296'):
+            with self.subTest(available=available), self.assertRaisesRegex(ValueError, 'headroom'):
+                MODULE.validate_host_memory(baseline | {'memoryBytes': {'MemAvailable': available}}, baseline)
+        for counter in (True, '7', None):
+            with self.subTest(counter=counter), self.assertRaises(ValueError):
+                MODULE.validate_host_memory(baseline | {'globalOomKills': counter}, baseline)
+
+    def test_missing_kernel_oom_counter_cannot_pass(self):
+        values = {'/proc/meminfo': 'MemTotal: 8192000 kB\nMemAvailable: 4096000 kB\n',
+                  '/proc/vmstat': 'pgfault 42\n'}
+        with mock.patch.object(Path, 'read_text', lambda path: values[str(path)]):
+            with self.assertRaises(ValueError):
+                MODULE.host_memory_observation()
+
+    def test_recovered_headroom_does_not_erase_earlier_host_failure(self):
+        baseline = {'globalOomKills': 7, 'memoryBytes': {'MemAvailable': 4096 * MODULE.MIB}}
+        report = {'limits': {'minimumHostAvailableBytes': 2048 * MODULE.MIB},
+                  'hostResourceChecksAccepted': None}
+        low = baseline | {'memoryBytes': {'MemAvailable': 1024 * MODULE.MIB}}
+        with mock.patch.object(MODULE, 'host_memory_observation', return_value=low):
+            with self.assertRaises(ValueError):
+                MODULE.checked_host_memory(report, baseline)
+        self.assertEqual(report['lastHostMemoryObservation'], low)
+        with mock.patch.object(MODULE, 'host_memory_observation', return_value=baseline):
+            MODULE.checked_host_memory(report, baseline)
+        self.assertFalse(report['hostResourceChecksAccepted'])
+        self.assertIn('headroom', report['hostResourceFailure'])
+
     def test_settled_allocation_plateau_passes(self):
         values = [8 * MODULE.MIB] * 25 + [16 * MODULE.MIB] * 75
         self.assertTrue(MODULE.idle_memory_assessment(values, 28800)['accepted'])
