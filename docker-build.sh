@@ -11,6 +11,8 @@ echo ""
 echo ">> Building MWNet merged branch..."
 mkdir -p /mwnet/build
 cd /mwnet/build
+TMPDIR="$(MWNET_TMPDIR="${MWNET_TMPDIR:-/mwnet/build/tmp}" python3 /mwnet/CI/mwnet_temp.py --print-root)"
+export TMPDIR TMP="$TMPDIR" TEMP="$TMPDIR" MWNET_TMPDIR="$TMPDIR"
 
 cmake .. \
     -DCMAKE_BUILD_TYPE=RelWithDebInfo \

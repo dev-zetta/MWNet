@@ -89,6 +89,7 @@ venv/
 ## local MWNet test state
 /.mwnet-test/
 /.*-test/
+/tmp/
 
 ## operating system files
 .DS_Store

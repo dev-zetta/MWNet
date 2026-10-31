@@ -25,9 +25,8 @@ watchdog_seconds=$((10#$seconds+900))
 }
 for path in "$root" "$tools" "$output"; do [[ $path != *,* ]] || { echo 'Bind paths cannot contain commas.' >&2; exit 1; }; done
 umask 077
-mkdir -p -- "$(dirname -- "$output")"
-fstype=$(df --output=fstype "$(dirname -- "$output")" | tail -n 1 | xargs)
-[[ $fstype != tmpfs && $fstype != ramfs ]] || { echo 'Artifacts must be on persistent disk.' >&2; exit 1; }
+source "$root/CI/mwnet_disk_tmp.sh"
+mwnet_prepare_container_tmp "$output"
 docker_command=(docker)
 if [[ -n ${MWNET_DOCKER_CONTEXT:-} ]]; then docker_command+=(--context "$MWNET_DOCKER_CONTEXT"); fi
 mode=(--rm)
@@ -37,7 +36,9 @@ if [[ ${MWNET_OVERNIGHT_DETACH:-0} == 1 ]]; then
   mode=(--detach --name "$name" --restart=no --stop-timeout 45)
 fi
 exec "${docker_command[@]}" run "${mode[@]}" --network none --read-only \
-  --tmpfs /tmp:rw,nosuid,nodev,size=32m --memory "${MWNET_OVERNIGHT_MEMORY:-4g}" \
+  --mount "type=bind,src=$MWNET_CONTAINER_TMP,dst=/tmp" \
+  -e TMPDIR=/tmp -e TMP=/tmp -e TEMP=/tmp -e MWNET_ARTIFACT_SCRATCH=/tmp \
+  --memory "${MWNET_OVERNIGHT_MEMORY:-4g}" \
   --memory-swap "${MWNET_OVERNIGHT_MEMORY:-4g}" \
   --cpus "${MWNET_OVERNIGHT_CPUS:-4}" --pids-limit 512 --cap-drop ALL \
   --security-opt no-new-privileges --user "$(id -u):$(id -g)" \

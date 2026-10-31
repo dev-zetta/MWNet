@@ -1,0 +1,5 @@
+# Local temporary storage
+
+This machine's system `/tmp` is RAM-backed. Run build, test, packaging, archive extraction and other scratch-producing commands through `bash CI/with_disk_tmp.sh COMMAND ...`, or export `TMPDIR`, `TMP` and `TEMP` to the validated path returned by `python3 CI/mwnet_temp.py --print-root` before starting them. The default is this checkout's ignored `tmp/` directory on disk. Use `MWNET_TMPDIR` only for an explicitly selected private disk directory; RAM-backed paths are rejected. Keep these variables set for compilers, subprocesses and Python temporary files. Do not stage temporary data, delete unrelated system `/tmp` contents, or change the system mount configuration.
+
+The acceptance container wrappers bind private disk scratch at container `/tmp`. Preserve scratch while any container uses it, including detached runs. Keep the original run artifacts, frozen input hashes and failed verdicts intact when changing tooling. Never edit `Audit verdict.md` unless the user explicitly requests it.

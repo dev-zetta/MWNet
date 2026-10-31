@@ -11,11 +11,14 @@ import tarfile
 import tempfile
 import urllib.request
 
+from mwnet_temp import configure_temp_environment
+
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('prefix', type=Path, help='SDK triplet installation prefix')
     args = parser.parse_args()
+    configure_temp_environment()
     include = args.prefix / 'include'
     version_header = (include / 'boost/version.hpp').read_text()
     number = int(re.search(r'#define BOOST_VERSION\s+(\d+)', version_header).group(1))

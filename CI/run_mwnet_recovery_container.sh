@@ -16,7 +16,8 @@ for path in "$root" "$package" "$native" "$proof" "$fixture" "$output"; do
     [[ $path != *,* ]] || { echo 'Docker bind paths cannot contain commas.' >&2; exit 1; }
 done
 umask 077
-mkdir -p -- "$(dirname -- "$output")"
+source "$root/CI/mwnet_disk_tmp.sh"
+mwnet_prepare_container_tmp "$output"
 docker_command=(docker)
 if [[ -n ${MWNET_DOCKER_CONTEXT:-} ]]; then docker_command+=(--context "$MWNET_DOCKER_CONTEXT"); fi
 old_mount=()
@@ -32,7 +33,8 @@ fi
 container_name="mwnet-recovery-$(date +%s)-$$"
 trap '"${docker_command[@]}" rm -f "$container_name" >/dev/null 2>&1 || true' EXIT
 timeout --signal=TERM --kill-after=15s 15m "${docker_command[@]}" run --rm --name "$container_name" \
-    --network none --read-only --tmpfs /tmp:rw,nosuid,nodev,size=32m \
+    --network none --read-only --mount "type=bind,src=$MWNET_CONTAINER_TMP,dst=/tmp" \
+    -e TMPDIR=/tmp -e TMP=/tmp -e TEMP=/tmp \
     --memory "${MWNET_RECOVERY_MEMORY:-3g}" --cpus "${MWNET_RECOVERY_CPUS:-2}" --pids-limit 256 \
     --cap-drop ALL --security-opt no-new-privileges --user "$(id -u):$(id -g)" \
     --mount "type=bind,src=$root,dst=/src,readonly" \

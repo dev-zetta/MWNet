@@ -11,6 +11,8 @@ import subprocess
 import sys
 import tempfile
 
+from mwnet_temp import configure_temp_environment
+
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
@@ -19,6 +21,7 @@ def main():
     parser.add_argument('--source-dir', type=Path, default=Path('.'))
     parser.add_argument('--server-only', action='store_true', help='Check a built server before the client build')
     args = parser.parse_args()
+    configure_temp_environment()
     header = (args.source_dir / 'components/openmw-mp/Version.hpp').read_text()
     expected_version = re.search(r'#define MWNET_VERSION "([^"]+)"', header).group(1)
     expected_protocol = re.search(r'#define MWNET_PROTO_VERSION (\d+)', header).group(1)

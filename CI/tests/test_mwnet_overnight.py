@@ -12,6 +12,9 @@ import unittest
 from unittest import mock
 
 ROOT = Path(__file__).resolve().parents[2]
+sys.path.insert(0, str(ROOT / 'CI'))
+from mwnet_temp import prepare_temp_root
+
 spec = importlib.util.spec_from_file_location('overnight', ROOT / 'CI/run_mwnet_overnight.py')
 MODULE = importlib.util.module_from_spec(spec)
 spec.loader.exec_module(MODULE)
@@ -107,7 +110,7 @@ class OvernightVerdictTests(unittest.TestCase):
                 self.assertTrue(MODULE.procedure_state()[1])
 
     def test_wrapper_external_watchdog_tracks_last_duration_argument(self):
-        with tempfile.TemporaryDirectory(dir=ROOT / 'build') as directory:
+        with tempfile.TemporaryDirectory(dir=prepare_temp_root()) as directory:
             tmp = Path(directory); tools = tmp / 'tools'; (tools / 'bin').mkdir(parents=True)
             (tools / 'evidence').mkdir(); (tools / 'evidence/compiled-provenance.json').write_text('{}')
             for name in ('bin/mwnet-headless-integration', 'bin/mwnet-directory', 'bin/mwnet-discovery-tests', 'caddy'):
@@ -129,6 +132,74 @@ class OvernightVerdictTests(unittest.TestCase):
             self.assertIn('--signal=TERM', arguments)
             self.assertIn('--restart=no', arguments)
             self.assertNotIn('--rm', arguments)
+            self.assertIn('MWNET_ARTIFACT_SCRATCH=/tmp', arguments)
+
+    def test_scratch_helper_is_part_of_the_frozen_procedure(self):
+        self.assertIn('CI/mwnet_disk_tmp.sh', MODULE.PROCEDURE_FILES)
+        with tempfile.TemporaryDirectory() as directory, mock.patch.object(MODULE, 'ROOT', Path(directory)):
+            for name in MODULE.PROCEDURE_FILES:
+                path = Path(directory) / name
+                path.parent.mkdir(parents=True, exist_ok=True)
+                path.write_bytes(b'content')
+            def git(args, **kwargs):
+                if 'rev-parse' in args:
+                    return subprocess.CompletedProcess(args, 0, stdout='d' * 40, stderr='')
+                content = b'changed helper' if args[-1] == 'HEAD:CI/mwnet_disk_tmp.sh' else b'content'
+                return subprocess.CompletedProcess(args, 0, stdout=content, stderr=b'')
+            with mock.patch.object(MODULE.subprocess, 'run', side_effect=git):
+                self.assertTrue(MODULE.procedure_state()[1])
+
+    def test_sibling_scratch_is_included_in_artifact_usage(self):
+        with tempfile.TemporaryDirectory(dir=prepare_temp_root()) as directory:
+            root, scratch = Path(directory) / 'output', Path(directory) / 'scratch'
+            root.mkdir(); scratch.mkdir()
+            (root / 'payload').write_bytes(b'abcd')
+            (scratch / 'temporary').write_bytes(b'abcdefgh')
+            usage = MODULE.artifact_usage(root, scratch)
+            self.assertEqual(usage, {'artifactBytes': 12, 'outputBytes': 4, 'temporaryBytes': 8})
+            with self.assertRaisesRegex(RuntimeError, 'Artifact/disk headroom'):
+                MODULE.artifact_usage(root, scratch, maximum_artifacts_bytes=11)
+
+    def test_nested_scratch_is_not_double_counted_and_links_are_not_followed(self):
+        with tempfile.TemporaryDirectory(dir=prepare_temp_root()) as directory:
+            root, outside = Path(directory) / 'output', Path(directory) / 'outside'
+            root.mkdir(); outside.mkdir()
+            scratch = root / 'tmp'; scratch.mkdir()
+            (root / 'payload').write_bytes(b'abcd')
+            (scratch / 'temporary').write_bytes(b'abcdefgh')
+            (outside / 'not-our-data.log').write_bytes(b'outside')
+            (scratch / 'outside-link').symlink_to(outside, target_is_directory=True)
+            (scratch / 'linked.log').symlink_to(outside / 'not-our-data.log')
+            (scratch / 'dangling').symlink_to(outside / 'missing')
+            self.assertEqual(MODULE.artifact_usage(root, scratch),
+                             {'artifactBytes': 12, 'outputBytes': 12, 'temporaryBytes': 8})
+
+    def test_scratch_logs_and_disk_headroom_have_the_same_bounds(self):
+        with tempfile.TemporaryDirectory(dir=prepare_temp_root()) as directory:
+            root, scratch = Path(directory) / 'output', Path(directory) / 'scratch'
+            root.mkdir(); scratch.mkdir()
+            log = scratch / 'temporary.log'; log.write_bytes(b'12345')
+            with self.assertRaisesRegex(RuntimeError, 'Bounded log size'):
+                MODULE.artifact_usage(root, scratch, maximum_log_bytes=4)
+            log.unlink()
+            with mock.patch.object(MODULE.shutil, 'disk_usage', return_value=mock.Mock(free=10)):
+                with self.assertRaisesRegex(RuntimeError, 'Artifact/disk headroom'):
+                    MODULE.artifact_usage(root, scratch, minimum_free_bytes=11)
+
+    def test_scratch_rejects_ram_filesystems_and_nonprivate_directories(self):
+        with tempfile.TemporaryDirectory(dir=prepare_temp_root()) as directory:
+            root = Path(directory).resolve()
+            with mock.patch.dict(MODULE.os.environ, {}, clear=True):
+                scratch, filesystem = MODULE.prepare_scratch(root)
+                self.assertEqual(scratch, root / 'tmp')
+                self.assertNotIn(filesystem, ('tmpfs', 'ramfs'))
+                scratch.chmod(0o755)
+                with self.assertRaisesRegex(ValueError, 'private permissions'):
+                    MODULE.prepare_scratch(root)
+                scratch.chmod(0o700)
+                with mock.patch.object(MODULE.subprocess, 'run', return_value=mock.Mock(stdout='tmpfs\n')):
+                    with self.assertRaisesRegex(ValueError, 'persistent disk'):
+                        MODULE.prepare_scratch(root)
 
     def test_directory_decimal_strings_and_numeric_zero_are_accepted(self):
         metrics = {key: '0' for key in ('listings', 'visible', 'pending', 'challenges', 'rateBuckets', 'listingBytes')}

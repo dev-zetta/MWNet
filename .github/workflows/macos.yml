@@ -39,6 +39,7 @@ jobs:
         sparse-checkout: |
           CI/smoke_mwnet_package.py
           CI/complete_boost_headers.py
+          CI/mwnet_temp.py
         sparse-checkout-cone-mode: false
     - name: Select the C++20 toolchain
       run: |

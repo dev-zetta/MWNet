@@ -17,6 +17,7 @@ import shutil
 import signal
 import socket
 import ssl
+import stat
 import statistics
 import subprocess
 import sys
@@ -26,7 +27,8 @@ from datetime import datetime, timezone
 ROOT = Path(__file__).resolve().parents[1]
 MIB = 1024 ** 2
 PROCEDURE_FILES = ('CI/run_mwnet_overnight.py', 'CI/run_mwnet_overnight_container.sh',
-                   'CI/run_mwnet_discovery_soak.py', 'apps/mwnet_tests/headless_integration.cpp')
+                   'CI/run_mwnet_discovery_soak.py', 'CI/mwnet_disk_tmp.sh',
+                   'apps/mwnet_tests/headless_integration.cpp')
 
 
 def digest(path):
@@ -222,6 +224,54 @@ def hashes_unchanged(paths, expected):
     return set(paths) == set(expected) and all(digest(paths[key]) == value for key, value in expected.items())
 
 
+def prepare_scratch(root):
+    """Honor only the wrapper's explicit private disk mount, never ambient TMPDIR."""
+    requested = os.environ.get('MWNET_ARTIFACT_SCRATCH')
+    scratch = Path(requested) if requested else root / 'tmp'
+    if not scratch.is_absolute() or scratch.is_symlink():
+        raise ValueError('Temporary storage must be an absolute private directory')
+    scratch.mkdir(mode=0o700, exist_ok=True)
+    attributes = scratch.stat()
+    if (not stat.S_ISDIR(attributes.st_mode) or attributes.st_uid != os.getuid()
+            or stat.S_IMODE(attributes.st_mode) & 0o077):
+        raise ValueError('Temporary storage must belong to this user with private permissions')
+    scratch = scratch.resolve()
+    if scratch == root or scratch in root.parents or attributes.st_dev != root.stat().st_dev:
+        raise ValueError('Temporary storage must be separate and on the artifact filesystem')
+    filesystem = subprocess.run(['stat', '--file-system', '--format=%T', str(root)],
+                                capture_output=True, text=True, check=True, timeout=5).stdout.strip()
+    if not filesystem or filesystem in ('tmpfs', 'ramfs'):
+        raise ValueError('Artifacts and temporary storage must be on persistent disk')
+    return scratch, filesystem
+
+
+def artifact_usage(root, scratch, maximum_artifacts_bytes=512 * MIB,
+                   maximum_log_bytes=32 * MIB, minimum_free_bytes=512 * MIB):
+    """Account for sibling scratch too, without following symlinks or special files."""
+    def tree_bytes(directory):
+        total = 0
+        for parent, directories, files in os.walk(directory, followlinks=False):
+            directories[:] = [name for name in directories if not (Path(parent) / name).is_symlink()]
+            for name in files:
+                path = Path(parent) / name
+                try:
+                    attributes = path.lstat()
+                except FileNotFoundError:
+                    continue
+                if not stat.S_ISREG(attributes.st_mode):
+                    continue
+                size = attributes.st_size
+                if path.suffix == '.log' and size > maximum_log_bytes:
+                    raise RuntimeError('Bounded log size exceeded: ' + path.name)
+                total += size
+        return total
+    output_bytes, temporary_bytes = tree_bytes(root), tree_bytes(scratch)
+    total = output_bytes + (0 if scratch.is_relative_to(root) else temporary_bytes)
+    if total > maximum_artifacts_bytes or shutil.disk_usage(root).free < minimum_free_bytes:
+        raise RuntimeError('Artifact/disk headroom bound exceeded')
+    return {'artifactBytes': total, 'outputBytes': output_bytes, 'temporaryBytes': temporary_bytes}
+
+
 def cgroup_constraints():
     result = {}
     for name in ('memory.max', 'memory.swap.max', 'memory.current', 'memory.peak', 'memory.events', 'cpu.stat'):
@@ -259,6 +309,7 @@ def run(args):
     args.output.mkdir(mode=0o700)
     os.umask(0o077)
     root = args.output.resolve()
+    scratch, artifact_filesystem = prepare_scratch(root)
     report = {'schemaVersion': 1, 'scope': 'synthetic transport lifecycle load plus local trusted-HTTPS directory churn/outage',
               'status': 'running', 'preflight': args.preflight, 'overnightAccepted': False,
               'startedUtc': datetime.now(timezone.utc).isoformat(), 'runtimeSourceCommit': args.runtime_commit,
@@ -272,6 +323,8 @@ def run(args):
                          'discoveryProcessTreeRssBytes': 1024 * MIB, 'caddyRssBytes': 256 * MIB},
               'legacyReleaseGateReclassified': False, 'actualGameActors': False,
               'sixteenPlayerRenderedCapacityAccepted': False, 'processes': {},
+              'temporaryStorage': {'path': str(scratch), 'filesystem': artifact_filesystem,
+                                   'sameFilesystemAsArtifacts': True, 'includedInArtifactBound': True},
               'cgroupConstraintsAtStart': cgroup_constraints()}
     atomic_json(root / 'result.json', report)
     processes, streams = {}, []
@@ -289,7 +342,8 @@ def run(args):
         caddyfile.write_text('{\n admin off\n auto_https off\n persist_config off\n}\n'
                              'https://localhost:8443 {\n bind 127.0.0.1\n'
                              f' tls "{certificate}" "{key}"\n reverse_proxy 127.0.0.1:8080\n}}\n')
-        environment = dict(os.environ, TMPDIR=str(root), XDG_DATA_HOME=str(root / 'caddy-data'),
+        environment = dict(os.environ, TMPDIR=str(scratch), TMP=str(scratch), TEMP=str(scratch),
+                           XDG_DATA_HOME=str(root / 'caddy-data'),
                            XDG_CONFIG_HOME=str(root / 'caddy-config'))
         def launch(name, command):
             stream = (root / (name + '.log')).open('w'); streams.append(stream)
@@ -340,15 +394,7 @@ def run(args):
                     bound = report['limits'][{'native': 'nativeRssBytes', 'discovery': 'discoveryProcessTreeRssBytes', 'caddy': 'caddyRssBytes'}[name]]
                     if usage['rssBytes'] > bound:
                         raise RuntimeError(name + ' exceeded its predeclared RSS bound')
-                total = 0
-                for path in root.rglob('*'):
-                    if path.is_file():
-                        size = path.stat().st_size; total += size
-                        if path.suffix == '.log' and size > 32 * MIB:
-                            raise RuntimeError('Bounded log size exceeded: ' + path.name)
-                if total > 512 * MIB or shutil.disk_usage(root).free < 512 * MIB:
-                    raise RuntimeError('Artifact/disk headroom bound exceeded')
-                row['artifactBytes'] = total
+                row.update(artifact_usage(root, scratch))
                 samples.write(json.dumps(row) + '\n'); samples.flush()
                 if time.monotonic() >= next_report:
                     report['elapsedSeconds'] = elapsed
@@ -429,6 +475,14 @@ def run(args):
         report['procedureFilesUnchanged'] = all(digest(ROOT / k) == v for k, v in report['procedureSha256'].items())
         if not report['procedureFilesUnchanged']:
             report.update(status='failed', failure='Procedure files changed during workload', overnightAccepted=False)
+        try:
+            report['finalArtifactUsage'] = artifact_usage(root, scratch)
+            report['finalArtifactBoundsAccepted'] = True
+        except (OSError, RuntimeError) as error:
+            report['finalArtifactBoundsAccepted'] = False
+            report['artifactBoundsFailure'] = str(error)
+            if report['status'] != 'failed':
+                report.update(status='failed', failure=str(error), overnightAccepted=False)
         atomic_json(root / 'result.json', report)
     print(json.dumps({'status': report['status'], 'overnightAccepted': report['overnightAccepted'],
                       'receipt': str(root / 'result.json'), 'failure': report.get('failure')}, indent=2))

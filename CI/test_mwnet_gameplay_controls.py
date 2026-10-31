@@ -21,6 +21,8 @@ import subprocess
 import sys
 import time
 
+from mwnet_temp import prepare_temp_root
+
 MAX_LOG_BYTES = 2 * 1024 * 1024
 CASE_TIMEOUT_SECONDS = 8
 
@@ -48,10 +50,12 @@ def _environment(profile: Path) -> dict[str, str]:
     # Neither test passwords nor unrelated inherited CI/account credentials are
     # passed through the client's environment. Preserve only loader/OS basics.
     keys = ('PATH', 'LD_LIBRARY_PATH', 'DYLD_LIBRARY_PATH', 'SYSTEMROOT', 'WINDIR',
-            'SystemRoot', 'SystemDrive', 'TEMP', 'TMP', 'LANG', 'LC_ALL')
+            'SystemRoot', 'SystemDrive', 'LANG', 'LC_ALL')
     env = {key: os.environ[key] for key in keys if key in os.environ}
+    temporary = str(prepare_temp_root(profile / 'tmp'))
     env.update(HOME=str(profile / 'home'), XDG_CONFIG_HOME=str(profile / 'config'),
                XDG_DATA_HOME=str(profile / 'data'), XDG_CACHE_HOME=str(profile / 'cache'),
+               TMPDIR=temporary, TMP=temporary, TEMP=temporary,
                OPENMW_DISABLE_CRASH_CATCHER='1', NO_COLOR='1')
     return env
 

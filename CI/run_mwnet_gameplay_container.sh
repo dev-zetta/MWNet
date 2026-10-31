@@ -17,7 +17,8 @@ for path in "$root" "$build" "$data" "$output"; do
     [[ $path != *,* ]] || { echo 'Docker bind paths cannot contain commas.' >&2; exit 1; }
 done
 umask 077
-mkdir -p -- "$(dirname -- "$output")"
+source "$root/CI/mwnet_disk_tmp.sh"
+mwnet_prepare_container_tmp "$output"
 docker_command=(docker)
 if [[ -n ${MWNET_DOCKER_CONTEXT:-} ]]; then docker_command+=(--context "$MWNET_DOCKER_CONTEXT"); fi
 package_mount=()
@@ -32,7 +33,8 @@ if [[ -n ${MWNET_GAMEPLAY_PACKAGE_ROOT:-} ]]; then
 fi
 exec "${docker_command[@]}" run --rm --network none --read-only \
     -e MWNET_GAMEPLAY_ISOLATED_CONTAINER=1 \
-    --tmpfs /tmp:rw,nosuid,nodev,size=32m --shm-size 256m \
+    --mount "type=bind,src=$MWNET_CONTAINER_TMP,dst=/tmp" \
+    -e TMPDIR=/tmp -e TMP=/tmp -e TEMP=/tmp --shm-size 256m \
     --memory "${MWNET_GAMEPLAY_MEMORY:-12g}" --cpus "${MWNET_GAMEPLAY_CPUS:-6}" --pids-limit 512 \
     --cap-drop ALL --security-opt no-new-privileges \
     --user "$(id -u):$(id -g)" \

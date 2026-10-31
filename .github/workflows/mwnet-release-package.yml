@@ -37,7 +37,9 @@ jobs:
         with:
           ref: ${{ github.sha }}
           path: release-tools
-          sparse-checkout: CI/smoke_mwnet_package.py
+          sparse-checkout: |
+            CI/smoke_mwnet_package.py
+            CI/mwnet_temp.py
           sparse-checkout-cone-mode: false
       - uses: actions/setup-python@v6
         with:

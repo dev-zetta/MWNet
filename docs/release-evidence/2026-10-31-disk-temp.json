@@ -1,0 +1,94 @@
+{
+  "schemaVersion": 1,
+  "recordedUtc": "2026-10-31T06:40:14.312069+00:00",
+  "scope": "Local Linux disk scratch and test/build tooling; no new game runtime or sustained-operation acceptance",
+  "baseDocumentationCommit": "21f4a17f7e",
+  "runtimeSourceCommit": "dd1fd12cebcaf8a880b1e56f559891315ec3f062",
+  "hostObservation": {
+    "systemTmpFilesystem": "tmpfs",
+    "repositoryFilesystem": "btrfs",
+    "privateRepositoryTmpMode": "0700",
+    "globalOomInvocationUtc": "2026-10-31T05:05:04Z",
+    "killedTaskUtc": "2026-10-31T05:05:05Z",
+    "killedTask": "MainThread",
+    "killedTaskApplicationScope": "Chromium",
+    "killedTaskAnonymousRssKiB": 59008696,
+    "kernelConstraint": "CONSTRAINT_NONE",
+    "kernelOomType": "global_oom",
+    "tmpfsAsCauseEstablished": false,
+    "applicationHeapGrowthMechanismEstablished": false,
+    "acceptanceTimeoutCauseEstablished": false
+  },
+  "storageChanges": {
+    "hostDefault": "tmp/",
+    "genericLauncher": "CI/with_disk_tmp.sh",
+    "variables": [
+      "TMPDIR",
+      "TMP",
+      "TEMP",
+      "MWNET_TMPDIR"
+    ],
+    "containerDefault": "private disk scratch bound at /tmp",
+    "ramScratchRejectedOnLinux": true,
+    "overnightScratchIncludedInArtifactBounds": true,
+    "systemTmpRemounted": false,
+    "unrelatedTmpDataDeleted": false
+  },
+  "validation": {
+    "pythonRegressionTests": 46,
+    "serverLauncherTests": 3,
+    "gameplayRunnerTests": 18,
+    "allAbovePassed": true,
+    "nativeControlCases": 14,
+    "nativeControlOutcome": "pass",
+    "nativeControlClientSha256": "ef8369749048ed5e7faecd6848710cb0bf1866aaaa5c7251f4bc8bb145ed6777",
+    "nativeControlReceipt": "build/ecc-review/disk-temp-controls-container-20261031/control-validation.json",
+    "nativeControlReceiptSha256": "4c8284db4a89b244275962ee53cc75f654a26d24cdbf5de24dfb72183d2213fe",
+    "nativeControlContainerMemoryBytes": 536870912,
+    "nativeControlRequiresAssets": false,
+    "nativeControlRenderedGameplay": false,
+    "diskTmpContainerSmoke": {
+      "passed": true,
+      "filesystem": "btrfs",
+      "literalTmpFileWrite": true,
+      "x11SocketCreated": true,
+      "memoryLimitBytes": 134217728,
+      "network": "none",
+      "containerRemoved": true,
+      "scratchRemovedAfterExit": true
+    },
+    "shellSyntaxPassed": true,
+    "pythonSyntaxPassed": true,
+    "fourWorkflowYamlParsed": true,
+    "sparseCheckoutHelperDeliveryChecked": true,
+    "upstreamWindowsMacosValidationForNewToolingCompleted": false
+  },
+  "diagnosticAttempts": [
+    {
+      "privateOutput": "build/ecc-review/disk-temp-controls-20261031",
+      "outcome": "sandbox blocked local guard socket before native cases"
+    },
+    {
+      "privateOutput": "build/ecc-review/disk-temp-controls-20261031-host",
+      "outcome": "host loader lacked Ubuntu libavcodec.so.60; no native control acceptance claimed"
+    }
+  ],
+  "originalAcceptance": {
+    "status": "failed",
+    "overnightAccepted": false,
+    "containerOom": false,
+    "containerPeakMemoryBytes": 416534528,
+    "result": "build/overnight-runs/post-security-dd1fd12cebca/overnight/result.json",
+    "resultSha256": "18f999216048fb4b13d0d52977bf92c20f7d981602ddb29e78ae5465c75f6ab5",
+    "originalsPreserved": true,
+    "restarted": false,
+    "monitorDeleted": true
+  },
+  "limits": [
+    "Disk scratch does not cap an application heap or guarantee no future host OOM.",
+    "RAM filesystem rejection is implemented on Linux; Windows/macOS execution for the changed helper is not claimed.",
+    "Sampled artifact-size enforcement is not an instantaneous filesystem quota.",
+    "New procedure hashes are required for a future run; the historical receipt remains bound to its frozen inputs.",
+    "No stable release or NUC update occurred."
+  ]
+}

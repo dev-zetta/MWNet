@@ -132,6 +132,10 @@ if [ "$CLEAN" = true ]; then
 fi
 
 # Install dependencies
+command -v python3 >/dev/null || { echo 'Python 3.9 or newer is required for disk-backed build scratch.' >&2; exit 1; }
+TMPDIR="$(python3 "$PROJECT_DIR/CI/mwnet_temp.py" --print-root)"
+export TMPDIR TMP="$TMPDIR" TEMP="$TMPDIR" MWNET_TMPDIR="$TMPDIR"
+
 if [[ $INSTALL == true && $SKIP_PACKAGE_INSTALL == false ]]; then
   echo -e "\n>> Installing system packages"
   

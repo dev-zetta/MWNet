@@ -10,6 +10,8 @@ if ! git -C "$source_dir" diff --quiet HEAD --; then
     echo 'Candidate builds require a clean tracked source tree' >&2
     exit 1
 fi
+TMPDIR="$(MWNET_TMPDIR="${MWNET_TMPDIR:-"$output_dir/tmp"}" python3 "$source_dir/CI/mwnet_temp.py" --print-root)"
+export TMPDIR TMP="$TMPDIR" TEMP="$TMPDIR" MWNET_TMPDIR="$TMPDIR"
 python3 "$source_dir/CI/test_mwnet_server_launcher.py"
 cmake -S "$source_dir" -B "$output_dir/build" -G Ninja \
     -DCMAKE_BUILD_TYPE=RelWithDebInfo \

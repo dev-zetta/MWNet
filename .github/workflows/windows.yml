@@ -52,6 +52,7 @@ jobs:
         sparse-checkout: |
           CI/smoke_mwnet_package.py
           CI/complete_boost_headers.py
+          CI/mwnet_temp.py
           CI/test_mwnet_windows_io.py
         sparse-checkout-cone-mode: false
 
