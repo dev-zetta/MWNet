@@ -1,0 +1,271 @@
+{
+  "schemaVersion": 1,
+  "recordedUtc": "2026-10-31T06:16:31.442280+00:00",
+  "scope": "synthetic transport lifecycle load plus local trusted-HTTPS directory churn/outage",
+  "status": "failed",
+  "overnightAccepted": false,
+  "stableApproved": false,
+  "runtimeSourceCommit": "dd1fd12cebcaf8a880b1e56f559891315ec3f062",
+  "procedureRevision": "dd1fd12cebcaf8a880b1e56f559891315ec3f062",
+  "container": {
+    "recordedUtc": "2026-10-31T06:15:44.733342+00:00",
+    "container": "mwnet-overnight-security-dd1fd12cebca",
+    "dockerContextUsed": "default",
+    "savedDockerContext": "desktop-linux",
+    "state": {
+      "Status": "exited",
+      "Running": false,
+      "Paused": false,
+      "Restarting": false,
+      "OOMKilled": false,
+      "Dead": false,
+      "Pid": 0,
+      "ExitCode": 1,
+      "Error": "",
+      "StartedAt": "2026-10-30T21:51:32.936439126Z",
+      "FinishedAt": "2026-10-31T05:05:21.138631201Z"
+    },
+    "sleepInhibitorReleased": true
+  },
+  "startedUtc": "2026-10-30T21:51:33.073185+00:00",
+  "finishedUtc": "2026-10-31T05:05:21.062985+00:00",
+  "requestedSeconds": 28800,
+  "elapsedSeconds": 26027.935536565026,
+  "shortfallSeconds": 2772.0644634349737,
+  "workload": {
+    "clients": 16,
+    "simulatedLatencyMilliseconds": 75,
+    "simulatedPacketLossPercent": 2,
+    "actualGameActors": false,
+    "sixteenPlayerRenderedCapacityAccepted": false
+  },
+  "failure": {
+    "supervisor": "native exited unexpectedly: 1",
+    "native": "elapsedSeconds=26025.820143 cycle=848 client=0 phase=disconnect phaseElapsedSeconds=5.013487 lastAuthenticationSeconds=0.349457 maximumAuthenticationSeconds=8.890832: server did not observe client disconnect",
+    "nativeStatus": "incomplete",
+    "nativeScenariosComplete": false,
+    "nativeElapsedSeconds": 26025.8,
+    "completedCycles": 847,
+    "cleanupVerifiedCycles": 847,
+    "completePeerLifecycles": 13552,
+    "currentCycle": 848,
+    "currentClient": 0,
+    "phase": "disconnect",
+    "rootCauseEstablished": false,
+    "interpretation": "Five-second server-side disconnect-event wait timed out; transport, scheduling and harness event handling have not been distinguished."
+  },
+  "nativeObservations": {
+    "maximumQueueDepth": 16,
+    "droppedSnapshots": 297,
+    "tickP99Microseconds": 7272,
+    "serializationP99Microseconds": 17,
+    "lastAuthenticationSeconds": 0.349457,
+    "maximumAuthenticationSeconds": 8.89083,
+    "residentMemoryBytes": 11251712,
+    "peakResidentMemoryBytes": 14376960,
+    "monotonicMemoryGrowthDetected": false,
+    "residentMemoryGrowthPercentAfterWarmup": 0.573752
+  },
+  "partialRetainedNativeState": {
+    "finalConnectionMetricEntries": 32,
+    "finalCombatEntries": 16,
+    "finalInventoryEntries": 16,
+    "finalJusticeEntries": 16,
+    "finalLifecycleEntries": 16
+  },
+  "directory": {
+    "completed": false,
+    "finalReceiptPresent": false,
+    "lastLoggedSuccessfulCycles": 12915,
+    "lastLoggedElapsedSeconds": 25979,
+    "lastLoggedUnsuccessfulRequests": 16,
+    "unsuccessfulRequestCounterIsDistinctOutageCount": false,
+    "lastFailure": "Directory request: Timeout was reached",
+    "expiryAndFinalCleanupAccepted": false
+  },
+  "resourceObservations": {
+    "acceptedFullDurationMemoryAssessment": false,
+    "limits": {
+      "wholeRunDeadlineSeconds": 29700,
+      "maximumArtifactsBytes": 536870912,
+      "maximumIndividualLogBytes": 33554432,
+      "nativeRssBytes": 1073741824,
+      "discoveryProcessTreeRssBytes": 1073741824,
+      "caddyRssBytes": 268435456
+    },
+    "cgroupAtStart": {
+      "memory.max": "4294967296",
+      "memory.swap.max": "0",
+      "memory.current": "13307904",
+      "memory.peak": "13987840",
+      "memory.events": {
+        "low": 0,
+        "high": 0,
+        "max": 0,
+        "oom": 0,
+        "oom_kill": 0,
+        "oom_group_kill": 0,
+        "sock_throttled": 0
+      },
+      "cpu.stat": {
+        "usage_usec": 121245,
+        "user_usec": 95557,
+        "system_usec": 25687,
+        "nice_usec": 0,
+        "core_sched.force_idle_usec": 0,
+        "nr_periods": 2,
+        "nr_throttled": 0,
+        "throttled_usec": 0,
+        "nr_bursts": 0,
+        "burst_usec": 0
+      }
+    },
+    "cgroupAtFinish": {
+      "memory.max": "4294967296",
+      "memory.swap.max": "0",
+      "memory.current": "103460864",
+      "memory.peak": "416534528",
+      "memory.events": {
+        "low": 0,
+        "high": 0,
+        "max": 0,
+        "oom": 0,
+        "oom_kill": 0,
+        "oom_group_kill": 0,
+        "sock_throttled": 2
+      },
+      "cpu.stat": {
+        "usage_usec": 6303331762,
+        "user_usec": 4133370982,
+        "system_usec": 2169960779,
+        "nice_usec": 0,
+        "core_sched.force_idle_usec": 0,
+        "nr_periods": 260281,
+        "nr_throttled": 49,
+        "throttled_usec": 12087589,
+        "nr_bursts": 0,
+        "burst_usec": 0
+      }
+    },
+    "oomEventsDuringRun": {
+      "oom": 0,
+      "oom_kill": 0,
+      "oom_group_kill": 0
+    },
+    "sampleCount": 12997,
+    "peakSampledArtifactBytes": 11430938,
+    "maximumIndividualLogBytesObserved": 25815,
+    "processMaxima": {
+      "native": {
+        "sampledRssBytes": 282828800,
+        "observedProcessPeakRssBytes": 282828800,
+        "cpuSeconds": 5927.45,
+        "openFileDescriptors": 29
+      },
+      "discovery": {
+        "sampledRssBytes": 80236544,
+        "observedProcessPeakRssBytes": 80236544,
+        "cpuSeconds": 278.75,
+        "openFileDescriptors": 36
+      },
+      "caddy": {
+        "sampledRssBytes": 52969472,
+        "observedProcessPeakRssBytes": 52969472,
+        "cpuSeconds": 69.09,
+        "openFileDescriptors": 10
+      }
+    }
+  },
+  "cleanup": {
+    "caddy": {
+      "exitCode": 0,
+      "forcedKill": false,
+      "remainingLiveGroupMembers": []
+    },
+    "native": {
+      "exitCode": 1,
+      "forcedKill": false,
+      "remainingLiveGroupMembers": []
+    },
+    "discovery": {
+      "exitCode": -15,
+      "forcedKill": false,
+      "remainingLiveGroupMembers": []
+    }
+  },
+  "cleanupAccepted": false,
+  "sleepInhibitorReleased": true,
+  "integrity": {
+    "compiledInputProofSha256": "cb82166122de323a3370146e58669db82d0f8afe5b04a110061dacd33b8b9009",
+    "binarySha256": {
+      "native": "207fa52ea246ff41c7ac783d8ff14c34ffde0ab6f6dac634d6cc6f212752cb15",
+      "directory": "6baee09c5cc914554321f21a2597a8850eb6355dcecb6ba38819db35cfe92dcd",
+      "discoveryTests": "4322a4d74f924eb901e6d40ee2cb683af48128717d92ca6415347fe037576d4c"
+    },
+    "caddySha256": "4ef1f68c70219536b2711fd16547a79841a2dec2d6b4e56b1e3e5e9da76028e6",
+    "procedureSha256": {
+      "CI/run_mwnet_overnight.py": "d5871ef552dc2cc01fcec61dbc49bc7094546d7cbac1e646e1b09bc1afc6116d",
+      "CI/run_mwnet_overnight_container.sh": "2210b4493e37c0aa33eec6d50126921a75269b600e138d7405ae65458461ae37",
+      "CI/run_mwnet_discovery_soak.py": "8a284dfa83f9663380150317dc7017023102f614acc18d7895226479b6a1cf9c",
+      "apps/mwnet_tests/headless_integration.cpp": "299800114a23a27c5486744cd44f873fc0331a88075fc0ea17c05d0423341593"
+    },
+    "binariesUnchanged": true,
+    "procedureFilesUnchanged": true,
+    "currentProceduresMatchPinnedGitBlobs": true
+  },
+  "evidence": {
+    "privateArtifactRoot": "build/overnight-runs/post-security-dd1fd12cebca/overnight",
+    "originalsPreserved": true,
+    "files": {
+      "result.json": {
+        "sha256": "18f999216048fb4b13d0d52977bf92c20f7d981602ddb29e78ae5465c75f6ab5",
+        "bytes": 6636
+      },
+      "native/metrics.json": {
+        "sha256": "1155e4b561863e082dbc2e12ff76072f4a52ac40fdf736b66a832abfc6cf7ac0",
+        "bytes": 9770
+      },
+      "native.log": {
+        "sha256": "0f1c955bc0fd6d2ab2b5bd8b53dc7bd5eb9d25ec0f8a53ffed2a849bbe24fad6",
+        "bytes": 1547
+      },
+      "discovery.log": {
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "bytes": 0
+      },
+      "discovery/workload.log": {
+        "sha256": "328e481e7ce27ce76ae61b00b15a07480f8bf7226bf39668c2f5a383f671fb96",
+        "bytes": 25815
+      },
+      "discovery/directory.log": {
+        "sha256": "10da08822d06602daa0c1ef82f39ba6b5bec8b29972d1764d4b3ca6a51b7d4d8",
+        "bytes": 156
+      },
+      "resources.jsonl": {
+        "sha256": "0f5b08ca9acc823e6f6f2c167b9e24d32a0792a78bb4682b37251599ca7f960b",
+        "bytes": 5529201
+      }
+    },
+    "terminalStateFile": "build/overnight-runs/post-security-dd1fd12cebca/terminal-verification/container-state.json",
+    "terminalStateSha256": "06ba6ee183068e1c4aaec86ae1fffba6971debef22fc6defb2f6df3b5ef3c57e"
+  },
+  "actions": {
+    "workloadRestarted": false,
+    "criteriaRelaxed": false,
+    "runtimeOrProcedureChanged": false,
+    "publicReleaseChanged": false,
+    "liveDeploymentChanged": false,
+    "manualGameplayRequested": false
+  },
+  "remainingWork": [
+    "Investigate and reproduce the disconnect-event timeout before assessing any correction or rerun.",
+    "Obtain accepted sustained-operation and final outage/expiry/cleanup evidence for the selected runtime.",
+    "Select the supported release identity and verify its deployment.",
+    "Complete Windows/macOS bundled notices and applicable source delivery before distributing corrected platform packages."
+  ],
+  "relatedRecords": {
+    "acceptedAiReview": "2026-10-30-ai-review.md",
+    "renderedCandidate": "2026-10-30-post-review-candidate.md",
+    "terminalCi": "2026-10-30-corrected-candidate-ci.md"
+  }
+}
