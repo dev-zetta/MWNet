@@ -119,8 +119,9 @@ def main():
             '(this candidate was validated on Ubuntu 24.04). See runtime-dependencies.txt.\n'
             'No game content is included. Empty content is only a server startup test;\n'
             'a playable server requires matching, legally obtained game content.\n'
-            'Cross-platform builds, gameplay acceptance, independent security/legal\n'
-            'review and the public beta remain release gates.\n')
+            'Packaging alone does not establish release acceptance. Supported platforms,\n'
+            'review, gameplay, sustained-operation and deployment evidence are recorded\n'
+            'with each release; see RELEASE_GATES.md and its linked evidence.\n')
         if not args.server_only:
             with (root / 'PREVIEW.txt').open('a') as instructions:
                 instructions.write('Client and resources are included. Run ./run-mwnet-local.sh\n'

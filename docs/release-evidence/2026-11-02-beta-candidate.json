@@ -1,0 +1,84 @@
+{
+  "schemaVersion": 1,
+  "recordedUtc": "2026-11-02T19:06:58.267901+00:00",
+  "scope": "Unreleased Linux-first beta candidate preparation; no stable/public beta acceptance claimed",
+  "runtimeSourceCommit": "adc751899eade2b04086a794753f9540124c5e05",
+  "version": "1.0.0-beta.1",
+  "protocol": 13,
+  "ci": {
+    "runId": 41183248774,
+    "conclusion": "success",
+    "allJobsPassed": 11,
+    "metadataSha256": "017e7c87a3eaa472782f7711a2312baae8da3cacd03e0f51cb439cfce696eda0"
+  },
+  "native": {
+    "suitesPassed": 6,
+    "seconds": 20.89,
+    "repositoryInputs": 1342,
+    "bundleRepositoryInputs": 110,
+    "proof": "build/beta1-adc751899e/native-tools/evidence/compiled-provenance.json",
+    "proofSha256": "471891500685ec7953685e1659b4156795cdb9cad301a7c63c88f5c7715edf5d"
+  },
+  "renderedBuild": {
+    "repositoryInputs": 2688,
+    "compileObjects": 1216,
+    "archives": 22,
+    "allInputsMatchCandidate": true,
+    "proof": "build/beta1-adc751899e/rendered-provenance/graph/rendered-compiled-provenance.json",
+    "proofSha256": "1c4cc9bc879563230350b51a5198742ac82340435f60917bcbea96fece77cbdb",
+    "nativeControlCasesPassed": 14,
+    "strictGameplayStatus": "pending",
+    "distributionArchiveStatus": "repackaging metadata before acceptance"
+  },
+  "shortPreflight": {
+    "status": "preflight-pass",
+    "overnightAccepted": false,
+    "receipt": "build/beta1-adc751899e/acceptance/preflight/result.json",
+    "receiptSha256": "dc6809202979b6797793b2f5015b81097c14d8bc9d6decde8da1ca9fae4137f0",
+    "hostGlobalOomKillsDuringRun": 0,
+    "cleanupAccepted": true,
+    "memoryMaxBytes": 4294967296,
+    "memorySwapMaxBytes": 0
+  },
+  "stallDiagnostic": {
+    "receipt": "build/beta1-adc751899e/disconnect-stall-control/receipt.json",
+    "receiptSha256": "fe6be0582d63258964ad180f25b74a3b40ba3412dd268c1c1934bef760bf85cc",
+    "exactFailureReproduced": true,
+    "instrumentedTestBinary": true,
+    "betaArtifactsModified": false,
+    "originalFailureCauseProven": false,
+    "initialUntargetedAttempt": "Externally paused diagnostic reached its own60second controller timeout and was terminated; not accepted as a reproduction."
+  },
+  "sustainedRun": {
+    "container": "mwnet-beta1-acceptance-adc751899e-20261102",
+    "dockerContext": "default",
+    "artifactRoot": "build/overnight-runs/beta1-adc751899e-20261102/overnight",
+    "startedUtc": "2026-11-02T18:59:17.884944+00:00",
+    "requestedSeconds": 28800,
+    "clients": 16,
+    "latencyMs": 75,
+    "lossPercent": 2,
+    "status": "running",
+    "overnightAccepted": false,
+    "monitor": "watch-mwnet-beta-1-acceptance"
+  },
+  "nuc": {
+    "tailscaleSsh": "verified",
+    "kernel": "7.0.0-42-generic",
+    "tailscaledActive": true,
+    "dockerServiceActive": true,
+    "failedSystemServices": 0,
+    "publicDirectoryHttps": "reachable",
+    "dockerInspection": "requires interactive sudo authentication",
+    "betaDeployed": false
+  },
+  "remaining": [
+    "Strict rendered acceptance of the final beta archive",
+    "Verify Linux source and notice delivery and stage distribution evidence",
+    "Finish complete eight-hour acceptance on the frozen candidate",
+    "Prepare and verify a backed-up NUC game and directory update",
+    "Publish beta only after all selected gates are accepted"
+  ],
+  "windowsMacosNoticeSourceDeliveryComplete": false,
+  "stableApproved": false
+}
