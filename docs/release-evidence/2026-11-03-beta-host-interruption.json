@@ -1,0 +1,125 @@
+{
+  "schemaVersion": 1,
+  "recordedUtc": "2026-11-03T06:55:32.960971+00:00",
+  "scope": "synthetic transport lifecycle load plus local trusted-HTTPS directory churn/outage",
+  "status": "failed",
+  "overnightAccepted": false,
+  "stableApproved": false,
+  "runtimeSourceCommit": "adc751899eade2b04086a794753f9540124c5e05",
+  "procedureRevision": "adc751899eade2b04086a794753f9540124c5e05",
+  "startedUtc": "2026-11-02T18:59:17.884944+00:00",
+  "finishedUtc": "2026-11-02T19:31:55.096164+00:00",
+  "requestedSeconds": 28800,
+  "elapsedSeconds": 1957.1682389669586,
+  "failure": "Host memory headroom fell below the declared minimum",
+  "container": "mwnet-beta1-acceptance-adc751899e-20261102",
+  "containerState": {
+    "Status": "exited",
+    "Running": false,
+    "Paused": false,
+    "Restarting": false,
+    "OOMKilled": false,
+    "Dead": false,
+    "Pid": 0,
+    "ExitCode": 1,
+    "Error": "",
+    "StartedAt": "2026-11-02T18:59:17.763611231Z",
+    "FinishedAt": "2026-11-02T19:31:55.952020268Z"
+  },
+  "hostResourceChecksAccepted": false,
+  "hostMemoryAtStart": {
+    "memoryBytes": {
+      "MemTotal": 65498439680,
+      "MemAvailable": 57217454080,
+      "SwapTotal": 4294963200,
+      "SwapFree": 2809638912,
+      "Shmem": 436260864
+    },
+    "globalOomKills": 4
+  },
+  "hostMemoryAtFailure": {
+    "memoryBytes": {
+      "MemTotal": 65498439680,
+      "MemAvailable": 114921472,
+      "SwapTotal": 4294963200,
+      "SwapFree": 0,
+      "Shmem": 186126336
+    },
+    "globalOomKills": 4
+  },
+  "hostMemoryAtFinishCaptured": false,
+  "cgroupAtFinish": {
+    "memory.max": "4294967296",
+    "memory.swap.max": "0",
+    "memory.current": "31834112",
+    "memory.peak": "343814144",
+    "memory.events": {
+      "low": 0,
+      "high": 0,
+      "max": 0,
+      "oom": 0,
+      "oom_kill": 0,
+      "oom_group_kill": 0,
+      "sock_throttled": 35
+    },
+    "cpu.stat": {
+      "usage_usec": 549458069,
+      "user_usec": 299321849,
+      "system_usec": 250136220,
+      "nice_usec": 0,
+      "core_sched.force_idle_usec": 0,
+      "nr_periods": 19574,
+      "nr_throttled": 163,
+      "throttled_usec": 53521278,
+      "nr_bursts": 0,
+      "burst_usec": 0
+    }
+  },
+  "oomEventsDuringRun": {
+    "oom": 0,
+    "oom_kill": 0,
+    "oom_group_kill": 0
+  },
+  "cleanup": {
+    "caddy": {
+      "exitCode": -9,
+      "forcedKill": true,
+      "remainingLiveGroupMembers": []
+    },
+    "native": {
+      "exitCode": -15,
+      "forcedKill": false,
+      "remainingLiveGroupMembers": []
+    },
+    "discovery": {
+      "exitCode": -15,
+      "forcedKill": false,
+      "remainingLiveGroupMembers": []
+    }
+  },
+  "cleanupAccepted": false,
+  "sleepInhibitorReleased": true,
+  "binariesUnchanged": true,
+  "procedureFilesUnchanged": true,
+  "compiledInputProofSha256": "471891500685ec7953685e1659b4156795cdb9cad301a7c63c88f5c7715edf5d",
+  "originalResultSha256": "8ddd2a8d5d2a82c8393d90ea63db374675af21d254419e4b6275f96d0c9519b0",
+  "privateArtifactRoot": "build/overnight-runs/beta1-adc751899e-20261102/overnight",
+  "kernelEventAfterRun": {
+    "utc": "2026-11-02T19:33:47Z",
+    "type": "global_oom",
+    "killedTask": "MainThread",
+    "applicationScope": "Chromium",
+    "anonymousRssKiB": 28274628,
+    "occurredAfterRecordedRunEnd": true,
+    "tmpfsAsCauseEstablished": false
+  },
+  "nativeTerminalMetricsPresent": false,
+  "directoryTerminalMetricsPresent": false,
+  "remediationPlan": "Prepare an independently supervised NUC run after host-capacity checks and preflight; do not repeat the same desktop environment or relax the verdict.",
+  "newRunStarted": false,
+  "nuCCapacityObserved": {
+    "memoryAvailableApproxGiB": 6.4,
+    "diskFreeApproxGiB": 433
+  },
+  "monitorDeleted": true
+}
