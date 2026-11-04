@@ -1,0 +1,36 @@
+{
+  "scope": "local regression verification only; no NUC rerun or overnight acceptance",
+  "runtimeProductionSourceCommit": "adc751899eade2b04086a794753f9540124c5e05",
+  "originalNativeSha256": "207fa52ea246ff41c7ac783d8ff14c34ffde0ab6f6dac634d6cc6f212752cb15",
+  "correctedNativeSha256": "11321afedffbb039df52346e783fdee6d5192e39db7592979ab1a1cfb9b6ad83",
+  "harnessSourceSha256": "56cae917b7606d8f1513f45452174785d466350d6ea58bbf31211f4a294a97d6",
+  "buildLogSha256": "7b37f882f69cccb4bc79c04a899e440bd4ba35212a34d9e96e4cbbe74aa01ab9",
+  "ctestLogSha256": "7bec0649297d19262146d32942cfde7caac8d367a65b1a2d4114f5e77f67daf2",
+  "originalDiagnostic": {
+    "scope": "diagnostic reproduction with110ms latency; not acceptance or a restart of the failed NUC run",
+    "exitCode": 1,
+    "metrics": {
+      "status": "incomplete",
+      "failure": "elapsedSeconds=46.254735 cycle=1 client=0 phase=disconnect phaseElapsedSeconds=5.005765 lastAuthenticationSeconds=0.357091 maximumAuthenticationSeconds=0.357091: server did not observe client disconnect",
+      "elapsedSeconds": 46.2549,
+      "currentCycle": 1,
+      "currentClient": 0,
+      "phase": "disconnect",
+      "cycles": 0,
+      "clients": 16,
+      "lastAuthenticationSeconds": 0.357091,
+      "maximumAuthenticationSeconds": 0.357091
+    }
+  },
+  "correctedTests": {
+    "passed": 7,
+    "failed": 0,
+    "totalSeconds": 65.36,
+    "idlePeerRegressionSeconds": 43.76,
+    "clients": 16,
+    "latencyMs": 110,
+    "packetLossPercent": 2
+  },
+  "productionCodeOrTimeoutsChanged": false,
+  "nucFailureExactClassification": "pending privileged diagnostic export"
+}
