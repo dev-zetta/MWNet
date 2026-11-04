@@ -1,0 +1,349 @@
+{
+  "scope": "verified NUC native checks, completed startup preflight and running eight-hour synthetic workload; no overnight acceptance",
+  "statusReceiptSha256": "7e417ce2106ef4dcb77e312f401c2dc0c7684b7a2f831631df9503204c39921e",
+  "hostObservation": {
+    "observedUtc": "2026-11-04T13:32:25.590501+00:00",
+    "systemd": {
+      "LoadState": "loaded",
+      "ActiveState": "activating",
+      "SubState": "start",
+      "Result": "success",
+      "ExecMainStartTimestamp": "Wed 2026-11-04 13:27:37 UTC",
+      "ExecMainExitTimestamp": "",
+      "ExecMainStatus": "0"
+    },
+    "sleepInhibitorActive": true
+  },
+  "receipt": {
+    "schemaVersion": 1,
+    "status": "overnight",
+    "runId": "mwnet-beta1-nuc-procfix-20261104",
+    "scope": "synthetic components; no production update or sixteen rendered players",
+    "runtimeCommit": "adc751899eade2b04086a794753f9540124c5e05",
+    "procedureRevision": "844ea582f26d3972ed515bf7fb5ef28588bc40f9",
+    "startedUtc": "2026-11-04T13:27:39.365758+00:00",
+    "baseImageId": "sha256:62af237b48fc6d9914c4815eb97e1d23aad7bbb956931169252ea48aa4969f79",
+    "productionServicesModified": false,
+    "container": "mwnet-beta1-nuc-procfix-20261104",
+    "workerImageId": "sha256:58cb722114a3e7af48cc1ca02908707fb14a778c4901346a0ad60b83755a1080",
+    "nativeChecks": {
+      "passed": 7,
+      "tests": [
+        {
+          "name": "mwnet-headless",
+          "exitCode": 0,
+          "binarySha256": "11321afedffbb039df52346e783fdee6d5192e39db7592979ab1a1cfb9b6ad83"
+        },
+        {
+          "name": "mwnet-headless-idle-peers",
+          "exitCode": 0,
+          "binarySha256": "11321afedffbb039df52346e783fdee6d5192e39db7592979ab1a1cfb9b6ad83"
+        },
+        {
+          "name": "mwnet-unit",
+          "exitCode": 0,
+          "binarySha256": "a40b2177832d943d4ea3388cee455842b2e3edecdfbe6b52cd44171902c3db1c"
+        },
+        {
+          "name": "mwnet-actor-packets",
+          "exitCode": 0,
+          "binarySha256": "1eda7d1bffab854a3339decf4e1833d95dddbaa81bf8e9c0defce0ea8ffe668f"
+        },
+        {
+          "name": "mwnet-magic-content",
+          "exitCode": 0,
+          "binarySha256": "0a8d3db27c36544aa67fae7cba8160f0fbc782e1a359201526904277556bc9d6"
+        },
+        {
+          "name": "mwnet-persistence-fault",
+          "exitCode": 0,
+          "binarySha256": "ba81764f98faef443b71622560e0e29393ddec7aeaf4c369192681c17a0ec7d7"
+        },
+        {
+          "name": "mwnet-discovery",
+          "exitCode": 0,
+          "binarySha256": "4322a4d74f924eb901e6d40ee2cb683af48128717d92ca6415347fe037576d4c"
+        }
+      ]
+    },
+    "containerState": {
+      "Status": "running",
+      "Running": true,
+      "ExitCode": 0,
+      "OOMKilled": false,
+      "StartedAt": "2026-11-04T13:31:26.780039754Z",
+      "FinishedAt": "0001-01-01T00:00:00Z"
+    },
+    "preflightObservation": {
+      "resultSha256": "9773b89b70e4d3e5feb035f5e9a38179b8af8f6916bf2884f9bc1a1975359902",
+      "fields": {
+        "status": "preflight-pass",
+        "preflight": true,
+        "overnightAccepted": false,
+        "startedUtc": "2026-11-04T13:28:56.643314+00:00",
+        "finishedUtc": "2026-11-04T13:31:07.589893+00:00",
+        "runtimeSourceCommit": "adc751899eade2b04086a794753f9540124c5e05",
+        "procedureRevision": "844ea582f26d3972ed515bf7fb5ef28588bc40f9",
+        "procedureTrackedDirty": false,
+        "compiledInputProofSha256": "b8839cd645465b718eb1f9c695eb8bfecc0dc0c2887b9e6a24b5ba2230d7b169",
+        "binarySha256": {
+          "native": "11321afedffbb039df52346e783fdee6d5192e39db7592979ab1a1cfb9b6ad83",
+          "directory": "6baee09c5cc914554321f21a2597a8850eb6355dcecb6ba38819db35cfe92dcd",
+          "discoveryTests": "4322a4d74f924eb901e6d40ee2cb683af48128717d92ca6415347fe037576d4c"
+        },
+        "caddySha256": "4ef1f68c70219536b2711fd16547a79841a2dec2d6b4e56b1e3e5e9da76028e6",
+        "requestedSeconds": 60,
+        "clients": 16,
+        "simulatedLatencyMilliseconds": 75,
+        "simulatedPacketLossPercent": 2,
+        "elapsedSeconds": 130.73777650800184,
+        "supervisorWorkloadWallSeconds": 130.61034480200033,
+        "cleanupAccepted": true,
+        "cleanup": {
+          "caddy": {
+            "exitCode": 0,
+            "forcedKill": false,
+            "remainingLiveGroupMembers": []
+          },
+          "native": {
+            "exitCode": 0,
+            "forcedKill": false,
+            "remainingLiveGroupMembers": []
+          },
+          "discovery": {
+            "exitCode": 0,
+            "forcedKill": false,
+            "remainingLiveGroupMembers": []
+          }
+        },
+        "binariesUnchanged": true,
+        "procedureFilesUnchanged": true,
+        "hostResourceChecksAccepted": true,
+        "hostMemoryAtStart": {
+          "memoryBytes": {
+            "MemTotal": 7641903104,
+            "MemAvailable": 6618316800,
+            "SwapTotal": 4294963200,
+            "SwapFree": 4294963200,
+            "Shmem": 35651584
+          },
+          "globalOomKills": 0
+        },
+        "hostMemoryAtFinish": {
+          "memoryBytes": {
+            "MemTotal": 7641903104,
+            "MemAvailable": 6688124928,
+            "SwapTotal": 4294963200,
+            "SwapFree": 4294963200,
+            "Shmem": 35651584
+          },
+          "globalOomKills": 0
+        },
+        "lastHostMemoryObservation": {
+          "memoryBytes": {
+            "MemTotal": 7641903104,
+            "MemAvailable": 6688124928,
+            "SwapTotal": 4294963200,
+            "SwapFree": 4294963200,
+            "Shmem": 35651584
+          },
+          "globalOomKills": 0
+        },
+        "hostGlobalOomKillsDuringRun": 0,
+        "oomEventsDuringRun": {
+          "oom": 0,
+          "oom_kill": 0,
+          "oom_group_kill": 0
+        },
+        "cgroupConstraintsAtStart": {
+          "memory.max": "4294967296",
+          "memory.swap.max": "0",
+          "memory.current": "13307904",
+          "memory.peak": "13934592",
+          "memory.events": {
+            "low": 0,
+            "high": 0,
+            "max": 0,
+            "oom": 0,
+            "oom_kill": 0,
+            "oom_group_kill": 0,
+            "sock_throttled": 0
+          },
+          "cpu.stat": {
+            "usage_usec": 421050,
+            "user_usec": 373158,
+            "system_usec": 47891,
+            "nice_usec": 0,
+            "core_sched.force_idle_usec": 0,
+            "nr_periods": 4,
+            "nr_throttled": 0,
+            "throttled_usec": 0,
+            "nr_bursts": 0,
+            "burst_usec": 0
+          }
+        },
+        "cgroupConstraintsAtFinish": {
+          "memory.max": "4294967296",
+          "memory.swap.max": "0",
+          "memory.current": "14589952",
+          "memory.peak": "336105472",
+          "memory.events": {
+            "low": 0,
+            "high": 0,
+            "max": 0,
+            "oom": 0,
+            "oom_kill": 0,
+            "oom_group_kill": 0,
+            "sock_throttled": 0
+          },
+          "cpu.stat": {
+            "usage_usec": 33777779,
+            "user_usec": 22824249,
+            "system_usec": 10953530,
+            "nice_usec": 0,
+            "core_sched.force_idle_usec": 0,
+            "nr_periods": 775,
+            "nr_throttled": 0,
+            "throttled_usec": 0,
+            "nr_bursts": 0,
+            "burst_usec": 0
+          }
+        },
+        "limits": {
+          "wholeRunDeadlineSeconds": 960,
+          "maximumArtifactsBytes": 536870912,
+          "maximumIndividualLogBytes": 33554432,
+          "nativeRssBytes": 1073741824,
+          "discoveryProcessTreeRssBytes": 1073741824,
+          "caddyRssBytes": 268435456,
+          "minimumHostAvailableBytes": 2147483648
+        },
+        "nativeMemoryAssessment": {
+          "scope": "short preflight; no long-duration memory acceptance",
+          "accepted": false,
+          "samples": 2
+        },
+        "directoryMemoryAssessment": {
+          "scope": "short preflight; no long-duration memory acceptance",
+          "accepted": false,
+          "samples": 26
+        },
+        "caddyMemoryAssessment": {
+          "scope": "short preflight; no long-duration memory acceptance",
+          "accepted": false,
+          "samples": 65
+        },
+        "directoryFinalMetrics": {
+          "listings": 0,
+          "visible": 0,
+          "pending": 0,
+          "challenges": 0,
+          "rateBuckets": 0,
+          "listingBytes": 0
+        },
+        "directoryOutagesObserved": 5,
+        "directorySuccessfulChurnCycles": 24,
+        "directoryDatabaseBytes": {
+          "firstSample": 82216,
+          "peakSample": 304576,
+          "finalSample": 304576
+        },
+        "nativeMetricsSha256": "2f1e48192a5ef2cc11e4619d8f2aa10ca068676f23428c1e653938412e5388df",
+        "discoveryResultSha256": "a57ff3ba744f7c57b2c91b31e6fdde175817592ba6100f59ada903debbdbfea9",
+        "finalArtifactUsage": {
+          "artifactBytes": 104623,
+          "outputBytes": 104623,
+          "temporaryBytes": 0
+        },
+        "finalArtifactBoundsAccepted": true
+      }
+    },
+    "preflightResultSha256": "9773b89b70e4d3e5feb035f5e9a38179b8af8f6916bf2884f9bc1a1975359902",
+    "preflightAccepted": false,
+    "preflightCompleted": true,
+    "overnightObservation": {
+      "resultSha256": "96b32f20be2c015c30c634df708457a9e2211f1f6b82cf3d9ce7819b759a2c32",
+      "fields": {
+        "status": "running",
+        "preflight": false,
+        "overnightAccepted": false,
+        "startedUtc": "2026-11-04T13:31:27.040673+00:00",
+        "runtimeSourceCommit": "adc751899eade2b04086a794753f9540124c5e05",
+        "procedureRevision": "844ea582f26d3972ed515bf7fb5ef28588bc40f9",
+        "procedureTrackedDirty": false,
+        "compiledInputProofSha256": "b8839cd645465b718eb1f9c695eb8bfecc0dc0c2887b9e6a24b5ba2230d7b169",
+        "binarySha256": {
+          "native": "11321afedffbb039df52346e783fdee6d5192e39db7592979ab1a1cfb9b6ad83",
+          "directory": "6baee09c5cc914554321f21a2597a8850eb6355dcecb6ba38819db35cfe92dcd",
+          "discoveryTests": "4322a4d74f924eb901e6d40ee2cb683af48128717d92ca6415347fe037576d4c"
+        },
+        "caddySha256": "4ef1f68c70219536b2711fd16547a79841a2dec2d6b4e56b1e3e5e9da76028e6",
+        "requestedSeconds": 28800,
+        "clients": 16,
+        "simulatedLatencyMilliseconds": 75,
+        "simulatedPacketLossPercent": 2,
+        "elapsedSeconds": 0.12018274498404935,
+        "hostResourceChecksAccepted": null,
+        "hostMemoryAtStart": {
+          "memoryBytes": {
+            "MemTotal": 7641903104,
+            "MemAvailable": 6704209920,
+            "SwapTotal": 4294963200,
+            "SwapFree": 4294963200,
+            "Shmem": 35651584
+          },
+          "globalOomKills": 0
+        },
+        "lastHostMemoryObservation": {
+          "memoryBytes": {
+            "MemTotal": 7641903104,
+            "MemAvailable": 6679547904,
+            "SwapTotal": 4294963200,
+            "SwapFree": 4294963200,
+            "Shmem": 35651584
+          },
+          "globalOomKills": 0
+        },
+        "cgroupConstraintsAtStart": {
+          "memory.max": "4294967296",
+          "memory.swap.max": "0",
+          "memory.current": "13271040",
+          "memory.peak": "14233600",
+          "memory.events": {
+            "low": 0,
+            "high": 0,
+            "max": 0,
+            "oom": 0,
+            "oom_kill": 0,
+            "oom_group_kill": 0,
+            "sock_throttled": 0
+          },
+          "cpu.stat": {
+            "usage_usec": 412414,
+            "user_usec": 366479,
+            "system_usec": 45934,
+            "nice_usec": 0,
+            "core_sched.force_idle_usec": 0,
+            "nr_periods": 4,
+            "nr_throttled": 0,
+            "throttled_usec": 0,
+            "nr_bursts": 0,
+            "burst_usec": 0
+          }
+        },
+        "limits": {
+          "wholeRunDeadlineSeconds": 29700,
+          "maximumArtifactsBytes": 536870912,
+          "maximumIndividualLogBytes": 33554432,
+          "nativeRssBytes": 1073741824,
+          "discoveryProcessTreeRssBytes": 1073741824,
+          "caddyRssBytes": 268435456,
+          "minimumHostAvailableBytes": 2147483648
+        }
+      }
+    }
+  },
+  "monitorId": "watch-nuc-beta-acceptance",
+  "productionUpdateApplied": false,
+  "overnightAccepted": false
+}
