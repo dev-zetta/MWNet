@@ -118,6 +118,15 @@ class NucVerdictTests(unittest.TestCase):
             (bundle / 'acceptance.json').write_text(json.dumps(manifest))
             run_root = private / 'acceptance' / manifest['runId']
             original_path = Path
+            original_stat = Path.stat
+            def fixture_stat(path, *args, **kwargs):
+                attributes = original_stat(path, *args, **kwargs)
+                if path == operator:
+                    # Model the NUC's operator ownership, independently of the
+                    # CI runner's real UID, which can differ from the NUC's 1000.
+                    fields = list(attributes); fields[4] = 1000
+                    return os.stat_result(fields)
+                return attributes
             def mapped(value):
                 path = original_path(value)
                 if str(path) == '/srv/mwnet' or str(path).startswith('/srv/mwnet/'):
@@ -146,6 +155,7 @@ class NucVerdictTests(unittest.TestCase):
                     (output_root / 'result.json').write_text(json.dumps(receipt))
                 return ''
             with mock.patch.object(MODULE, 'Path', side_effect=mapped), \
+                 mock.patch.object(original_path, 'stat', new=fixture_stat), \
                  mock.patch.object(MODULE.os, 'geteuid', return_value=0), \
                  mock.patch.object(MODULE.pwd, 'getpwnam', return_value=SimpleNamespace(pw_uid=1000, pw_gid=1000)), \
                  mock.patch.object(MODULE.os, 'chown'), \
