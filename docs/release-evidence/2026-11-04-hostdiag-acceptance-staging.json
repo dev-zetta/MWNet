@@ -1,0 +1,28 @@
+{
+  "local": {
+    "scope": "fresh acceptance bundle preparation only; test not started",
+    "runId": "mwnet-beta1-nuc-hostdiag-20261104",
+    "runtimeCommit": "adc751899eade2b04086a794753f9540124c5e05",
+    "procedureRevision": "844ea582f26d3972ed515bf7fb5ef28588bc40f9",
+    "compiledProofSha256": "b8839cd645465b718eb1f9c695eb8bfecc0dc0c2887b9e6a24b5ba2230d7b169",
+    "filesVerified": 4835,
+    "manifestSha256": "62c3005ece181b5c4232cb10c8fa0dee4d81754ea35f211c61b4bcbf64bf5924",
+    "archiveSha256": "0609c090a76dce89a070c46d5c0a021759f3168ade7dbe6c12d8d3bcaf7373dd",
+    "launcherSha256": "d9763736e7c4b1b913bb5f3df6194235d457c4140ab8e21c4ccc688898d3841f",
+    "hostDiagnosticsSourceCommit": "34b4496a92920c981fd3f5c609396238a3cf784c",
+    "originalBundlesUnchanged": true,
+    "procedureFilesClean": true,
+    "acceptanceStarted": false,
+    "launcherPythonSyntaxAndControllerTamperCheckPassed": true
+  },
+  "nuc": {
+    "runId": "mwnet-beta1-nuc-hostdiag-20261104",
+    "filesVerified": 4835,
+    "procedureRevision": "844ea582f26d3972ed515bf7fb5ef28588bc40f9",
+    "procedureTrackedDirty": false,
+    "launcherSha256": "d9763736e7c4b1b913bb5f3df6194235d457c4140ab8e21c4ccc688898d3841f",
+    "manifestSha256": "62c3005ece181b5c4232cb10c8fa0dee4d81754ea35f211c61b4bcbf64bf5924",
+    "privateDiskStage": true,
+    "acceptanceNotStarted": true
+  }
+}

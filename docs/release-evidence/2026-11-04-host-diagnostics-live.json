@@ -1,0 +1,140 @@
+{
+  "scope": "actual NUC diagnostic deployment and independent live checks; no full panic/dump or host-stability qualification",
+  "rawLiveVerificationSha256": "6e9b9ff6d84d7e32e9601e0d4e529472245229f5106b42b6f33a4731d65bdd83",
+  "operatorInstallReportSha256": "fe5b86554d51538f4e7c2fedfdb66067081e6458ca0e9ced95c4f34e859595cb",
+  "observedUtc": "2026-11-04T17:57:48.275739+00:00",
+  "installReport": {
+    "status": "configured",
+    "action": "apply",
+    "startedUtc": "2026-11-04T17:55:36.619537+00:00",
+    "persistentJournalProbe": true,
+    "telemetryConsecutiveSamples": true,
+    "telemetryLatestUtc": "2026-11-04T17:55:52.030992+00:00",
+    "sysctl": {
+      "kernel.watchdog": "1",
+      "kernel.nmi_watchdog": "1",
+      "kernel.hardlockup_panic": "1",
+      "kernel.softlockup_panic": "1",
+      "kernel.panic_on_oops": "1",
+      "kernel.panic": "30"
+    },
+    "crashKernelLoaded": true,
+    "privateCoreDirectory": "/var/crash/mwnet-host",
+    "crashKernelReservedBytes": 536870912,
+    "storage": {
+      "critical_warning": 0,
+      "temperature": 312,
+      "power_cycles": 24522,
+      "power_on_hours": 6523,
+      "unsafe_shutdowns": 104,
+      "media_errors": 0,
+      "num_err_log_entries": 0,
+      "warning_temp_time": 0,
+      "critical_comp_time": 0,
+      "inspectionComplete": true,
+      "healthWarningsPresent": false
+    },
+    "serviceLimits": {
+      "MemoryMax": "67108864",
+      "TasksMax": "16",
+      "CapabilityBoundingSet": "",
+      "Group": "gmax",
+      "PrivateDevices": "yes",
+      "ProtectSystem": "strict",
+      "NoNewPrivileges": "yes"
+    },
+    "panicPathDeliberatelyTriggered": false,
+    "wifiMitigation": {
+      "blocked": true,
+      "previousSoftBlocked": false,
+      "wiredRouteVerified": true,
+      "persistentRfkillStateVerified": true,
+      "causeConfirmed": false
+    },
+    "backup": "/var/lib/mwnet-host-diagnostics/backups/20261104T175543Z-474b0341",
+    "sourceCommit": "34b4496a92920c981fd3f5c609396238a3cf784c",
+    "testRestarted": false,
+    "firmwareFlashed": false,
+    "hostRebooted": false,
+    "finishedUtc": "2026-11-04T17:55:57.268036+00:00"
+  },
+  "setupUnit": {
+    "LoadState": "loaded",
+    "ActiveState": "active",
+    "SubState": "exited",
+    "Result": "success",
+    "ExecMainExitTimestamp": "Wed 2026-11-04 17:55:57 UTC",
+    "ExecMainStatus": "0"
+  },
+  "telemetryUnit": {
+    "LoadState": "loaded",
+    "ActiveState": "active",
+    "SubState": "running",
+    "Result": "success",
+    "NRestarts": "0",
+    "MemoryCurrent": "11251712",
+    "MemoryPeak": "12443648",
+    "CPUQuotaPerSecUSec": "50ms",
+    "MemoryMax": "67108864"
+  },
+  "telemetryAdvanced": true,
+  "telemetryAgeSeconds": 2.6146323680877686,
+  "bootId": "7bb206b2-bbec-41c0-9a09-553222b738c7",
+  "hostMemoryBytes": {
+    "MemTotal": 7641899008,
+    "MemFree": 6120869888,
+    "MemAvailable": 6864285696,
+    "Cached": 923148288,
+    "SwapTotal": 4294963200,
+    "SwapFree": 4294963200,
+    "Dirty": 4521984,
+    "Writeback": 0,
+    "Shmem": 2322432,
+    "Slab": 153616384
+  },
+  "hostGlobalOomKills": 0,
+  "radio": [
+    {
+      "type": "bluetooth",
+      "name": "hci0",
+      "softBlocked": false
+    },
+    {
+      "type": "wlan",
+      "name": "phy0",
+      "softBlocked": true
+    }
+  ],
+  "defaultRouteInterface": [
+    "eno1"
+  ],
+  "dockerService": {
+    "LoadState": "loaded",
+    "ActiveState": "active",
+    "SubState": "running",
+    "Result": "success"
+  },
+  "tailscaleService": {
+    "LoadState": "loaded",
+    "ActiveState": "active",
+    "SubState": "running",
+    "Result": "success"
+  },
+  "acceptanceUnit": {
+    "LoadState": "not-found",
+    "ActiveState": "inactive",
+    "SubState": "dead",
+    "Result": "success"
+  },
+  "sourceCI": {
+    "runId": 41879383093,
+    "sourceCommit": "34b4496a92920c981fd3f5c609396238a3cf784c",
+    "status": "in progress at observation",
+    "sourceChecks": "passed",
+    "macOSArmJob": {
+      "status": "cancelled",
+      "stepsExecuted": 0
+    },
+    "overallSuccessClaimed": false
+  }
+}
