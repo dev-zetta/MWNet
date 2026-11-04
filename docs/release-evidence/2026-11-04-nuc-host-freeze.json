@@ -1,0 +1,102 @@
+{
+  "scope": "confirmed host-freeze/forced-reboot interruption; original running receipt remains unchanged, no completed acceptance",
+  "classification": "interrupted",
+  "operatorReport": "The machine was unresponsive and inaccessible by SSH; the operator had to restart it",
+  "observedUtc": "2026-11-04T17:03:56.877758+00:00",
+  "runId": "mwnet-beta1-nuc-procfix-20261104",
+  "runtimeCommit": "adc751899eade2b04086a794753f9540124c5e05",
+  "procedureRevision": "844ea582f26d3972ed515bf7fb5ef28588bc40f9",
+  "compiledProofSha256": "b8839cd645465b718eb1f9c695eb8bfecc0dc0c2887b9e6a24b5ba2230d7b169",
+  "workerImageId": "sha256:58cb722114a3e7af48cc1ca02908707fb14a778c4901346a0ad60b83755a1080",
+  "rawDiagnosticSha256": "2ece9c076ba2b6e81c7bebc9dc7bc7f2237839947d9e6d3ed117a12636f0f304",
+  "originalOperatorStatusSha256": "3896da8ac7cb64b90c99929438bc2ce51f9aa9ed41c704fa9aaa719d2c3ca047",
+  "originalOperatorStatusMtimeUtc": "2026-11-04T15:38:38.159582+00:00",
+  "originalSupervisorRecordedStatus": "overnight",
+  "lastSavedRunningResultSha256": "386196c329f530bdb87c4a3c5d8b234d545c1f11b7ff6cb0bd82d8d46f957c26",
+  "lastSavedWorkload": {
+    "status": "running",
+    "preflight": false,
+    "overnightAccepted": false,
+    "startedUtc": "2026-11-04T13:31:27.040673+00:00",
+    "elapsedSeconds": 7604.248821640998,
+    "requestedSeconds": 28800,
+    "clients": 16,
+    "simulatedLatencyMilliseconds": 75,
+    "simulatedPacketLossPercent": 2,
+    "runtimeSourceCommit": "adc751899eade2b04086a794753f9540124c5e05",
+    "procedureRevision": "844ea582f26d3972ed515bf7fb5ef28588bc40f9",
+    "procedureTrackedDirty": false,
+    "binarySha256": {
+      "native": "11321afedffbb039df52346e783fdee6d5192e39db7592979ab1a1cfb9b6ad83",
+      "directory": "6baee09c5cc914554321f21a2597a8850eb6355dcecb6ba38819db35cfe92dcd",
+      "discoveryTests": "4322a4d74f924eb901e6d40ee2cb683af48128717d92ca6415347fe037576d4c"
+    },
+    "lastHostMemoryObservation": {
+      "memoryBytes": {
+        "MemTotal": 7641903104,
+        "MemAvailable": 6510645248,
+        "SwapTotal": 4294963200,
+        "SwapFree": 4294963200,
+        "Shmem": 35651584
+      },
+      "globalOomKills": 0
+    }
+  },
+  "actualNativeCasesPassed": 7,
+  "preflightCompleted": true,
+  "postRebootSystemd": {
+    "LoadState": "not-found",
+    "ActiveState": "inactive",
+    "SubState": "dead",
+    "Result": "success",
+    "ExecMainStartTimestamp": "",
+    "ExecMainExitTimestamp": "",
+    "ExecMainStatus": "0"
+  },
+  "previousBootId": "70c7a0c23b3a4d4aa5a176ff079be833",
+  "currentBootId": "0282366e-b8b5-4221-a07a-1ff0fd9d7b13",
+  "currentBootStartedUtc": "2026-11-04 16:54:39 UTC",
+  "newBootUncleanJournalMarker": true,
+  "priorJournalScan": {
+    "previousBootId": "70c7a0c23b3a4d4aa5a176ff079be833",
+    "windowStartUtc": "2026-11-04T13:00:00+00:00",
+    "recordsScanned": 934,
+    "bytesScanned": 952027,
+    "scanBoundExceeded": false,
+    "journalExitCode": 0,
+    "lastJournalUtc": "2026-11-04T15:38:34.638174+00:00",
+    "counts": {
+      "oom": 0,
+      "panic_lockup": 0,
+      "hardware_storage": 0,
+      "thermal_critical": 0,
+      "shutdown_suspend": 0
+    },
+    "matches": []
+  },
+  "sysstatLastPreFreezeSample": {
+    "utc": "2026-11-04T15:30:00+00:00",
+    "availableMemoryKiB": 6036264,
+    "cpuIdlePercent": 91.39,
+    "loadAverage1": 0.9,
+    "blockedProcesses": 0
+  },
+  "sleepInhibitorActiveAfterReboot": false,
+  "kernel": "7.0.0-42-generic",
+  "hardware": {
+    "product_name": "NUC8i5BEH",
+    "bios_version": "BECFL357.86A.0095.2023.0918.1953",
+    "bios_date": "09/18/2023"
+  },
+  "crashCapture": {
+    "loadedAfterReboot": true,
+    "crashDirectoryContainsOnlyKdumpControlFiles": true,
+    "archivedPstoreEntries": 0
+  },
+  "causeOfHostFreezeEstablished": false,
+  "privilegedContainerStateAfterRebootInspected": false,
+  "originalRootArtifactsModified": false,
+  "testRestarted": false,
+  "productionUpdateApplied": false,
+  "overnightAcceptancePassed": false
+}
