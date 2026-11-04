@@ -1,0 +1,33 @@
+{
+  "scope": "sanitized native failure diagnostic; no workload restart",
+  "preflightResultSha256": "bbdc60dca3efbf389973016066d2a1ad26c09ce8e368678a967e342607435000",
+  "nativeMetricsSha256": "0f985cd7e7ad3a4f82d912e30932647e2890c846fc62735846aede9cd0357817",
+  "nativeLogSha256": "05aca49076707286aa084e3d10f2090c0dff840779e340d4a0cb62e9baf57705",
+  "native": {
+    "elapsedSeconds": 37.4677,
+    "currentCycle": 1,
+    "currentClient": 0,
+    "lastAuthenticationSeconds": 0.447667,
+    "maximumAuthenticationSeconds": 0.452533,
+    "cycles": 0,
+    "clients": 16,
+    "simulatedLatencyMilliseconds": 75,
+    "simulatedPacketLossPercent": 2,
+    "droppedSnapshots": 1,
+    "maximumQueueDepth": 16,
+    "cleanupVerifiedCycles": 0,
+    "finalConnectionMetricEntries": 32,
+    "finalCombatEntries": 16,
+    "finalInventoryEntries": 16,
+    "finalJusticeEntries": 16,
+    "finalLifecycleEntries": 16,
+    "residentMemoryBytes": 13176832,
+    "initialResidentMemoryBytes": 10977280,
+    "peakResidentMemoryBytes": 10977280,
+    "phase": "disconnect",
+    "status": "incomplete",
+    "recognizedFailureReasons": [
+      "server did not observe client disconnect"
+    ]
+  }
+}

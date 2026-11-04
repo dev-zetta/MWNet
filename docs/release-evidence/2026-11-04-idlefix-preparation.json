@@ -1,0 +1,73 @@
+{
+  "scope": "corrected QA tooling preparation; no target rerun or overnight acceptance",
+  "runtimeSourceCommit": "adc751899eade2b04086a794753f9540124c5e05",
+  "qaSourceCommit": "079e940bf06221b390afbb79722568db82a8c042",
+  "runId": "mwnet-beta1-nuc-idlefix-20261104",
+  "originalFailureDiagnostic": "2026-11-04-nuc-native-diagnostic.json",
+  "archiveSha256": "f26259c431ae37b253d6361855c619aa28c836b76cbdb8405704a078d06181ba",
+  "manifestSha256": "9eed6c853d0dbf29b8dc71a0e2f41de477c05d7e485a97e0bb150bb88f53e682",
+  "compiledProofSha256": "b8839cd645465b718eb1f9c695eb8bfecc0dc0c2887b9e6a24b5ba2230d7b169",
+  "frozenInputCount": 4824,
+  "compiledRepositoryInputCount": 110,
+  "allEightRepositoryInputCount": 1342,
+  "bundleCompileObjects": 90,
+  "allEightCompileObjects": 652,
+  "qaHarnessFile": "apps/mwnet_tests/headless_integration.cpp",
+  "qaHarnessSha256": "56cae917b7606d8f1513f45452174785d466350d6ea58bbf31211f4a294a97d6",
+  "qaHarnessMatchesRuntimeCommit": false,
+  "productionCompiledInputsMatchRuntime": true,
+  "binaries": {
+    "native": {
+      "sha256": "11321afedffbb039df52346e783fdee6d5192e39db7592979ab1a1cfb9b6ad83",
+      "bytes": 12890032
+    },
+    "directory": {
+      "sha256": "6baee09c5cc914554321f21a2597a8850eb6355dcecb6ba38819db35cfe92dcd",
+      "bytes": 18097056
+    },
+    "discoveryTests": {
+      "sha256": "4322a4d74f924eb901e6d40ee2cb683af48128717d92ca6415347fe037576d4c",
+      "bytes": 12502000
+    }
+  },
+  "preflight": {
+    "scope": "corrected local preflight only; not overnight acceptance",
+    "resultSha256": "303269780cfe61fb0d8726b66df4291795900f96c65a49b9d76d48936d96f4f4",
+    "status": "preflight-pass",
+    "overnightAccepted": false,
+    "elapsedSeconds": 128.25493926399213,
+    "supervisorWorkloadWallSeconds": 128.1400914400001,
+    "cleanupAccepted": true,
+    "hostResourceChecksAccepted": true,
+    "oomEventsDuringRun": {
+      "oom": 0,
+      "oom_kill": 0,
+      "oom_group_kill": 0
+    },
+    "memoryPeak": "339292160",
+    "directoryFinalMetrics": {
+      "listings": 0,
+      "visible": 0,
+      "pending": 0,
+      "challenges": 0,
+      "rateBuckets": 0,
+      "listingBytes": 0
+    },
+    "frozenInputsUnchanged": true,
+    "wrapperExitCode": 0,
+    "containerLifecycleEvidence": "Foreground Docker wrapper exited zero and auto-removed the container; no separate inspect receipt retained"
+  },
+  "nucStaging": {
+    "status": "staged-not-started",
+    "privateDirectory": "/home/gmax/mwnet-beta-idlefix-20261104",
+    "verifiedInputs": 4824,
+    "nativeCases": 7,
+    "productionServicesModified": false
+  },
+  "ci": {
+    "runId": 41823207437,
+    "ubuntuAttempt1": "dependency setup failed with Launchpad HTTP503; no build or tests",
+    "retryStarted": false,
+    "note": "Job retry request rejected while run remained in progress; terminal state must be checked before retry"
+  }
+}
