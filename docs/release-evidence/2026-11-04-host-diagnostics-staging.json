@@ -1,0 +1,15 @@
+{
+  "sourceCommit": "34b4496a92920c981fd3f5c609396238a3cf784c",
+  "manifestSha256": "79d5837ac39d425b240af6b854d82cb2e9ac354a7497f6d35de613d9385d8ebb",
+  "launcherSha256": "d29dfeb3c75a0a084b917457310772342a8e21ac9dfce4e7beb1e7c0d8106a13",
+  "files": {
+    "configure.py": "2cccbeca12eca999a841e83626573baae7d7fe4a98592f4e72c5e8c47bfe7584",
+    "telemetry.py": "fed00a6a6bafbe7aafba0fb50fc2eac0b83589abad48eb2a760a6d18b3e200ef",
+    "mwnet-host-telemetry.service": "45c4fc902df9699be790e644880179a2d4dc9fb254cb1b80860fadb49a5a1dff",
+    "journald.conf": "094566e18807b182f052fd048c35b7a5057c54ef1efeadec8d53a35f7cd9124e",
+    "lockup.conf": "4e1bcb1763635fef79c5ad3c8624e6616ddd3f0582fe979d871dad26e0438d4f"
+  },
+  "localTests": 89,
+  "nucFocusedTests": 20,
+  "rootInstallationPending": true
+}
