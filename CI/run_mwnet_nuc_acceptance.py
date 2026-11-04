@@ -20,6 +20,20 @@ import time
 from datetime import datetime, timezone
 
 DOCKER = ['docker', '--context', 'default']
+SAFE_RESULT_FIELDS = (
+    'status', 'preflight', 'overnightAccepted', 'startedUtc', 'finishedUtc', 'failure',
+    'runtimeSourceCommit', 'procedureRevision', 'procedureTrackedDirty', 'compiledInputProofSha256',
+    'binarySha256', 'caddySha256', 'requestedSeconds', 'clients', 'simulatedLatencyMilliseconds',
+    'simulatedPacketLossPercent', 'elapsedSeconds', 'supervisorWorkloadWallSeconds',
+    'cleanupAccepted', 'cleanup', 'binariesUnchanged', 'procedureFilesUnchanged',
+    'hostResourceChecksAccepted', 'hostResourceFailure', 'hostMemoryAtStart', 'hostMemoryAtFinish',
+    'lastHostMemoryObservation', 'hostGlobalOomKillsDuringRun', 'oomEventsDuringRun',
+    'cgroupConstraintsAtStart', 'cgroupConstraintsAtFinish', 'limits',
+    'nativeMemoryAssessment', 'directoryMemoryAssessment', 'caddyMemoryAssessment',
+    'directoryFinalMetrics', 'directoryOutagesObserved', 'directorySuccessfulChurnCycles',
+    'directoryDatabaseBytes', 'nativeMetricsSha256', 'discoveryResultSha256',
+    'finalArtifactUsage', 'finalArtifactBoundsAccepted', 'artifactBoundsFailure',
+)
 
 
 def digest(path):
@@ -116,10 +130,28 @@ def selected_state(name):
 
 def write_status(path, value, owner):
     temporary = path.with_suffix('.new')
-    temporary.write_text(json.dumps(value, indent=2) + '\n')
+    with temporary.open('x') as stream:
+        stream.write(json.dumps(value, indent=2) + '\n')
     temporary.chmod(0o600)
     os.chown(temporary, owner.pw_uid, owner.pw_gid)
     temporary.replace(path)
+
+
+def result_observation(path):
+    """Export only acceptance/resource fields, never raw commands or fixtures."""
+    if not path.exists():
+        return None
+    data = path.read_bytes()
+    result = json.loads(data)
+    return {'resultSha256': hashlib.sha256(data).hexdigest(),
+            'fields': {key: result[key] for key in SAFE_RESULT_FIELDS if key in result}}
+
+
+def publish_status(receipt, operator_receipt, report, owner):
+    # /srv/mwnet stays root-only. The second copy is outside the frozen input
+    # tree, under the operator's mode-0700 staging directory.
+    write_status(receipt, report, owner)
+    write_status(operator_receipt, report, owner)
 
 
 def run(bundle):
@@ -131,6 +163,10 @@ def run(bundle):
         raise ValueError('Reviewed worker UID:GID no longer matches gmax')
     manifest = json.loads((bundle / 'acceptance.json').read_text())
     verify_inputs(bundle, manifest)
+    parent = bundle.parent.stat()
+    if parent.st_uid != owner.pw_uid or parent.st_mode & 0o077:
+        raise ValueError('Use a private operator-owned staging directory')
+    operator_receipt = bundle.parent / (manifest['runId'] + '-status.json')
     base_ref = 'mwnet-registration:alpha2-4a92d877b4'
     base = json.loads(command(DOCKER + ['image', 'inspect', base_ref]))[0]
     if (base['Id'] not in manifest['acceptedBaseImageIds']
@@ -149,7 +185,7 @@ def run(bundle):
               'runtimeCommit': manifest['runtimeCommit'], 'procedureRevision': manifest['procedureRevision'],
               'startedUtc': datetime.now(timezone.utc).isoformat(), 'baseImageId': base['Id'],
               'productionServicesModified': False, 'container': None}
-    write_status(receipt, report, owner)
+    publish_status(receipt, operator_receipt, report, owner)
     active = None
     try:
         frozen = root / 'inputs'
@@ -192,7 +228,7 @@ def run(bundle):
             phase = 'preflight' if preflight else 'overnight'
             name = manifest['runId'] + ('-preflight' if preflight else '')
             report.update(status=phase, container=name)
-            write_status(receipt, report, owner)
+            publish_status(receipt, operator_receipt, report, owner)
             args = ['bash', str(frozen / 'source/CI/run_mwnet_overnight_container.sh'), str(frozen / 'tools'),
                     str(artifacts / phase), '--runtime-commit', manifest['runtimeCommit'],
                     '--procedure-revision', manifest['procedureRevision'], '--clients', '16',
@@ -207,7 +243,8 @@ def run(bundle):
             while True:
                 state = selected_state(name)
                 report['containerState'] = state
-                write_status(receipt, report, owner)
+                report[phase + 'Observation'] = result_observation(artifacts / phase / 'result.json')
+                publish_status(receipt, operator_receipt, report, owner)
                 if not state['Running']:
                     break
                 if time.monotonic() >= deadline:
@@ -238,7 +275,7 @@ def run(bundle):
         raise
     finally:
         report['finishedUtc'] = datetime.now(timezone.utc).isoformat()
-        write_status(receipt, report, owner)
+        publish_status(receipt, operator_receipt, report, owner)
     print('PASS: independent NUC acceptance complete; production services unchanged.')
 
 

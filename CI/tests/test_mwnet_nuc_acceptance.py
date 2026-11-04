@@ -2,8 +2,14 @@
 """A remote supervisor must never promote partial or mismatched acceptance."""
 import copy
 import importlib.util
+import hashlib
+import json
+import os
 from pathlib import Path
+import tempfile
+from types import SimpleNamespace
 import unittest
+from unittest import mock
 
 SPEC = importlib.util.spec_from_file_location('nuc', Path(__file__).resolve().parents[1] / 'run_mwnet_nuc_acceptance.py')
 MODULE = importlib.util.module_from_spec(SPEC)
@@ -64,6 +70,106 @@ class NucVerdictTests(unittest.TestCase):
         for key, value in [('Status', 'running'), ('Running', True), ('ExitCode', 1), ('OOMKilled', True)]:
             with self.subTest(state=key), self.assertRaises(ValueError):
                 MODULE.validate_terminal(result, state | {key: value}, manifest)
+
+    def test_operator_receipt_excludes_commands_and_private_fixture_fields(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            source = root / 'private-result.json'
+            source.write_text(json.dumps({'status': 'running', 'clients': 16,
+                                          'processes': {'command': 'private command input'},
+                                          'fixtureSecret': 'test-only-placeholder'}))
+            observation = MODULE.result_observation(source)
+            self.assertEqual(observation['fields'], {'status': 'running', 'clients': 16})
+            self.assertEqual(observation['resultSha256'], hashlib.sha256(source.read_bytes()).hexdigest())
+            private = root / 'root-private'; private.mkdir(mode=0o700)
+            operator = root / 'operator-private'; operator.mkdir(mode=0o700)
+            report = {'status': 'overnight', 'overnightObservation': observation}
+            MODULE.publish_status(private / 'status.json', operator / 'status.json', report,
+                                  SimpleNamespace(pw_uid=os.getuid(), pw_gid=os.getgid()))
+            self.assertEqual(json.loads((operator / 'status.json').read_text()), report)
+            self.assertEqual((operator / 'status.json').stat().st_mode & 0o777, 0o600)
+            self.assertEqual((private / 'status.json').read_bytes(), (operator / 'status.json').read_bytes())
+
+    def test_detached_sequence_exports_status_without_opening_root_artifact_parent(self):
+        self.exercise_supervisor(failed_preflight=False)
+
+    def test_failed_preflight_is_retained_and_never_starts_overnight(self):
+        self.exercise_supervisor(failed_preflight=True)
+
+    def exercise_supervisor(self, failed_preflight):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            private = root / 'root-private'; private.mkdir(mode=0o700)
+            operator = root / 'operator'; operator.mkdir(mode=0o700)
+            bundle = operator / 'bundle'; bundle.mkdir()
+            result, state, selected = self.inputs()
+            manifest = {'schemaVersion': 1, 'runId': 'mwnet-beta1-nuc-fixture',
+                        'runtimeCommit': selected['runtimeCommit'], 'procedureRevision': selected['procedureRevision'],
+                        'acceptedBaseImageIds': ['sha256:' + '1' * 64], 'binarySha256': selected['binarySha256']}
+            for index in range(100):
+                path = bundle / 'source' / ('input-' + str(index)); path.parent.mkdir(exist_ok=True)
+                path.write_text('fixed-input')
+            caddy = bundle / 'tools/caddy'; caddy.parent.mkdir(); caddy.write_bytes(b'fixture-caddy')
+            proof = bundle / 'tools/evidence/compiled-provenance.json'; proof.parent.mkdir()
+            proof.write_text(json.dumps({'runtimeSourceCommit': manifest['runtimeCommit'],
+                                          'binaries': {key: {'sha256': value} for key, value in manifest['binarySha256'].items()}}))
+            manifest.update(compiledProofSha256=MODULE.digest(proof), caddySha256=MODULE.digest(caddy))
+            manifest['files'] = {str(p.relative_to(bundle)): MODULE.digest(p) for p in bundle.rglob('*') if p.is_file()}
+            (bundle / 'acceptance.json').write_text(json.dumps(manifest))
+            run_root = private / 'acceptance' / manifest['runId']
+            original_path = Path
+            def mapped(value):
+                path = original_path(value)
+                if str(path) == '/srv/mwnet' or str(path).startswith('/srv/mwnet/'):
+                    return private / path.relative_to('/srv/mwnet')
+                return path
+            phases = []
+            def command(args, timeout=120, output=None, environment=None):
+                if args[0] == 'stat': return 'ext4'
+                if args[:5] == MODULE.DOCKER + ['image', 'inspect']:
+                    if '--format' in args: return 'sha256:' + '2' * 64
+                    return json.dumps([{'Id': manifest['acceptedBaseImageIds'][0], 'Architecture': 'amd64', 'Os': 'linux'}])
+                if '/source/CI/run_mwnet_worker_checks.py' in args:
+                    (run_root / 'artifacts/native-checks/checks.json').write_text(json.dumps({'passed': 6}))
+                if args[0] == 'bash':
+                    phase = 'preflight' if '--preflight' in args else 'overnight'; phases.append(phase)
+                    self.assertEqual(environment['MWNET_OVERNIGHT_USER'], '1000:1000')
+                    output_root = run_root / 'artifacts' / phase; output_root.mkdir()
+                    native = output_root / 'native/metrics.json'; native.parent.mkdir(); native.write_text('{}')
+                    discovery = output_root / 'discovery/result.json'; discovery.parent.mkdir(); discovery.write_text('{}')
+                    receipt, _, _ = self.inputs(phase == 'preflight')
+                    receipt.update(compiledInputProofSha256=manifest['compiledProofSha256'],
+                                   caddySha256=manifest['caddySha256'],
+                                   nativeMetricsSha256=MODULE.digest(native), discoveryResultSha256=MODULE.digest(discovery))
+                    if failed_preflight:
+                        receipt.update(status='failed', cleanupAccepted=False, failure='fixture startup failure')
+                    (output_root / 'result.json').write_text(json.dumps(receipt))
+                return ''
+            with mock.patch.object(MODULE, 'Path', side_effect=mapped), \
+                 mock.patch.object(MODULE.os, 'geteuid', return_value=0), \
+                 mock.patch.object(MODULE.pwd, 'getpwnam', return_value=SimpleNamespace(pw_uid=1000, pw_gid=1000)), \
+                 mock.patch.object(MODULE.os, 'chown'), \
+                 mock.patch.object(MODULE.shutil, 'disk_usage', return_value=SimpleNamespace(free=8 * 1024 ** 3)), \
+                 mock.patch.object(MODULE, 'command', side_effect=command), \
+                 mock.patch.object(MODULE, 'selected_state', return_value=state), \
+                 mock.patch('builtins.print'):
+                if failed_preflight:
+                    with self.assertRaises(ValueError):
+                        MODULE.run(bundle)
+                else:
+                    MODULE.run(bundle)
+            exported = json.loads((operator / (manifest['runId'] + '-status.json')).read_text())
+            self.assertEqual(private.stat().st_mode & 0o777, 0o700)
+            if failed_preflight:
+                self.assertEqual(phases, ['preflight'])
+                self.assertEqual(exported['status'], 'failed')
+                self.assertFalse(exported['overnightAccepted'])
+                self.assertTrue((run_root / 'artifacts/preflight/result.json').is_file())
+            else:
+                self.assertEqual(phases, ['preflight', 'overnight'])
+                self.assertEqual(exported['status'], 'passed')
+                self.assertTrue(exported['overnightAccepted'])
+                self.assertTrue(exported['inputsUnchanged'])
 
 
 if __name__ == '__main__':
