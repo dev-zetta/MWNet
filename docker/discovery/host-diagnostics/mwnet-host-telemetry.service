@@ -1,0 +1,28 @@
+[Unit]
+Description=Private disk-backed MWNet host crash telemetry
+After=local-fs.target
+RequiresMountsFor=/var/log/mwnet-host /var/lib/mwnet-host-diagnostics /var/lib/mwnet-host-status
+
+[Service]
+Type=simple
+Group=gmax
+ExecStart=/usr/bin/python3 -B /usr/local/libexec/mwnet-host-diagnostics/telemetry.py --status-file /var/lib/mwnet-host-status/latest.json
+Environment=TMPDIR=/var/lib/mwnet-host-diagnostics/tmp TMP=/var/lib/mwnet-host-diagnostics/tmp TEMP=/var/lib/mwnet-host-diagnostics/tmp
+UMask=0077
+Restart=on-failure
+RestartSec=5
+TimeoutStopSec=10
+MemoryMax=64M
+CPUQuota=5%
+TasksMax=16
+NoNewPrivileges=yes
+ProtectSystem=strict
+ProtectHome=yes
+PrivateDevices=yes
+ProtectControlGroups=yes
+CapabilityBoundingSet=
+RestrictAddressFamilies=AF_UNIX
+ReadWritePaths=/var/log/mwnet-host /var/lib/mwnet-host-diagnostics /var/lib/mwnet-host-status
+
+[Install]
+WantedBy=multi-user.target
