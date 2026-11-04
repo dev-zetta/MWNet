@@ -176,7 +176,9 @@ jobs:
           fuzz-artifacts
 
   Ubuntu:
-    runs-on: ubuntu-latest
+    # Match the Linux package/container dependency baseline. ubuntu-latest now
+    # selects 26.04/Boost 1.90, which no longer ships the boost_system stub.
+    runs-on: ubuntu-24.04
 
     steps:
     - uses: actions/checkout@v6
