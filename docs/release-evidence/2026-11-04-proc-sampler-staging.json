@@ -1,0 +1,126 @@
+{
+  "scope": "fresh corrected NUC bundle staged; privileged launch requested, not started or accepted",
+  "inputs": {
+    "runId": "mwnet-beta1-nuc-procfix-20261104",
+    "runtimeCommit": "adc751899eade2b04086a794753f9540124c5e05",
+    "procedureRevision": "844ea582f26d3972ed515bf7fb5ef28588bc40f9",
+    "filesVerified": 4835,
+    "manifestSha256": "b5b3d712398641cf06e18512a62ef6b12967e5eeffa4f8c95f45d44ddbfd1a8b",
+    "archiveSha256": "225377ee8a11f7a3d17c0d07e75bc346c7a3c8638a053d674346862f2604c669",
+    "compiledReuse": {
+      "scope": "Unchanged compiled tools reused for a Python-only process sampler correction; no rebuild claimed",
+      "runtimeCommit": "adc751899eade2b04086a794753f9540124c5e05",
+      "compiledQaCommit": "079e940bf06221b390afbb79722568db82a8c042",
+      "orchestrationCommit": "844ea582f26d3972ed515bf7fb5ef28588bc40f9",
+      "originalCompiledProofSha256": "b8839cd645465b718eb1f9c695eb8bfecc0dc0c2887b9e6a24b5ba2230d7b169",
+      "originalProofUnmodified": true,
+      "verifiedRepositoryCompilerInputs": 1342,
+      "allStagedExecutableHashesUnchanged": true,
+      "newProcedureSha256": {
+        "CI/run_mwnet_overnight.py": "079a166503271c8357f8803b793f868017d7ffb16e7630712aa34925de4b93af",
+        "CI/run_mwnet_overnight_container.sh": "0372120f8fb8315f7c652154b0a3aa2d30c077394290eee40b3cb7a1b874369e",
+        "CI/run_mwnet_discovery_soak.py": "02ec206fedd47ded044018da9d71fb128d00c38603e7e618452e71d9164b7d00",
+        "CI/mwnet_disk_tmp.sh": "3c99d63235c1f66818094c8c6ffade32939b4e762348e36c0c3e63efa452b77c",
+        "CI/mwnet_proc.py": "861f645e568cd590669461f4420b4b32e16a39be69462e5145dae29ecfbf4077",
+        "apps/mwnet_tests/headless_integration.cpp": "56cae917b7606d8f1513f45452174785d466350d6ea58bbf31211f4a294a97d6"
+      }
+    }
+  },
+  "localPreflight": {
+    "scope": "exact frozen bundle local preflight; not NUC or overnight acceptance",
+    "wrapperExitCode": 0,
+    "autoRemovedContainer": true,
+    "independentDockerInspectAvailable": false,
+    "localWorkerImageId": "sha256:7775145199c2b15b59b43057729ac68f93111054040d7439ff5ce14f6aecb3a3",
+    "resultSha256": "1ae6d3e601842ea930929e0a2c38895c837ff507d6b3ea1f8a09d0a094ac1a84",
+    "fields": {
+      "status": "preflight-pass",
+      "preflight": true,
+      "overnightAccepted": false,
+      "runtimeSourceCommit": "adc751899eade2b04086a794753f9540124c5e05",
+      "procedureRevision": "844ea582f26d3972ed515bf7fb5ef28588bc40f9",
+      "procedureTrackedDirty": false,
+      "compiledInputProofSha256": "b8839cd645465b718eb1f9c695eb8bfecc0dc0c2887b9e6a24b5ba2230d7b169",
+      "binarySha256": {
+        "native": "11321afedffbb039df52346e783fdee6d5192e39db7592979ab1a1cfb9b6ad83",
+        "directory": "6baee09c5cc914554321f21a2597a8850eb6355dcecb6ba38819db35cfe92dcd",
+        "discoveryTests": "4322a4d74f924eb901e6d40ee2cb683af48128717d92ca6415347fe037576d4c"
+      },
+      "caddySha256": "4ef1f68c70219536b2711fd16547a79841a2dec2d6b4e56b1e3e5e9da76028e6",
+      "requestedSeconds": 60,
+      "clients": 16,
+      "simulatedLatencyMilliseconds": 75,
+      "simulatedPacketLossPercent": 2,
+      "cleanupAccepted": true,
+      "binariesUnchanged": true,
+      "procedureFilesUnchanged": true,
+      "hostResourceChecksAccepted": true,
+      "finalArtifactBoundsAccepted": true,
+      "hostGlobalOomKillsDuringRun": 0,
+      "elapsedSeconds": 128.26105094699597,
+      "supervisorWorkloadWallSeconds": 128.14629938999133,
+      "directoryOutagesObserved": 5,
+      "directorySuccessfulChurnCycles": 24,
+      "directoryFinalMetrics": {
+        "listings": 0,
+        "visible": 0,
+        "pending": 0,
+        "challenges": 0,
+        "rateBuckets": 0,
+        "listingBytes": 0
+      },
+      "oomEventsDuringRun": {
+        "oom": 0,
+        "oom_kill": 0,
+        "oom_group_kill": 0
+      },
+      "cgroupConstraintsAtFinish": {
+        "memory.max": "4294967296",
+        "memory.swap.max": "0",
+        "memory.current": "15904768",
+        "memory.peak": "340619264",
+        "memory.events": {
+          "low": 0,
+          "high": 0,
+          "max": 0,
+          "oom": 0,
+          "oom_kill": 0,
+          "oom_group_kill": 0,
+          "sock_throttled": 0
+        },
+        "cpu.stat": {
+          "usage_usec": 16626804,
+          "user_usec": 11071428,
+          "system_usec": 5555375,
+          "nice_usec": 0,
+          "core_sched.force_idle_usec": 0,
+          "nr_periods": 723,
+          "nr_throttled": 0,
+          "throttled_usec": 0,
+          "nr_bursts": 0,
+          "burst_usec": 0
+        }
+      },
+      "nativeMetricsSha256": "c3a776016fb88fab0324ce8e790b27b8c85d38db4e77836279055d488f8531fa",
+      "discoveryResultSha256": "65026b469e67dd9db368a5e47e4174135092091f7f4fafd498e93efc4a1334f4"
+    }
+  },
+  "nucStaging": {
+    "runId": "mwnet-beta1-nuc-procfix-20261104",
+    "procedureRevision": "844ea582f26d3972ed515bf7fb5ef28588bc40f9",
+    "runtimeCommit": "adc751899eade2b04086a794753f9540124c5e05",
+    "filesVerified": 4835,
+    "procedureFilesVerified": 6,
+    "cleanFrozenSource": true,
+    "allInputHashesMatch": true,
+    "stagingUid": 1000,
+    "stagingMode": "0o700",
+    "filesystem": "ext2/ext3",
+    "manifestSha256": "b5b3d712398641cf06e18512a62ef6b12967e5eeffa4f8c95f45d44ddbfd1a8b"
+  },
+  "nucFilesystemConfirmedByFindmnt": "ext4",
+  "launcherSha256": "faa8d90521025379bfd204d6f30ccce4d6807e7a4ec38bfb18b3195e9aa55061",
+  "newCiRun": 41834293912,
+  "ciScope": "SourceChecks and six protocol/compiler/security jobs passed; Ubuntu, Windows and both macOS builds not yet complete",
+  "productionServicesModified": false
+}
