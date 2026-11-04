@@ -23,11 +23,12 @@ import subprocess
 import sys
 import time
 from datetime import datetime, timezone
+from mwnet_proc import observe
 
 ROOT = Path(__file__).resolve().parents[1]
 MIB = 1024 ** 2
 PROCEDURE_FILES = ('CI/run_mwnet_overnight.py', 'CI/run_mwnet_overnight_container.sh',
-                   'CI/run_mwnet_discovery_soak.py', 'CI/mwnet_disk_tmp.sh',
+                   'CI/run_mwnet_discovery_soak.py', 'CI/mwnet_disk_tmp.sh', 'CI/mwnet_proc.py',
                    'apps/mwnet_tests/headless_integration.cpp')
 
 
@@ -171,40 +172,6 @@ def directory_cleanup_counts(metrics):
             raise ValueError('Directory retained state after final expiry cleanup: ' + key)
         result[key] = count
     return result
-
-
-def descendants(pid):
-    result, pending = set(), [pid]
-    while pending:
-        current = pending.pop()
-        if current in result:
-            continue
-        result.add(current)
-        if len(result) > 128:
-            raise RuntimeError('Unexpected process-tree growth')
-        try:
-            pending += [int(x) for x in Path(f'/proc/{current}/task/{current}/children').read_text().split()]
-        except FileNotFoundError:
-            pass
-    return result
-
-
-def observe(pid):
-    rss = hwm = fds = 0
-    cpu = 0.0
-    for child in descendants(pid):
-        try:
-            fields = dict(line.split(':', 1) for line in Path(f'/proc/{child}/status').read_text().splitlines()
-                          if ':' in line)
-            rss += int(fields.get('VmRSS', '0').split()[0]) * 1024
-            hwm += int(fields.get('VmHWM', '0').split()[0]) * 1024
-            stat = Path(f'/proc/{child}/stat').read_text().split(')', 1)[1].split()
-            cpu += (int(stat[11]) + int(stat[12])) / os.sysconf('SC_CLK_TCK')
-            fds += len(list(Path(f'/proc/{child}/fd').iterdir()))
-        except (FileNotFoundError, ProcessLookupError):
-            pass
-    return {'rssBytes': rss, 'sumProcessPeakRssBytes': hwm, 'cpuSeconds': cpu,
-            'openFileDescriptors': fds}
 
 
 def live_group_members(group):

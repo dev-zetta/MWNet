@@ -1,0 +1,233 @@
+{
+  "scope": "corrected-harness preflight failed on procfs sampler access; no overnight workload launched",
+  "safeStatusSha256": "07b537467428eb9331501986510a410bb052294518ca3bc72b32399bfc26b92b",
+  "systemd": {
+    "LoadState": "loaded",
+    "ActiveState": "failed",
+    "SubState": "failed",
+    "Result": "exit-code",
+    "ExecMainStatus": 1
+  },
+  "sleepInhibitorEnded": true,
+  "monitorDeleted": true,
+  "receipt": {
+    "schemaVersion": 1,
+    "status": "failed",
+    "runId": "mwnet-beta1-nuc-idlefix-20261104",
+    "scope": "synthetic components; no production update or sixteen rendered players",
+    "runtimeCommit": "adc751899eade2b04086a794753f9540124c5e05",
+    "procedureRevision": "079e940bf06221b390afbb79722568db82a8c042",
+    "startedUtc": "2026-11-04T12:16:26.559602+00:00",
+    "baseImageId": "sha256:62af237b48fc6d9914c4815eb97e1d23aad7bbb956931169252ea48aa4969f79",
+    "productionServicesModified": false,
+    "container": "mwnet-beta1-nuc-idlefix-20261104-preflight",
+    "workerImageId": "sha256:2b289efecb880aaef66ef7759fa7d618d2ba08c7c819846b52f30610bb0a5f57",
+    "nativeChecks": {
+      "passed": 7,
+      "tests": [
+        {
+          "name": "mwnet-headless",
+          "exitCode": 0,
+          "binarySha256": "11321afedffbb039df52346e783fdee6d5192e39db7592979ab1a1cfb9b6ad83"
+        },
+        {
+          "name": "mwnet-headless-idle-peers",
+          "exitCode": 0,
+          "binarySha256": "11321afedffbb039df52346e783fdee6d5192e39db7592979ab1a1cfb9b6ad83"
+        },
+        {
+          "name": "mwnet-unit",
+          "exitCode": 0,
+          "binarySha256": "a40b2177832d943d4ea3388cee455842b2e3edecdfbe6b52cd44171902c3db1c"
+        },
+        {
+          "name": "mwnet-actor-packets",
+          "exitCode": 0,
+          "binarySha256": "1eda7d1bffab854a3339decf4e1833d95dddbaa81bf8e9c0defce0ea8ffe668f"
+        },
+        {
+          "name": "mwnet-magic-content",
+          "exitCode": 0,
+          "binarySha256": "0a8d3db27c36544aa67fae7cba8160f0fbc782e1a359201526904277556bc9d6"
+        },
+        {
+          "name": "mwnet-persistence-fault",
+          "exitCode": 0,
+          "binarySha256": "ba81764f98faef443b71622560e0e29393ddec7aeaf4c369192681c17a0ec7d7"
+        },
+        {
+          "name": "mwnet-discovery",
+          "exitCode": 0,
+          "binarySha256": "4322a4d74f924eb901e6d40ee2cb683af48128717d92ca6415347fe037576d4c"
+        }
+      ]
+    },
+    "containerState": {
+      "Status": "exited",
+      "Running": false,
+      "ExitCode": 1,
+      "OOMKilled": false,
+      "StartedAt": "2026-11-04T12:17:42.697756515Z",
+      "FinishedAt": "2026-11-04T12:18:47.93211483Z"
+    },
+    "preflightObservation": {
+      "resultSha256": "7683f10f67c4362f7c81cca9b78ff8362843711e4b17e3f424d245847e405ca9",
+      "fields": {
+        "status": "failed",
+        "preflight": true,
+        "overnightAccepted": false,
+        "startedUtc": "2026-11-04T12:17:42.944789+00:00",
+        "finishedUtc": "2026-11-04T12:18:47.683466+00:00",
+        "failure": "[Errno 13] Permission denied: '/proc/31/fd'",
+        "nativeDiagnostic": {
+          "available": false,
+          "reason": "FileNotFoundError"
+        },
+        "runtimeSourceCommit": "adc751899eade2b04086a794753f9540124c5e05",
+        "procedureRevision": "079e940bf06221b390afbb79722568db82a8c042",
+        "procedureTrackedDirty": false,
+        "compiledInputProofSha256": "b8839cd645465b718eb1f9c695eb8bfecc0dc0c2887b9e6a24b5ba2230d7b169",
+        "binarySha256": {
+          "native": "11321afedffbb039df52346e783fdee6d5192e39db7592979ab1a1cfb9b6ad83",
+          "directory": "6baee09c5cc914554321f21a2597a8850eb6355dcecb6ba38819db35cfe92dcd",
+          "discoveryTests": "4322a4d74f924eb901e6d40ee2cb683af48128717d92ca6415347fe037576d4c"
+        },
+        "caddySha256": "4ef1f68c70219536b2711fd16547a79841a2dec2d6b4e56b1e3e5e9da76028e6",
+        "requestedSeconds": 60,
+        "clients": 16,
+        "simulatedLatencyMilliseconds": 75,
+        "simulatedPacketLossPercent": 2,
+        "elapsedSeconds": 64.52834272698965,
+        "cleanupAccepted": false,
+        "cleanup": {
+          "caddy": {
+            "exitCode": 0,
+            "forcedKill": false,
+            "remainingLiveGroupMembers": []
+          },
+          "native": {
+            "exitCode": -15,
+            "forcedKill": false,
+            "remainingLiveGroupMembers": []
+          },
+          "discovery": {
+            "exitCode": -15,
+            "forcedKill": false,
+            "remainingLiveGroupMembers": []
+          }
+        },
+        "binariesUnchanged": true,
+        "procedureFilesUnchanged": true,
+        "hostResourceChecksAccepted": true,
+        "hostMemoryAtStart": {
+          "memoryBytes": {
+            "MemTotal": 7641903104,
+            "MemAvailable": 6649913344,
+            "SwapTotal": 4294963200,
+            "SwapFree": 4294963200,
+            "Shmem": 35651584
+          },
+          "globalOomKills": 0
+        },
+        "hostMemoryAtFinish": {
+          "memoryBytes": {
+            "MemTotal": 7641903104,
+            "MemAvailable": 6518042624,
+            "SwapTotal": 4294963200,
+            "SwapFree": 4294963200,
+            "Shmem": 35651584
+          },
+          "globalOomKills": 0
+        },
+        "lastHostMemoryObservation": {
+          "memoryBytes": {
+            "MemTotal": 7641903104,
+            "MemAvailable": 6518042624,
+            "SwapTotal": 4294963200,
+            "SwapFree": 4294963200,
+            "Shmem": 35651584
+          },
+          "globalOomKills": 0
+        },
+        "hostGlobalOomKillsDuringRun": 0,
+        "oomEventsDuringRun": {
+          "oom": 0,
+          "oom_kill": 0,
+          "oom_group_kill": 0
+        },
+        "cgroupConstraintsAtStart": {
+          "memory.max": "4294967296",
+          "memory.swap.max": "0",
+          "memory.current": "12914688",
+          "memory.peak": "13844480",
+          "memory.events": {
+            "low": 0,
+            "high": 0,
+            "max": 0,
+            "oom": 0,
+            "oom_kill": 0,
+            "oom_group_kill": 0,
+            "sock_throttled": 0
+          },
+          "cpu.stat": {
+            "usage_usec": 404679,
+            "user_usec": 366521,
+            "system_usec": 38158,
+            "nice_usec": 0,
+            "core_sched.force_idle_usec": 0,
+            "nr_periods": 4,
+            "nr_throttled": 0,
+            "throttled_usec": 0,
+            "nr_bursts": 0,
+            "burst_usec": 0
+          }
+        },
+        "cgroupConstraintsAtFinish": {
+          "memory.max": "4294967296",
+          "memory.swap.max": "0",
+          "memory.current": "13737984",
+          "memory.peak": "335687680",
+          "memory.events": {
+            "low": 0,
+            "high": 0,
+            "max": 0,
+            "oom": 0,
+            "oom_kill": 0,
+            "oom_group_kill": 0,
+            "sock_throttled": 0
+          },
+          "cpu.stat": {
+            "usage_usec": 31388021,
+            "user_usec": 20929953,
+            "system_usec": 10458068,
+            "nice_usec": 0,
+            "core_sched.force_idle_usec": 0,
+            "nr_periods": 649,
+            "nr_throttled": 0,
+            "throttled_usec": 0,
+            "nr_bursts": 0,
+            "burst_usec": 0
+          }
+        },
+        "limits": {
+          "wholeRunDeadlineSeconds": 960,
+          "maximumArtifactsBytes": 536870912,
+          "maximumIndividualLogBytes": 33554432,
+          "nativeRssBytes": 1073741824,
+          "discoveryProcessTreeRssBytes": 1073741824,
+          "caddyRssBytes": 268435456,
+          "minimumHostAvailableBytes": 2147483648
+        },
+        "finalArtifactUsage": {
+          "artifactBytes": 73941,
+          "outputBytes": 73941,
+          "temporaryBytes": 0
+        },
+        "finalArtifactBoundsAccepted": true
+      }
+    },
+    "overnightAccepted": false,
+    "failure": "Incomplete or unsuccessful acceptance result",
+    "finishedUtc": "2026-11-04T12:19:12.941146+00:00"
+  }
+}

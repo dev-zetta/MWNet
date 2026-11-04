@@ -1,0 +1,34 @@
+{
+  "scope": "sampler correction validation, not overnight acceptance",
+  "localSupervisionTests": 69,
+  "nucFocusedCases": 8,
+  "nucChurn": {
+    "scope": "unprivileged sampler diagnostic; no acceptance workload restarted",
+    "samples": 250,
+    "durationSeconds": 0.556420064996928,
+    "liveParentResourcesPreserved": true,
+    "retiredChildrenExcluded": true,
+    "sourceSha256": "861f645e568cd590669461f4420b4b32e16a39be69462e5145dae29ecfbf4077"
+  },
+  "nucSameProcessComparison": {
+    "scope": "same-owned-zombie sampler comparison; no acceptance restart",
+    "oldError": {
+      "type": "PermissionError",
+      "errno": 13
+    },
+    "correctedObservation": {
+      "rssBytes": 0,
+      "sumProcessPeakRssBytes": 0,
+      "cpuSeconds": 0.0,
+      "openFileDescriptors": 0,
+      "retiredProcesses": 1,
+      "permissionRetries": 0
+    },
+    "liveParentMeasured": true,
+    "correctedSourceSha256": "861f645e568cd590669461f4420b4b32e16a39be69462e5145dae29ecfbf4077"
+  },
+  "sharedSamplerSha256": "861f645e568cd590669461f4420b4b32e16a39be69462e5145dae29ecfbf4077",
+  "allEightCompiledRepositoryInputsUnchanged": 1342,
+  "cppAndBinariesUnchanged": true,
+  "compiledProofReusedSha256": "b8839cd645465b718eb1f9c695eb8bfecc0dc0c2887b9e6a24b5ba2230d7b169"
+}

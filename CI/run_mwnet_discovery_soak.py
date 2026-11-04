@@ -14,21 +14,14 @@ import sqlite3
 import subprocess
 import time
 import urllib.request
+from mwnet_proc import sample_process
 
 
 def resources(pid):
-    result = {}
-    try:
-        for line in Path(f"/proc/{pid}/status").read_text().splitlines():
-            if line.startswith(("VmRSS:", "VmHWM:")):
-                key, value, _ = line.split()
-                result[key[:-1] + "Bytes"] = int(value) * 1024
-        fields = Path(f"/proc/{pid}/stat").read_text().split(")", 1)[1].split()
-        result["cpuSeconds"] = (int(fields[11]) + int(fields[12])) / os.sysconf("SC_CLK_TCK")
-        result["fds"] = len(list(Path(f"/proc/{pid}/fd").iterdir()))
-    except (FileNotFoundError, ProcessLookupError):
-        result["exited"] = True
-    return result
+    sample = sample_process(pid)
+    return {"VmRSSBytes": sample["rssBytes"], "VmHWMBytes": sample["sumProcessPeakRssBytes"],
+            "cpuSeconds": sample["cpuSeconds"], "fds": sample["openFileDescriptors"],
+            "exited": sample["exited"], "permissionRetries": sample["permissionRetries"]}
 
 
 def main():
