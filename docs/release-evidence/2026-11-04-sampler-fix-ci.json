@@ -1,0 +1,107 @@
+{
+  "scope": "terminal GitHub build and test outcomes for exact QA source; no rendered-platform, licensing or overnight acceptance",
+  "observedUtc": "2026-11-04T14:43:15.993265+00:00",
+  "rawResponseSha256": "4b0c83bc9348ac2526fde023b85088f1460ebe30edc9f01734373f2a8f2ec7c2",
+  "databaseId": 41834293912,
+  "url": "https://github.com/dev-zetta/MWNet/actions/runs/41834293912",
+  "workflowName": "Build and test",
+  "event": "push",
+  "headSha": "844ea582f26d3972ed515bf7fb5ef28588bc40f9",
+  "headBranch": "main",
+  "status": "completed",
+  "conclusion": "success",
+  "createdAt": "2026-11-04T13:01:14Z",
+  "startedAt": "2026-11-04T13:01:14Z",
+  "updatedAt": "2026-11-04T13:54:31Z",
+  "successfulJobs": 11,
+  "jobs": [
+    {
+      "databaseId": 126589107722,
+      "name": "Ubuntu",
+      "status": "completed",
+      "conclusion": "success",
+      "startedAt": "2026-11-04T13:01:17Z",
+      "completedAt": "2026-11-04T13:43:15Z"
+    },
+    {
+      "databaseId": 126589107960,
+      "name": "protocol-msvc",
+      "status": "completed",
+      "conclusion": "success",
+      "startedAt": "2026-11-04T13:01:17Z",
+      "completedAt": "2026-11-04T13:02:42Z"
+    },
+    {
+      "databaseId": 126589107999,
+      "name": "Windows (2022) / windows-2022",
+      "status": "completed",
+      "conclusion": "success",
+      "startedAt": "2026-11-04T13:01:17Z",
+      "completedAt": "2026-11-04T13:54:30Z"
+    },
+    {
+      "databaseId": 126589108102,
+      "name": "SourceChecks",
+      "status": "completed",
+      "conclusion": "success",
+      "startedAt": "2026-11-04T13:01:17Z",
+      "completedAt": "2026-11-04T13:01:37Z"
+    },
+    {
+      "databaseId": 126589108112,
+      "name": "protocol-security-fuzz-smoke",
+      "status": "completed",
+      "conclusion": "success",
+      "startedAt": "2026-11-04T13:01:17Z",
+      "completedAt": "2026-11-04T13:02:55Z"
+    },
+    {
+      "databaseId": 126589108199,
+      "name": "protocol-clang-asan-ubsan",
+      "status": "completed",
+      "conclusion": "success",
+      "startedAt": "2026-11-04T13:01:17Z",
+      "completedAt": "2026-11-04T13:02:05Z"
+    },
+    {
+      "databaseId": 126589108203,
+      "name": "protocol-gcc-none",
+      "status": "completed",
+      "conclusion": "success",
+      "startedAt": "2026-11-04T13:01:17Z",
+      "completedAt": "2026-11-04T13:02:02Z"
+    },
+    {
+      "databaseId": 126589108227,
+      "name": "protocol-clang-tsan",
+      "status": "completed",
+      "conclusion": "success",
+      "startedAt": "2026-11-04T13:01:17Z",
+      "completedAt": "2026-11-04T13:02:17Z"
+    },
+    {
+      "databaseId": 126589108320,
+      "name": "protocol-clang-none",
+      "status": "completed",
+      "conclusion": "success",
+      "startedAt": "2026-11-04T13:01:17Z",
+      "completedAt": "2026-11-04T13:01:48Z"
+    },
+    {
+      "databaseId": 126589108447,
+      "name": "MacOS (macos-15) / macos-15",
+      "status": "completed",
+      "conclusion": "success",
+      "startedAt": "2026-11-04T13:06:18Z",
+      "completedAt": "2026-11-04T13:17:38Z"
+    },
+    {
+      "databaseId": 126589108973,
+      "name": "MacOS (macos-15-intel) / macos-15-intel",
+      "status": "completed",
+      "conclusion": "success",
+      "startedAt": "2026-11-04T13:01:18Z",
+      "completedAt": "2026-11-04T13:23:37Z"
+    }
+  ]
+}
