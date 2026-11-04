@@ -25,8 +25,13 @@ watchdog_seconds=$((10#$seconds+900))
 }
 for path in "$root" "$tools" "$output"; do [[ $path != *,* ]] || { echo 'Bind paths cannot contain commas.' >&2; exit 1; }; done
 umask 077
+caller_user="$(id -u):$(id -g)"
+run_user=${MWNET_OVERNIGHT_USER:-$caller_user}
+[[ $run_user =~ ^[0-9]{1,10}:[0-9]{1,10}$ ]] || { echo 'Invalid worker UID:GID.' >&2; exit 1; }
+[[ $run_user == "$caller_user" || $EUID == 0 ]] || { echo 'Only root may select another worker UID:GID.' >&2; exit 1; }
 source "$root/CI/mwnet_disk_tmp.sh"
 mwnet_prepare_container_tmp "$output"
+if [[ $run_user != "$caller_user" ]]; then chown -- "$run_user" "$MWNET_CONTAINER_TMP"; fi
 docker_command=(docker)
 if [[ -n ${MWNET_DOCKER_CONTEXT:-} ]]; then docker_command+=(--context "$MWNET_DOCKER_CONTEXT"); fi
 mode=(--rm)
@@ -41,7 +46,7 @@ exec "${docker_command[@]}" run "${mode[@]}" --network none --read-only \
   --memory "${MWNET_OVERNIGHT_MEMORY:-4g}" \
   --memory-swap "${MWNET_OVERNIGHT_MEMORY:-4g}" \
   --cpus "${MWNET_OVERNIGHT_CPUS:-4}" --pids-limit 512 --cap-drop ALL \
-  --security-opt no-new-privileges --user "$(id -u):$(id -g)" \
+  --security-opt no-new-privileges --user "$run_user" \
   --log-driver local --log-opt max-size=5m --log-opt max-file=2 \
   --mount "type=bind,src=$root,dst=/src,readonly" \
   --mount "type=bind,src=$tools,dst=/tools,readonly" \

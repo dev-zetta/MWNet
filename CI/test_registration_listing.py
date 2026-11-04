@@ -47,6 +47,17 @@ class SignatureTests(unittest.TestCase):
         self.assertTrue(result['password'])
         self.assertEqual([x['name'] for x in result['content']], ['Morrowind.esm', 'Tribunal.esm', 'Bloodmoon.esm'])
 
+    def test_metadata_requires_the_explicit_release_version(self):
+        listing = VERIFY.verify(self.envelope, 'https://mwnet.playit.plus')
+        VERIFY.validate_game_metadata(listing, '1.0.0-alpha.2')
+        with self.assertRaisesRegex(ValueError, 'metadata'):
+            VERIFY.validate_game_metadata(listing, '1.0.0-beta.1')
+        beta = dict(listing, version='1.0.0-beta.1')
+        VERIFY.validate_game_metadata(beta, '1.0.0-beta.1')
+        for change in ({'protocol': 12}, {'capacity': 15}, {'password': False}, {'content': []}):
+            with self.subTest(change=change), self.assertRaisesRegex(ValueError, 'metadata'):
+                VERIFY.validate_game_metadata(beta | change, '1.0.0-beta.1')
+
     def test_tampered_payload_signature_or_nonce_is_rejected(self):
         for field in ('payload', 'signature', 'nonce'):
             with self.subTest(field=field):

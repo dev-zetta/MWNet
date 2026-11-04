@@ -105,6 +105,22 @@ class ContainerTemporaryStorageTests(unittest.TestCase):
                     self.assertFalse(capture.exists())
                     self.assertFalse(list(root.glob('.mwnet-tmp.*')))
 
+    def test_overnight_rejects_malformed_or_unauthorized_worker_user(self):
+        with tempfile.TemporaryDirectory(prefix='worker-user-', dir=prepare_temp_root()) as directory:
+            root = Path(directory); inputs = self.prepare(directory)
+            capture, environment = inputs[-2:]
+            arguments = self.commands(root, inputs)['overnight']
+            users = ['root', '-1:1000', '1000:1000:1000']
+            if os.geteuid() != 0:
+                users.append('10001:10001')
+            for user in users:
+                with self.subTest(user=user):
+                    result = subprocess.run(['bash', str(ROOT / 'CI/run_mwnet_overnight_container.sh'), *arguments],
+                                            env=dict(environment, MWNET_OVERNIGHT_USER=user),
+                                            capture_output=True, text=True, timeout=10)
+                    self.assertNotEqual(result.returncode, 0)
+                    self.assertFalse(capture.exists())
+
 
 if __name__ == '__main__':
     unittest.main()

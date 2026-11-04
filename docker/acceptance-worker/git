@@ -1,0 +1,2 @@
+#!/bin/sh
+LD_LIBRARY_PATH=/usr/local/lib/mwnet-qa/lib exec /usr/local/lib/mwnet-qa/git -c safe.directory=/src "$@"

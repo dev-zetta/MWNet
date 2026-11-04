@@ -121,6 +121,13 @@ def fetch(origin, connect_ip=None):
     raise ValueError('Directory pagination limit exceeded')
 
 
+def validate_game_metadata(listing, expected_version):
+    if (listing['protocol'] != 13 or listing['version'] != expected_version
+            or listing['capacity'] != 16 or not listing['password']
+            or [c['name'] for c in listing['content']] != ['Morrowind.esm', 'Tribunal.esm', 'Bloodmoon.esm']):
+        raise ValueError('Advertised game metadata does not match this test')
+
+
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--origin', default='https://mwnet.playit.plus')
@@ -132,6 +139,7 @@ def main():
     parser.add_argument('--observe', type=int, default=0)
     parser.add_argument('--heartbeats', type=int, default=1)
     parser.add_argument('--deadline', type=int, default=120)
+    parser.add_argument('--expected-version', default='1.0.0-alpha.2')
     args = parser.parse_args()
     started = time.monotonic()
     first = None
@@ -145,10 +153,7 @@ def main():
         if listing and not args.absent:
             if listing['fingerprint'] != args.fingerprint:
                 raise ValueError('Advertised identity differs from the running server')
-            if (listing['protocol'] != 13 or listing['version'] != '1.0.0-alpha.2'
-                    or listing['capacity'] != 16 or not listing['password']
-                    or [c['name'] for c in listing['content']] != ['Morrowind.esm', 'Tribunal.esm', 'Bloodmoon.esm']):
-                raise ValueError('Advertised game metadata does not match this test')
+            validate_game_metadata(listing, args.expected_version)
             if first is None:
                 first = time.monotonic()
             if listing['nonceDigest'] not in nonces:
