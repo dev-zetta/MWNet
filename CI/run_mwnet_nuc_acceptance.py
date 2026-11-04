@@ -21,7 +21,7 @@ from datetime import datetime, timezone
 
 DOCKER = ['docker', '--context', 'default']
 SAFE_RESULT_FIELDS = (
-    'status', 'preflight', 'overnightAccepted', 'startedUtc', 'finishedUtc', 'failure',
+    'status', 'preflight', 'overnightAccepted', 'startedUtc', 'finishedUtc', 'failure', 'nativeDiagnostic',
     'runtimeSourceCommit', 'procedureRevision', 'procedureTrackedDirty', 'compiledInputProofSha256',
     'binarySha256', 'caddySha256', 'requestedSeconds', 'clients', 'simulatedLatencyMilliseconds',
     'simulatedPacketLossPercent', 'elapsedSeconds', 'supervisorWorkloadWallSeconds',
@@ -205,7 +205,8 @@ def run(bundle):
                     timeout=600, output=stream, environment=environment)
         image_id = command(DOCKER + ['image', 'inspect', '--format', '{{.Id}}', image])
         report['workerImageId'] = image_id
-        # Exercise all six original CTest commands against the actual worker libs.
+        # Exercise the six original cases and the idle-peer regression against
+        # the actual worker libraries before starting the acceptance workloads.
         # Source and binaries are read-only; all test output and literal /tmp use disk.
         check = artifacts / 'native-checks'; check.mkdir(mode=0o700)
         os.chown(check, owner.pw_uid, owner.pw_gid)
@@ -220,7 +221,7 @@ def run(bundle):
                               '--workdir', '/tmp', '--entrypoint', 'python3', image_id,
                               '/source/CI/run_mwnet_worker_checks.py'], timeout=900, output=stream)
         report['nativeChecks'] = json.loads((check / 'checks.json').read_text())
-        if report['nativeChecks'].get('passed') != 6:
+        if report['nativeChecks'].get('passed') != 7:
             raise ValueError('Actual worker native checks incomplete')
         common = dict(environment, MWNET_OVERNIGHT_IMAGE=image_id, MWNET_OVERNIGHT_USER='1000:1000',
                       MWNET_OVERNIGHT_DETACH='1', MWNET_OVERNIGHT_MEMORY='4g', MWNET_OVERNIGHT_CPUS='2')

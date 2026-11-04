@@ -88,6 +88,7 @@ namespace
         std::filesystem::path trustPath;
         std::string account;
         std::string password;
+        bool spawned = false;
     };
 
     [[noreturn]] void fail(std::string message)
@@ -182,33 +183,6 @@ namespace
                 std::chrono::steady_clock::now().time_since_epoch().count()));
     }
 
-    std::optional<TransportEvent> waitForEvent(GameEndpoint& endpoint,
-        TransportEventType type, std::optional<TransportConnectionId> connection = std::nullopt,
-        std::optional<MessageType> messageType = std::nullopt,
-        std::chrono::seconds timeout = 5s)
-    {
-        const auto deadline = std::chrono::steady_clock::now() + timeout;
-        while (std::chrono::steady_clock::now() < deadline)
-        {
-            auto event = endpoint.poll(10ms);
-            if (!event)
-                continue;
-            if (connection && event->connection != *connection)
-                continue;
-            if (event->type == TransportEventType::Disconnected
-                && type != TransportEventType::Disconnected)
-                fail("connection " + std::to_string(event->connection.value)
-                    + " disconnected while waiting for a protocol event: " + event->detail);
-            if (event->type != type)
-                continue;
-            if (messageType && event->message.messageType
-                    != static_cast<std::uint16_t>(*messageType))
-                continue;
-            return event;
-        }
-        return std::nullopt;
-    }
-
     class Scenario
     {
     public:
@@ -247,6 +221,56 @@ namespace
         }
 
     private:
+        void serviceIdleClients()
+        {
+            // Each synthetic client still needs a game loop while another peer
+            // runs its scenario. poll drives authenticated keepalives. Finished
+            // scenarios expect no more application events: fail rather than
+            // discarding a disconnect or stealing a response from another peer.
+            for (std::size_t index = 0; index < mPeers.size(); ++index)
+            {
+                Peer& peer = mPeers[index];
+                if (index == mCurrentClient || !peer.spawned)
+                    continue;
+                if (const auto event = peer.client->poll(0ms))
+                    fail("unexpected event for idle synthetic client " + std::to_string(index)
+                        + ": type=" + std::to_string(static_cast<int>(event->type))
+                        + " detail=" + event->detail);
+            }
+        }
+
+        std::optional<TransportEvent> waitForEvent(GameEndpoint& endpoint,
+            TransportEventType type, std::optional<TransportConnectionId> connection = std::nullopt,
+            std::optional<MessageType> messageType = std::nullopt,
+            std::chrono::seconds timeout = 5s)
+        {
+            const auto deadline = std::chrono::steady_clock::now() + timeout;
+            while (std::chrono::steady_clock::now() < deadline)
+            {
+                serviceIdleClients();
+                auto event = endpoint.poll(10ms);
+                if (!event)
+                    continue;
+                if (connection && event->connection != *connection)
+                {
+                    if (event->type == TransportEventType::Disconnected)
+                        fail("another synthetic connection disconnected: " + event->detail);
+                    continue;
+                }
+                if (event->type == TransportEventType::Disconnected
+                    && type != TransportEventType::Disconnected)
+                    fail("connection " + std::to_string(event->connection.value)
+                        + " disconnected while waiting for a protocol event: " + event->detail);
+                if (event->type != type)
+                    continue;
+                if (messageType && event->message.messageType
+                        != static_cast<std::uint16_t>(*messageType))
+                    continue;
+                return event;
+            }
+            return std::nullopt;
+        }
+
         void runScenarios()
         {
             std::filesystem::create_directories(mRoot / "players");
@@ -258,7 +282,7 @@ namespace
             // Reconnect the same clients. Recreating their worker threads every
             // cycle measures sanitizer thread-history retention as well as the
             // application's live state, unlike eight long-lived game clients.
-            std::vector<Peer> peers(mOptions.clients);
+            mPeers.resize(mOptions.clients);
             const auto soakStarted = std::chrono::steady_clock::now();
             for (std::size_t cycle = 0;
                  cycle < mOptions.cycles
@@ -271,19 +295,24 @@ namespace
                 {
                     mCurrentClient = index;
                     setPhase("connect");
-                    peers[index] = connect(index, cycle == 0,
-                        std::move(peers[index].client));
+                    mPeers[index] = connect(index, cycle == 0,
+                        std::move(mPeers[index].client));
                     mMetrics.observeQueueDepth(index + 1);
                     setPhase("bootstrap");
-                    bootstrap(peers[index], index, cycle);
+                    bootstrap(mPeers[index], index, cycle);
                     setPhase("gameplay");
-                    gameplay(peers[index], index, cycle);
+                    gameplay(mPeers[index], index, cycle);
                 }
+                for (const Peer& peer : mPeers)
+                    require(peer.spawned
+                            && peer.client->state(peer.clientConnection) == State::Spawned
+                            && mServer->state(peer.serverConnection) == State::Spawned,
+                        "synthetic peers did not remain spawned together");
                 setPhase("disconnect");
-                for (std::size_t index = 0; index < peers.size(); ++index)
+                for (std::size_t index = 0; index < mPeers.size(); ++index)
                 {
                     mCurrentClient = index;
-                    disconnect(peers[index], true);
+                    disconnect(mPeers[index], true);
                 }
                 require(mMetrics.snapshot().connections.empty(),
                     "disconnected peers retained connection metrics");
@@ -298,9 +327,9 @@ namespace
                 mCompletedCycles = cycle + 1;
             }
             setPhase("client shutdown");
-            for (Peer& peer : peers)
+            for (Peer& peer : mPeers)
                 peer.client->shutdown(1s);
-            peers.clear();
+            mPeers.clear();
 
             setPhase("legacy migration verification");
             verifyLegacyMigration();
@@ -429,6 +458,7 @@ namespace
             while (std::chrono::steady_clock::now() < deadline
                 && (!clientConnected || !serverConnection))
             {
+                serviceIdleClients();
                 if (auto event = peer.client->poll(5ms);
                     event && event->connection == peer.clientConnection)
                 {
@@ -651,6 +681,7 @@ namespace
             (void)transmit(*mServer, peer.serverConnection, *peer.client,
                 peer.clientConnection, MessageType::SpawnResult);
             advance(peer, State::Spawned);
+            peer.spawned = true;
         }
 
         static mwmp::mechanics::CombatantState combatant(
@@ -787,6 +818,7 @@ namespace
 
         void disconnect(Peer& peer, bool reconnect = false)
         {
+            peer.spawned = false;
             peer.client->disconnect(peer.clientConnection);
             require(waitForEvent(*mServer, TransportEventType::Disconnected,
                     peer.serverConnection).has_value(),
@@ -1030,6 +1062,7 @@ namespace
         }
 
         Options mOptions;
+        std::vector<Peer> mPeers;
         std::filesystem::path mRoot;
         std::unique_ptr<GameEndpoint> mServer;
         std::uint16_t mPort = 0;

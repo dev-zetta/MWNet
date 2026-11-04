@@ -68,6 +68,9 @@ if (TARGET mwnet-gns-transport)
     add_test(NAME mwnet-headless COMMAND mwnet-headless-integration
         --cycles 2 --clients 2 --packet-loss-percent 25)
     set_tests_properties(mwnet-headless PROPERTIES TIMEOUT 90)
+    add_test(NAME mwnet-headless-idle-peers COMMAND mwnet-headless-integration
+        --cycles 1 --clients 16 --latency-ms 110 --packet-loss-percent 2)
+    set_tests_properties(mwnet-headless-idle-peers PROPERTIES TIMEOUT 120)
 endif()
 
 if (MSVC)

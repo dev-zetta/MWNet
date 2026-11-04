@@ -70,6 +70,37 @@ def natural_integer(value, field):
     return value
 
 
+def native_failure_observation(path):
+    """Expose useful failure state without copying raw error text or fixtures."""
+    try:
+        if path.stat().st_size > 1024 * 1024:
+            return {'available': False, 'reason': 'metrics exceed diagnostic size bound'}
+        metrics = json.loads(path.read_text())
+        numeric = ('elapsedSeconds', 'currentCycle', 'currentClient', 'lastAuthenticationSeconds',
+                   'maximumAuthenticationSeconds', 'cycles', 'clients', 'simulatedLatencyMilliseconds',
+                   'simulatedPacketLossPercent', 'maximumQueueDepth', 'cleanupVerifiedCycles',
+                   'finalConnectionMetricEntries', 'finalCombatEntries', 'finalInventoryEntries',
+                   'finalJusticeEntries', 'finalLifecycleEntries', 'residentMemoryBytes', 'peakResidentMemoryBytes')
+        fields = {key: metrics[key] for key in numeric
+                  if type(metrics.get(key)) in (int, float) and math.isfinite(metrics[key])}
+        phases = ('initialization', 'connect', 'bootstrap', 'gameplay', 'disconnect', 'memory observation',
+                  'client shutdown', 'legacy migration verification', 'authentication lockout verification',
+                  'fingerprint mismatch verification', 'memory evaluation', 'authentication')
+        if metrics.get('phase') in phases:
+            fields['phase'] = metrics['phase']
+        if metrics.get('status') in ('passed', 'failed', 'incomplete'):
+            fields['status'] = metrics['status']
+        reasons = ('server did not observe client disconnect', 'message rejected', 'encrypted handshake timed out',
+                   'authentication failed', 'disconnected while waiting for a protocol event',
+                   'unexpected event for idle synthetic client', 'another synthetic connection disconnected',
+                   'synthetic peers did not remain spawned together')
+        failure = str(metrics.get('failure', ''))
+        return {'available': True, 'metricsSha256': digest(path), 'fields': fields,
+                'recognizedFailureReasons': [reason for reason in reasons if reason in failure]}
+    except (OSError, ValueError, TypeError, AttributeError, OverflowError) as error:
+        return {'available': False, 'reason': type(error).__name__}
+
+
 def require_elapsed(elapsed, requested):
     if finite_number(elapsed, 'supervisor monotonic elapsed') < requested:
         raise ValueError('Supervisor wall time did not complete the requested duration')
@@ -540,6 +571,8 @@ def run(args):
             report['artifactBoundsFailure'] = str(error)
             if report['status'] != 'failed':
                 report.update(status='failed', failure=str(error), overnightAccepted=False)
+        if report['status'] == 'failed':
+            report['nativeDiagnostic'] = native_failure_observation(root / 'native/metrics.json')
         atomic_json(root / 'result.json', report)
     print(json.dumps({'status': report['status'], 'overnightAccepted': report['overnightAccepted'],
                       'receipt': str(root / 'result.json'), 'failure': report.get('failure')}, indent=2))

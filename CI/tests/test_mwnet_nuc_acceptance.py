@@ -139,7 +139,7 @@ class NucVerdictTests(unittest.TestCase):
                     if '--format' in args: return 'sha256:' + '2' * 64
                     return json.dumps([{'Id': manifest['acceptedBaseImageIds'][0], 'Architecture': 'amd64', 'Os': 'linux'}])
                 if '/source/CI/run_mwnet_worker_checks.py' in args:
-                    (run_root / 'artifacts/native-checks/checks.json').write_text(json.dumps({'passed': 6}))
+                    (run_root / 'artifacts/native-checks/checks.json').write_text(json.dumps({'passed': 7}))
                 if args[0] == 'bash':
                     phase = 'preflight' if '--preflight' in args else 'overnight'; phases.append(phase)
                     self.assertEqual(environment['MWNET_OVERNIGHT_USER'], '1000:1000')

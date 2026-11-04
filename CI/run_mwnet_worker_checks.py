@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Execute the frozen six-test inventory in a minimal acceptance worker."""
+"""Execute the frozen native test inventory in a minimal acceptance worker."""
 import hashlib
 import json
 from pathlib import Path
@@ -23,9 +23,11 @@ def run():
                         'binarySha256': hashes[binary.name]['sha256']})
         if outcome.returncode:
             raise RuntimeError('Native worker check failed: ' + test['name'])
-    if len(results) != 6:
-        raise ValueError('Original native test inventory changed')
-    Path('/tmp/checks.json').write_text(json.dumps({'passed': 6, 'tests': results}, indent=2) + '\n')
+    expected = {'mwnet-headless', 'mwnet-headless-idle-peers', 'mwnet-unit', 'mwnet-actor-packets',
+                'mwnet-magic-content', 'mwnet-persistence-fault', 'mwnet-discovery'}
+    if {result['name'] for result in results} != expected or len(results) != len(expected):
+        raise ValueError('Required native test inventory changed')
+    Path('/tmp/checks.json').write_text(json.dumps({'passed': len(expected), 'tests': results}, indent=2) + '\n')
 
 
 if __name__ == '__main__':

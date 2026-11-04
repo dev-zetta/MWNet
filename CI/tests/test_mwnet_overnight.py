@@ -36,6 +36,32 @@ class OvernightVerdictTests(unittest.TestCase):
     def check_report(self, report, preflight=False):
         return MODULE.validate_native(report, 28800, 16, 75, 2, COMMIT, preflight)
 
+    def test_native_failure_export_contains_metrics_but_no_raw_error_or_credentials(self):
+        with tempfile.TemporaryDirectory(dir=prepare_temp_root()) as directory:
+            path = Path(directory) / 'metrics.json'
+            path.write_text(json.dumps({'status': 'incomplete', 'phase': 'disconnect', 'currentClient': 0,
+                                        'elapsedSeconds': 38.2, 'clients': 16, 'password': 'never-export',
+                                        'failure': 'server did not observe client disconnect secret-placeholder'}))
+            report = MODULE.native_failure_observation(path)
+            self.assertTrue(report['available'])
+            self.assertEqual(report['fields']['phase'], 'disconnect')
+            self.assertEqual(report['fields']['currentClient'], 0)
+            self.assertEqual(report['recognizedFailureReasons'], ['server did not observe client disconnect'])
+            self.assertNotIn('secret', json.dumps(report))
+            self.assertNotIn('never-export', json.dumps(report))
+
+    def test_missing_or_malformed_native_diagnostics_never_replace_failure(self):
+        with tempfile.TemporaryDirectory(dir=prepare_temp_root()) as directory:
+            path = Path(directory) / 'metrics.json'
+            self.assertFalse(MODULE.native_failure_observation(path)['available'])
+            path.write_text('private-malformed-placeholder')
+            report = MODULE.native_failure_observation(path)
+            self.assertFalse(report['available'])
+            self.assertNotIn('private-malformed', json.dumps(report))
+            path.write_text('x' * (1024 * 1024 + 1))
+            self.assertEqual(MODULE.native_failure_observation(path),
+                             {'available': False, 'reason': 'metrics exceed diagnostic size bound'})
+
     def test_host_memory_observation_records_kernel_not_only_cgroup(self):
         values = {'/proc/meminfo': 'MemTotal: 8192000 kB\nMemAvailable: 4096000 kB\n'
                   'SwapTotal: 1024 kB\nSwapFree: 512 kB\nShmem: 64 kB\n',
