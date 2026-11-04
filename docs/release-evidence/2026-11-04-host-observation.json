@@ -1,0 +1,269 @@
+{
+  "scope": "spaced idle-host observations after mitigation; no continuous stress trace, freeze-cause proof or eight-hour acceptance",
+  "observationComplete": true,
+  "configuredUtc": "2026-11-04T17:55:57.268036+00:00",
+  "finalObservedUtc": "2026-11-04T18:58:28.338804+00:00",
+  "elapsedSinceConfigurationSeconds": 3751.070768,
+  "observations": [
+    {
+      "file": "20261104T1827.json",
+      "sha256": "c888a747b95c77537efdb466d3bda2c7eb1df25e7e1c20985013c48722b579a8",
+      "fields": {
+        "observedUtc": "2026-11-04T18:28:25.874651+00:00",
+        "installReportSha256": "fe5b86554d51538f4e7c2fedfdb66067081e6458ca0e9ced95c4f34e859595cb",
+        "telemetryUtc": "2026-11-04T18:28:25.178849+00:00",
+        "telemetryAgeSeconds": 0.6960105895996094,
+        "telemetryAdvanced": true,
+        "bootId": "7bb206b2-bbec-41c0-9a09-553222b738c7",
+        "uptimeSeconds": 3764.99,
+        "globalOomKills": 0,
+        "memoryAvailableBytes": 6854307840,
+        "telemetryUnit": {
+          "LoadState": "loaded",
+          "ActiveState": "active",
+          "SubState": "running",
+          "Result": "success",
+          "NRestarts": "0",
+          "MemoryCurrent": "13582336",
+          "MemoryMax": "67108864"
+        },
+        "sysctlValues": [
+          "1",
+          "1",
+          "1",
+          "1",
+          "1",
+          "30"
+        ],
+        "crashKernelLoaded": true,
+        "radio": [
+          {
+            "type": "bluetooth",
+            "name": "hci0",
+            "softBlocked": false
+          },
+          {
+            "type": "wlan",
+            "name": "phy0",
+            "softBlocked": true
+          }
+        ],
+        "defaultRouteInterface": [
+          "eno1"
+        ],
+        "dockerService": {
+          "LoadState": "loaded",
+          "ActiveState": "active",
+          "SubState": "running",
+          "Result": "success",
+          "NRestarts": "0",
+          "MemoryCurrent": "144351232",
+          "MemoryMax": "infinity"
+        },
+        "tailscaleService": {
+          "LoadState": "loaded",
+          "ActiveState": "active",
+          "SubState": "running",
+          "Result": "success",
+          "NRestarts": "0",
+          "MemoryCurrent": "73179136",
+          "MemoryMax": "infinity"
+        },
+        "acceptanceUnit": {
+          "LoadState": "not-found",
+          "ActiveState": "inactive",
+          "SubState": "dead",
+          "Result": "success",
+          "NRestarts": "0",
+          "MemoryCurrent": "[not set]",
+          "MemoryMax": "infinity"
+        }
+      }
+    },
+    {
+      "file": "20261104T1842.json",
+      "sha256": "bdae809a458e06b17acf18e0387dcf88a07087a5cbc3b2644ca4f7a6d8f164ae",
+      "fields": {
+        "observedUtc": "2026-11-04T18:43:18.927202+00:00",
+        "installReportSha256": "fe5b86554d51538f4e7c2fedfdb66067081e6458ca0e9ced95c4f34e859595cb",
+        "telemetryUtc": "2026-11-04T18:43:16.918453+00:00",
+        "telemetryAgeSeconds": 2.008960723876953,
+        "telemetryAdvanced": true,
+        "bootId": "7bb206b2-bbec-41c0-9a09-553222b738c7",
+        "uptimeSeconds": 4656.73,
+        "globalOomKills": 0,
+        "memoryAvailableBytes": 6857441280,
+        "telemetryUnit": {
+          "LoadState": "loaded",
+          "ActiveState": "active",
+          "SubState": "running",
+          "Result": "success",
+          "NRestarts": "0",
+          "MemoryCurrent": "14155776",
+          "MemoryMax": "67108864"
+        },
+        "sysctlValues": [
+          "1",
+          "1",
+          "1",
+          "1",
+          "1",
+          "30"
+        ],
+        "crashKernelLoaded": true,
+        "radio": [
+          {
+            "type": "bluetooth",
+            "name": "hci0",
+            "softBlocked": false
+          },
+          {
+            "type": "wlan",
+            "name": "phy0",
+            "softBlocked": true
+          }
+        ],
+        "defaultRouteInterface": [
+          "eno1"
+        ],
+        "dockerService": {
+          "LoadState": "loaded",
+          "ActiveState": "active",
+          "SubState": "running",
+          "Result": "success",
+          "NRestarts": "0",
+          "MemoryCurrent": "144252928",
+          "MemoryMax": "infinity"
+        },
+        "tailscaleService": {
+          "LoadState": "loaded",
+          "ActiveState": "active",
+          "SubState": "running",
+          "Result": "success",
+          "NRestarts": "0",
+          "MemoryCurrent": "73515008",
+          "MemoryMax": "infinity"
+        },
+        "acceptanceUnit": {
+          "LoadState": "not-found",
+          "ActiveState": "inactive",
+          "SubState": "dead",
+          "Result": "success",
+          "NRestarts": "0",
+          "MemoryCurrent": "[not set]",
+          "MemoryMax": "infinity"
+        }
+      }
+    },
+    {
+      "file": "20261104T1857.json",
+      "sha256": "af0e5f991b45340da9b47e0ce3a1609862b7e9942c46076b20a06418772ef503",
+      "fields": {
+        "observedUtc": "2026-11-04T18:58:28.338804+00:00",
+        "installReportSha256": "fe5b86554d51538f4e7c2fedfdb66067081e6458ca0e9ced95c4f34e859595cb",
+        "telemetryUtc": "2026-11-04T18:58:23.670993+00:00",
+        "telemetryAgeSeconds": 4.667901992797852,
+        "telemetryAdvanced": true,
+        "bootId": "7bb206b2-bbec-41c0-9a09-553222b738c7",
+        "uptimeSeconds": 5563.49,
+        "globalOomKills": 0,
+        "memoryAvailableBytes": 6855979008,
+        "telemetryUnit": {
+          "LoadState": "loaded",
+          "ActiveState": "active",
+          "SubState": "running",
+          "Result": "success",
+          "NRestarts": "0",
+          "MemoryCurrent": "15179776",
+          "MemoryMax": "67108864"
+        },
+        "sysctlValues": [
+          "1",
+          "1",
+          "1",
+          "1",
+          "1",
+          "30"
+        ],
+        "crashKernelLoaded": true,
+        "radio": [
+          {
+            "type": "bluetooth",
+            "name": "hci0",
+            "softBlocked": false
+          },
+          {
+            "type": "wlan",
+            "name": "phy0",
+            "softBlocked": true
+          }
+        ],
+        "defaultRouteInterface": [
+          "eno1"
+        ],
+        "dockerService": {
+          "LoadState": "loaded",
+          "ActiveState": "active",
+          "SubState": "running",
+          "Result": "success",
+          "NRestarts": "0",
+          "MemoryCurrent": "144379904",
+          "MemoryMax": "infinity"
+        },
+        "tailscaleService": {
+          "LoadState": "loaded",
+          "ActiveState": "active",
+          "SubState": "running",
+          "Result": "success",
+          "NRestarts": "0",
+          "MemoryCurrent": "73424896",
+          "MemoryMax": "infinity"
+        },
+        "acceptanceUnit": {
+          "LoadState": "not-found",
+          "ActiveState": "inactive",
+          "SubState": "dead",
+          "Result": "success",
+          "NRestarts": "0",
+          "MemoryCurrent": "[not set]",
+          "MemoryMax": "infinity"
+        },
+        "journalChecks": {
+          "kernelFatal": {
+            "exitCode": 1,
+            "matchingEntriesPresent": false,
+            "responseBytes": 0
+          },
+          "loggerWarnings": {
+            "exitCode": 0,
+            "matchingEntriesPresent": false,
+            "responseBytes": 0
+          }
+        },
+        "readiness": {
+          "launcherSha256": "d9763736e7c4b1b913bb5f3df6194235d457c4140ab8e21c4ccc688898d3841f",
+          "manifestSha256": "62c3005ece181b5c4232cb10c8fa0dee4d81754ea35f211c61b4bcbf64bf5924",
+          "newRunStatusAbsent": true,
+          "hostBeforeAcceptanceAbsent": true
+        }
+      }
+    }
+  ],
+  "finalReadiness": {
+    "runId": "mwnet-beta1-nuc-hostdiag-20261104",
+    "runtimeCommit": "adc751899eade2b04086a794753f9540124c5e05",
+    "procedureRevision": "844ea582f26d3972ed515bf7fb5ef28588bc40f9",
+    "compiledProofSha256": "b8839cd645465b718eb1f9c695eb8bfecc0dc0c2887b9e6a24b5ba2230d7b169",
+    "filesVerified": 4835,
+    "procedureTrackedDirty": false,
+    "privateStageOwner": 1000,
+    "privateStageMode": "0o700",
+    "launcherSha256": "d9763736e7c4b1b913bb5f3df6194235d457c4140ab8e21c4ccc688898d3841f",
+    "manifestSha256": "62c3005ece181b5c4232cb10c8fa0dee4d81754ea35f211c61b4bcbf64bf5924",
+    "newRunStatusAbsent": true,
+    "hostBeforeAcceptanceAbsent": true
+  },
+  "testStarted": false,
+  "freezeFixProven": false,
+  "overnightAcceptancePassed": false
+}
