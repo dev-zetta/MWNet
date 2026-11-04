@@ -1,0 +1,133 @@
+{
+  "scope": "terminal host-tools CI metadata; hosted runner capacity failure, not an executed macOS test failure or host-stability acceptance",
+  "observedUtc": "2026-11-04T18:45:08.014736+00:00",
+  "databaseId": 41879383093,
+  "url": "https://github.com/dev-zetta/MWNet/actions/runs/41879383093",
+  "workflowName": "Build and test",
+  "headSha": "34b4496a92920c981fd3f5c609396238a3cf784c",
+  "status": "completed",
+  "conclusion": "failure",
+  "createdAt": "2026-11-04T17:40:13Z",
+  "startedAt": "2026-11-04T17:40:13Z",
+  "updatedAt": "2026-11-04T18:31:51Z",
+  "successfulJobs": 10,
+  "cancelledJobs": 1,
+  "rawResponseSha256": "37d66486a158dd3852dfe3321de57be485c98dc2b128ec17596b474018a1378d",
+  "annotationResponseSha256": "1d85e9db2fc85822add5f9bc8bd4b389f5d52e0c55200cfcf33294a42f0feb97",
+  "cancelledJob": {
+    "id": 126747638515,
+    "name": "MacOS (macos-15) / macos-15",
+    "stepsExecuted": 0,
+    "runnerId": 0,
+    "classification": "hosted macOS arm64 runner not allocated; capacity notices present"
+  },
+  "annotations": [
+    {
+      "level": "failure",
+      "message": "The job was not acquired by Runner of type hosted even after multiple attempts"
+    },
+    {
+      "level": "notice",
+      "message": "Due to capacity constraints, jobs targeting macOS arm64 runners may experience longer queue times."
+    },
+    {
+      "level": "notice",
+      "message": "Due to capacity constraints, jobs targeting macOS arm64 runners may experience longer queue times."
+    },
+    {
+      "level": "notice",
+      "message": "Due to capacity constraints, jobs targeting macOS arm64 runners may experience longer queue times."
+    }
+  ],
+  "jobs": [
+    {
+      "databaseId": 126747638281,
+      "name": "Ubuntu",
+      "status": "completed",
+      "conclusion": "success",
+      "startedAt": "2026-11-04T17:40:16Z",
+      "completedAt": "2026-11-04T18:31:51Z"
+    },
+    {
+      "databaseId": 126747638361,
+      "name": "SourceChecks",
+      "status": "completed",
+      "conclusion": "success",
+      "startedAt": "2026-11-04T17:40:17Z",
+      "completedAt": "2026-11-04T17:40:42Z"
+    },
+    {
+      "databaseId": 126747638364,
+      "name": "protocol-security-fuzz-smoke",
+      "status": "completed",
+      "conclusion": "success",
+      "startedAt": "2026-11-04T17:40:16Z",
+      "completedAt": "2026-11-04T17:41:35Z"
+    },
+    {
+      "databaseId": 126747638416,
+      "name": "protocol-clang-tsan",
+      "status": "completed",
+      "conclusion": "success",
+      "startedAt": "2026-11-04T17:40:16Z",
+      "completedAt": "2026-11-04T17:41:08Z"
+    },
+    {
+      "databaseId": 126747638448,
+      "name": "protocol-msvc",
+      "status": "completed",
+      "conclusion": "success",
+      "startedAt": "2026-11-04T17:40:17Z",
+      "completedAt": "2026-11-04T17:42:22Z"
+    },
+    {
+      "databaseId": 126747638451,
+      "name": "Windows (2022) / windows-2022",
+      "status": "completed",
+      "conclusion": "success",
+      "startedAt": "2026-11-04T17:40:17Z",
+      "completedAt": "2026-11-04T18:24:11Z"
+    },
+    {
+      "databaseId": 126747638462,
+      "name": "protocol-clang-asan-ubsan",
+      "status": "completed",
+      "conclusion": "success",
+      "startedAt": "2026-11-04T17:40:16Z",
+      "completedAt": "2026-11-04T17:41:10Z"
+    },
+    {
+      "databaseId": 126747638515,
+      "name": "MacOS (macos-15) / macos-15",
+      "status": "completed",
+      "conclusion": "cancelled",
+      "startedAt": "2026-11-04T17:40:14Z",
+      "completedAt": "2026-11-04T17:55:15Z"
+    },
+    {
+      "databaseId": 126747638547,
+      "name": "protocol-gcc-none",
+      "status": "completed",
+      "conclusion": "success",
+      "startedAt": "2026-11-04T17:40:17Z",
+      "completedAt": "2026-11-04T17:41:04Z"
+    },
+    {
+      "databaseId": 126747638563,
+      "name": "protocol-clang-none",
+      "status": "completed",
+      "conclusion": "success",
+      "startedAt": "2026-11-04T17:40:16Z",
+      "completedAt": "2026-11-04T17:41:00Z"
+    },
+    {
+      "databaseId": 126747638580,
+      "name": "MacOS (macos-15-intel) / macos-15-intel",
+      "status": "completed",
+      "conclusion": "success",
+      "startedAt": "2026-11-04T17:40:22Z",
+      "completedAt": "2026-11-04T18:12:44Z"
+    }
+  ],
+  "rerunStarted": false
+}
