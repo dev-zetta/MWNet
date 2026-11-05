@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "runtimeSourceCommit": "a6868387dc80dcafd9b8ebad3d8c708511d9a615",
+  "toolSha256": "6e45ca62c81eec0ee6d72d53b5706dfbd5f59d07801c6f10a7d3c5c8bcc2284b",
+  "scope": "Verbatim source/SDK/project/recipe notice material and explicit Qt license-reference resolution; not final binary/legal/gameplay acceptance",
+  "status": "assembled-for-listed-inputs",
+  "sourceInputCount": 67,
+  "noticeInputsBeforeDeduplication": 1828,
+  "uniqueNoticeTexts": 699,
+  "noticeBookSha256": "7bc595a061061ec527f83f1888e83a129d49d165fae102933a29d141d5bac573",
+  "noticeBookBytes": 3102977,
+  "unresolvedQtLicenseReferences": [],
+  "fullDistributionAccepted": false,
+  "checkedUtc": "2026-11-05T19:23:40.073168+00:00",
+  "noticeMaterialReceiptSha256": "32e6184357efefb5c4ceaa59255f8b582ede38dd1108ac5503dcb3c09f3a62d4",
+  "resolvedQtLicenseReferenceCount": 131,
+  "upstreamLiteralNewlineMetadataCount": 11,
+  "privateMaterialDirectory": "notice-materials-v3-attempt2",
+  "preservedInitialFailure": {
+    "directory": "notice-assembly-attempt1",
+    "reason": "Strict JSON parser rejected literal upstream newlines inside Qt descriptive strings",
+    "nativeOrCiFailure": false
+  },
+  "regressionTestsPassed": 6,
+  "originalNoticeV2Unchanged": true
+}

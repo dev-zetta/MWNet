@@ -1,0 +1,100 @@
+{
+  "checkedUtc": "2026-11-05T19:23:40.073168+00:00",
+  "runtimeSourceCommit": "a6868387dc80dcafd9b8ebad3d8c708511d9a615",
+  "scope": "Complete upstream Boost header overlay and frozen fetched/static source inputs; no additional graphical/distribution acceptance",
+  "delivery": {
+    "schemaVersion": 1,
+    "status": "complete-for-listed-inputs",
+    "scope": "Exact listed source archives only; binary coverage and distribution acceptance require separate review",
+    "sources": [
+      {
+        "name": "boost-complete-headers",
+        "version": "1.90.0",
+        "filename": "boost_1_90_0.tar.gz",
+        "urls": [
+          "https://archives.boost.io/release/1.90.0/source/boost_1_90_0.tar.gz"
+        ],
+        "algorithm": "sha256",
+        "checksum": "5e93d582aff26868d581a52ae78c7d8edf3f3064742c6e77901a1f18a437eea9",
+        "pinProvenance": "Exact archive hash printed by complete_boost_headers.py in all three actual native build logs; SDK Boost headers were overlaid from this archive",
+        "bytes": 210975925,
+        "sha256": "5e93d582aff26868d581a52ae78c7d8edf3f3064742c6e77901a1f18a437eea9"
+      },
+      {
+        "name": "GameNetworkingSockets",
+        "version": "fa489fd2cb0fc86ef2503e330935d3eb03a6a064",
+        "filename": "gns-fa489fd2cb0f-selected-source.tar.gz",
+        "urls": [
+          "https://api.github.com/repos/ValveSoftware/GameNetworkingSockets/tarball/fa489fd2cb0fc86ef2503e330935d3eb03a6a064"
+        ],
+        "algorithm": "sha256",
+        "checksum": "93a7b28f93f2c0aa1386f7480e50d1641cd38321d76c60c3487d57ede01a8705",
+        "pinProvenance": "Preserved selected-implementation archive and runtime MWNetDependencies.cmake Git pin; rechecked before cache reuse",
+        "bytes": 11041102,
+        "sha256": "93a7b28f93f2c0aa1386f7480e50d1641cd38321d76c60c3487d57ede01a8705"
+      },
+      {
+        "name": "yaml-cpp",
+        "version": "c2680200486572baf8221ba052ef50b58ecd816e",
+        "filename": "yaml-cpp-c268020048657.zip",
+        "urls": [
+          "https://github.com/jbeder/yaml-cpp/archive/c2680200486572baf8221ba052ef50b58ecd816e.zip"
+        ],
+        "algorithm": "sha512",
+        "checksum": "9eb328e37ff547e7f681d64e3a8f268a8a5645cb1c258106d1d9f959eec498dfc7c466690c56f210ad7d5fb95b806a30c87ccbb019cccf5c3c6135cfc3c13fe1",
+        "pinProvenance": "Frozen runtime extern/CMakeLists.txt fetched source pin; full archive delivered conservatively alongside any SDK provider version",
+        "bytes": 1339583,
+        "sha256": "9cbd53685951e13eaa3257dd33b9f2cdcdda144488ce93c7f438c72533faf303"
+      },
+      {
+        "name": "recastnavigation",
+        "version": "03259f3287ff8330f0d66fcd98d022edddffaa97",
+        "filename": "recastnavigation-03259f3287ff.zip",
+        "urls": [
+          "https://github.com/OpenMW/recastnavigation/archive/03259f3287ff8330f0d66fcd98d022edddffaa97.zip"
+        ],
+        "algorithm": "sha512",
+        "checksum": "63db2ac90904764d7f1466d3c95994ec51d777cddd870b70f8ef674c09ed166b3d16ffc4ac1d18d0eab865fda4bf51b6ea17049025b66a338d3cadd0f48dc712",
+        "pinProvenance": "Frozen runtime extern/CMakeLists.txt fetched source pin; full archive delivered conservatively alongside any SDK provider version",
+        "bytes": 1446030,
+        "sha256": "b337d8ceebd66641e1a9b9ca2c3dbaebc5aa68a3a30f09435e5c420c177b2c62"
+      },
+      {
+        "name": "mygui-static",
+        "version": "MyGUI3.4.3",
+        "filename": "mygui-MyGUI3.4.3-selected.zip",
+        "urls": [
+          "https://github.com/MyGUI/mygui/archive/refs/tags/MyGUI3.4.3.zip"
+        ],
+        "algorithm": "sha512",
+        "checksum": "c804ef665e786076582367f171082cd2181fdbd214300ddcca4a4245c5a0f45e62e72778ee2d96ec46b393e22477dd729f9bb3006e6eecbf536674e34a057721",
+        "pinProvenance": "Frozen runtime extern/CMakeLists.txt fetched source pin; full archive delivered conservatively alongside any SDK provider version",
+        "bytes": 19797926,
+        "sha256": "5dd90e8d2c069377f1690db075c9838086e540572e4d8ebdcddb6d76a25309c3"
+      }
+    ]
+  },
+  "sourceBytes": 244600566,
+  "nativeBuildLogCorroboration": [
+    {
+      "log": "windows-complete-run42057767417/windows-job.log",
+      "sha256": "b6da70cf135c45e241d85dd93f6d438712dba24099af2b16d4e1685a84dd8cfc",
+      "observedHeaderInput": "5e93d582aff26868d581a52ae78c7d8edf3f3064742c6e77901a1f18a437eea9"
+    },
+    {
+      "log": "macos-run42059980428/arm64/native-job.log",
+      "sha256": "e8f56c70ae73a55675553460daf347bcc4f20b0793e5a0b1c0498c11c8e24dd6",
+      "observedHeaderInput": "5e93d582aff26868d581a52ae78c7d8edf3f3064742c6e77901a1f18a437eea9"
+    },
+    {
+      "log": "inspection/macos-intel-original-build.log",
+      "sha256": "5dc2d8ceaea5ed91cf741a758ee09cb206fcf5e504eef1a4aa3c2224aae0aa50",
+      "observedHeaderInput": "5e93d582aff26868d581a52ae78c7d8edf3f3064742c6e77901a1f18a437eea9"
+    }
+  ],
+  "staticPinsCheckedAgainstFrozenGit": true,
+  "namedSourceNoticeFiles": 876,
+  "noticeReceiptSha256": "08aacb32558ccf5b861736996480a65c28a88fa6173701cb90e34c61aa0ea555",
+  "fullDistributionAccepted": false,
+  "nativeGraphicalAccepted": false
+}

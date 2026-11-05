@@ -1,0 +1,62 @@
+{
+  "schemaVersion": 1,
+  "runtimeSourceCommit": "a6868387dc80dcafd9b8ebad3d8c708511d9a615",
+  "scope": "Exact actual Boost header overlay plus pinned fetched/static sources; platform delivery acceptance remains separate",
+  "sources": [
+    {
+      "name": "boost-complete-headers",
+      "version": "1.90.0",
+      "filename": "boost_1_90_0.tar.gz",
+      "urls": [
+        "https://archives.boost.io/release/1.90.0/source/boost_1_90_0.tar.gz"
+      ],
+      "algorithm": "sha256",
+      "checksum": "5e93d582aff26868d581a52ae78c7d8edf3f3064742c6e77901a1f18a437eea9",
+      "pinProvenance": "Exact archive hash printed by complete_boost_headers.py in all three actual native build logs; SDK Boost headers were overlaid from this archive"
+    },
+    {
+      "name": "GameNetworkingSockets",
+      "version": "fa489fd2cb0fc86ef2503e330935d3eb03a6a064",
+      "filename": "gns-fa489fd2cb0f-selected-source.tar.gz",
+      "urls": [
+        "https://api.github.com/repos/ValveSoftware/GameNetworkingSockets/tarball/fa489fd2cb0fc86ef2503e330935d3eb03a6a064"
+      ],
+      "algorithm": "sha256",
+      "checksum": "93a7b28f93f2c0aa1386f7480e50d1641cd38321d76c60c3487d57ede01a8705",
+      "pinProvenance": "Preserved selected-implementation archive and runtime MWNetDependencies.cmake Git pin; rechecked before cache reuse"
+    },
+    {
+      "name": "yaml-cpp",
+      "version": "c2680200486572baf8221ba052ef50b58ecd816e",
+      "filename": "yaml-cpp-c268020048657.zip",
+      "urls": [
+        "https://github.com/jbeder/yaml-cpp/archive/c2680200486572baf8221ba052ef50b58ecd816e.zip"
+      ],
+      "algorithm": "sha512",
+      "checksum": "9eb328e37ff547e7f681d64e3a8f268a8a5645cb1c258106d1d9f959eec498dfc7c466690c56f210ad7d5fb95b806a30c87ccbb019cccf5c3c6135cfc3c13fe1",
+      "pinProvenance": "Frozen runtime extern/CMakeLists.txt fetched source pin; full archive delivered conservatively alongside any SDK provider version"
+    },
+    {
+      "name": "recastnavigation",
+      "version": "03259f3287ff8330f0d66fcd98d022edddffaa97",
+      "filename": "recastnavigation-03259f3287ff.zip",
+      "urls": [
+        "https://github.com/OpenMW/recastnavigation/archive/03259f3287ff8330f0d66fcd98d022edddffaa97.zip"
+      ],
+      "algorithm": "sha512",
+      "checksum": "63db2ac90904764d7f1466d3c95994ec51d777cddd870b70f8ef674c09ed166b3d16ffc4ac1d18d0eab865fda4bf51b6ea17049025b66a338d3cadd0f48dc712",
+      "pinProvenance": "Frozen runtime extern/CMakeLists.txt fetched source pin; full archive delivered conservatively alongside any SDK provider version"
+    },
+    {
+      "name": "mygui-static",
+      "version": "MyGUI3.4.3",
+      "filename": "mygui-MyGUI3.4.3-selected.zip",
+      "urls": [
+        "https://github.com/MyGUI/mygui/archive/refs/tags/MyGUI3.4.3.zip"
+      ],
+      "algorithm": "sha512",
+      "checksum": "c804ef665e786076582367f171082cd2181fdbd214300ddcca4a4245c5a0f45e62e72778ee2d96ec46b393e22477dd729f9bb3006e6eecbf536674e34a057721",
+      "pinProvenance": "Frozen runtime extern/CMakeLists.txt fetched source pin; full archive delivered conservatively alongside any SDK provider version"
+    }
+  ]
+}
