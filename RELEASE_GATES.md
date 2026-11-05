@@ -8,7 +8,7 @@ This checklist defines the minimum evidence for a stable release. The maintainer
 | --- | --- |
 | `1.0.0-alpha.3`, protocol 13 | Published development prerelease; exact-source native packages for Linux, Windows and both macOS architectures, with unattended graphical acceptance on Linux |
 | `1.0.0-beta.1`, protocol 13 | Published Linux x86_64 prerelease at `adc751899e`; package/rendered checks, independent NUC eight-hour synthetic acceptance, live NUC deployment and all four public download hashes verified |
-| `1.0.0`, protocol 13 | Authorized Linux x86_64 candidate preparation; version/packaging metadata transition from the accepted beta, with final stable artifact and deployment verification pending |
+| `1.0.0`, protocol 13 | Accepted Linux x86_64 candidate at `a6868387dc`; seven native suites, fourteen control cases, ten rendered cases/130 assertions and source/notices/provenance checks passed; verified NUC bundle and four matching GitHub draft assets staged, with live deployment and publication pending |
 | Linux stable client/server and public directory | Stable promotion is authorized subject to the final candidate checks; publication remains pending and the Linux beta evidence retains its declared scope |
 | Windows and macOS | Experimental packages until real graphical gameplay and platform-specific acceptance pass; their pending graphical checks do not block an explicitly Linux-only stable release |
 | Public beta or release candidate | Optional rollout stage; no prescribed version label, participant count or waiting period |
@@ -47,6 +47,7 @@ Every acceptance record must identify the tested source, actual binaries/package
 
 ## Recorded evidence
 
+- [November 5 stable candidate acceptance](docs/release-evidence/2026-11-05-stable-candidate.md) records exact stable binaries/archive, native/control/rendered and source/notices checks, compiler-input comparison and conditional overnight reuse. The [verified staging receipt](docs/release-evidence/2026-11-05-stable-staging.json) retains all 88 NUC input hashes and four accepted draft asset digests; it is not live deployment or publication acceptance.
 - [November 5 stable preparation](docs/release-evidence/2026-11-05-stable-preparation.md) records the authorized Linux-only promotion, version/packaging-only production scope, archive metadata tests and conditional reuse of the original eight-hour evidence. Stable artifacts, deployment and publication remain pending at that checkpoint.
 - [November 5 published Linux beta.1](docs/release-evidence/2026-11-05-beta-release.md) records the public prerelease, exact runtime tag, accepted Linux archive and corresponding source/SBOM/checksums, with all four unauthenticated public downloads verified byte for byte. The NUC deployment and preceding rendered/sustained evidence retain their separate scope; stable was not promoted.
 - [November 5 live NUC beta deployment](docs/release-evidence/2026-11-05-beta-deployment.md) records the applied accepted runtime, quiescent backups, isolated startup checks, actual effective binary/script hashes, preserved identity, two signed heartbeats and independent public HTTPS/discovery verification. Publication remains pending at that checkpoint.

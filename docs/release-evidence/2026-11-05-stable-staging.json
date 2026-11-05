@@ -1,0 +1,55 @@
+{
+  "status": "staged-not-deployed-not-published",
+  "runtimeSourceCommit": "a6868387dc80dcafd9b8ebad3d8c708511d9a615",
+  "orchestrationRevision": "7c013fb328e57c8851fa17ebae38fa12b2e40cb6",
+  "nucStage": {
+    "runtimeSourceCommit": "a6868387dc80dcafd9b8ebad3d8c708511d9a615",
+    "version": "1.0.0",
+    "manifestSha256": "3cd7644a5a42eb5f43acb95451699b7fe4b21629e21530ed3f61a32d67df8843",
+    "archiveSha256": "37354843663b8db02a08f60409d77b766eb3cf0ec4e3a51b5c9a6f4f3d304a01",
+    "launcherSha256": "cfef44627d7a674975fd154d9746ce83b614c7f524e57f9094abd6c62914420d",
+    "verifiedInputs": 88,
+    "staged": true,
+    "applied": false
+  },
+  "githubDraft": {
+    "releaseId": 435182304,
+    "draft": true,
+    "prerelease": false,
+    "runtimeSourceCommit": "a6868387dc80dcafd9b8ebad3d8c708511d9a615",
+    "assets": [
+      {
+        "id": 713361100,
+        "name": "MWNet-1.0.0-Linux-x86_64-client-server-a6868387dc.tar.gz",
+        "size": 504212514,
+        "digest": "sha256:bfa073490a3f23c6fd784dbe361564198324a64da7d2ddc4571235cf6d57723c",
+        "state": "uploaded"
+      },
+      {
+        "id": 713361109,
+        "name": "MWNet-1.0.0-source-a6868387dc.tar.gz",
+        "size": 7971631,
+        "digest": "sha256:291abccb3a369d2ee9fa3f6f871aae14b1d901a5e6770db103f6cb46aab95d77",
+        "state": "uploaded"
+      },
+      {
+        "id": 713361103,
+        "name": "mwnet-source.spdx.json",
+        "size": 11146,
+        "digest": "sha256:65285ea1a2483a41e560e5b78063a9b36cb0f1f354905a1098f5bb2919c18e0f",
+        "state": "uploaded"
+      },
+      {
+        "id": 713361102,
+        "name": "SHA256SUMS",
+        "size": 315,
+        "digest": "sha256:f6459d61aedaaabeb51d54edc287d160e126ad6d42670ae90be021aedb574fba",
+        "state": "uploaded"
+      }
+    ],
+    "allAssetDigestsAccepted": true
+  },
+  "requiredOperatorCommand": "sudo /home/gmax/mwnet-stable-update-20261105/start-update.sh",
+  "reasonForOperatorAction": "NUC Docker requires interactive sudo authentication; access policy is unchanged",
+  "publicationCondition": "Actual loaded/exited-zero deployment unit, successful runtime/script/private-backup receipt, preserved identity and independent public HTTPS/signed stable heartbeat verification"
+}
