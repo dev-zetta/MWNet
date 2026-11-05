@@ -40,6 +40,8 @@ jobs:
           CI/smoke_mwnet_package.py
           CI/complete_boost_headers.py
           CI/mwnet_temp.py
+          CI/before_script.macos.sh
+          CI/verify_mwnet_macos_openssl.py
         sparse-checkout-cone-mode: false
     - name: Select the C++20 toolchain
       run: |
@@ -110,7 +112,14 @@ jobs:
         max-size: 1000M
 
     - name: Configure
-      run: CI/before_script.macos.sh -C
+      run: MWNET_OPENSSL_ROOT="$(brew --prefix openssl@3)" bash release-tools/CI/before_script.macos.sh -C
+
+    - name: Verify selected OpenSSL provider before compiling
+      run: |
+        python release-tools/CI/verify_mwnet_macos_openssl.py \
+          --prefix "$(brew --prefix openssl@3)" --cmake-cache build/CMakeCache.txt \
+          --output native-evidence/openssl-provider.json
+        brew info --json=v2 openssl@3 libsodium protobuf fontconfig gettext > native-evidence/homebrew-inputs.json
     - name: Enable multiplayer tests and include server configuration
       run: |
         cmake -S . -B build -DBUILD_MWNET_TESTS=ON
@@ -152,6 +161,17 @@ jobs:
         test -x package-smoke/MWNet.app/Contents/MacOS/mwnet-server
         test -f package-smoke/MWNet.app/Contents/Resources/server/scripts/serverCore.lua
         python release-tools/CI/smoke_mwnet_package.py package-smoke/MWNet.app --commit "$(git rev-parse HEAD)"
+        python release-tools/CI/verify_mwnet_macos_openssl.py \
+          --prefix "$(brew --prefix openssl@3)" --cmake-cache build/CMakeCache.txt \
+          --package package-smoke --output native-evidence/openssl-package.json
+
+    - name: Retain native provider evidence
+      if: always()
+      uses: actions/upload-artifact@v6
+      with:
+        name: mwnet-macos-native-evidence-${{ env.DMG_IDENTIFIER }}-${{ github.sha }}
+        path: native-evidence/*
+        if-no-files-found: warn
 
     - name: Store dmg
       uses: actions/upload-artifact@v6

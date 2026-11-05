@@ -34,6 +34,11 @@ jobs:
     - name: Verify Linux package notice and source delivery
       run: python3 CI/test_mwnet_package_notices.py
 
+    - name: Verify checksum-pinned native source delivery
+      run: |
+        bash CI/with_disk_tmp.sh python3 CI/test_mwnet_corresponding_sources.py
+        bash CI/with_disk_tmp.sh python3 CI/test_mwnet_macos_openssl.py
+
     - name: Verify disk temporary storage and acceptance supervision
       run: |
         bash CI/with_disk_tmp.sh python3 -m unittest discover -s CI/tests -p test_mwnet_temp.py

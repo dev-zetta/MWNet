@@ -72,6 +72,20 @@ declare -a CMAKE_CONF_OPTS=(
 -DMWNET_FETCH_DEPS=ON
 )
 
+# A runner's Python SDK can otherwise win FindOpenSSL ahead of the intended
+# native provider. Keep headers and both libraries bound to one explicit root.
+if [[ -n "${MWNET_OPENSSL_ROOT:-}" ]]; then
+    test -f "$MWNET_OPENSSL_ROOT/include/openssl/opensslv.h"
+    test -f "$MWNET_OPENSSL_ROOT/lib/libcrypto.3.dylib"
+    test -f "$MWNET_OPENSSL_ROOT/lib/libssl.3.dylib"
+    CMAKE_CONF_OPTS+=(
+        -D "OPENSSL_ROOT_DIR=$MWNET_OPENSSL_ROOT"
+        -D "OPENSSL_INCLUDE_DIR=$MWNET_OPENSSL_ROOT/include"
+        -D "OPENSSL_CRYPTO_LIBRARY=$MWNET_OPENSSL_ROOT/lib/libcrypto.3.dylib"
+        -D "OPENSSL_SSL_LIBRARY=$MWNET_OPENSSL_ROOT/lib/libssl.3.dylib"
+    )
+fi
+
 declare -a BUILD_OPTS=(
 -D BUILD_OPENMW=TRUE
 -D BUILD_OPENCS=TRUE

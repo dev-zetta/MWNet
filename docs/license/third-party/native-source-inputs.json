@@ -1,0 +1,110 @@
+{
+  "schemaVersion": 1,
+  "scope": "Selected SDK/Qt source delivery inputs for native candidates; this list does not establish coverage of runner-supplied libraries or final package acceptance",
+  "sources": [
+    {
+      "name": "ffmpeg",
+      "filename": "ffmpeg-n8.0.1.tar.gz",
+      "urls": [
+        "https://codeload.github.com/ffmpeg/ffmpeg/tar.gz/n8.0.1"
+      ],
+      "algorithm": "sha512",
+      "checksum": "f31769a7ed52865165e7db4a03e9378b3376012b7aaf0bbc022aa76c3e999e71c3927e6eb8639d8681e04e33362dd73eafa9e7c62a3c71599ff78da09f5cee0a",
+      "pinProvenance": "OpenMW SDK 2026-02-24 installed vcpkg.spdx.json source resource",
+      "upstreamSource": "git+https://github.com/ffmpeg/ffmpeg@n8.0.1"
+    },
+    {
+      "name": "openal-soft",
+      "filename": "openal-soft-1.25.0.tar.gz",
+      "urls": [
+        "https://codeload.github.com/kcat/openal-soft/tar.gz/1.25.0"
+      ],
+      "algorithm": "sha512",
+      "checksum": "33cdc03198c4fdbd6c67bae460328d8f910baf0a522891735590df140ef727a5d7a1acc64826128994700e7d75c75c938b20483858575ff4e0ebc3f120a9e206",
+      "pinProvenance": "OpenMW SDK 2026-02-24 installed vcpkg.spdx.json source resource",
+      "upstreamSource": "git+https://github.com/kcat/openal-soft@1.25.0"
+    },
+    {
+      "name": "libiconv",
+      "filename": "libiconv-1.18.tar.gz",
+      "urls": [
+        "https://ftp.gnu.org/gnu/libiconv/libiconv-1.18.tar.gz"
+      ],
+      "algorithm": "sha512",
+      "checksum": "a55eb3b7b785a78ab8918db8af541c9e11deb5ff4f89d54483287711ed797d87848ce0eafffa7ce26d9a7adb4b5a9891cb484f94bd4f51d3ce97a6a47b4c719a",
+      "pinProvenance": "OpenMW SDK 2026-02-24 installed vcpkg.spdx.json source resource",
+      "upstreamSource": "https://ftpmirror.gnu.org/gnu/libiconv/libiconv-1.18.tar.gz"
+    },
+    {
+      "name": "openmw-osg",
+      "filename": "openmw-osg-8aa8d91747ff414ab0de19aae1e0dbd739acea2c.tar.gz",
+      "urls": [
+        "https://codeload.github.com/openmw/osg/tar.gz/8aa8d91747ff414ab0de19aae1e0dbd739acea2c"
+      ],
+      "algorithm": "sha512",
+      "checksum": "698372ddf8751a927f8f6bd71d67bd9428e9e12207b8f40f8aa13e5e84bd1e8db8fc6c6bbeb5f7e930d78915d5d3570463dbfc9e44dc155e0475a374f39a6280",
+      "pinProvenance": "OpenMW SDK 2026-02-24 installed vcpkg.spdx.json source resource",
+      "upstreamSource": "git+https://github.com/openmw/osg@8aa8d91747ff414ab0de19aae1e0dbd739acea2c"
+    },
+    {
+      "name": "qtbase",
+      "version": "6.6.3",
+      "filename": "qtbase-everywhere-src-6.6.3.tar.xz",
+      "urls": [
+        "https://download.qt.io/archive/qt/6.6/6.6.3/submodules/qtbase-everywhere-src-6.6.3.tar.xz"
+      ],
+      "algorithm": "sha256",
+      "checksum": "0493fd0b380c4edf8872f011a7f26d245aa4cdd75b349904ef340a22dedf7462",
+      "pinProvenance": "https://download.qt.io/archive/qt/6.6/6.6.3/submodules/qtbase-everywhere-src-6.6.3.tar.xz.sha256"
+    },
+    {
+      "name": "qtsvg",
+      "version": "6.6.3",
+      "filename": "qtsvg-everywhere-src-6.6.3.tar.xz",
+      "urls": [
+        "https://download.qt.io/archive/qt/6.6/6.6.3/submodules/qtsvg-everywhere-src-6.6.3.tar.xz"
+      ],
+      "algorithm": "sha256",
+      "checksum": "4acb1e576eca55e955cf2b0d15c914a200df290e737accd7c1901fa1e33a25c7",
+      "pinProvenance": "https://download.qt.io/archive/qt/6.6/6.6.3/submodules/qtsvg-everywhere-src-6.6.3.tar.xz.sha256"
+    },
+    {
+      "name": "qtbase",
+      "version": "6.10.3",
+      "filename": "qtbase-everywhere-src-6.10.3.tar.xz",
+      "urls": [
+        "https://download.qt.io/archive/qt/6.10/6.10.3/submodules/qtbase-everywhere-src-6.10.3.tar.xz"
+      ],
+      "algorithm": "sha256",
+      "checksum": "383dc907816338f0cba72088a524c07458dfc69ce684ca9132fcc4fe91c24b0b",
+      "pinProvenance": "https://download.qt.io/archive/qt/6.10/6.10.3/submodules/qtbase-everywhere-src-6.10.3.tar.xz.sha256"
+    },
+    {
+      "name": "qtsvg",
+      "version": "6.10.3",
+      "filename": "qtsvg-everywhere-src-6.10.3.tar.xz",
+      "urls": [
+        "https://download.qt.io/archive/qt/6.10/6.10.3/submodules/qtsvg-everywhere-src-6.10.3.tar.xz"
+      ],
+      "algorithm": "sha256",
+      "checksum": "b3223fe005f6a4c7f21f34e4ee6ce0094737cff9503ba15bbb171ac18794f76d",
+      "pinProvenance": "https://download.qt.io/archive/qt/6.10/6.10.3/submodules/qtsvg-everywhere-src-6.10.3.tar.xz.sha256"
+    }
+  ],
+  "sdkBuilderRevision": "8306cb2556b92c9bb891b13f4769889838fe3c10",
+  "sdkVcpkgRevision": "6d332a018c433fad20822ff4b536e4ccdc3413bd",
+  "sdkArchives": [
+    {
+      "name": "vcpkg-arm64-osx-dynamic-2026-02-24.7z",
+      "sha256": "9364f93dfa841d16dc696ac46c95e5ae88f07e4131f4d53ed2d4225734b15307"
+    },
+    {
+      "name": "vcpkg-x64-osx-dynamic-2026-02-24.7z",
+      "sha256": "a529f60e0dcb9cd4a80ebb2a802878fd68dbf0f32fd424886ffe845084c6928f"
+    },
+    {
+      "name": "vcpkg-x64-windows-2022-2026-02-24.7z",
+      "sha256": "3e0f2c2c22d61e549b5d67cabe9ac04bd816a327141219ca755e3354b0a55709"
+    }
+  ]
+}
