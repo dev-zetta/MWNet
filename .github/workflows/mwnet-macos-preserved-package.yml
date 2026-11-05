@@ -1,0 +1,110 @@
+name: Verify preserved macOS candidate
+
+on:
+  workflow_dispatch:
+    inputs:
+      source-ref:
+        description: Exact runtime source commit
+        type: string
+        required: true
+      build-run:
+        description: Original completed native build run
+        type: string
+        required: true
+      artifact:
+        description: Original DMG artifact name
+        type: string
+        required: true
+      archive-sha256:
+        description: Expected original DMG SHA256
+        type: string
+        required: true
+      openssl-version:
+        description: Exact OpenSSL version recorded by the original build
+        type: string
+        required: true
+      image:
+        description: Native validation architecture
+        type: choice
+        options: [macos-15-intel, macos-15]
+        required: true
+
+permissions:
+  contents: read
+  actions: read
+
+jobs:
+  verify:
+    runs-on: ${{ inputs.image }}
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          ref: ${{ inputs.source-ref }}
+      - uses: actions/checkout@v6
+        with:
+          ref: ${{ github.sha }}
+          path: release-tools
+          sparse-checkout: |
+            CI/smoke_mwnet_package.py
+            CI/mwnet_temp.py
+            CI/verify_mwnet_macos_openssl.py
+          sparse-checkout-cone-mode: false
+      - uses: actions/setup-python@v6
+        with:
+          python-version: "3.12"
+      - name: Select private disk temporary storage
+        shell: python
+        run: |
+          import os, pathlib, subprocess, sys
+          root = subprocess.check_output([sys.executable, 'release-tools/CI/mwnet_temp.py', '--print-root'], text=True).strip()
+          with pathlib.Path(os.environ['GITHUB_ENV']).open('a') as output:
+              for name in ('TMPDIR', 'TMP', 'TEMP'):
+                  output.write(name + '=' + root + '\n')
+      - uses: actions/download-artifact@v5
+        with:
+          name: ${{ inputs.artifact }}
+          run-id: ${{ inputs.build-run }}
+          github-token: ${{ github.token }}
+          path: incoming
+      - name: Verify exact original archive and runtime revision
+        shell: python
+        env:
+          EXPECTED_ARCHIVE_SHA256: ${{ inputs.archive-sha256 }}
+          EXPECTED_RUNTIME: ${{ inputs.source-ref }}
+        run: |
+          import hashlib, json, os, pathlib, re, subprocess
+          expected = os.environ['EXPECTED_ARCHIVE_SHA256']
+          runtime = os.environ['EXPECTED_RUNTIME']
+          assert re.fullmatch('[0-9a-f]{64}', expected) and re.fullmatch('[0-9a-f]{40}', runtime)
+          assert subprocess.check_output(['git', 'rev-parse', 'HEAD'], text=True).strip() == runtime
+          images = list(pathlib.Path('incoming').glob('*.dmg'))
+          assert len(images) == 1
+          with images[0].open('rb') as stream:
+              actual = hashlib.file_digest(stream, 'sha256').hexdigest()
+          assert actual == expected
+          pathlib.Path('evidence').mkdir()
+          pathlib.Path('evidence/archive.json').write_text(json.dumps({'runtimeSourceCommit': runtime, 'archive': images[0].name, 'bytes': images[0].stat().st_size, 'sha256': actual, 'scope': 'Preserved original DMG; no rebuild, resigning or packaging retry'}, indent=2) + '\n')
+      - name: Verify mounted original package and runtime OpenSSL
+        shell: bash
+        env:
+          EXPECTED_OPENSSL_VERSION: ${{ inputs.openssl-version }}
+        run: |
+          set -euo pipefail
+          mkdir mounted
+          image=(incoming/*.dmg)
+          hdiutil verify "${image[0]}"
+          hdiutil attach "${image[0]}" -readonly -nobrowse -mountpoint "$PWD/mounted"
+          trap 'hdiutil detach "$PWD/mounted"' EXIT
+          codesign --verify --deep --strict mounted/MWNet.app
+          python release-tools/CI/smoke_mwnet_package.py mounted/MWNet.app --commit "$(git rev-parse HEAD)" 2>&1 | tee evidence/native-package.log
+          python release-tools/CI/verify_mwnet_macos_openssl.py \
+            --package mounted --expected-build-version "$EXPECTED_OPENSSL_VERSION" \
+            --output evidence/openssl-package.json
+      - name: Retain exact validation evidence
+        if: always()
+        uses: actions/upload-artifact@v6
+        with:
+          name: mwnet-preserved-macos-${{ inputs.image }}-${{ github.run_id }}
+          path: evidence/*
+          if-no-files-found: error

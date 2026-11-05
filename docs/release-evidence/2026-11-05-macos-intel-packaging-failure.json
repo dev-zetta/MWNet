@@ -1,0 +1,42 @@
+{
+  "runtimeSourceCommit": "a6868387dc80dcafd9b8ebad3d8c708511d9a615",
+  "workflowRevision": "4ca4c25c74a2fb252ebeab8bedd3ecd85a727cba",
+  "ciRunId": 42059980428,
+  "ciJobId": 127358628840,
+  "ciUrl": "https://github.com/dev-zetta/MWNet/actions/runs/42059980428/job/127358628840",
+  "jobConclusion": "failure",
+  "jobStartedAt": "2026-11-05T15:56:11Z",
+  "jobCompletedAt": "2026-11-05T16:57:42Z",
+  "failedStep": "Package disk image",
+  "nativeSuitesPassed": 7,
+  "builtClientServerStartupPassed": true,
+  "finalDmgAccepted": false,
+  "finalBundledProviderCheckExecuted": false,
+  "failure": "hdiutil create failed - Resource busy",
+  "failureScope": "Disk-image creation/infrastructure; underlying resource-busy cause not established",
+  "logSha256": "0e222dd9c475fc1221332df8f69bb376e7912d876799e3d1cb3ccff2d1e33e16",
+  "providerBeforePackaging": {
+    "scope": "OpenSSL provider/header/runtime identity only; not graphical or complete dependency acceptance",
+    "expectedVersion": "3.6.3",
+    "headerSha256": "167504e0f44d44119f977e0a255a78f98bbb911ffc7c3b1b5a963e45ecc767c6",
+    "provider": "/usr/local/Cellar/openssl@3/3.6.3/lib/libcrypto.3.dylib",
+    "providerSha256": "639559f31782c798d6f5a9b6d3f86f0d13f95d94a921be0ad3d988068744ef50",
+    "providerRuntimeVersion": "OpenSSL 3.6.3 9 Jun 2026",
+    "cmakeCacheSha256": "119480fc1a5af956adcecc24b92f624cce72c4893467d2bd4216d8dfce391edd",
+    "bundledLibraries": [],
+    "status": "pass"
+  },
+  "minimumOsWarning": "Intel target macOS13.7 linked against selected OpenSSL dylib built for15.0; older OS support is not established",
+  "preservedOriginalCandidate": {
+    "ciRunId": 42025424431,
+    "ciJobId": 127238314787,
+    "archiveSha256": "6aaf2af3432f29382c45277ab41cb7ceb69a994363494bbb8eed54e7a82edda6",
+    "originalCmakeLogSha256": "5dc2d8ceaea5ed91cf741a758ee09cb206fcf5e504eef1a4aa3c2224aae0aa50",
+    "actualOriginalOpenSslSelection": [
+      "2026-11-05T12:17:50.8888820Z -- Found OpenSSL: /usr/local/Cellar/openssl@3/3.6.3/lib/libcrypto.dylib (found version \"3.6.3\")"
+    ]
+  },
+  "recoveryPlan": "Separately validate the preserved exact-source original Intel DMG natively, including original build OpenSSL3.6.3 versus actual bundle runtime, without rebuilding, resigning or rerunning the failed image-creation step",
+  "graphicalAccepted": false,
+  "distributionAccepted": false
+}

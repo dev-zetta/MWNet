@@ -42,6 +42,24 @@ def require_version(expected, observed):
         raise ValueError('OpenSSL header/runtime mismatch: ' + expected + ' versus ' + observed)
 
 
+def verify_bundle(package, expected):
+    if not re.fullmatch(r'\d+\.\d+\.\d+[a-z0-9.-]*', expected):
+        raise ValueError('Expected one explicit OpenSSL build version')
+    package = package.resolve()
+    libraries = sorted(package.rglob('libcrypto*.dylib'))
+    if not libraries:
+        raise ValueError('No bundled OpenSSL library found')
+    results = []
+    for library in libraries:
+        if not library.resolve().is_relative_to(package):
+            raise ValueError('Bundled OpenSSL resolves outside the package')
+        version = library_version(library.resolve())
+        require_version(expected, version)
+        results.append({'path': str(library.relative_to(package)),
+                        'sha256': sha(library), 'runtimeVersion': version})
+    return results
+
+
 def verify(prefix, cache, package=None):
     prefix = prefix.resolve()
     header = prefix / 'include/openssl/opensslv.h'
@@ -62,35 +80,35 @@ def verify(prefix, cache, package=None):
               'provider': str(provider), 'providerSha256': sha(provider),
               'providerRuntimeVersion': observed, 'cmakeCacheSha256': sha(cache), 'bundledLibraries': []}
     if package:
-        package = package.resolve()
-        libraries = sorted(package.rglob('libcrypto*.dylib'))
-        if not libraries:
-            raise ValueError('No bundled OpenSSL library found')
-        for library in libraries:
-            if not library.resolve().is_relative_to(package):
-                raise ValueError('Bundled OpenSSL resolves outside the package')
-            version = library_version(library.resolve())
-            require_version(expected, version)
-            report['bundledLibraries'].append({'path': str(library.relative_to(package)),
-                                               'sha256': sha(library), 'runtimeVersion': version})
+        report['bundledLibraries'] = verify_bundle(package, expected)
     report['status'] = 'pass'
     return report
 
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument('--prefix', required=True, type=Path)
-    parser.add_argument('--cmake-cache', required=True, type=Path)
+    parser.add_argument('--prefix', type=Path)
+    parser.add_argument('--cmake-cache', type=Path)
     parser.add_argument('--package', type=Path)
+    parser.add_argument('--expected-build-version', help='Check an existing package against a separately recorded original build version; does not recreate header/provider evidence')
     parser.add_argument('--output', required=True, type=Path)
     args = parser.parse_args()
     if args.output.exists():
         parser.error('Refusing to overwrite previous OpenSSL evidence')
-    report = verify(args.prefix, args.cmake_cache, args.package)
+    if args.expected_build_version:
+        if not args.package or args.prefix or args.cmake_cache:
+            parser.error('--expected-build-version requires --package and cannot recreate --prefix/--cmake-cache evidence')
+        report = {'scope': 'Existing package runtime against separately recorded original build version only; original headers/provider are not recreated',
+                  'expectedVersion': args.expected_build_version,
+                  'bundledLibraries': verify_bundle(args.package, args.expected_build_version), 'status': 'pass'}
+    else:
+        if not args.prefix or not args.cmake_cache:
+            parser.error('Build-provider verification requires --prefix and --cmake-cache')
+        report = verify(args.prefix, args.cmake_cache, args.package)
     args.output.parent.mkdir(parents=True, exist_ok=True)
     with args.output.open('x') as stream:
         stream.write(json.dumps(report, indent=2) + '\n')
-    print('PASS: OpenSSL provider, header and selected runtime versions agree')
+    print('PASS: OpenSSL identity check within recorded receipt scope')
 
 
 if __name__ == '__main__':

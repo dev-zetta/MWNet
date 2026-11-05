@@ -5,10 +5,26 @@ import tempfile
 import unittest
 from unittest.mock import patch
 
-from verify_mwnet_macos_openssl import header_version, require_version, verify
+from verify_mwnet_macos_openssl import header_version, require_version, verify, verify_bundle
 
 
 class OpenSSLIdentityTests(unittest.TestCase):
+    def test_existing_bundle_requires_exact_version_and_real_library(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            for expected in ['3', '3.*', '']:
+                with self.subTest(expected=expected), self.assertRaises(ValueError):
+                    verify_bundle(root, expected)
+            with self.assertRaisesRegex(ValueError, 'No bundled'):
+                verify_bundle(root, '3.6.3')
+            library = root / 'libcrypto.3.dylib'
+            library.write_bytes(b'preserved candidate')
+            with patch('verify_mwnet_macos_openssl.library_version', return_value='OpenSSL 3.6.3 date'):
+                self.assertEqual(verify_bundle(root, '3.6.3')[0]['runtimeVersion'], 'OpenSSL 3.6.3 date')
+            with patch('verify_mwnet_macos_openssl.library_version', return_value='OpenSSL 3.0.16 date'):
+                with self.assertRaisesRegex(ValueError, 'mismatch'):
+                    verify_bundle(root, '3.6.3')
+
     def test_version_prefix_must_be_exact(self):
         require_version('3.6.4', 'OpenSSL 3.6.4 10 Oct 2026')
         for value in ['OpenSSL 3.0.16 11 Feb 2025', 'OpenSSL 3.6.40 1 Jan 2026', 'LibreSSL 3.6.4']:
