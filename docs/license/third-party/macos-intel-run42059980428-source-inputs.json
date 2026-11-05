@@ -1,0 +1,70 @@
+{
+  "schemaVersion": 1,
+  "scope": "Exact Intel runner formula source inputs; separate validation binds preserved original package/runtime versions, not original header/cache byte evidence",
+  "ciRunId": 42059980428,
+  "ciJobId": 127358628840,
+  "homebrewReceiptSha256": "30dd068e85f74c5e1b834271997d6bb0a16e4fad6a5c6f83c483d613e9666ca9",
+  "sources": [
+    {
+      "name": "openssl@3",
+      "version": "3.6.3",
+      "filename": "openssl-3-3.6.3-homebrew-source.tar.gz",
+      "urls": [
+        "https://github.com/openssl/openssl/releases/download/openssl-3.6.3/openssl-3.6.3.tar.gz"
+      ],
+      "algorithm": "sha256",
+      "checksum": "243a86649cf6f23eeb6a2ff2456e09e5d77dd9018a54d3d96b0c6bdd6ba6c7f1",
+      "formulaSha256": "e15cca35502166eb7a93940f3fe489e490b09a7b9e07ba3145d7ec1471bcd8d1",
+      "pinProvenance": "Actual Intel build job127358628840 installed/formula input capture; not recreated original package build metadata"
+    },
+    {
+      "name": "libsodium",
+      "version": "1.0.22",
+      "filename": "libsodium-1.0.22-homebrew-source.tar.gz",
+      "urls": [
+        "https://download.libsodium.org/libsodium/releases/libsodium-1.0.22.tar.gz"
+      ],
+      "algorithm": "sha256",
+      "checksum": "adbdd8f16149e81ac6078a03aca6fc03b592b89ef7b5ed83841c086191be3349",
+      "formulaSha256": "0cec9363366183202615c081e5a89879cb7f045635355ee6c67ebb32e046c533",
+      "pinProvenance": "Actual Intel build job127358628840 installed/formula input capture; not recreated original package build metadata"
+    },
+    {
+      "name": "protobuf",
+      "version": "36.0",
+      "filename": "protobuf-36.0-homebrew-source.tar.gz",
+      "urls": [
+        "https://github.com/protocolbuffers/protobuf/releases/download/v36.0/protobuf-36.0.tar.gz"
+      ],
+      "algorithm": "sha256",
+      "checksum": "399931c793f4ac6db81045b00b06dd07c877b48aeecf36c797f65c541fb533e7",
+      "formulaSha256": "cfca412ed25ec0cdea07655d916dd3ae16da3855b620cc5cef7937218766a72d",
+      "pinProvenance": "Actual Intel build job127358628840 installed/formula input capture; not recreated original package build metadata"
+    },
+    {
+      "name": "fontconfig",
+      "version": "2.18.3",
+      "filename": "fontconfig-2.18.3-homebrew-source.tar.gz",
+      "urls": [
+        "https://gitlab.freedesktop.org/fontconfig/fontconfig/-/archive/2.18.3/fontconfig-2.18.3.tar.gz"
+      ],
+      "algorithm": "sha256",
+      "checksum": "9ae01e1d53acdef56010c5451cd34aa41d325b2faccd8606448d8fa01b2496b3",
+      "formulaSha256": "46a34fe2525e2393a6f8e43ba02b55be18042678929100f56e735a453e676667",
+      "pinProvenance": "Actual Intel build job127358628840 installed/formula input capture; not recreated original package build metadata"
+    },
+    {
+      "name": "gettext",
+      "version": "1.0",
+      "filename": "gettext-1.0-homebrew-source.tar.gz",
+      "urls": [
+        "https://ftpmirror.gnu.org/gnu/gettext/gettext-1.0.tar.gz",
+        "https://ftp.gnu.org/gnu/gettext/gettext-1.0.tar.gz"
+      ],
+      "algorithm": "sha256",
+      "checksum": "85d99b79c981a404874c02e0342176cf75c7698e2b51fe41031cf6526d974f1a",
+      "formulaSha256": "bd0322f7114c68dd627c974ec16ceaa6295bf68eac55995ee2dfb59ce6fefd51",
+      "pinProvenance": "Actual Intel build job127358628840 installed/formula input capture; not recreated original package build metadata"
+    }
+  ]
+}

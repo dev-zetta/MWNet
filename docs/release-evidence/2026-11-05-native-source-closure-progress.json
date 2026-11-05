@@ -1,0 +1,217 @@
+{
+  "checkedUtc": "2026-11-05T17:22:28.402894+00:00",
+  "scope": "Selected actual source/formula/notice inputs; not complete final dependency coverage, distribution acceptance or native gameplay",
+  "runtimeSourceCommit": "a6868387dc80dcafd9b8ebad3d8c708511d9a615",
+  "intelSourceDelivery": {
+    "schemaVersion": 1,
+    "status": "complete-for-listed-inputs",
+    "scope": "Exact listed source archives only; binary coverage and distribution acceptance require separate review",
+    "sources": [
+      {
+        "name": "openssl@3",
+        "version": "3.6.3",
+        "filename": "openssl-3-3.6.3-homebrew-source.tar.gz",
+        "urls": [
+          "https://github.com/openssl/openssl/releases/download/openssl-3.6.3/openssl-3.6.3.tar.gz"
+        ],
+        "algorithm": "sha256",
+        "checksum": "243a86649cf6f23eeb6a2ff2456e09e5d77dd9018a54d3d96b0c6bdd6ba6c7f1",
+        "formulaSha256": "e15cca35502166eb7a93940f3fe489e490b09a7b9e07ba3145d7ec1471bcd8d1",
+        "pinProvenance": "Actual Intel build job127358628840 installed/formula input capture; not recreated original package build metadata",
+        "bytes": 54953005,
+        "sha256": "243a86649cf6f23eeb6a2ff2456e09e5d77dd9018a54d3d96b0c6bdd6ba6c7f1"
+      },
+      {
+        "name": "libsodium",
+        "version": "1.0.22",
+        "filename": "libsodium-1.0.22-homebrew-source.tar.gz",
+        "urls": [
+          "https://download.libsodium.org/libsodium/releases/libsodium-1.0.22.tar.gz"
+        ],
+        "algorithm": "sha256",
+        "checksum": "adbdd8f16149e81ac6078a03aca6fc03b592b89ef7b5ed83841c086191be3349",
+        "formulaSha256": "0cec9363366183202615c081e5a89879cb7f045635355ee6c67ebb32e046c533",
+        "pinProvenance": "Actual Intel build job127358628840 installed/formula input capture; not recreated original package build metadata",
+        "bytes": 2008529,
+        "sha256": "adbdd8f16149e81ac6078a03aca6fc03b592b89ef7b5ed83841c086191be3349"
+      },
+      {
+        "name": "protobuf",
+        "version": "36.0",
+        "filename": "protobuf-36.0-homebrew-source.tar.gz",
+        "urls": [
+          "https://github.com/protocolbuffers/protobuf/releases/download/v36.0/protobuf-36.0.tar.gz"
+        ],
+        "algorithm": "sha256",
+        "checksum": "399931c793f4ac6db81045b00b06dd07c877b48aeecf36c797f65c541fb533e7",
+        "formulaSha256": "cfca412ed25ec0cdea07655d916dd3ae16da3855b620cc5cef7937218766a72d",
+        "pinProvenance": "Actual Intel build job127358628840 installed/formula input capture; not recreated original package build metadata",
+        "bytes": 7311082,
+        "sha256": "399931c793f4ac6db81045b00b06dd07c877b48aeecf36c797f65c541fb533e7"
+      },
+      {
+        "name": "fontconfig",
+        "version": "2.18.3",
+        "filename": "fontconfig-2.18.3-homebrew-source.tar.gz",
+        "urls": [
+          "https://gitlab.freedesktop.org/fontconfig/fontconfig/-/archive/2.18.3/fontconfig-2.18.3.tar.gz"
+        ],
+        "algorithm": "sha256",
+        "checksum": "9ae01e1d53acdef56010c5451cd34aa41d325b2faccd8606448d8fa01b2496b3",
+        "formulaSha256": "46a34fe2525e2393a6f8e43ba02b55be18042678929100f56e735a453e676667",
+        "pinProvenance": "Actual Intel build job127358628840 installed/formula input capture; not recreated original package build metadata",
+        "bytes": 666753,
+        "sha256": "9ae01e1d53acdef56010c5451cd34aa41d325b2faccd8606448d8fa01b2496b3"
+      },
+      {
+        "name": "gettext",
+        "version": "1.0",
+        "filename": "gettext-1.0-homebrew-source.tar.gz",
+        "urls": [
+          "https://ftpmirror.gnu.org/gnu/gettext/gettext-1.0.tar.gz",
+          "https://ftp.gnu.org/gnu/gettext/gettext-1.0.tar.gz"
+        ],
+        "algorithm": "sha256",
+        "checksum": "85d99b79c981a404874c02e0342176cf75c7698e2b51fe41031cf6526d974f1a",
+        "formulaSha256": "bd0322f7114c68dd627c974ec16ceaa6295bf68eac55995ee2dfb59ce6fefd51",
+        "pinProvenance": "Actual Intel build job127358628840 installed/formula input capture; not recreated original package build metadata",
+        "bytes": 32694085,
+        "sha256": "85d99b79c981a404874c02e0342176cf75c7698e2b51fe41031cf6526d974f1a"
+      }
+    ]
+  },
+  "intelSourceArchiveBytes": 97633454,
+  "intelSourceNoticeFiles": 28,
+  "intelNoticeManifestSha256": "32ac6d7acdb26e1e443621625d4fc6f994e01156b6e25b48c6dc9af4ff56cdd8",
+  "uniqueSelectedUpstreamArchiveCount": 21,
+  "capturedHomebrewFormulae": {
+    "checkedUtc": "2026-11-05T17:19:43.122668+00:00",
+    "scope": "Byte-checked captured Homebrew formula source inputs only, not complete final package dependency/source acceptance",
+    "formulaFiles": [
+      {
+        "architecture": "arm64",
+        "formula": "openssl@3",
+        "installedVersions": [
+          "3.5.9"
+        ],
+        "url": "https://raw.githubusercontent.com/Homebrew/homebrew-core/ce55aa0fbe1a705fdfcecf2eee4a5a39a9ed6d54/Formula/o/openssl@3.rb",
+        "expectedSha256": "ff38ac43aa86a0484a12bace87feca515c745b3caf38a5b0738288b56fb86c97",
+        "scope": "Captured formula source at the recorded tap revision; original preinstalled-keg recipe identity is not recreated",
+        "actualSha256": "ff38ac43aa86a0484a12bace87feca515c745b3caf38a5b0738288b56fb86c97",
+        "verified": true
+      },
+      {
+        "architecture": "arm64",
+        "formula": "libsodium",
+        "installedVersions": [
+          "1.0.22"
+        ],
+        "url": "https://raw.githubusercontent.com/Homebrew/homebrew-core/ce55aa0fbe1a705fdfcecf2eee4a5a39a9ed6d54/Formula/lib/libsodium.rb",
+        "expectedSha256": "97116400ef5a3ef2647f58b650fe55bbf59b6b50ad3aa49f9c3be7163168f2b2",
+        "scope": "Captured formula source at the recorded tap revision; original preinstalled-keg recipe identity is not recreated",
+        "actualSha256": "97116400ef5a3ef2647f58b650fe55bbf59b6b50ad3aa49f9c3be7163168f2b2",
+        "verified": true
+      },
+      {
+        "architecture": "arm64",
+        "formula": "protobuf",
+        "installedVersions": [
+          "36.2"
+        ],
+        "url": "https://raw.githubusercontent.com/Homebrew/homebrew-core/ce55aa0fbe1a705fdfcecf2eee4a5a39a9ed6d54/Formula/p/protobuf.rb",
+        "expectedSha256": "7992732dfd8e12ea27faade9f2b6a2db76448e1ff8bf50c32f4000028f9f1374",
+        "scope": "Captured formula source at the recorded tap revision; original preinstalled-keg recipe identity is not recreated",
+        "actualSha256": "7992732dfd8e12ea27faade9f2b6a2db76448e1ff8bf50c32f4000028f9f1374",
+        "verified": true
+      },
+      {
+        "architecture": "arm64",
+        "formula": "fontconfig",
+        "installedVersions": [
+          "2.18.3"
+        ],
+        "url": "https://raw.githubusercontent.com/Homebrew/homebrew-core/ce55aa0fbe1a705fdfcecf2eee4a5a39a9ed6d54/Formula/f/fontconfig.rb",
+        "expectedSha256": "377fd40fc05503009a2ecc23e447b7413e6aca2e99eabe277a18689c0340bcc9",
+        "scope": "Captured formula source at the recorded tap revision; original preinstalled-keg recipe identity is not recreated",
+        "actualSha256": "377fd40fc05503009a2ecc23e447b7413e6aca2e99eabe277a18689c0340bcc9",
+        "verified": true
+      },
+      {
+        "architecture": "arm64",
+        "formula": "gettext",
+        "installedVersions": [
+          "1.0"
+        ],
+        "url": "https://raw.githubusercontent.com/Homebrew/homebrew-core/ce55aa0fbe1a705fdfcecf2eee4a5a39a9ed6d54/Formula/g/gettext.rb",
+        "expectedSha256": "9c90f7cf5a45c828e2a66d9339b25b781302cf49316e939d029e6079e1b9d916",
+        "scope": "Captured formula source at the recorded tap revision; original preinstalled-keg recipe identity is not recreated",
+        "actualSha256": "9c90f7cf5a45c828e2a66d9339b25b781302cf49316e939d029e6079e1b9d916",
+        "verified": true
+      },
+      {
+        "architecture": "intel",
+        "formula": "openssl@3",
+        "installedVersions": [
+          "3.6.3"
+        ],
+        "url": "https://raw.githubusercontent.com/Homebrew/homebrew-core/09417d15c1d23155fd7474db26918bbaebf76235/Formula/o/openssl@3.rb",
+        "expectedSha256": "e15cca35502166eb7a93940f3fe489e490b09a7b9e07ba3145d7ec1471bcd8d1",
+        "scope": "Captured formula source at the recorded tap revision; original preinstalled-keg recipe identity is not recreated",
+        "actualSha256": "e15cca35502166eb7a93940f3fe489e490b09a7b9e07ba3145d7ec1471bcd8d1",
+        "verified": true
+      },
+      {
+        "architecture": "intel",
+        "formula": "libsodium",
+        "installedVersions": [
+          "1.0.22"
+        ],
+        "url": "https://raw.githubusercontent.com/Homebrew/homebrew-core/09417d15c1d23155fd7474db26918bbaebf76235/Formula/lib/libsodium.rb",
+        "expectedSha256": "0cec9363366183202615c081e5a89879cb7f045635355ee6c67ebb32e046c533",
+        "scope": "Captured formula source at the recorded tap revision; original preinstalled-keg recipe identity is not recreated",
+        "actualSha256": "0cec9363366183202615c081e5a89879cb7f045635355ee6c67ebb32e046c533",
+        "verified": true
+      },
+      {
+        "architecture": "intel",
+        "formula": "protobuf",
+        "installedVersions": [
+          "36.0"
+        ],
+        "url": "https://raw.githubusercontent.com/Homebrew/homebrew-core/09417d15c1d23155fd7474db26918bbaebf76235/Formula/p/protobuf.rb",
+        "expectedSha256": "cfca412ed25ec0cdea07655d916dd3ae16da3855b620cc5cef7937218766a72d",
+        "scope": "Captured formula source at the recorded tap revision; original preinstalled-keg recipe identity is not recreated",
+        "actualSha256": "cfca412ed25ec0cdea07655d916dd3ae16da3855b620cc5cef7937218766a72d",
+        "verified": true
+      },
+      {
+        "architecture": "intel",
+        "formula": "fontconfig",
+        "installedVersions": [
+          "2.18.3"
+        ],
+        "url": "https://raw.githubusercontent.com/Homebrew/homebrew-core/09417d15c1d23155fd7474db26918bbaebf76235/Formula/f/fontconfig.rb",
+        "expectedSha256": "46a34fe2525e2393a6f8e43ba02b55be18042678929100f56e735a453e676667",
+        "scope": "Captured formula source at the recorded tap revision; original preinstalled-keg recipe identity is not recreated",
+        "actualSha256": "46a34fe2525e2393a6f8e43ba02b55be18042678929100f56e735a453e676667",
+        "verified": true
+      },
+      {
+        "architecture": "intel",
+        "formula": "gettext",
+        "installedVersions": [
+          "1.0"
+        ],
+        "url": "https://raw.githubusercontent.com/Homebrew/homebrew-core/09417d15c1d23155fd7474db26918bbaebf76235/Formula/g/gettext.rb",
+        "expectedSha256": "bd0322f7114c68dd627c974ec16ceaa6295bf68eac55995ee2dfb59ce6fefd51",
+        "scope": "Captured formula source at the recorded tap revision; original preinstalled-keg recipe identity is not recreated",
+        "actualSha256": "bd0322f7114c68dd627c974ec16ceaa6295bf68eac55995ee2dfb59ce6fefd51",
+        "verified": true
+      }
+    ],
+    "allCapturedFormulaHashesMatched": true
+  },
+  "originalV2FourteenSourceBundleUnchanged": true,
+  "fullDependencyCoverageAccepted": false,
+  "graphicalAccepted": false
+}
