@@ -1,0 +1,175 @@
+{
+  "checkedUtc": "2026-11-05T20:02:01.852335+00:00",
+  "status": "listed-private-candidate-source-and-notice-content-assessment-complete",
+  "runtimeSourceCommit": "a6868387dc80dcafd9b8ebad3d8c708511d9a615",
+  "scope": "Scoped actual binary/provider/source/notice preparation assessment for the named private candidates; not public delivery, full platform compatibility, native graphical acceptance or a legal certification",
+  "filesByPlatform": {
+    "windows": 126,
+    "arm64": 236,
+    "intel": 234
+  },
+  "classifiedExecutableDynamicImageCount": 596,
+  "unclassifiedExecutableDynamicImagePaths": [],
+  "sourceAssociationReceiptSha256": "631690130106e6c27ebe602f7ae688e019a3b39d542b2b5524c50d73fae7482a",
+  "sourceAssociationProcedureSha256": "41ff90d7a8618401e7fb170635f6e581cfb33ff49fafa4b9a44d244adf02fa55",
+  "sourceInputCount": 67,
+  "sourceArchiveCount": 65,
+  "patchCount": 2,
+  "sourceCompanionSha256": "f4649e5248b213503702713b563339c41002ff3641f560c01d37b4a564c89cff",
+  "noticeBookSha256": "7bc595a061061ec527f83f1888e83a129d49d165fae102933a29d141d5bac573",
+  "uniqueNoticeTexts": 699,
+  "explicitQtLicenseReferencesResolved": 131,
+  "unresolvedQtLicenseReferences": 0,
+  "fontSourceChecks": {
+    "files": 45,
+    "exactByteIdentities": 39,
+    "onlyWindowsLfToCrLfConversions": 6,
+    "receiptSha256": "6395fba03efde6d70832fc2282b4f69dfd7518634923122ed91daa16b43d7af6",
+    "scope": "Nine font/description/license files per app; two apps per Mac image, one Windows package. Not rendered font proof."
+  },
+  "prerequisiteAndBuildInputDisposition": {
+    "status": "scoped-platform-and-formula-build-input-disposition",
+    "microsoftVcRedist": {
+      "version": "14.44.35211.0",
+      "bytes": 25635768,
+      "sha256": "cc0ff0eb1dc3f5188ae6300faef32bf5beeba4bdd6e8e445a9184072096b713b",
+      "classification": "Unmodified proprietary Visual C++ 2015-2022 runtime prerequisite, outside the open-source source offer",
+      "embeddedLicenseFiles": [
+        {
+          "embeddedMember": "u4",
+          "originalFilePath": "license.rtf",
+          "bytes": 9235,
+          "sha256": "8099dc3cf9502c335da829e5c755948a12e3e6de490eb492a99deb673d883d8b",
+          "burnManifestSha1Verified": true
+        },
+        {
+          "embeddedMember": "u6",
+          "originalFilePath": "1028\\license.rtf",
+          "bytes": 18415,
+          "sha256": "44c76290f7a2e45940e8338912feb49bcf4e071cfa85d2d34762857743acbc8d",
+          "burnManifestSha1Verified": true
+        },
+        {
+          "embeddedMember": "u8",
+          "originalFilePath": "1029\\license.rtf",
+          "bytes": 13234,
+          "sha256": "503c433dcde2f3a9e7d388a5ff2b0612e7d8f90f5188d5b2b60228db33044fde",
+          "burnManifestSha1Verified": true
+        },
+        {
+          "embeddedMember": "u10",
+          "originalFilePath": "1031\\license.rtf",
+          "bytes": 12392,
+          "sha256": "28f63bad9c2960395106011761993049546607f8a850d344d6a54042176bf03f",
+          "burnManifestSha1Verified": true
+        },
+        {
+          "embeddedMember": "u12",
+          "originalFilePath": "1036\\license.rtf",
+          "bytes": 12349,
+          "sha256": "5c13a65870d770d1642a4259eecb436257ca39016a0500f747be9c79be0c7009",
+          "burnManifestSha1Verified": true
+        },
+        {
+          "embeddedMember": "u14",
+          "originalFilePath": "1040\\license.rtf",
+          "bytes": 11440,
+          "sha256": "70ecf23c03b66a2b18e173332586afa8f00f91e02a80628f4f9cb2521e27f6ac",
+          "burnManifestSha1Verified": true
+        },
+        {
+          "embeddedMember": "u16",
+          "originalFilePath": "1041\\license.rtf",
+          "bytes": 30228,
+          "sha256": "c3061a334bfd5f02b7085f8f454d5d3d97d477af14bab497bf31a7887bc90c5b",
+          "burnManifestSha1Verified": true
+        },
+        {
+          "embeddedMember": "u18",
+          "originalFilePath": "1042\\license.rtf",
+          "bytes": 28393,
+          "sha256": "3d4e9c165cbeab829d608106f0e96450f839ffa8adbd755f0b51867e89da2ae0",
+          "burnManifestSha1Verified": true
+        },
+        {
+          "embeddedMember": "u20",
+          "originalFilePath": "1045\\license.rtf",
+          "bytes": 13352,
+          "sha256": "6f94a99072061012c5626a6dd069809ec841d6e3102b48394d522a0c2e3aa2b5",
+          "burnManifestSha1Verified": true
+        },
+        {
+          "embeddedMember": "u22",
+          "originalFilePath": "1046\\license.rtf",
+          "bytes": 10956,
+          "sha256": "27891eec899be859e3b4d3b29247fc6b535d7e836def0329111c48741ec6e701",
+          "burnManifestSha1Verified": true
+        },
+        {
+          "embeddedMember": "u24",
+          "originalFilePath": "1049\\license.rtf",
+          "bytes": 31981,
+          "sha256": "1bb3fb55b8a13fa3bafffe72f5b1ed8b57a63bd4d8654bb6dc5b9011ce803b44",
+          "burnManifestSha1Verified": true
+        },
+        {
+          "embeddedMember": "u26",
+          "originalFilePath": "1055\\license.rtf",
+          "bytes": 13807,
+          "sha256": "f80926604e503697247353f56856b31de0b3fc1319f1c94068363952549cc9b1",
+          "burnManifestSha1Verified": true
+        },
+        {
+          "embeddedMember": "u28",
+          "originalFilePath": "2052\\license.rtf",
+          "bytes": 18214,
+          "sha256": "a808b4933ce3b3e0893504dbef43ebf90b8b567f94bd6481b6315ed9141e1b11",
+          "burnManifestSha1Verified": true
+        },
+        {
+          "embeddedMember": "u30",
+          "originalFilePath": "3082\\license.rtf",
+          "bytes": 10825,
+          "sha256": "abc11bb2b04dff6afe2d4d4f40d95a7d62e5af352928af90daa3dade58dd59bd",
+          "burnManifestSha1Verified": true
+        }
+      ],
+      "englishLicenseSha256": "8099dc3cf9502c335da829e5c755948a12e3e6de490eb492a99deb673d883d8b",
+      "originalInstallerAndRedistUnchanged": true,
+      "cleanOsVcBootstrapObserved": false,
+      "redistributionGuidance": "https://learn.microsoft.com/en-us/visualstudio/releases/2022/redistribution",
+      "termsDirectory": "https://visualstudio.microsoft.com/license-terms/"
+    },
+    "gettextSourcesRead": [
+      {
+        "member": "gettext-1.0/gettext-runtime/intl/Makefile.in",
+        "sha256": "0e2ed81808e778a58cbaec376988fadd47aeece4e94b88420bb677d4b96afdac"
+      },
+      {
+        "member": "gettext-1.0/gettext-runtime/configure.ac",
+        "sha256": "6d1161beabc9758ba9df9f97769ad2914661d2261a9317acca53ed209bd825b2"
+      },
+      {
+        "member": "gettext-1.0/gettext-tools/configure.ac",
+        "sha256": "9794268868b81f0f56f5cf6e13544a62ee2c617a41a2425a977c21d9eb3374b5"
+      }
+    ],
+    "jsonCAndLibunistringDisposition": "Captured Homebrew package dependencies are not separate delivered library names/imports in either bundle. Captured gettext formula identifies json-c for unshipped spit; pinned runtime libintl link rule names iconv/Mac framework/platform/locale/thread support, while JSON-C checks belong to gettext-tools. No claim of static absence follows solely from loader names. Full gettext source/vendored runtime code is supplied.",
+    "ordinaryCompilerAndOsInputs": "Host compiler/tool and system-library dependencies are distinguished from delivered third-party code; no unrelated platform source archives or reproducible-build identity is asserted."
+  },
+  "prerequisiteDispositionReceiptSha256": "8f6b8bba64db39276b1ceb47abe0da16a20fc9fa21a51c95d131436735d193d5",
+  "sourceNoticeMaterialSelectionAcceptedForListedPrivateCandidates": true,
+  "fullPublicDistributionAccepted": false,
+  "nativeGraphicalAccepted": false,
+  "nativeStablePromotionAccepted": false,
+  "remainingRequirements": [
+    "Actual native unattended rendered/gameplay qualification after already-requested host and owned canonical Data Files access is available; validate native backend and isolated state/process cleanup",
+    "At an authorized future publication, co-deliver exact matching source/notice companion and preserve declared OS/installer scopes"
+  ],
+  "preservedLocalAnalysisFailures": [
+    "font-git-byte-checks/failure.json",
+    "font-source-checks-v2/failure.json",
+    "source-coverage-assessment/failure.json"
+  ],
+  "noHumanReviewPrerequisiteAdded": true
+}

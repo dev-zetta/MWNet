@@ -1,5 +1,5 @@
 {
-  "checkedUtc": "2026-11-05T19:23:40.073168+00:00",
+  "checkedUtc": "2026-11-05T20:02:01.852335+00:00",
   "scope": "Selected actual source/formula/notice inputs; not complete final dependency coverage, distribution acceptance or native gameplay",
   "runtimeSourceCommit": "a6868387dc80dcafd9b8ebad3d8c708511d9a615",
   "intelSourceDelivery": {
@@ -329,5 +329,8 @@
   "staticHeaderSourceCheckpoint": "2026-11-05-native-static-header-sources.json",
   "noticeAssemblyCheckpoint": "2026-11-05-native-notice-material-assembly.json",
   "sourceMaterialV3Checkpoint": "2026-11-05-native-source-materials-v3.json",
-  "windowsNoticeCandidateV3Checkpoint": "2026-11-05-windows-notice-candidate-v3.json"
+  "windowsNoticeCandidateV3Checkpoint": "2026-11-05-windows-notice-candidate-v3.json",
+  "sourceNoticeMaterialContentAssessmentComplete": true,
+  "coverageAssessmentCheckpoint": "2026-11-05-native-distribution-coverage-assessment.json",
+  "finalMacNoticeCandidateCheckpoint": "2026-11-05-macos-notice-candidate-verification.json"
 }

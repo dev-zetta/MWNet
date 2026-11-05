@@ -1,4 +1,10 @@
-# Native platform verification in progress
+# Native platform preparation checkpoint
+
+Background package, provider, source and notice-candidate preparation is complete for frozen runtime `a6868387dc80dcafd9b8ebad3d8c708511d9a615`, version 1.0.0/protocol 13. Windows complete-package/startup and disposable installer/uninstall checks passed; both separate [Mac signed ZIP/app candidates](2026-11-05-macos-notice-candidate-verification.md) passed actual native final checks. The [596-image source/notice assessment](2026-11-05-native-distribution-coverage-assessment.md) and exact private companion are recorded. Historical failed Intel image creation remains failed; its preserved original input and separately verified derivative ZIP are identified distinctly.
+
+All planned background runs are terminal. Actual native rendered/gameplay acceptance remains pending the already-requested Windows/macOS SSH destinations and owned canonical Data Files paths, followed by native backend/state/process validation. Native support remains experimental; no Windows/macOS stable assets were published, and the Linux release/NUC service were not changed. Public promotion also requires co-delivery of the exact matching companion at publication. No manual gameplay, human-review or fixed-wait prerequisite is added. The [current receipt](2026-11-05-native-platform-progress.json) preserves the earlier in-progress snapshot under an explicit historical field.
+
+## Earlier 16:10 UTC background snapshot
 
 The [Windows full-package run 42057767417](https://github.com/dev-zetta/MWNet/actions/runs/42057767417) and [macOS candidate run 42059980428](https://github.com/dev-zetta/MWNet/actions/runs/42059980428) are building runtime `a6868387dc80dcafd9b8ebad3d8c708511d9a615`, version 1.0.0, protocol 13. Their workflow/controller revisions are separately recorded in the [progress receipt](2026-11-05-native-platform-progress.json). Both macOS architectures passed the new explicit OpenSSL provider/header/runtime check before compiling. Their final packaged-library checks and Windows complete-package checks remain pending; no completed native graphical or distribution acceptance is claimed.
 
