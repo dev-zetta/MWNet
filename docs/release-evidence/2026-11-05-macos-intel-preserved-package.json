@@ -1,0 +1,54 @@
+{
+  "checkedUtc": "2026-11-05T17:13:14.584425+00:00",
+  "scope": "Preserved original Intel package, fresh read-only native startup/signature/runtime checks and original native-suite evidence; no rebuild or graphical acceptance",
+  "runtimeSourceCommit": "a6868387dc80dcafd9b8ebad3d8c708511d9a615",
+  "originalBuildRunId": 42025424431,
+  "originalNativeJobId": 127238314787,
+  "originalNativeSuitesPassed": 7,
+  "validationRunId": 42071394992,
+  "validationJobId": 127399977833,
+  "validationControllerRevision": "8e1cbaac8cd12673be552ab955e6f2e4fe1ed0de",
+  "validationConclusion": "success",
+  "validationCompletedAt": "2026-11-05T17:08:08Z",
+  "ciUrl": "https://github.com/dev-zetta/MWNet/actions/runs/42071394992",
+  "archive": {
+    "name": "MWNet-1.0.0-macOS-x86_64.dmg",
+    "bytes": 148356563,
+    "sha256": "6aaf2af3432f29382c45277ab41cb7ceb69a994363494bbb8eed54e7a82edda6",
+    "originalBytesUnchanged": true,
+    "nativeHdiutilVerifyPassed": true
+  },
+  "binaries": {
+    "mwnet": {
+      "sha256": "bf46aa8df5e97845d2a1ef3bec36b892db765541ed415bf0c741de9e401fd781",
+      "architecture": "Mach-O x86_64",
+      "bytes": 73207792
+    },
+    "mwnet-server": {
+      "sha256": "81b687a1a51e7fee776ec3a929a885b742bfa786d8ed596213f9ebe40ea1977c",
+      "architecture": "Mach-O x86_64",
+      "bytes": 7608464
+    }
+  },
+  "managedCodeFilesByteIdenticalToGit": 48,
+  "nativeAdHocSignatureVerificationPassed": true,
+  "nativePackagedClientServerIdentityStartupCleanExitPassed": true,
+  "openssl": {
+    "scope": "Existing package runtime against separately recorded original build version only; original headers/provider are not recreated",
+    "expectedVersion": "3.6.3",
+    "bundledLibraries": [
+      {
+        "path": "MWNet.app/Contents/Frameworks/libcrypto.3.dylib",
+        "sha256": "2d0ce68101bfd01cc24135b4fa5f87b90494ae5f01c7226b1d98eea8fcae6e8a",
+        "runtimeVersion": "OpenSSL 3.6.3 9 Jun 2026"
+      }
+    ],
+    "status": "pass"
+  },
+  "actualDownloadedLibraryMatchesNativeReceipt": true,
+  "originalHeaderCacheByteEvidenceRecreated": false,
+  "failedRepackRunRetainsFailure": 42059980428,
+  "testedHostScope": "macos-15-intel native runner; older macOS support is not established",
+  "graphicalAccepted": false,
+  "fullDistributionAccepted": false
+}
