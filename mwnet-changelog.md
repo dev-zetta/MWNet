@@ -1,3 +1,18 @@
+1.0.0 (Linux x86_64 stable)
+--------------------------
+
+Published November 5, 2026 from runtime `a6868387dc80dcafd9b8ebad3d8c708511d9a615`, retaining protocol 13. The [stable release record](docs/release-evidence/2026-11-05-stable-release.md) binds the public tag and exact downloads; later deployment/documentation tooling is recorded separately. Windows/macOS remain experimental.
+
+* Promote the tested Linux client/server package with `RELEASE.txt`, corresponding runtime source, SPDX SBOM, preserved upstream/third-party notices and checksums.
+* Verify the new stable binaries with seven native suites, fourteen control cases and ten unattended rendered cases/130 positive assertions.
+* Reuse the completed beta eight-hour synthetic transport/directory acceptance only after verifying the production version-string and generated commit-metadata changes, unchanged vendor/system-header inputs and byte-identical directory; the original run retains its beta hashes.
+* Deploy the exact stable server and managed code to the NUC with isolated startup checks, quiescent private backups, tested rollback, preserved identity and independent public signed-heartbeat verification.
+
+1.0.0-beta.1 (Linux)
+-------------------
+
+Published November 5, 2026 from runtime `adc751899eade2b04086a794753f9540124c5e05`. The [beta release record](docs/release-evidence/2026-11-05-beta-release.md) retains its exact package and public download hashes, separate Linux rendered checks, completed independent NUC eight-hour synthetic acceptance and verified beta deployment. Earlier failed/interrupted runs remain preserved.
+
 1.0.0-alpha.3
 -------------
 

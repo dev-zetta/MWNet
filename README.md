@@ -5,10 +5,10 @@ MWNet is an independent, open-source multiplayer fork of [TES3MP](https://github
 
 Stock OpenMW 0.52 is a single-player engine. MWNet adds a dedicated server, a multiplayer client, encrypted direct connections, synchronized gameplay systems, and a server-side Lua API.
 
-* MWNet version: 1.0.0-alpha.3
+* MWNet version: 1.0.0 (Linux x86_64 stable)
 * OpenMW base version: 0.52.0
 * Network protocol version: 13
-* License: GPLv3 with inherited additional terms (see [LICENSE](LICENSE) and the pending [review questions](docs/RELEASE_REVIEW.md))
+* License: GPLv3 with inherited additional terms (see [LICENSE](LICENSE) and the recorded [AI licensing assessment](docs/release-evidence/2026-10-30-ai-review.md))
 * Upstream engine: [OpenMW on GitLab](https://gitlab.com/OpenMW/openmw)
 * Maintainer: Gabriel Max ([dev-zetta](https://github.com/dev-zetta))
 * Source code and issue tracker: [dev-zetta/MWNet on GitHub](https://github.com/dev-zetta/MWNet)
@@ -16,9 +16,11 @@ Stock OpenMW 0.52 is a single-player engine. MWNet adds a dedicated server, a mu
 Current status
 --------------
 
-MWNet 1.0.0-alpha.3 is a development alpha on OpenMW 0.52. Protocol 13 identifies the MWNet client/server pair and is intentionally incompatible with pre-rebrand clients, servers, and discovery signatures.
+MWNet 1.0.0 is the Linux x86_64 stable client/server release on OpenMW 0.52. Protocol 13 identifies the MWNet client/server pair and is intentionally incompatible with pre-rebrand clients, servers, and discovery signatures.
 
-[Download alpha.3](https://github.com/dev-zetta/MWNet/releases/tag/v1.0.0-alpha.3) for Linux, Windows, or Intel/Apple Silicon macOS. Checksums and scoped machine-readable test evidence accompany the packages. The [autonomous gameplay procedure](docs/AUTOMATED_GAMEPLAY.md) runs the rendered client without operator gameplay; [release validation](docs/release-evidence/2026-10-30-alpha3-release.md) records acceptance and remaining gates.
+[Download Linux 1.0.0](https://github.com/dev-zetta/MWNet/releases/tag/v1.0.0), verify `SHA256SUMS`, and follow the included `RELEASE.txt` and dependency instructions. The package uses the Ubuntu 24.04 system-library environment and requires your own Morrowind data. The [stable candidate evidence](docs/release-evidence/2026-11-05-stable-candidate.md), [verified NUC deployment](docs/release-evidence/2026-11-05-stable-deployment.md) and [public release verification](docs/release-evidence/2026-11-05-stable-release.md) identify exact artifacts and acceptance scope. The [autonomous gameplay procedure](docs/AUTOMATED_GAMEPLAY.md) drives the rendered client without operator gameplay.
+
+Windows and Intel/Apple Silicon macOS packages remain experimental; older packages are available in [releases](https://github.com/dev-zetta/MWNet/releases). Linux acceptance does not qualify populated sixteen-player gameplay capacity, physical audio playback or every mod/hardware combination; the recorded overnight workload uses synthetic peers.
 
 The underlying OpenMW engine supports completing the main quests in Morrowind, Tribunal, and Bloodmoon. Multiplayer adds more state and authority boundaries than single-player OpenMW, so server scripts, load order, content files, and MWNet versions must match between the server and every client. A local server is recommended when testing gameplay or diagnosing synchronization problems.
 
@@ -94,7 +96,7 @@ The launcher synchronizes CoreScripts, creates persistent client and server test
 
 To run only the isolated server, use `./run-mwnet-server.sh`. Run either script with `--help` for configuration overrides. Start with identical vanilla content and load order on both sides before adding mods.
 
-Alpha servers refuse non-loopback listen addresses by default. An operator who deliberately exposes a server must set both `localAddress` to the desired numeric address and `publicListen = true` in the `[General]` section of `mwnet-server.cfg`; firewall and network exposure remain the operator's responsibility.
+Servers refuse non-loopback listen addresses by default. An operator who deliberately exposes a server must set both `localAddress` to the desired numeric address and `publicListen = true` in the `[General]` section of `mwnet-server.cfg`; firewall and network exposure remain the operator's responsibility.
 
 The data path
 -------------

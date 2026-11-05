@@ -1,6 +1,6 @@
 # Building MWNet 1.0.0-alpha.1 (OpenMW 0.52)
 
-This document provides build instructions for the in-progress MWNet 1.0.0 release, based on OpenMW 0.52.
+This document provides build instructions for MWNet 1.0.0, based on OpenMW 0.52. Stable support is scoped to the tested Linux x86_64 release; Windows/macOS builds remain experimental until their platform acceptance and distribution duties are complete.
 
 ## Project Information
 
@@ -339,7 +339,7 @@ Compare like-for-like performance artifacts against the recorded alpha.1 baselin
 CI/compare_mwnet_performance.py baseline.json candidate.json
 ```
 
-Shorter developer runs are available through each script's `--help`, but do not satisfy the release gates. See [RELEASE_GATES.md](RELEASE_GATES.md) for all cross-platform, sanitizer, fuzz, soak, security and legal evidence required before a stable release.
+Shorter developer runs are available through each script's `--help`; each script enforces its declared profile. See [RELEASE_GATES.md](RELEASE_GATES.md) for the current Linux-first validation policy, relevant sanitizer/fuzz/recovery checks, declared overnight workload, evidence reuse and recorded security/licensing assessment. The historical extended profiles above remain available without imposing a fixed beta duration or requiring Windows/macOS qualification for a Linux-only release.
 
 ---
 

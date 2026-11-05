@@ -1,7 +1,6 @@
-# MWNet 1.0.0-alpha.3 - Quick Start Guide
+# MWNet 1.0.0 - Linux Quick Start Guide
 
-This guide covers the MWNet 1.0.0-alpha.3 development candidate, based on OpenMW 0.52.
-It is not a stable release; see [release gates](RELEASE_GATES.md) for outstanding validation.
+This guide covers the MWNet 1.0.0 Linux x86_64 stable client/server release, based on OpenMW 0.52. See the [release](https://github.com/dev-zetta/MWNet/releases/tag/v1.0.0) for checksums, corresponding source, dependencies and support limits; Windows/macOS remain experimental. The [release gates](RELEASE_GATES.md) retain the exact validation scope and outstanding platform work.
 
 ## Prerequisites
 
@@ -168,7 +167,7 @@ After successful build, you'll have:
 ## Merge Information
 
 This build combines:
-- **MWNet 1.0.0-alpha.3**: Multiplayer client, dedicated server, direct connect and scripting API
+- **MWNet 1.0.0**: Linux multiplayer client, dedicated server, direct connect and scripting API
 - **OpenMW 0.52**: Current engine base with modern Lua, navigation, rendering and content APIs
 
 The original OpenMW 0.50 integration resolved 237 merge conflicts while preserving MWNet's multiplayer features; the codebase was subsequently advanced to OpenMW 0.52.
