@@ -1,0 +1,55 @@
+name: Inspect preserved Windows dependencies
+
+on:
+  workflow_dispatch:
+    inputs:
+      build-run:
+        description: Completed Windows package build run
+        type: string
+        required: true
+      artifact:
+        description: Original Windows package artifact
+        type: string
+        required: true
+      archive-sha256:
+        description: Expected original portable ZIP SHA256
+        type: string
+        required: true
+
+permissions:
+  contents: read
+  actions: read
+
+jobs:
+  inspect:
+    runs-on: windows-2022
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-python@v6
+        with:
+          python-version: "3.12"
+      - uses: actions/download-artifact@v5
+        with:
+          name: ${{ inputs.artifact }}
+          run-id: ${{ inputs.build-run }}
+          github-token: ${{ github.token }}
+          path: incoming
+      - name: Read preserved package DLL metadata and native versions
+        shell: python
+        env:
+          EXPECTED_ARCHIVE_SHA256: ${{ inputs.archive-sha256 }}
+        run: |
+          import os, pathlib, subprocess, sys
+          packages = list(pathlib.Path('incoming').glob('*.zip'))
+          assert len(packages) == 1
+          subprocess.run([sys.executable, 'CI/inspect_mwnet_windows_dependencies.py',
+                          '--archive', str(packages[0]), '--sha256', os.environ['EXPECTED_ARCHIVE_SHA256'],
+                          '--output', 'evidence'], check=True)
+      - name: Retain scoped dependency evidence
+        if: always()
+        uses: actions/upload-artifact@v6
+        with:
+          name: mwnet-windows-dependencies-${{ github.run_id }}
+          path: evidence/dependencies.json
+          if-no-files-found: error
