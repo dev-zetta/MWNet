@@ -1,0 +1,173 @@
+{
+  "scope": "Live NUC beta deployment and independent public HTTPS/signed-discovery verification; no new rendered production gameplay or populated-player capacity claim",
+  "runtimeSourceCommit": "adc751899eade2b04086a794753f9540124c5e05",
+  "version": "1.0.0-beta.1",
+  "deploymentUnit": "mwnet-beta-update-20261105.service",
+  "deploymentManifestSha256": "7960ea267fd34bab02bda41a5d160199b437ddba107691ede14b21778faaece9",
+  "verifiedDeploymentInputs": 84,
+  "launcherSha256": "ad0ef6994b53aa3e71ceccc9c103df8cc403e4627c4286b10434adc105b9e4be",
+  "updaterSha256": "44467b412dea17e936b303b202334f2c7069a3561e890630977d2f3ce0c1ea83",
+  "acceptanceReceiptSha256": "4d430a2661f205bd5a87522a89875aad0d47856b392371a0aad7d550797daafa",
+  "originalDeploymentReceiptSha256": "8fc87c1ff0e45b7c2deab6e55f77c5b709fa671c6953d4d6c72e266b3d6bbd52",
+  "deploymentReceipt": {
+    "scope": "NUC beta code update; not sixteen-player capacity acceptance",
+    "outcome": "pass",
+    "runtimeSourceCommit": "adc751899eade2b04086a794753f9540124c5e05",
+    "version": "1.0.0-beta.1",
+    "backup": "/var/backups/mwnet-release/20261105T080000Z",
+    "identityFingerprint": "ed25519/Lk3WtO4wS_t4oKQ3iqKqtU8ijPkSpeX5rRCnlxT41jA",
+    "isolatedStartupChecksAccepted": true,
+    "managedServerCodeFilesVerified": 48,
+    "signedListingObservations": [
+      {
+        "host": "209.25.141.17",
+        "port": 43133,
+        "name": "MWNet beta server",
+        "version": "1.0.0-beta.1",
+        "protocol": 13,
+        "players": 0,
+        "capacity": 16,
+        "password": true,
+        "content": [
+          {
+            "name": "Morrowind.esm",
+            "hashes": [
+              2070607289,
+              875048295
+            ]
+          },
+          {
+            "name": "Tribunal.esm",
+            "hashes": [
+              4102157108,
+              554904047
+            ]
+          },
+          {
+            "name": "Bloodmoon.esm",
+            "hashes": [
+              1138565426,
+              2662739750
+            ]
+          }
+        ],
+        "fingerprint": "ed25519/Lk3WtO4wS_t4oKQ3iqKqtU8ijPkSpeX5rRCnlxT41jA",
+        "nonceDigest": "5626fd66af384aceec9adbae25b43072ed18f5e7a780e39f968c3817a502df1b",
+        "signatureVerified": true,
+        "acceptedHeartbeats": 1
+      },
+      {
+        "host": "209.25.141.17",
+        "port": 43133,
+        "name": "MWNet beta server",
+        "version": "1.0.0-beta.1",
+        "protocol": 13,
+        "players": 0,
+        "capacity": 16,
+        "password": true,
+        "content": [
+          {
+            "name": "Morrowind.esm",
+            "hashes": [
+              2070607289,
+              875048295
+            ]
+          },
+          {
+            "name": "Tribunal.esm",
+            "hashes": [
+              4102157108,
+              554904047
+            ]
+          },
+          {
+            "name": "Bloodmoon.esm",
+            "hashes": [
+              1138565426,
+              2662739750
+            ]
+          }
+        ],
+        "fingerprint": "ed25519/Lk3WtO4wS_t4oKQ3iqKqtU8ijPkSpeX5rRCnlxT41jA",
+        "nonceDigest": "25f273d943d6bdfff1bb2334d633da59db760b5ef51313ec6dc40217d4db2940",
+        "signatureVerified": true,
+        "acceptedHeartbeats": 2
+      }
+    ],
+    "effectiveServerSha256": "f03c7aaa8d27448702db4df11fd58f5d91a1ecf701979cd8e3c4478eed160e8c",
+    "effectiveDirectorySha256": "6baee09c5cc914554321f21a2597a8850eb6355dcecb6ba38819db35cfe92dcd",
+    "completedUtc": "2026-11-05T08:01:14.018516+00:00"
+  },
+  "terminalHostState": {
+    "checkedUtc": "2026-11-05T08:04:40Z",
+    "unit": {
+      "LoadState": "loaded",
+      "ActiveState": "active",
+      "SubState": "exited",
+      "Result": "success",
+      "ExecMainStartTimestamp": "Thu 2026-11-05 07:59:59 UTC",
+      "ExecMainExitTimestamp": "Thu 2026-11-05 08:01:14 UTC",
+      "ExecMainCode": "1",
+      "ExecMainStatus": "0"
+    },
+    "deploymentReceiptSha256": "8fc87c1ff0e45b7c2deab6e55f77c5b709fa671c6953d4d6c72e266b3d6bbd52",
+    "host": {
+      "bootId": "7bb206b2-bbec-41c0-9a09-553222b738c7",
+      "uptimeSeconds": 52736.1,
+      "telemetryAgeSeconds": 3.8838112354278564,
+      "globalOomKills": 0,
+      "availableBytes": 6789529600
+    }
+  },
+  "independentPublicVerification": {
+    "scope": "Independent public HTTPS and signed metadata verification from the maintainer PC; no rendered gameplay or account login",
+    "origin": "https://mwnet.playit.plus",
+    "verifier": "docker/discovery/registration-test/verify_listing.py",
+    "commandProfile": {
+      "expectedVersion": "1.0.0-beta.1",
+      "observeSeconds": 65,
+      "heartbeats": 2,
+      "deadlineSeconds": 120
+    },
+    "exitCode": 0,
+    "firstVerifiedNonceDigest": "ce3ecd0025eabe3e29cdd316e5080c579c7ca31a5f357bc1f61bd3831aa86358",
+    "finalVerifiedListing": {
+      "host": "209.25.141.17",
+      "port": 43133,
+      "name": "MWNet beta server",
+      "version": "1.0.0-beta.1",
+      "protocol": 13,
+      "players": 0,
+      "capacity": 16,
+      "password": true,
+      "content": [
+        {
+          "name": "Morrowind.esm",
+          "hashes": [
+            2070607289,
+            875048295
+          ]
+        },
+        {
+          "name": "Tribunal.esm",
+          "hashes": [
+            4102157108,
+            554904047
+          ]
+        },
+        {
+          "name": "Bloodmoon.esm",
+          "hashes": [
+            1138565426,
+            2662739750
+          ]
+        }
+      ],
+      "fingerprint": "ed25519/Lk3WtO4wS_t4oKQ3iqKqtU8ijPkSpeX5rRCnlxT41jA",
+      "nonceDigest": "3b55009e1d68726a820c5602ef5bdb73b443192627f8da806091acec5c07d840",
+      "signatureVerified": true,
+      "acceptedHeartbeats": 2
+    }
+  },
+  "betaReleaseState": "Draft prepared; publication and public download verification pending at this checkpoint"
+}
