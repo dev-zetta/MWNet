@@ -1,0 +1,76 @@
+name: Verify preserved Windows installer
+
+on:
+  workflow_dispatch:
+    inputs:
+      source-ref:
+        description: Frozen runtime commit
+        type: string
+        required: true
+      build-run:
+        description: Completed Windows candidate build run
+        type: string
+        required: true
+      artifact:
+        description: Original package artifact containing installer and portable ZIP
+        type: string
+        required: true
+      installer-sha256:
+        description: Original installer SHA256
+        type: string
+        required: true
+      portable-sha256:
+        description: Original portable ZIP SHA256
+        type: string
+        required: true
+
+permissions:
+  contents: read
+  actions: read
+
+jobs:
+  verify:
+    runs-on: windows-2022
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/checkout@v6
+        with:
+          ref: ${{ inputs.source-ref }}
+          path: runtime-source
+          sparse-checkout: components/openmw-mp/Version.hpp
+          sparse-checkout-cone-mode: false
+      - uses: actions/setup-python@v6
+        with:
+          python-version: "3.12"
+      - uses: actions/download-artifact@v5
+        with:
+          name: ${{ inputs.artifact }}
+          run-id: ${{ inputs.build-run }}
+          github-token: ${{ github.token }}
+          path: incoming
+      - name: Verify isolated fresh installation, installed startup and uninstall
+        shell: python
+        env:
+          EXPECTED_RUNTIME: ${{ inputs.source-ref }}
+          EXPECTED_INSTALLER_SHA256: ${{ inputs.installer-sha256 }}
+          EXPECTED_PORTABLE_SHA256: ${{ inputs.portable-sha256 }}
+        run: |
+          import os, pathlib, subprocess, sys
+          installers = list(pathlib.Path('incoming').glob('*.exe'))
+          packages = list(pathlib.Path('incoming').glob('*.zip'))
+          assert len(installers) == len(packages) == 1
+          subprocess.run([sys.executable, 'CI/verify_mwnet_windows_installer.py',
+                          '--installer', str(installers[0]), '--installer-sha256', os.environ['EXPECTED_INSTALLER_SHA256'],
+                          '--portable', str(packages[0]), '--portable-sha256', os.environ['EXPECTED_PORTABLE_SHA256'],
+                          '--runtime', os.environ['EXPECTED_RUNTIME'], '--source-dir', 'runtime-source',
+                          '--output', 'installer-evidence'], check=True)
+      - name: Preserve actual scoped installer evidence
+        if: always()
+        uses: actions/upload-artifact@v6
+        with:
+          name: mwnet-windows-installer-${{ github.run_id }}
+          path: |
+            installer-evidence/*.json
+            installer-evidence/*.log
+          if-no-files-found: error
