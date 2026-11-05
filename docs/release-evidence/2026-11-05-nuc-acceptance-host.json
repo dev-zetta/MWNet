@@ -1,0 +1,90 @@
+{
+  "checkedUtc": "2026-11-05T03:13:18.615147+00:00",
+  "telemetryUtc": "2026-11-05T03:13:15.870397+00:00",
+  "telemetryAgeSeconds": 2.6371569633483887,
+  "telemetryAdvanced": true,
+  "actualBootId": "7bb206b2-bbec-41c0-9a09-553222b738c7",
+  "bootId": "7bb206b2-bbec-41c0-9a09-553222b738c7",
+  "uptimeSeconds": 35255.69,
+  "globalOomKills": 0,
+  "memoryAvailableBytes": 6835306496,
+  "diskAvailableBytes": 461349261312,
+  "acceptanceUnit": {
+    "LoadState": "loaded",
+    "ActiveState": "active",
+    "SubState": "exited",
+    "Result": "success",
+    "NRestarts": "0",
+    "ExecMainExitTimestamp": "Thu 2026-11-05 03:11:06 UTC",
+    "ExecMainCode": "1",
+    "ExecMainStatus": "0",
+    "MemoryCurrent": "[not set]",
+    "MemoryMax": "infinity"
+  },
+  "telemetryUnit": {
+    "LoadState": "loaded",
+    "ActiveState": "active",
+    "SubState": "running",
+    "Result": "success",
+    "NRestarts": "0",
+    "ExecMainExitTimestamp": "",
+    "ExecMainCode": "0",
+    "ExecMainStatus": "0",
+    "MemoryCurrent": "42315776",
+    "MemoryMax": "67108864"
+  },
+  "sysctlValues": [
+    "1",
+    "1",
+    "1",
+    "1",
+    "1",
+    "30"
+  ],
+  "crashKernelLoaded": true,
+  "crashKernelReservedBytes": 536870912,
+  "radio": [
+    {
+      "type": "wlan",
+      "name": "phy0",
+      "softBlocked": true,
+      "hardBlocked": false
+    }
+  ],
+  "defaultRouteInterfaces": [
+    "eno1"
+  ],
+  "mwnetSleepInhibitorActive": false,
+  "kernelWarningsSinceStart": {
+    "exitCode": 0,
+    "stderrPresent": false,
+    "records": 0,
+    "boundedAt": 161,
+    "truncatedOrAtBound": false,
+    "classifications": {
+      "oom": 0,
+      "lockup": 0,
+      "panic": 0,
+      "storageIO": 0,
+      "other": 0
+    }
+  },
+  "telemetryWarningsSinceStart": {
+    "exitCode": 0,
+    "stderrPresent": false,
+    "records": 0,
+    "boundedAt": 161,
+    "truncatedOrAtBound": false,
+    "classifications": {
+      "oom": 0,
+      "lockup": 0,
+      "panic": 0,
+      "storageIO": 0,
+      "other": 0
+    }
+  },
+  "diagnosticsInstallReportSha256": "fe5b86554d51538f4e7c2fedfdb66067081e6458ca0e9ced95c4f34e859595cb",
+  "diagnosticsInstallReportUnchanged": true,
+  "preLaunchHostReportSha256": "5651352e50bc76f23271ccae5bd3d9810f86fb6f80155ead9321d9927ab27595",
+  "preLaunchHostReportUnchanged": true
+}

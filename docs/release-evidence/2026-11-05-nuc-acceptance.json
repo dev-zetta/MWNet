@@ -1,0 +1,482 @@
+{
+  "schemaVersion": 1,
+  "status": "passed",
+  "runId": "mwnet-beta1-nuc-hostdiag-20261104",
+  "scope": "synthetic components; no production update or sixteen rendered players",
+  "runtimeCommit": "adc751899eade2b04086a794753f9540124c5e05",
+  "procedureRevision": "844ea582f26d3972ed515bf7fb5ef28588bc40f9",
+  "startedUtc": "2026-11-04T19:06:05.773161+00:00",
+  "baseImageId": "sha256:62af237b48fc6d9914c4815eb97e1d23aad7bbb956931169252ea48aa4969f79",
+  "productionServicesModified": false,
+  "container": "mwnet-beta1-nuc-hostdiag-20261104",
+  "workerImageId": "sha256:e851ea009ecbe75fa0c8e7b983815bad27b27ee30402913da5e1a3789722f348",
+  "nativeChecks": {
+    "passed": 7,
+    "tests": [
+      {
+        "name": "mwnet-headless",
+        "exitCode": 0,
+        "binarySha256": "11321afedffbb039df52346e783fdee6d5192e39db7592979ab1a1cfb9b6ad83"
+      },
+      {
+        "name": "mwnet-headless-idle-peers",
+        "exitCode": 0,
+        "binarySha256": "11321afedffbb039df52346e783fdee6d5192e39db7592979ab1a1cfb9b6ad83"
+      },
+      {
+        "name": "mwnet-unit",
+        "exitCode": 0,
+        "binarySha256": "a40b2177832d943d4ea3388cee455842b2e3edecdfbe6b52cd44171902c3db1c"
+      },
+      {
+        "name": "mwnet-actor-packets",
+        "exitCode": 0,
+        "binarySha256": "1eda7d1bffab854a3339decf4e1833d95dddbaa81bf8e9c0defce0ea8ffe668f"
+      },
+      {
+        "name": "mwnet-magic-content",
+        "exitCode": 0,
+        "binarySha256": "0a8d3db27c36544aa67fae7cba8160f0fbc782e1a359201526904277556bc9d6"
+      },
+      {
+        "name": "mwnet-persistence-fault",
+        "exitCode": 0,
+        "binarySha256": "ba81764f98faef443b71622560e0e29393ddec7aeaf4c369192681c17a0ec7d7"
+      },
+      {
+        "name": "mwnet-discovery",
+        "exitCode": 0,
+        "binarySha256": "4322a4d74f924eb901e6d40ee2cb683af48128717d92ca6415347fe037576d4c"
+      }
+    ]
+  },
+  "containerState": {
+    "Status": "exited",
+    "Running": false,
+    "ExitCode": 0,
+    "OOMKilled": false,
+    "StartedAt": "2026-11-04T19:09:52.955724345Z",
+    "FinishedAt": "2026-11-05T03:11:04.267508512Z"
+  },
+  "preflightObservation": {
+    "resultSha256": "d91fa34a3fb47c23be4eda95fb66cd5eb9b6ad113123d8ddcfa62bdac2acc5e3",
+    "fields": {
+      "status": "preflight-pass",
+      "preflight": true,
+      "overnightAccepted": false,
+      "startedUtc": "2026-11-04T19:07:22.851885+00:00",
+      "finishedUtc": "2026-11-04T19:09:33.906663+00:00",
+      "runtimeSourceCommit": "adc751899eade2b04086a794753f9540124c5e05",
+      "procedureRevision": "844ea582f26d3972ed515bf7fb5ef28588bc40f9",
+      "procedureTrackedDirty": false,
+      "compiledInputProofSha256": "b8839cd645465b718eb1f9c695eb8bfecc0dc0c2887b9e6a24b5ba2230d7b169",
+      "binarySha256": {
+        "native": "11321afedffbb039df52346e783fdee6d5192e39db7592979ab1a1cfb9b6ad83",
+        "directory": "6baee09c5cc914554321f21a2597a8850eb6355dcecb6ba38819db35cfe92dcd",
+        "discoveryTests": "4322a4d74f924eb901e6d40ee2cb683af48128717d92ca6415347fe037576d4c"
+      },
+      "caddySha256": "4ef1f68c70219536b2711fd16547a79841a2dec2d6b4e56b1e3e5e9da76028e6",
+      "requestedSeconds": 60,
+      "clients": 16,
+      "simulatedLatencyMilliseconds": 75,
+      "simulatedPacketLossPercent": 2,
+      "elapsedSeconds": 130.8453282979999,
+      "supervisorWorkloadWallSeconds": 130.71811476400035,
+      "cleanupAccepted": true,
+      "cleanup": {
+        "caddy": {
+          "exitCode": 0,
+          "forcedKill": false,
+          "remainingLiveGroupMembers": []
+        },
+        "native": {
+          "exitCode": 0,
+          "forcedKill": false,
+          "remainingLiveGroupMembers": []
+        },
+        "discovery": {
+          "exitCode": 0,
+          "forcedKill": false,
+          "remainingLiveGroupMembers": []
+        }
+      },
+      "binariesUnchanged": true,
+      "procedureFilesUnchanged": true,
+      "hostResourceChecksAccepted": true,
+      "hostMemoryAtStart": {
+        "memoryBytes": {
+          "MemTotal": 7641899008,
+          "MemAvailable": 6712569856,
+          "SwapTotal": 4294963200,
+          "SwapFree": 4294963200,
+          "Shmem": 2416640
+        },
+        "globalOomKills": 0
+      },
+      "hostMemoryAtFinish": {
+        "memoryBytes": {
+          "MemTotal": 7641899008,
+          "MemAvailable": 6807064576,
+          "SwapTotal": 4294963200,
+          "SwapFree": 4294963200,
+          "Shmem": 2416640
+        },
+        "globalOomKills": 0
+      },
+      "lastHostMemoryObservation": {
+        "memoryBytes": {
+          "MemTotal": 7641899008,
+          "MemAvailable": 6807064576,
+          "SwapTotal": 4294963200,
+          "SwapFree": 4294963200,
+          "Shmem": 2416640
+        },
+        "globalOomKills": 0
+      },
+      "hostGlobalOomKillsDuringRun": 0,
+      "oomEventsDuringRun": {
+        "oom": 0,
+        "oom_kill": 0,
+        "oom_group_kill": 0
+      },
+      "cgroupConstraintsAtStart": {
+        "memory.max": "4294967296",
+        "memory.swap.max": "0",
+        "memory.current": "17637376",
+        "memory.peak": "18739200",
+        "memory.events": {
+          "low": 0,
+          "high": 0,
+          "max": 0,
+          "oom": 0,
+          "oom_kill": 0,
+          "oom_group_kill": 0,
+          "sock_throttled": 0
+        },
+        "cpu.stat": {
+          "usage_usec": 414385,
+          "user_usec": 374154,
+          "system_usec": 40231,
+          "nice_usec": 0,
+          "core_sched.force_idle_usec": 0,
+          "nr_periods": 4,
+          "nr_throttled": 0,
+          "throttled_usec": 0,
+          "nr_bursts": 0,
+          "burst_usec": 0
+        }
+      },
+      "cgroupConstraintsAtFinish": {
+        "memory.max": "4294967296",
+        "memory.swap.max": "0",
+        "memory.current": "23023616",
+        "memory.peak": "344535040",
+        "memory.events": {
+          "low": 0,
+          "high": 0,
+          "max": 0,
+          "oom": 0,
+          "oom_kill": 0,
+          "oom_group_kill": 0,
+          "sock_throttled": 0
+        },
+        "cpu.stat": {
+          "usage_usec": 34997785,
+          "user_usec": 23305182,
+          "system_usec": 11692603,
+          "nice_usec": 0,
+          "core_sched.force_idle_usec": 0,
+          "nr_periods": 775,
+          "nr_throttled": 0,
+          "throttled_usec": 0,
+          "nr_bursts": 0,
+          "burst_usec": 0
+        }
+      },
+      "limits": {
+        "wholeRunDeadlineSeconds": 960,
+        "maximumArtifactsBytes": 536870912,
+        "maximumIndividualLogBytes": 33554432,
+        "nativeRssBytes": 1073741824,
+        "discoveryProcessTreeRssBytes": 1073741824,
+        "caddyRssBytes": 268435456,
+        "minimumHostAvailableBytes": 2147483648
+      },
+      "nativeMemoryAssessment": {
+        "scope": "short preflight; no long-duration memory acceptance",
+        "accepted": false,
+        "samples": 2
+      },
+      "directoryMemoryAssessment": {
+        "scope": "short preflight; no long-duration memory acceptance",
+        "accepted": false,
+        "samples": 26
+      },
+      "caddyMemoryAssessment": {
+        "scope": "short preflight; no long-duration memory acceptance",
+        "accepted": false,
+        "samples": 65
+      },
+      "directoryFinalMetrics": {
+        "listings": 0,
+        "visible": 0,
+        "pending": 0,
+        "challenges": 0,
+        "rateBuckets": 0,
+        "listingBytes": 0
+      },
+      "directoryOutagesObserved": 5,
+      "directorySuccessfulChurnCycles": 24,
+      "directoryDatabaseBytes": {
+        "firstSample": 82216,
+        "peakSample": 304576,
+        "finalSample": 304576
+      },
+      "nativeMetricsSha256": "58acc2bdbf6c33b3ebf4adea307a64ba72b2891effe6730263ec222d32dcf461",
+      "discoveryResultSha256": "b8893586ec68b298e6b4619bebb9f2459347f8aa46859a72ec214ccc90f31f5e",
+      "finalArtifactUsage": {
+        "artifactBytes": 104572,
+        "outputBytes": 104572,
+        "temporaryBytes": 0
+      },
+      "finalArtifactBoundsAccepted": true
+    }
+  },
+  "preflightResultSha256": "d91fa34a3fb47c23be4eda95fb66cd5eb9b6ad113123d8ddcfa62bdac2acc5e3",
+  "preflightAccepted": false,
+  "preflightCompleted": true,
+  "overnightObservation": {
+    "resultSha256": "bf8b2dc3a295655f973cff4a93a437f1814c6f5af3c0e98ae733ce4b130b35b6",
+    "fields": {
+      "status": "passed",
+      "preflight": false,
+      "overnightAccepted": true,
+      "startedUtc": "2026-11-04T19:09:53.202457+00:00",
+      "finishedUtc": "2026-11-05T03:11:04.023764+00:00",
+      "runtimeSourceCommit": "adc751899eade2b04086a794753f9540124c5e05",
+      "procedureRevision": "844ea582f26d3972ed515bf7fb5ef28588bc40f9",
+      "procedureTrackedDirty": false,
+      "compiledInputProofSha256": "b8839cd645465b718eb1f9c695eb8bfecc0dc0c2887b9e6a24b5ba2230d7b169",
+      "binarySha256": {
+        "native": "11321afedffbb039df52346e783fdee6d5192e39db7592979ab1a1cfb9b6ad83",
+        "directory": "6baee09c5cc914554321f21a2597a8850eb6355dcecb6ba38819db35cfe92dcd",
+        "discoveryTests": "4322a4d74f924eb901e6d40ee2cb683af48128717d92ca6415347fe037576d4c"
+      },
+      "caddySha256": "4ef1f68c70219536b2711fd16547a79841a2dec2d6b4e56b1e3e5e9da76028e6",
+      "requestedSeconds": 28800,
+      "clients": 16,
+      "simulatedLatencyMilliseconds": 75,
+      "simulatedPacketLossPercent": 2,
+      "elapsedSeconds": 28870.617681703,
+      "supervisorWorkloadWallSeconds": 28870.499918759997,
+      "cleanupAccepted": true,
+      "cleanup": {
+        "caddy": {
+          "exitCode": 0,
+          "forcedKill": false,
+          "remainingLiveGroupMembers": []
+        },
+        "native": {
+          "exitCode": 0,
+          "forcedKill": false,
+          "remainingLiveGroupMembers": []
+        },
+        "discovery": {
+          "exitCode": 0,
+          "forcedKill": false,
+          "remainingLiveGroupMembers": []
+        }
+      },
+      "binariesUnchanged": true,
+      "procedureFilesUnchanged": true,
+      "hostResourceChecksAccepted": true,
+      "hostMemoryAtStart": {
+        "memoryBytes": {
+          "MemTotal": 7641899008,
+          "MemAvailable": 6802006016,
+          "SwapTotal": 4294963200,
+          "SwapFree": 4294963200,
+          "Shmem": 2416640
+        },
+        "globalOomKills": 0
+      },
+      "hostMemoryAtFinish": {
+        "memoryBytes": {
+          "MemTotal": 7641899008,
+          "MemAvailable": 6717546496,
+          "SwapTotal": 4294963200,
+          "SwapFree": 4294963200,
+          "Shmem": 2408448
+        },
+        "globalOomKills": 0
+      },
+      "lastHostMemoryObservation": {
+        "memoryBytes": {
+          "MemTotal": 7641899008,
+          "MemAvailable": 6717546496,
+          "SwapTotal": 4294963200,
+          "SwapFree": 4294963200,
+          "Shmem": 2408448
+        },
+        "globalOomKills": 0
+      },
+      "hostGlobalOomKillsDuringRun": 0,
+      "oomEventsDuringRun": {
+        "oom": 0,
+        "oom_kill": 0,
+        "oom_group_kill": 0
+      },
+      "cgroupConstraintsAtStart": {
+        "memory.max": "4294967296",
+        "memory.swap.max": "0",
+        "memory.current": "13099008",
+        "memory.peak": "13840384",
+        "memory.events": {
+          "low": 0,
+          "high": 0,
+          "max": 0,
+          "oom": 0,
+          "oom_kill": 0,
+          "oom_group_kill": 0,
+          "sock_throttled": 0
+        },
+        "cpu.stat": {
+          "usage_usec": 401771,
+          "user_usec": 369710,
+          "system_usec": 32061,
+          "nice_usec": 0,
+          "core_sched.force_idle_usec": 0,
+          "nr_periods": 4,
+          "nr_throttled": 0,
+          "throttled_usec": 0,
+          "nr_bursts": 0,
+          "burst_usec": 0
+        }
+      },
+      "cgroupConstraintsAtFinish": {
+        "memory.max": "4294967296",
+        "memory.swap.max": "0",
+        "memory.current": "127774720",
+        "memory.peak": "358903808",
+        "memory.events": {
+          "low": 0,
+          "high": 0,
+          "max": 0,
+          "oom": 0,
+          "oom_kill": 0,
+          "oom_group_kill": 0,
+          "sock_throttled": 0
+        },
+        "cpu.stat": {
+          "usage_usec": 15089235686,
+          "user_usec": 9705236442,
+          "system_usec": 5383999244,
+          "nice_usec": 0,
+          "core_sched.force_idle_usec": 0,
+          "nr_periods": 288208,
+          "nr_throttled": 0,
+          "throttled_usec": 0,
+          "nr_bursts": 0,
+          "burst_usec": 0
+        }
+      },
+      "limits": {
+        "wholeRunDeadlineSeconds": 29700,
+        "maximumArtifactsBytes": 536870912,
+        "maximumIndividualLogBytes": 33554432,
+        "nativeRssBytes": 1073741824,
+        "discoveryProcessTreeRssBytes": 1073741824,
+        "caddyRssBytes": 268435456,
+        "minimumHostAvailableBytes": 2147483648
+      },
+      "nativeMemoryAssessment": {
+        "accepted": true,
+        "samples": 885,
+        "warmupFraction": 0.25,
+        "windowMeanBytes": [
+          13807418.602409638,
+          13833524.43373494,
+          13856126.457831325,
+          13869845.590361446,
+          13881146.602409638,
+          13898270.843373494,
+          13903501.879518073,
+          13913667.855421687
+        ],
+        "lastMinusFirstWindowBytes": 106249.25301204808,
+        "linearTrendBytesPerHour": 19545.494740868253,
+        "risingWindowsBeyond64KiB": 0,
+        "maximumPostWarmupGrowthBytes": 8388608,
+        "sustainedTrendRule": ">4MiB growth, >=5/7 rises over64KiB and >0.5MiB/hour"
+      },
+      "directoryMemoryAssessment": {
+        "accepted": true,
+        "samples": 14362,
+        "warmupFraction": 0.25,
+        "windowMeanBytes": [
+          17728601.77117385,
+          17733931.52190052,
+          17735680,
+          17735680,
+          17735680,
+          17735680,
+          17739334.751857355,
+          17739776
+        ],
+        "lastMinusFirstWindowBytes": 11174.228826150298,
+        "linearTrendBytesPerHour": 1670.4087550353909,
+        "risingWindowsBeyond64KiB": 0,
+        "maximumPostWarmupGrowthBytes": 8388608,
+        "sustainedTrendRule": ">4MiB growth, >=5/7 rises over64KiB and >0.5MiB/hour"
+      },
+      "caddyMemoryAssessment": {
+        "accepted": true,
+        "samples": 14356,
+        "warmupFraction": 0.25,
+        "windowMeanBytes": [
+          50952619.87211896,
+          51029714.734026745,
+          51096690.11589896,
+          51175381.396731056,
+          51192739.185735516,
+          51245001.2243685,
+          51275517.33729569,
+          51314045.90787519
+        ],
+        "lastMinusFirstWindowBytes": 361426.03575623035,
+        "linearTrendBytesPerHour": 67004.5457309747,
+        "risingWindowsBeyond64KiB": 3,
+        "maximumPostWarmupGrowthBytes": 8388608,
+        "sustainedTrendRule": ">4MiB growth, >=5/7 rises over64KiB and >0.5MiB/hour"
+      },
+      "directoryFinalMetrics": {
+        "listings": 0,
+        "visible": 0,
+        "pending": 0,
+        "challenges": 0,
+        "rateBuckets": 0,
+        "listingBytes": 0
+      },
+      "directoryOutagesObserved": 15,
+      "directorySuccessfulChurnCycles": 14141,
+      "directoryDatabaseBytes": {
+        "firstSample": 82216,
+        "peakSample": 588856,
+        "finalSample": 584736
+      },
+      "nativeMetricsSha256": "ba8f234c4e87a8cffaed80a10d859334269f7697bfd346cdee2861d8d488e12e",
+      "discoveryResultSha256": "ac4998f0f4c5d038e9bb870d483c160f9f7e1c3656ce3b0047129e846d8cf39d",
+      "finalArtifactUsage": {
+        "artifactBytes": 18369564,
+        "outputBytes": 18369564,
+        "temporaryBytes": 0
+      },
+      "finalArtifactBoundsAccepted": true
+    }
+  },
+  "overnightResultSha256": "bf8b2dc3a295655f973cff4a93a437f1814c6f5af3c0e98ae733ce4b130b35b6",
+  "overnightAccepted": true,
+  "overnightCompleted": true,
+  "inputsUnchanged": true,
+  "finishedUtc": "2026-11-05T03:11:06.363739+00:00"
+}
