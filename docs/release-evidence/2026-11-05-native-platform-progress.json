@@ -1,0 +1,40 @@
+{
+  "checkedUtc": "2026-11-05T16:10:59.995007+00:00",
+  "runtimeSourceCommit": "a6868387dc80dcafd9b8ebad3d8c708511d9a615",
+  "orchestrationRevision": "4ca4c25c74a2fb252ebeab8bedd3ecd85a727cba",
+  "nativeRuns": [
+    {
+      "id": 42057767417,
+      "scope": "Windows complete client/server packaging",
+      "workflowRevision": "44d5660a2d32716a47b40bf93a692b9fa929b1b6",
+      "statusAtCheckpoint": "in progress; client compilation"
+    },
+    {
+      "id": 42059980428,
+      "scope": "Both macOS architectures with explicit OpenSSL provider/header/bundle checks",
+      "workflowRevision": "4ca4c25c74a2fb252ebeab8bedd3ecd85a727cba",
+      "statusAtCheckpoint": "Both provider checks passed; both builds running"
+    }
+  ],
+  "candidateSourceMaterialBundle": {
+    "name": "MWNet-1.0.0-native-candidate-source-materials-v2.tar.gz",
+    "bytes": 216356068,
+    "sha256": "823e4d8a327d811a94c06eec8a3e82a562c79e615944d6d4cbaf6ed491b156ec",
+    "pinnedUpstreamArchives": 14,
+    "verbatimSourceNoticeFiles": 311,
+    "projectAndSdkNoticeInputs": {
+      "windows": 135,
+      "macosIntel": 134,
+      "macosArm64": 134
+    },
+    "actualFinalBinaryCoverageAccepted": false
+  },
+  "remainingGates": [
+    "Native builds/packages and actual bundle provider checks terminal",
+    "Complete actual binary dependency/notice/source coverage, including runner inputs and Qt embedded notices",
+    "Matching unattended native graphical runs with private canonical data access"
+  ],
+  "nativeHostAccessQuestionPending": true,
+  "windowsMacStablePromotion": false,
+  "linuxPublishedReleaseUnchanged": true
+}

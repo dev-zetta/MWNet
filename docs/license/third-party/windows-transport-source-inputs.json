@@ -1,0 +1,79 @@
+{
+  "schemaVersion": 1,
+  "scope": "Pinned Windows transport dependency source/build material; matching final binaries and complete notice delivery remain separately required",
+  "vcpkgRevision": "e0edebd1dc2d03cf7d02349df91de74ef4d0c00e",
+  "sources": [
+    {
+      "name": "openssl",
+      "version": "3.6.1",
+      "filename": "openssl-openssl-3.6.1.tar.gz",
+      "urls": [
+        "https://codeload.github.com/openssl/openssl/tar.gz/openssl-3.6.1"
+      ],
+      "algorithm": "sha512",
+      "checksum": "07cfcc71336ece71e713aab8be4a05e2b474bfab175d4c7a4ebcf378f4b1478bcf0e4a46ec88fc6163454fdf7fdf375ab856a5de1c444a41420a02510ae1ac7b",
+      "pinProvenance": "microsoft/vcpkg e0edebd1dc2d03cf7d02349df91de74ef4d0c00e ports/openssl",
+      "recipeSha256": "faee0a22cc83e5d01d340d3a361dc30ccf23a2bf5efabf29508d0e33b0bc5145"
+    },
+    {
+      "name": "libsodium",
+      "version": "1.0.21",
+      "filename": "libsodium-1.0.21-RELEASE.tar.gz",
+      "urls": [
+        "https://codeload.github.com/jedisct1/libsodium/tar.gz/1.0.21-RELEASE"
+      ],
+      "algorithm": "sha512",
+      "checksum": "0229d2e7def68da6b953b819203a8d9ab91366d13562d7dbad98ee36777dc6ff11df70f1cd216620d635bd2550e0c49428ffac0b8f0e0e24a325e706c4f43328",
+      "pinProvenance": "microsoft/vcpkg e0edebd1dc2d03cf7d02349df91de74ef4d0c00e ports/libsodium",
+      "recipeSha256": "e66100fda01e1bdf08b87650304213c89ccdd4d05b1e0819ac9ee0b5f0b3ca77"
+    },
+    {
+      "name": "protobuf",
+      "version": "6.33.4",
+      "filename": "protobuf-v33.4.tar.gz",
+      "urls": [
+        "https://codeload.github.com/protocolbuffers/protobuf/tar.gz/v33.4"
+      ],
+      "algorithm": "sha512",
+      "checksum": "540059a93721447cf4723bcca06e91c43a4399cb366c05bf84e9d8e2c439f3107ba17803f9d912549b54c471f2dcc4c9fc834145ec441dff31ca24f9a3543aa9",
+      "pinProvenance": "microsoft/vcpkg e0edebd1dc2d03cf7d02349df91de74ef4d0c00e ports/protobuf",
+      "recipeSha256": "fa0588dfa41b939d3433c4aa82d47409146b06c44b2499eb0d8b856ce77559ff"
+    },
+    {
+      "name": "abseil",
+      "version": "20250814.1",
+      "filename": "abseil-20250814.1.tar.gz",
+      "urls": [
+        "https://codeload.github.com/abseil/abseil-cpp/tar.gz/20250814.1"
+      ],
+      "algorithm": "sha512",
+      "checksum": "7083b73c3cf763f6f7a7edb70a5171f44d27045a0f5e52ca043e0a86379af2c50cf85dbfea30ebaa22a7bb2929452581d26b1ba18945023b057267d4c3bad2f7",
+      "pinProvenance": "microsoft/vcpkg e0edebd1dc2d03cf7d02349df91de74ef4d0c00e ports/abseil",
+      "recipeSha256": "8b24279376bd43ab6d50b0984f4d67bea96843cc0ffd0dadad7ce4afa9c36244"
+    },
+    {
+      "name": "curl",
+      "version": "8.18.0",
+      "filename": "curl-curl-8_18_0.tar.gz",
+      "urls": [
+        "https://codeload.github.com/curl/curl/tar.gz/curl-8_18_0"
+      ],
+      "algorithm": "sha512",
+      "checksum": "1dca42354d29b9326a3e9be34c74433c3a7364318d69519e2f5b9a164e81db739d3ef1eed79e3313296fe72af73281e0fc61e57a21e9dede1ef240c8fa6af4fe",
+      "pinProvenance": "microsoft/vcpkg e0edebd1dc2d03cf7d02349df91de74ef4d0c00e ports/curl",
+      "recipeSha256": "ff6dc6bea19bf989fe718ac9f15f0d8acee8e6522283eacfbaeed1a317f74cf6"
+    },
+    {
+      "name": "sqlite3",
+      "version": "3.51.2",
+      "filename": "sqlite-autoconf-3510200.tar.gz",
+      "urls": [
+        "https://sqlite.org/2026/sqlite-autoconf-3510200.tar.gz"
+      ],
+      "algorithm": "sha512",
+      "checksum": "0f59037e537543154711fdfa5707592658121e8b0973eb07396a9fb980e6c0c822717d0a787c564ebd6bf7383a3388f128fce6adbbf98b417909855d42ac8710",
+      "pinProvenance": "microsoft/vcpkg e0edebd1dc2d03cf7d02349df91de74ef4d0c00e ports/sqlite3",
+      "recipeSha256": "00d60cfd97a5d43f7b443e6fc401655a01d9a6bf0419b5e218c31f1e4fd54e71"
+    }
+  ]
+}
