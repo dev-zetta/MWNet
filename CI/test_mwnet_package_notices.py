@@ -7,6 +7,7 @@ import importlib.util
 import io
 import json
 from pathlib import Path
+import re
 import shutil
 import subprocess
 import sys
@@ -35,7 +36,7 @@ class NoticeDelivery(unittest.TestCase):
         self.addCleanup(self.tmp.cleanup)
         self.work = Path(self.tmp.name)
 
-    def package(self, server_only=False):
+    def package(self, server_only=False, version=None):
         build = self.work / "build"
         build.mkdir()
         for name in ("mwnet-server", "mwnet"):
@@ -51,6 +52,13 @@ class NoticeDelivery(unittest.TestCase):
         if server_only:
             arguments.append("--server-only")
         run = subprocess.run
+        read_text = Path.read_text
+
+        def source_text(path, *args, **kwargs):
+            value = read_text(path, *args, **kwargs)
+            if version and path.resolve() == ROOT / 'components/openmw-mp/Version.hpp':
+                value = re.sub(r'(#define MWNET_VERSION )"[^"]+"', r'\g<1>"' + version + '"', value)
+            return value
 
         def command(args, **kwargs):
             if args[0] == "ldd":
@@ -58,7 +66,7 @@ class NoticeDelivery(unittest.TestCase):
             return run(args, **kwargs)
 
         before = hashlib.sha256((ROOT / "LICENSE").read_bytes()).hexdigest()
-        with mock.patch.object(sys, "argv", arguments), mock.patch.object(PACKAGER.subprocess, "run", side_effect=command), contextlib.redirect_stdout(io.StringIO()):
+        with mock.patch.object(sys, "argv", arguments), mock.patch.object(PACKAGER.subprocess, "run", side_effect=command), mock.patch.object(Path, "read_text", source_text), contextlib.redirect_stdout(io.StringIO()):
             PACKAGER.main()
         self.assertEqual(before, hashlib.sha256((ROOT / "LICENSE").read_bytes()).hexdigest())
         return next((self.work / "packages").glob("*.tar.gz"))
@@ -100,6 +108,23 @@ class NoticeDelivery(unittest.TestCase):
 
     def test_server_only_retains_compiled_notices(self):
         self.verify_archive(self.package(server_only=True))
+
+    def test_stable_archive_has_release_instructions(self):
+        with tarfile.open(self.package(version='1.0.0')) as tar:
+            root = tar.getnames()[0]
+            self.assertNotIn(root + '/PREVIEW.txt', tar.getnames())
+            self.assertIn(b'MWNet 1.0.0 Linux package.', tar.extractfile(root + '/RELEASE.txt').read())
+            manifest = json.load(tar.extractfile(root + '/manifest.json'))
+            self.assertEqual(manifest['version'], '1.0.0')
+            self.assertEqual(manifest['scope'], 'linux-client-server-stable')
+
+    def test_prerelease_archive_keeps_preview_instructions(self):
+        with tarfile.open(self.package(version='1.0.1-beta.1')) as tar:
+            root = tar.getnames()[0]
+            self.assertNotIn(root + '/RELEASE.txt', tar.getnames())
+            self.assertIn(b'not a stable release', tar.extractfile(root + '/PREVIEW.txt').read())
+            manifest = json.load(tar.extractfile(root + '/manifest.json'))
+            self.assertEqual(manifest['scope'], 'linux-client-server-preview')
 
     def reject_manifest(self, alter, message):
         shutil.copytree(ROOT / "docs/license/third-party", self.work / "inputs")

@@ -41,6 +41,7 @@ def main():
                         (source / 'components/openmw-mp/Version.hpp').read_text()).group(1)
     protocol = int(re.search(r'#define MWNET_PROTO_VERSION (\d+)',
                             (source / 'components/openmw-mp/Version.hpp').read_text()).group(1))
+    stable_version = re.fullmatch(r'\d+\.\d+\.\d+', version) is not None
     scope = 'server' if args.server_only else 'client-server'
     name = f'MWNet-{version}-Linux-{platform.machine()}-{scope}-{args.commit[:10]}'
     args.output_dir.mkdir(parents=True, exist_ok=True)
@@ -54,7 +55,7 @@ def main():
     if not args.server_only:
         client = build / 'mwnet'
         if not client.is_file() or not os.access(client, os.X_OK):
-            parser.error('full preview requires an executable mwnet client')
+            parser.error('full package requires an executable mwnet client')
         client_dependencies = subprocess.run(['ldd', str(client)], check=True, text=True,
                                              stdout=subprocess.PIPE, stderr=subprocess.STDOUT).stdout
         if 'not found' in client_dependencies:
@@ -67,7 +68,7 @@ def main():
         for filename in ('mwnet-server-default.cfg', 'defaults.bin'):
             shutil.copy2(build / filename, root / 'build' / filename)
         # Compiled header-only/static dependencies retain their own notice duties
-        # even though this preview does not redistribute shared runtime libraries.
+        # even though this package does not redistribute shared runtime libraries.
         # Read notices from the exact runtime revision; fetched dependency texts
         # are hash checked against their source pins by the packaging tool.
         subprocess.run([sys.executable, str(Path(__file__).with_name('collect_mwnet_third_party_notices.py')),
@@ -110,8 +111,10 @@ def main():
                 if (build / filename).exists():
                     shutil.copy2(build / filename, root / 'build' / filename)
         (root / 'runtime-dependencies.txt').write_text(dependencies)
-        (root / 'PREVIEW.txt').write_text(
-            'MWNet Linux preview; not a stable release.\n'
+        instructions_file = root / ('RELEASE.txt' if stable_version else 'PREVIEW.txt')
+        instructions_file.write_text(
+            (f'MWNet {version} Linux package.\n' if stable_version
+             else 'MWNet Linux preview; not a stable release.\n') +
             'Run ./run-mwnet-server.sh from this extracted directory.\n'
             'The launcher binds to 127.0.0.1:25565 and stores state in .mwnet-test.\n'
             'Keep that state directory between launches. Never distribute it.\n'
@@ -123,7 +126,7 @@ def main():
             'review, gameplay, sustained-operation and deployment evidence are recorded\n'
             'with each release; see RELEASE_GATES.md and its linked evidence.\n')
         if not args.server_only:
-            with (root / 'PREVIEW.txt').open('a') as instructions:
+            with instructions_file.open('a') as instructions:
                 instructions.write('Client and resources are included. Run ./run-mwnet-local.sh\n'
                                    'and select your Morrowind Data Files to configure a local session.\n'
                                    'The client version command reports MWNet, its protocol, and the OpenMW engine version.\n'
@@ -136,7 +139,7 @@ def main():
         files = {str(p.relative_to(root)): sha256(p)
                  for p in sorted(root.rglob('*')) if p.is_file()}
         manifest = {'schemaVersion': 1, 'version': version, 'protocol': protocol, 'runtimeSourceCommit': args.commit,
-                    'scope': 'linux-' + scope + '-preview',
+                    'scope': 'linux-' + scope + ('-stable' if stable_version else '-preview'),
                     'provenanceNote': 'Runtime commit supplied by builder; packaged files may include later tooling or documentation. Hashes identify all packaged bytes.',
                     'packagerSha256': sha256(Path(__file__)),
                     'files': files}
