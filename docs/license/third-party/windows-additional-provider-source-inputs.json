@@ -1,0 +1,32 @@
+{
+  "schemaVersion": 1,
+  "scope": "Two additional Windows provider source inputs; pkgconf final binary version/API identity remains unresolved",
+  "runtimeSourceCommit": "a6868387dc80dcafd9b8ebad3d8c708511d9a615",
+  "vcpkgRevision": "e0edebd1dc2d03cf7d02349df91de74ef4d0c00e",
+  "sources": [
+    {
+      "name": "zlib",
+      "version": "1.3.1",
+      "filename": "zlib-1.3.1-vcpkg-source.tar.gz",
+      "urls": [
+        "https://codeload.github.com/madler/zlib/tar.gz/v1.3.1"
+      ],
+      "algorithm": "sha512",
+      "checksum": "8c9642495bafd6fad4ab9fb67f09b268c69ff9af0f4f20cf15dfc18852ff1f312bd8ca41de761b3f8d8e90e77d79f2ccacd3d4c5b19e475ecf09d021fdfe9088",
+      "pinProvenance": "Actual Windows CI42057767417 installed zlib 1.3.1; microsoft/vcpkg e0edebd1dc2d03cf7d02349df91de74ef4d0c00e ports/zlib; native version API verified for zlib, pkgconf final binary version remains unresolved",
+      "recipeSha256": "b14cee469c2da06e036e63293c0b6e6509924462e9b341b317986df46b281695"
+    },
+    {
+      "name": "pkgconf",
+      "version": "2.5.1",
+      "filename": "pkgconf-2.5.1-vcpkg-source.tar.gz",
+      "urls": [
+        "https://codeload.github.com/pkgconf/pkgconf/tar.gz/pkgconf-2.5.1"
+      ],
+      "algorithm": "sha512",
+      "checksum": "53244f372ea21125a1d97c5b89a84299740b55a66165782e807ed23adab3a07408a1547f1f40156e3060359660d07f49846c8b4893beef10ac9440ab7e8611cc",
+      "pinProvenance": "Actual Windows CI42057767417 installed pkgconf 2.5.1; microsoft/vcpkg e0edebd1dc2d03cf7d02349df91de74ef4d0c00e ports/pkgconf; native version API verified for zlib, pkgconf final binary version remains unresolved",
+      "recipeSha256": "0d5457a78d2de915ce06c0df4494e32dfe2a44a41df52105c8638ad77b30853c"
+    }
+  ]
+}

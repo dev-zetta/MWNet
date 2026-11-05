@@ -1,0 +1,106 @@
+{
+  "checkedUtc": "2026-11-05T17:38:41.686419+00:00",
+  "runtimeSourceCommit": "a6868387dc80dcafd9b8ebad3d8c708511d9a615",
+  "controllerRevision": "eec624103fa10697f87a461ffd33e0acc62419e3",
+  "ciRunId": 42076005998,
+  "ciJobId": 127416253791,
+  "ciConclusion": "success",
+  "completedAt": "2026-11-05T17:35:45Z",
+  "ciUrl": "https://github.com/dev-zetta/MWNet/actions/runs/42076005998",
+  "originalArchiveSha256": "f8da81b16677c2c1a1086f9fc632fc67a776fadcd915cb61c9929c3c64144b21",
+  "evidenceArtifact": {
+    "artifactId": 13438381509,
+    "artifactDigest": "2f2ed1c6c22a9bbceb9fa4626a2968d8e3d2f86d09852932eb8adf9afe88d3f9",
+    "artifactDigestAndCrcVerified": true,
+    "actualDlls": 112,
+    "nativeVersionApisPassed": 6
+  },
+  "actualDllCount": 112,
+  "all112NativeDllHashesMatchedOriginalZip": true,
+  "nativeVersionProbes": [
+    {
+      "path": "Qt6Core.dll",
+      "sha256": "225bd38093416c825f2e3220213f64e1079e9ab20f4738decc0fc6eb992e8a9e",
+      "symbol": "qVersion",
+      "expected": "6.6.3",
+      "status": "pass",
+      "runtimeValue": "6.6.3"
+    },
+    {
+      "path": "libcrypto-3-x64.dll",
+      "sha256": "a3dfd7f83d2a70ab7d417a0c240a0f887b9207912f77aacbbf082cebb9f9d038",
+      "symbol": "OpenSSL_version",
+      "expected": "OpenSSL 3.6.1 ",
+      "status": "pass",
+      "runtimeValue": "OpenSSL 3.6.1 27 Jan 2026"
+    },
+    {
+      "path": "libsodium.dll",
+      "sha256": "d5605e29832addc69b4e1a1351dee942608fc809e8a1660f8e6ace5f4695db0a",
+      "symbol": "sodium_version_string",
+      "expected": "1.0.21",
+      "status": "pass",
+      "runtimeValue": "1.0.21"
+    },
+    {
+      "path": "libcurl.dll",
+      "sha256": "41709e822d2b5bac1ce92a2d83e4bcbb2d9b63d01ee181381426d183e68d7035",
+      "symbol": "curl_version",
+      "expected": "libcurl/8.18.0 ",
+      "status": "pass",
+      "runtimeValue": "libcurl/8.18.0 Schannel zlib/1.3.1"
+    },
+    {
+      "path": "sqlite3.dll",
+      "sha256": "d463e177c370ccd90d0b56767d402c15ad8ef967627433995c713735f787c173",
+      "symbol": "sqlite3_libversion",
+      "expected": "3.51.2",
+      "status": "pass",
+      "runtimeValue": "3.51.2"
+    },
+    {
+      "path": "zlib1.dll",
+      "sha256": "c3666962384724ea99fc73cec8a32172aa5e4b9226352faec892da553c877db8",
+      "symbol": "zlibVersion",
+      "expected": "1.3.1",
+      "status": "pass",
+      "runtimeValue": "1.3.1"
+    }
+  ],
+  "qt11FileVersions": "6.6.3.0",
+  "protobuf3FileVersions": "33.4.0 (vcpkg source package 6.33.4 / upstream v33.4)",
+  "remainingUnversionedDlls": [
+    "abseil_dll.dll",
+    "pkgconf-7.dll"
+  ],
+  "scope": "Preserved portable package metadata and six native dependency version APIs only; no rebuild, installer, graphical or distribution acceptance",
+  "distributionAccepted": false,
+  "graphicalGameplayAccepted": false,
+  "embeddedProviderSourcePathEvidence": [
+    {
+      "path": "abseil_dll.dll",
+      "sha256": "47e0da747a0e88278fa4af6467dfab00a359998c6893715e2a55318ceb527eb8",
+      "embeddedSourcePaths": [
+        "D:\\a\\MWNet\\MWNet\\deps\\vcpkg-tools\\buildtrees\\abseil\\src\\20250814.1-a96f5d5fc6.clean\\absl/base/internal/spinlock.h",
+        "D:\\a\\MWNet\\MWNet\\deps\\vcpkg-tools\\buildtrees\\abseil\\src\\20250814.1-a96f5d5fc6.clean\\absl\\base\\internal\\low_level_alloc.cc",
+        "D:\\a\\MWNet\\MWNet\\deps\\vcpkg-tools\\buildtrees\\abseil\\src\\20250814.1-a96f5d5fc6.clean\\absl\\base\\internal\\scoped_set_env.cc",
+        "D:\\a\\MWNet\\MWNet\\deps\\vcpkg-tools\\buildtrees\\abseil\\src\\20250814.1-a96f5d5fc6.clean\\absl\\container\\internal\\hashtablez_sampler.cc",
+        "D:\\a\\MWNet\\MWNet\\deps\\vcpkg-tools\\buildtrees\\abseil\\src\\20250814.1-a96f5d5fc6.clean\\absl\\container\\internal\\raw_hash_set.cc"
+      ],
+      "scope": "Embedded build source directory strings agree with recorded recipe versions; not a native version API or reproducible-build proof"
+    },
+    {
+      "path": "pkgconf-7.dll",
+      "sha256": "0bfe6f9979008b039c9b8cfe1496ddab0198100276f0cb35fe5cfa901c35068b",
+      "embeddedSourcePaths": [
+        "../src/conf-2.5.1-5bc6f0da3f.clean/libpkgconf/cache.c",
+        "../src/conf-2.5.1-5bc6f0da3f.clean/libpkgconf/client.c",
+        "../src/conf-2.5.1-5bc6f0da3f.clean/libpkgconf/dependency.c",
+        "../src/conf-2.5.1-5bc6f0da3f.clean/libpkgconf/fragment.c",
+        "../src/conf-2.5.1-5bc6f0da3f.clean/libpkgconf/pkg.c"
+      ],
+      "scope": "Embedded build source directory strings agree with recorded recipe versions; not a native version API or reproducible-build proof"
+    }
+  ],
+  "unversionedScope": "No native version API result/file-version resource for these two; embedded source paths and recorded build/recipe versions agree"
+}
