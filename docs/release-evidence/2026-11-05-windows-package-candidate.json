@@ -1,0 +1,120 @@
+{
+  "checkedUtc": "2026-11-05T16:38:04.298488+00:00",
+  "runtimeSourceCommit": "a6868387dc80dcafd9b8ebad3d8c708511d9a615",
+  "workflowRevision": "44d5660a2d32716a47b40bf93a692b9fa929b1b6",
+  "ciRunId": 42057767417,
+  "ciJobId": 127350757324,
+  "ciConclusion": "success",
+  "nativeSuitesPassed": 7,
+  "packagedStartupAndCleanShutdownPassed": true,
+  "archive": {
+    "name": "MWNet-1.0.0-Windows-x64.zip",
+    "bytes": 109795739,
+    "sha256": "f8da81b16677c2c1a1086f9fc632fc67a776fadcd915cb61c9929c3c64144b21",
+    "zipCrcAccepted": true,
+    "verifiedPayloadFiles": 620
+  },
+  "installer": {
+    "name": "MWNet-1.0.0-Windows-x64.exe",
+    "bytes": 84908133,
+    "sha256": "959e6d7b03b444d0711138e2930f9e9f1025a29483c01b458b5dea8776bac893",
+    "scope": "Generated installer identity only; installer execution is not claimed"
+  },
+  "binaries": {
+    "mwnet.exe": {
+      "sha256": "cf148cb4566f8e1324bb4177bd061132d35a8dcd47587286a3f389e50cb8968e",
+      "machine": "PE AMD64",
+      "bytes": 34410496
+    },
+    "mwnet-server.exe": {
+      "sha256": "ffea309a481d8dde7b69a3f5a573d80ee7b68a461180852e80d70e650ac2dc0b",
+      "machine": "PE AMD64",
+      "bytes": 4072448
+    }
+  },
+  "managedCodeFilesContentVerified": 48,
+  "managedCodeFilesCrlfOnlyComparedWithGitBlobs": 48,
+  "codeComparisonScope": "Exact Git blob or exclusively LF-to-CRLF conversion; every packaged byte retains its own hash",
+  "pristineServerDataInventoryAccepted": true,
+  "vcRedistributablePresent": true,
+  "noticeCounts": {
+    "regularFiles": 620,
+    "symlinks": 0,
+    "binaries": 126,
+    "noticeFiles": 7,
+    "fonts": 3
+  },
+  "missingCompiledNoticeMarkers": [
+    "Base64-tomykaira",
+    "PicoSHA2-okdshin",
+    "oics-Alberto-Salguero",
+    "sol-Rapptz-ThePhD",
+    "osg-ffmpeg-scrawl-Robinson",
+    "GNS-Valve",
+    "yaml-cpp-Jesse-Beder",
+    "Recast-Mikko-Mononen",
+    "MyGUI-Developers"
+  ],
+  "graphicalGameplayAccepted": false,
+  "distributionAccepted": false,
+  "scope": "Actual Windows native package/startup/integrity checks and unpublished notice-only candidate; graphical and full distribution gates remain pending",
+  "ciUrl": "https://github.com/dev-zetta/MWNet/actions/runs/42057767417",
+  "jobStartedAt": "2026-11-05T15:42:58Z",
+  "jobCompletedAt": "2026-11-05T16:33:38Z",
+  "selectedSuccessfulSteps": [
+    {
+      "name": "Check Windows UTF-8 JSON file access",
+      "conclusion": "success"
+    },
+    {
+      "name": "Check multiplayer test targets before the full build",
+      "conclusion": "success"
+    },
+    {
+      "name": "Stage and verify server startup before the full client build",
+      "conclusion": "success"
+    },
+    {
+      "name": "Package MWNet",
+      "conclusion": "success"
+    },
+    {
+      "name": "Run multiplayer tests",
+      "conclusion": "success"
+    },
+    {
+      "name": "Verify portable package",
+      "conclusion": "success"
+    }
+  ],
+  "downloadedGithubArtifact": {
+    "id": 13433991674,
+    "name": "openmw-windows-2022-44d5660a2d32716a47b40bf93a692b9fa929b1b6",
+    "bytes": 194093696,
+    "digest": "sha256:59718d3cd5713a2cb58c077c08465a422338ad6262c3ee49d7ff57308c093035",
+    "downloadedHashAndCrcVerified": true
+  },
+  "sdkDllCoverage": {
+    "scope": "Exact DLL byte identity against the preserved Windows SDK only; unmatched Qt/transport/other inputs need separate provenance and notices",
+    "packagedDllCount": 112,
+    "byteIdenticalSdkDllCount": 89,
+    "coverageReceiptSha256": "39229f79c5ff34e6339d491532afe0e8b8321ea2b5ad7acfa511be2504a35b00",
+    "fullDependencyCoverageAccepted": false
+  },
+  "noticeOnlyCandidate": {
+    "scope": "Unpublished packaging-only notice correction; native graphical and complete final dependency/source coverage are not accepted",
+    "archive": "MWNet-1.0.0-Windows-x64-notice-candidate-a6868387dc.zip",
+    "bytes": 110869593,
+    "sha256": "16907b8d015c537a5db0d4b7f69454f6cd211fc9c1921c68a8b91da0e871b91a",
+    "originalArchiveSha256": "f8da81b16677c2c1a1086f9fc632fc67a776fadcd915cb61c9929c3c64144b21",
+    "originalPayloadFilesPreservedByteForByte": 620,
+    "newFiles": 318,
+    "zipCrcAccepted": true,
+    "knownCompiledNoticeMarkersPresent": true,
+    "fullDistributionAccepted": false,
+    "graphicalGameplayAccepted": false,
+    "candidateInventorySha256": "ad14b1ce3f8bbbe86cb5135f22f63e888df75294f6348e3cbf2cbd47186cf3c1"
+  },
+  "originalInspectionScopeCorrection": "The first exact-Git-byte inspection stopped because all48 managed code files use Windows CRLF; inspection confirmed every difference is exclusively LF-to-CRLF. Original package and comparison receipt retained; no non-newline code difference accepted.",
+  "privateEvidenceRoot": "build/platform-stable-1.0.0-a6868387dc/windows-complete-run42057767417"
+}
