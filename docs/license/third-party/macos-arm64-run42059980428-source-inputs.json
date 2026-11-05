@@ -1,0 +1,70 @@
+{
+  "schemaVersion": 1,
+  "scope": "Actual Apple Silicon runner formula sources for five recorded installed inputs; other transitive binary coverage remains pending",
+  "runtimeSourceCommit": "a6868387dc80dcafd9b8ebad3d8c708511d9a615",
+  "ciJobId": 127358629506,
+  "homebrewReceiptSha256": "d6e2b7b4efa859f1a7cfc580be40542309bbd8ce55e9e2c876f93746f2752d40",
+  "sources": [
+    {
+      "name": "openssl@3",
+      "version": "3.5.9",
+      "filename": "openssl-3-3.5.9-homebrew-source.tar.gz",
+      "urls": [
+        "https://github.com/openssl/openssl/releases/download/openssl-3.5.9/openssl-3.5.9.tar.gz"
+      ],
+      "algorithm": "sha256",
+      "checksum": "603f5602e2eef00d77fbd429d34dcd5822bb301757a1bc9cdb24c670f1eb859a",
+      "pinProvenance": "Actual native CI42059980428 ARM Homebrew JSON; installed version equals formula source version",
+      "formulaSha256": "ff38ac43aa86a0484a12bace87feca515c745b3caf38a5b0738288b56fb86c97"
+    },
+    {
+      "name": "libsodium",
+      "version": "1.0.22",
+      "filename": "libsodium-1.0.22-homebrew-source.tar.gz",
+      "urls": [
+        "https://download.libsodium.org/libsodium/releases/libsodium-1.0.22.tar.gz"
+      ],
+      "algorithm": "sha256",
+      "checksum": "adbdd8f16149e81ac6078a03aca6fc03b592b89ef7b5ed83841c086191be3349",
+      "pinProvenance": "Actual native CI42059980428 ARM Homebrew JSON; installed version equals formula source version",
+      "formulaSha256": "97116400ef5a3ef2647f58b650fe55bbf59b6b50ad3aa49f9c3be7163168f2b2"
+    },
+    {
+      "name": "protobuf",
+      "version": "36.2",
+      "filename": "protobuf-36.2-homebrew-source.tar.gz",
+      "urls": [
+        "https://github.com/protocolbuffers/protobuf/releases/download/v36.2/protobuf-36.2.tar.gz"
+      ],
+      "algorithm": "sha256",
+      "checksum": "3d9642a662d10e68ebae5e53f14dcce5105684212d5078f8e0d47d1ab3ae6b64",
+      "pinProvenance": "Actual native CI42059980428 ARM Homebrew JSON; installed version equals formula source version",
+      "formulaSha256": "7992732dfd8e12ea27faade9f2b6a2db76448e1ff8bf50c32f4000028f9f1374"
+    },
+    {
+      "name": "fontconfig",
+      "version": "2.18.3",
+      "filename": "fontconfig-2.18.3-homebrew-source.tar.gz",
+      "urls": [
+        "https://gitlab.freedesktop.org/fontconfig/fontconfig/-/archive/2.18.3/fontconfig-2.18.3.tar.gz"
+      ],
+      "algorithm": "sha256",
+      "checksum": "9ae01e1d53acdef56010c5451cd34aa41d325b2faccd8606448d8fa01b2496b3",
+      "pinProvenance": "Actual native CI42059980428 ARM Homebrew JSON; installed version equals formula source version",
+      "formulaSha256": "377fd40fc05503009a2ecc23e447b7413e6aca2e99eabe277a18689c0340bcc9"
+    },
+    {
+      "name": "gettext",
+      "version": "1.0",
+      "filename": "gettext-1.0-homebrew-source.tar.gz",
+      "urls": [
+        "https://ftpmirror.gnu.org/gettext/gettext-1.0.tar.gz",
+        "https://ftp.gnu.org/gnu/gettext/gettext-1.0.tar.gz"
+      ],
+      "algorithm": "sha256",
+      "checksum": "85d99b79c981a404874c02e0342176cf75c7698e2b51fe41031cf6526d974f1a",
+      "pinProvenance": "Actual native CI42059980428 ARM Homebrew JSON; installed version equals formula source version",
+      "formulaSha256": "9c90f7cf5a45c828e2a66d9339b25b781302cf49316e939d029e6079e1b9d916"
+    }
+  ]
+}

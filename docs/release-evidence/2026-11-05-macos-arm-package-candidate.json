@@ -1,0 +1,54 @@
+{
+  "checkedUtc": "2026-11-05T16:46:10.233171+00:00",
+  "scope": "Actual Apple Silicon native package/provider/startup checks; no graphical or complete source/notice acceptance",
+  "runtimeSourceCommit": "a6868387dc80dcafd9b8ebad3d8c708511d9a615",
+  "workflowRevision": "4ca4c25c74a2fb252ebeab8bedd3ecd85a727cba",
+  "ciRunId": 42059980428,
+  "ciJobId": 127358629506,
+  "ciUrl": "https://github.com/dev-zetta/MWNet/actions/runs/42059980428/job/127358629506",
+  "jobStartedAt": "2026-11-05T16:02:55Z",
+  "jobCompletedAt": "2026-11-05T16:43:02Z",
+  "ciConclusion": "success",
+  "nativeSuitesPassed": 7,
+  "nativeClientServerIdentityAndStartupPassed": true,
+  "archive": {
+    "name": "MWNet-1.0.0-macOS-arm64.dmg",
+    "bytes": 135738574,
+    "sha256": "20679685dcd60299fa43eed4f2da53008fee9ef5bf3d99fd1565b8fc37f2524f",
+    "reader": "7z APFS",
+    "entryCount": 1234
+  },
+  "binaries": {
+    "mwnet": {
+      "sha256": "c82ec00b5f5834b10d5a5a1e71fb25e0399ee10fab3e6091529ca89b222d1649",
+      "architecture": "Mach-O arm64",
+      "bytes": 62444688
+    },
+    "mwnet-server": {
+      "sha256": "5184aed391923ca2eb5f09f468f23683a4d8b55ffa4325efbd6828d312228df8",
+      "architecture": "Mach-O arm64",
+      "bytes": 6362080
+    }
+  },
+  "managedCodeFilesByteIdenticalToGit": 48,
+  "opensslProviderAndBundle": {
+    "scope": "OpenSSL provider/header/runtime identity only; not graphical or complete dependency acceptance",
+    "expectedVersion": "3.5.9",
+    "headerSha256": "9647fc99758cf83e3bcf11ae310894fd4911ad62bff22d8213a614df89cfedda",
+    "provider": "/opt/homebrew/Cellar/openssl@3/3.5.9/lib/libcrypto.3.dylib",
+    "providerSha256": "92bbc346196d101365a40dfd27adb636e641545f56474d9ce2aa948e7976ed95",
+    "providerRuntimeVersion": "OpenSSL 3.5.9 29 Sep 2026",
+    "cmakeCacheSha256": "7fab7ca614187e85a9b56153b2c4e47538553e99135c1dfd5de25cf05670a44f",
+    "bundledLibraries": [
+      {
+        "path": "MWNet.app/Contents/Frameworks/libcrypto.3.dylib",
+        "sha256": "ab2d51a69b360c2e4ff322323ea0ef58e3c6db7733569731aa7882fa6fb773bb",
+        "runtimeVersion": "OpenSSL 3.5.9 29 Sep 2026"
+      }
+    ],
+    "status": "pass"
+  },
+  "actualDownloadedBundleMatchesNativeReceipt": true,
+  "graphicalGameplayAccepted": false,
+  "distributionAccepted": false
+}
