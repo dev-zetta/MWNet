@@ -1,0 +1,50 @@
+{
+  "verifiedUtc": "2026-11-05T08:08:47.044133+00:00",
+  "releaseId": 434919323,
+  "releaseUrl": "https://github.com/dev-zetta/MWNet/releases/tag/v1.0.0-beta.1",
+  "tag": "v1.0.0-beta.1",
+  "runtimeSourceCommit": "adc751899eade2b04086a794753f9540124c5e05",
+  "publishedUtc": "2026-11-05T08:07:04Z",
+  "draft": false,
+  "prerelease": true,
+  "verificationAccess": "Unauthenticated public HTTPS API and release-download URLs; streamed to disk",
+  "assets": [
+    {
+      "name": "MWNet-1.0.0-beta.1-Linux-x86_64-client-server-adc751899e.tar.gz",
+      "bytes": 504201594,
+      "sha256": "a3189e9c0537f5d559031a64e9049671e960b2f5995ac3c1a00b5bc7c164fcf7",
+      "githubDigest": "sha256:a3189e9c0537f5d559031a64e9049671e960b2f5995ac3c1a00b5bc7c164fcf7",
+      "url": "https://github.com/dev-zetta/MWNet/releases/download/v1.0.0-beta.1/MWNet-1.0.0-beta.1-Linux-x86_64-client-server-adc751899e.tar.gz"
+    },
+    {
+      "name": "MWNet-1.0.0-beta.1-source-adc751899e.tar.gz",
+      "bytes": 7876992,
+      "sha256": "992d71e8bf67d3b5dc8850f6809f81e0b726101610e65964c941c2a122e8fb64",
+      "githubDigest": "sha256:992d71e8bf67d3b5dc8850f6809f81e0b726101610e65964c941c2a122e8fb64",
+      "url": "https://github.com/dev-zetta/MWNet/releases/download/v1.0.0-beta.1/MWNet-1.0.0-beta.1-source-adc751899e.tar.gz"
+    },
+    {
+      "name": "mwnet-source.spdx.json",
+      "bytes": 11167,
+      "sha256": "938bfe1f31765c3dec1d6b506eb038010e66b2b4ea23ed56fb65eaed557284c7",
+      "githubDigest": "sha256:938bfe1f31765c3dec1d6b506eb038010e66b2b4ea23ed56fb65eaed557284c7",
+      "url": "https://github.com/dev-zetta/MWNet/releases/download/v1.0.0-beta.1/mwnet-source.spdx.json"
+    },
+    {
+      "name": "SHA256SUMS",
+      "bytes": 329,
+      "sha256": "3597e895684b7f579b5084ec60fb5be1198b829b27ecb8264e06e016dd85c206",
+      "githubDigest": "sha256:3597e895684b7f579b5084ec60fb5be1198b829b27ecb8264e06e016dd85c206",
+      "url": "https://github.com/dev-zetta/MWNet/releases/download/v1.0.0-beta.1/SHA256SUMS"
+    }
+  ],
+  "allAssetHashesAccepted": true,
+  "scope": "Public release/tag/download byte identity; no new gameplay or stable-platform acceptance",
+  "supportedPlatform": "Linux x86_64 beta client/server",
+  "stablePromotion": false,
+  "validationReferences": {
+    "renderedPackage": "2026-11-02-beta-candidate.md",
+    "sustainedComponents": "2026-11-05-nuc-acceptance.md",
+    "liveDeployment": "2026-11-05-beta-deployment.md"
+  }
+}

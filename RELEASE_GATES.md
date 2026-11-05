@@ -7,12 +7,12 @@ This checklist defines the minimum evidence for a stable release. The maintainer
 | Release scope | Current status |
 | --- | --- |
 | `1.0.0-alpha.3`, protocol 13 | Published development prerelease; exact-source native packages for Linux, Windows and both macOS architectures, with unattended graphical acceptance on Linux |
-| `1.0.0-beta.1`, protocol 13 | Linux candidate at `adc751899e`; package/rendered checks, independent NUC eight-hour synthetic acceptance and the live NUC deployment verification pass; beta publication is pending |
-| Linux stable client/server and public directory | Pending the required evidence below; the published alpha is not promoted by changing this checklist or completing an AI review |
+| `1.0.0-beta.1`, protocol 13 | Published Linux x86_64 prerelease at `adc751899e`; package/rendered checks, independent NUC eight-hour synthetic acceptance, live NUC deployment and all four public download hashes verified |
+| Linux stable client/server and public directory | Not published as stable; the Linux beta evidence below retains its declared scope, and stable promotion has not been authorized |
 | Windows and macOS | Experimental packages until real graphical gameplay and platform-specific acceptance pass; their pending graphical checks do not block an explicitly Linux-only stable release |
 | Public beta or release candidate | Optional rollout stage; no prescribed version label, participant count or waiting period |
 
-The published runtime source is `d871d54894a0774db7dbcaedc3a0955bacbc08b3`, published as `1.0.0-alpha.3`. Its independent test-controller revision and archive hashes are recorded in the [alpha.3 release validation](docs/release-evidence/2026-10-30-alpha3-release.md). Changing policy does not change those binaries, promote them to stable, or close an unfinished review. Stable release notes must name supported platforms, content limits and the load actually qualified; a synthetic transport workload does not establish populated game-server capacity.
+The published Linux beta runtime source is `adc751899eade2b04086a794753f9540124c5e05`, tagged `v1.0.0-beta.1`; its exact source, public downloads and separate validation revisions are recorded in the [beta release validation](docs/release-evidence/2026-11-05-beta-release.md). The earlier `1.0.0-alpha.3` runtime remains `d871d54894a0774db7dbcaedc3a0955bacbc08b3`, with its independent controller and archive hashes preserved in the [alpha.3 release validation](docs/release-evidence/2026-10-30-alpha3-release.md). Changing policy or publishing a Linux beta does not promote either release to stable or close missing platform/distribution work. Stable release notes must name supported platforms, content limits and the load actually qualified; a synthetic transport workload does not establish populated game-server capacity.
 
 ## Required evidence
 
@@ -46,6 +46,7 @@ Every acceptance record must identify the tested source, actual binaries/package
 
 ## Recorded evidence
 
+- [November 5 published Linux beta.1](docs/release-evidence/2026-11-05-beta-release.md) records the public prerelease, exact runtime tag, accepted Linux archive and corresponding source/SBOM/checksums, with all four unauthenticated public downloads verified byte for byte. The NUC deployment and preceding rendered/sustained evidence retain their separate scope; stable was not promoted.
 - [November 5 live NUC beta deployment](docs/release-evidence/2026-11-05-beta-deployment.md) records the applied accepted runtime, quiescent backups, isolated startup checks, actual effective binary/script hashes, preserved identity, two signed heartbeats and independent public HTTPS/discovery verification. Publication remains pending at that checkpoint.
 - [November 5 completed independent NUC acceptance](docs/release-evidence/2026-11-05-nuc-acceptance.md) records the full eight-hour synthetic profile, terminal controller/container/systemd evidence, outage recovery, zero expiry counters, accepted memory/resource checks, unchanged inputs, same-boot host continuity and released sleep inhibitor. The scoped sustained-operation check passed; production update and beta publication remain pending.
 - [November 4 instrumented NUC acceptance startup](docs/release-evidence/2026-11-04-instrumented-acceptance-start.md) records the fresh verified host profile, seven actual native passes, completed NUC preflight and running full eight-hour workload at that checkpoint. Its completed terminal outcome is recorded above; beta deployment remains pending.
