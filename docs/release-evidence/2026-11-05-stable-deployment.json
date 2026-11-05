@@ -1,0 +1,254 @@
+{
+  "scope": "Live NUC Linux stable code deployment and independent public HTTPS/signed-discovery verification; no new rendered production gameplay or populated-player capacity claim",
+  "runtimeSourceCommit": "a6868387dc80dcafd9b8ebad3d8c708511d9a615",
+  "orchestrationRevision": "7c013fb328e57c8851fa17ebae38fa12b2e40cb6",
+  "version": "1.0.0",
+  "deploymentUnit": "mwnet-stable-update-20261105.service",
+  "deploymentManifestSha256": "3cd7644a5a42eb5f43acb95451699b7fe4b21629e21530ed3f61a32d67df8843",
+  "verifiedDeploymentInputs": 88,
+  "launcherSha256": "cfef44627d7a674975fd154d9746ce83b614c7f524e57f9094abd6c62914420d",
+  "updaterSha256": "e84b35e5c23a3b6297dc9faa9f213897cca6686de7d1a4c37225c49c2bd06bc7",
+  "originalDeploymentReceiptSha256": "7e9982174471d12186616764fef8d12239c6f398547bf921bd64ed31b29eff2e",
+  "previousRuntimeSourceCommit": "adc751899eade2b04086a794753f9540124c5e05",
+  "deploymentReceipt": {
+    "scope": "NUC release code update; not sixteen-player capacity acceptance",
+    "outcome": "pass",
+    "runtimeSourceCommit": "a6868387dc80dcafd9b8ebad3d8c708511d9a615",
+    "version": "1.0.0",
+    "backup": "/var/backups/mwnet-release/20261105T134917Z",
+    "identityFingerprint": "ed25519/Lk3WtO4wS_t4oKQ3iqKqtU8ijPkSpeX5rRCnlxT41jA",
+    "isolatedStartupChecksAccepted": true,
+    "managedServerCodeFilesVerified": 48,
+    "signedListingObservations": [
+      {
+        "host": "209.25.141.17",
+        "port": 43133,
+        "name": "MWNet 1.0 server",
+        "version": "1.0.0",
+        "protocol": 13,
+        "players": 0,
+        "capacity": 16,
+        "password": true,
+        "content": [
+          {
+            "name": "Morrowind.esm",
+            "hashes": [
+              2070607289,
+              875048295
+            ]
+          },
+          {
+            "name": "Tribunal.esm",
+            "hashes": [
+              4102157108,
+              554904047
+            ]
+          },
+          {
+            "name": "Bloodmoon.esm",
+            "hashes": [
+              1138565426,
+              2662739750
+            ]
+          }
+        ],
+        "fingerprint": "ed25519/Lk3WtO4wS_t4oKQ3iqKqtU8ijPkSpeX5rRCnlxT41jA",
+        "nonceDigest": "d30efcc2eefcadb00572ef32d26cc71c998d60b33d337669b3ba87a4edbe1395",
+        "signatureVerified": true,
+        "acceptedHeartbeats": 1
+      },
+      {
+        "host": "209.25.141.17",
+        "port": 43133,
+        "name": "MWNet 1.0 server",
+        "version": "1.0.0",
+        "protocol": 13,
+        "players": 0,
+        "capacity": 16,
+        "password": true,
+        "content": [
+          {
+            "name": "Morrowind.esm",
+            "hashes": [
+              2070607289,
+              875048295
+            ]
+          },
+          {
+            "name": "Tribunal.esm",
+            "hashes": [
+              4102157108,
+              554904047
+            ]
+          },
+          {
+            "name": "Bloodmoon.esm",
+            "hashes": [
+              1138565426,
+              2662739750
+            ]
+          }
+        ],
+        "fingerprint": "ed25519/Lk3WtO4wS_t4oKQ3iqKqtU8ijPkSpeX5rRCnlxT41jA",
+        "nonceDigest": "f93f4daae8c19297f0e421f1a251a5b5685b1f8171cd9349e825ea6211156170",
+        "signatureVerified": true,
+        "acceptedHeartbeats": 2
+      }
+    ],
+    "effectiveServerSha256": "0c6aaed0052d703ee0e079d5ffcfef8dcf21d1701e3ca1b81cedb775f235cf8a",
+    "effectiveDirectorySha256": "6baee09c5cc914554321f21a2597a8850eb6355dcecb6ba38819db35cfe92dcd",
+    "completedUtc": "2026-11-05T13:50:32.467857+00:00"
+  },
+  "terminalHostState": {
+    "checkedUtc": "2026-11-05T13:53:51.757541+00:00",
+    "unit": {
+      "LoadState": "loaded",
+      "ActiveState": "active",
+      "SubState": "exited",
+      "Result": "success",
+      "ExecMainStartTimestamp": "Thu 2026-11-05 13:49:15 UTC",
+      "ExecMainExitTimestamp": "Thu 2026-11-05 13:50:32 UTC",
+      "ExecMainCode": "1",
+      "ExecMainStatus": "0"
+    },
+    "host": {
+      "bootId": "7bb206b2-bbec-41c0-9a09-553222b738c7",
+      "uptimeSeconds": 73689.85,
+      "telemetryUtc": "2026-11-05T13:53:50.030357+00:00",
+      "telemetryAgeSeconds": 1.734527587890625,
+      "globalOomKills": 0,
+      "availableBytes": 6785818624,
+      "diskAvailableBytes": 460604669952
+    },
+    "telemetryService": {
+      "LoadState": "loaded",
+      "ActiveState": "active",
+      "SubState": "running",
+      "NRestarts": "0",
+      "CPUQuotaPerSecUSec": "50ms",
+      "MemoryMax": "67108864",
+      "CapabilityBoundingSet": ""
+    },
+    "crashSettings": {
+      "watchdog": "1",
+      "nmi_watchdog": "1",
+      "hardlockup_panic": "1",
+      "softlockup_panic": "1",
+      "panic_on_oops": "1",
+      "panic": "30"
+    },
+    "captureKernelLoaded": "1",
+    "crashReservedBytes": "536870912",
+    "wifi": [
+      {
+        "name": "hci0",
+        "type": "bluetooth",
+        "soft": "0",
+        "hard": "0"
+      },
+      {
+        "name": "phy0",
+        "type": "wlan",
+        "soft": "1",
+        "hard": "0"
+      }
+    ],
+    "defaultRouteInterfaces": [
+      "eno1"
+    ],
+    "originalBetaAcceptanceReceiptSha256": "4d430a2661f205bd5a87522a89875aad0d47856b392371a0aad7d550797daafa",
+    "originalBetaDeploymentReceiptSha256": "8fc87c1ff0e45b7c2deab6e55f77c5b709fa671c6953d4d6c72e266b3d6bbd52",
+    "stableDeploymentReceiptSha256": "7e9982174471d12186616764fef8d12239c6f398547bf921bd64ed31b29eff2e"
+  },
+  "independentPublicVerification": {
+    "scope": "Independent public HTTPS and signed stable metadata verification from the maintainer PC; no rendered production gameplay or account login",
+    "startedUtc": "2026-11-05T13:53:12.467937+00:00",
+    "completedUtc": "2026-11-05T13:54:20.153194+00:00",
+    "origin": "https://mwnet.playit.plus",
+    "verifier": "docker/discovery/registration-test/verify_listing.py",
+    "commandProfile": {
+      "expectedVersion": "1.0.0",
+      "observeSeconds": 65,
+      "heartbeats": 2,
+      "deadlineSeconds": 120
+    },
+    "exitCode": 0,
+    "observations": [
+      {
+        "host": "209.25.141.17",
+        "port": 43133,
+        "name": "MWNet 1.0 server",
+        "version": "1.0.0",
+        "protocol": 13,
+        "players": 0,
+        "capacity": 16,
+        "password": true,
+        "content": [
+          {
+            "name": "Morrowind.esm",
+            "hashes": [
+              2070607289,
+              875048295
+            ]
+          },
+          {
+            "name": "Tribunal.esm",
+            "hashes": [
+              4102157108,
+              554904047
+            ]
+          },
+          {
+            "name": "Bloodmoon.esm",
+            "hashes": [
+              1138565426,
+              2662739750
+            ]
+          }
+        ],
+        "fingerprint": "ed25519/Lk3WtO4wS_t4oKQ3iqKqtU8ijPkSpeX5rRCnlxT41jA",
+        "nonceDigest": "cd0ef7c34d37a733c96620b0704036bbaf95b6375ceb63700735698a97f99602",
+        "signatureVerified": true,
+        "acceptedHeartbeats": 1
+      },
+      {
+        "host": "209.25.141.17",
+        "port": 43133,
+        "name": "MWNet 1.0 server",
+        "version": "1.0.0",
+        "protocol": 13,
+        "players": 0,
+        "capacity": 16,
+        "password": true,
+        "content": [
+          {
+            "name": "Morrowind.esm",
+            "hashes": [
+              2070607289,
+              875048295
+            ]
+          },
+          {
+            "name": "Tribunal.esm",
+            "hashes": [
+              4102157108,
+              554904047
+            ]
+          },
+          {
+            "name": "Bloodmoon.esm",
+            "hashes": [
+              1138565426,
+              2662739750
+            ]
+          }
+        ],
+        "fingerprint": "ed25519/Lk3WtO4wS_t4oKQ3iqKqtU8ijPkSpeX5rRCnlxT41jA",
+        "nonceDigest": "8ebb1d0669ef522ba13f9e72ce5f731786402d5ac7faee76b83d1fedccc3abe6",
+        "signatureVerified": true,
+        "acceptedHeartbeats": 2
+      }
+    ]
+  },
+  "stableReleaseState": "Uploaded draft verified; publication and unauthenticated public downloads pending at this checkpoint"
+}

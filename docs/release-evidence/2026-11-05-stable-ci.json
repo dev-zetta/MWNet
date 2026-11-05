@@ -1,0 +1,203 @@
+{
+  "scope": "Actual terminal CI outcomes for stable runtime and deployment tooling; build/native/security/package evidence does not qualify Windows/macOS graphical gameplay or licensing delivery",
+  "runs": [
+    {
+      "scope": "Frozen stable runtime source",
+      "headSha": "a6868387dc80dcafd9b8ebad3d8c708511d9a615",
+      "url": "https://github.com/dev-zetta/MWNet/actions/runs/42025424431",
+      "createdAt": "2026-11-05T12:14:15Z",
+      "checkedUtc": "2026-11-05T13:50:04.464663+00:00",
+      "status": "completed",
+      "conclusion": "success",
+      "jobs": [
+        {
+          "name": "SourceChecks",
+          "status": "completed",
+          "conclusion": "success",
+          "startedAt": "2026-11-05T12:14:18Z",
+          "completedAt": "2026-11-05T12:14:37Z",
+          "url": "https://github.com/dev-zetta/MWNet/actions/runs/42025424431/job/127238314017"
+        },
+        {
+          "name": "protocol-security-fuzz-smoke",
+          "status": "completed",
+          "conclusion": "success",
+          "startedAt": "2026-11-05T12:14:18Z",
+          "completedAt": "2026-11-05T12:15:31Z",
+          "url": "https://github.com/dev-zetta/MWNet/actions/runs/42025424431/job/127238314199"
+        },
+        {
+          "name": "MacOS (macos-15) / macos-15",
+          "status": "completed",
+          "conclusion": "success",
+          "startedAt": "2026-11-05T12:14:20Z",
+          "completedAt": "2026-11-05T12:30:14Z",
+          "url": "https://github.com/dev-zetta/MWNet/actions/runs/42025424431/job/127238314293"
+        },
+        {
+          "name": "protocol-clang-none",
+          "status": "completed",
+          "conclusion": "success",
+          "startedAt": "2026-11-05T12:14:18Z",
+          "completedAt": "2026-11-05T12:15:11Z",
+          "url": "https://github.com/dev-zetta/MWNet/actions/runs/42025424431/job/127238314319"
+        },
+        {
+          "name": "protocol-msvc",
+          "status": "completed",
+          "conclusion": "success",
+          "startedAt": "2026-11-05T12:14:18Z",
+          "completedAt": "2026-11-05T12:15:38Z",
+          "url": "https://github.com/dev-zetta/MWNet/actions/runs/42025424431/job/127238314333"
+        },
+        {
+          "name": "protocol-gcc-none",
+          "status": "completed",
+          "conclusion": "success",
+          "startedAt": "2026-11-05T12:14:18Z",
+          "completedAt": "2026-11-05T12:15:00Z",
+          "url": "https://github.com/dev-zetta/MWNet/actions/runs/42025424431/job/127238314357"
+        },
+        {
+          "name": "protocol-clang-tsan",
+          "status": "completed",
+          "conclusion": "success",
+          "startedAt": "2026-11-05T12:14:18Z",
+          "completedAt": "2026-11-05T12:15:16Z",
+          "url": "https://github.com/dev-zetta/MWNet/actions/runs/42025424431/job/127238314375"
+        },
+        {
+          "name": "Ubuntu",
+          "status": "completed",
+          "conclusion": "success",
+          "startedAt": "2026-11-05T12:14:18Z",
+          "completedAt": "2026-11-05T13:13:42Z",
+          "url": "https://github.com/dev-zetta/MWNet/actions/runs/42025424431/job/127238314428"
+        },
+        {
+          "name": "protocol-clang-asan-ubsan",
+          "status": "completed",
+          "conclusion": "success",
+          "startedAt": "2026-11-05T12:14:18Z",
+          "completedAt": "2026-11-05T12:14:51Z",
+          "url": "https://github.com/dev-zetta/MWNet/actions/runs/42025424431/job/127238314478"
+        },
+        {
+          "name": "Windows (2022) / windows-2022",
+          "status": "completed",
+          "conclusion": "success",
+          "startedAt": "2026-11-05T12:14:18Z",
+          "completedAt": "2026-11-05T13:07:42Z",
+          "url": "https://github.com/dev-zetta/MWNet/actions/runs/42025424431/job/127238314555"
+        },
+        {
+          "name": "MacOS (macos-15-intel) / macos-15-intel",
+          "status": "completed",
+          "conclusion": "success",
+          "startedAt": "2026-11-05T12:14:19Z",
+          "completedAt": "2026-11-05T12:40:27Z",
+          "url": "https://github.com/dev-zetta/MWNet/actions/runs/42025424431/job/127238314787"
+        }
+      ]
+    },
+    {
+      "scope": "Separately frozen deployment/controller source",
+      "headSha": "7c013fb328e57c8851fa17ebae38fa12b2e40cb6",
+      "url": "https://github.com/dev-zetta/MWNet/actions/runs/42028099459",
+      "createdAt": "2026-11-05T12:33:08Z",
+      "checkedUtc": "2026-11-05T13:53:51.627080+00:00",
+      "status": "completed",
+      "conclusion": "success",
+      "jobs": [
+        {
+          "name": "protocol-msvc",
+          "status": "completed",
+          "conclusion": "success",
+          "startedAt": "2026-11-05T12:33:11Z",
+          "completedAt": "2026-11-05T12:35:03Z",
+          "url": "https://github.com/dev-zetta/MWNet/actions/runs/42028099459/job/127247289612"
+        },
+        {
+          "name": "Ubuntu",
+          "status": "completed",
+          "conclusion": "success",
+          "startedAt": "2026-11-05T12:33:11Z",
+          "completedAt": "2026-11-05T13:43:53Z",
+          "url": "https://github.com/dev-zetta/MWNet/actions/runs/42028099459/job/127247289856"
+        },
+        {
+          "name": "protocol-gcc-none",
+          "status": "completed",
+          "conclusion": "success",
+          "startedAt": "2026-11-05T12:33:11Z",
+          "completedAt": "2026-11-05T12:33:57Z",
+          "url": "https://github.com/dev-zetta/MWNet/actions/runs/42028099459/job/127247289857"
+        },
+        {
+          "name": "protocol-clang-asan-ubsan",
+          "status": "completed",
+          "conclusion": "success",
+          "startedAt": "2026-11-05T12:33:11Z",
+          "completedAt": "2026-11-05T12:34:10Z",
+          "url": "https://github.com/dev-zetta/MWNet/actions/runs/42028099459/job/127247289868"
+        },
+        {
+          "name": "protocol-clang-tsan",
+          "status": "completed",
+          "conclusion": "success",
+          "startedAt": "2026-11-05T12:33:11Z",
+          "completedAt": "2026-11-05T12:34:14Z",
+          "url": "https://github.com/dev-zetta/MWNet/actions/runs/42028099459/job/127247289892"
+        },
+        {
+          "name": "SourceChecks",
+          "status": "completed",
+          "conclusion": "success",
+          "startedAt": "2026-11-05T12:33:11Z",
+          "completedAt": "2026-11-05T12:33:36Z",
+          "url": "https://github.com/dev-zetta/MWNet/actions/runs/42028099459/job/127247290038"
+        },
+        {
+          "name": "protocol-clang-none",
+          "status": "completed",
+          "conclusion": "success",
+          "startedAt": "2026-11-05T12:33:11Z",
+          "completedAt": "2026-11-05T12:34:08Z",
+          "url": "https://github.com/dev-zetta/MWNet/actions/runs/42028099459/job/127247290206"
+        },
+        {
+          "name": "Windows (2022) / windows-2022",
+          "status": "completed",
+          "conclusion": "success",
+          "startedAt": "2026-11-05T12:33:11Z",
+          "completedAt": "2026-11-05T13:28:13Z",
+          "url": "https://github.com/dev-zetta/MWNet/actions/runs/42028099459/job/127247290208"
+        },
+        {
+          "name": "MacOS (macos-15) / macos-15",
+          "status": "completed",
+          "conclusion": "success",
+          "startedAt": "2026-11-05T12:33:11Z",
+          "completedAt": "2026-11-05T12:48:16Z",
+          "url": "https://github.com/dev-zetta/MWNet/actions/runs/42028099459/job/127247290212"
+        },
+        {
+          "name": "protocol-security-fuzz-smoke",
+          "status": "completed",
+          "conclusion": "success",
+          "startedAt": "2026-11-05T12:33:11Z",
+          "completedAt": "2026-11-05T12:34:53Z",
+          "url": "https://github.com/dev-zetta/MWNet/actions/runs/42028099459/job/127247290233"
+        },
+        {
+          "name": "MacOS (macos-15-intel) / macos-15-intel",
+          "status": "completed",
+          "conclusion": "success",
+          "startedAt": "2026-11-05T12:33:12Z",
+          "completedAt": "2026-11-05T12:57:17Z",
+          "url": "https://github.com/dev-zetta/MWNet/actions/runs/42028099459/job/127247290238"
+        }
+      ]
+    }
+  ]
+}
