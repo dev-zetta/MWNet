@@ -1,0 +1,2841 @@
+{
+  "checkedUtc": "2026-11-05T17:55:51.122848+00:00",
+  "runtimeSourceCommit": "a6868387dc80dcafd9b8ebad3d8c708511d9a615",
+  "scope": "Offline section/provider mapping of unchanged actual Mac images; no native execution, rebuild, resigning, graphical gameplay or distribution acceptance",
+  "comparisonScope": "Exact file-backed section bytes, section/zero-fill metadata, architecture, header flags and relocations; excludes load commands and LINKEDIT tables/signatures; not whole-binary equivalence",
+  "toolSha256": "89ca3fff3b8b521bdd61ffe5697be7ed0efc72c807572feeca8b2e048472f7ad",
+  "platforms": {
+    "arm64": {
+      "package": {
+        "name": "MWNet-1.0.0-macOS-arm64.dmg",
+        "sha256": "20679685dcd60299fa43eed4f2da53008fee9ef5bf3d99fd1565b8fc37f2524f"
+      },
+      "sdk": {
+        "name": "vcpkg-arm64-osx-dynamic-2026-02-24.7z",
+        "sha256": "9364f93dfa841d16dc696ac46c95e5ae88f07e4131f4d53ed2d4225734b15307"
+      },
+      "privateDetailedReport": "build/platform-stable-1.0.0-a6868387dc/macos-arm64-sdk-section-inspection-v3/payload-comparison.json",
+      "detailedReportSha256": "623c4c96797d3a3e02eb8ba6fdb933f5eba3fc2507f4d80be16ad66e3281ee0f",
+      "packageBinaryFiles": 236,
+      "selectedArchitectureSlices": 236,
+      "sdkLibrariesCompared": 100,
+      "sdkMatchedPackageFiles": 103,
+      "sdkMatchedWholeFileHashes": 0,
+      "mwnetAppBinaryFiles": 170,
+      "mwnetAppSdkMatchedFiles": 55,
+      "distinctSdkProvidersMatched": 56,
+      "sdkComponentNames": [
+        "boost-atomic",
+        "boost-container",
+        "boost-filesystem",
+        "boost-iostreams",
+        "boost-program-options",
+        "boost-random",
+        "brotli",
+        "bullet3",
+        "bzip2",
+        "collada-dom",
+        "ffmpeg",
+        "fmt",
+        "freetype",
+        "icu",
+        "libjpeg-turbo",
+        "liblzma",
+        "libpng",
+        "libxml2",
+        "luajit",
+        "lz4",
+        "minizip",
+        "openal-soft",
+        "openmw-osg",
+        "sdl2",
+        "unshield",
+        "uriparser",
+        "zlib",
+        "zstd"
+      ],
+      "providerMatches": [
+        {
+          "sdkPath": "vcpkg-arm64-osx-dynamic-8306cb2556b92c9bb891b13f4769889838fe3c10/installed/arm64-osx-dynamic/lib/osgPlugins-3.6.5/osgdb_bmp.so",
+          "sdkSha256": "a2305bb75f26a24238ec0a75c85109ae92cb3288d48f1cc6d4fe2a3c3ffdd3c5",
+          "sectionPayloadSha256": "d850d1dbc8e4582d5e7fb3d051df874622ae2d38116fd98efa2ec2cec147d9b4",
+          "sdkOwners": [
+            {
+              "name": "openmw-osg",
+              "version": "2026-01-30",
+              "spdxSha256": "7b2c426a71ed383d71ab5340d93101cd4fec7755a867e7d90e71146f2e876043"
+            }
+          ],
+          "packagedFiles": [
+            {
+              "path": "MWNet-1.0.0-macOS-arm64/MWNet.app/Contents/PlugIns/osgPlugins/osgdb_bmp.so",
+              "sha256": "63a9f7c59484a0a51aeebc36717a7309dddb822ccdb84bece4de3050a2860634"
+            },
+            {
+              "path": "MWNet-1.0.0-macOS-arm64/OpenMW-CS.app/Contents/PlugIns/osgPlugins/osgdb_bmp.so",
+              "sha256": "63a9f7c59484a0a51aeebc36717a7309dddb822ccdb84bece4de3050a2860634"
+            }
+          ]
+        },
+        {
+          "sdkPath": "vcpkg-arm64-osx-dynamic-8306cb2556b92c9bb891b13f4769889838fe3c10/installed/arm64-osx-dynamic/lib/osgPlugins-3.6.5/osgdb_dae.so",
+          "sdkSha256": "fb8ba4e9eb1710ff2f6efa3a97bfd5e2178c8ffdb245930099fed67f491d9abb",
+          "sectionPayloadSha256": "5d27af49ce5319057577aee7e615c46bbcb320d5bea585d39654b6b697fa3d17",
+          "sdkOwners": [
+            {
+              "name": "openmw-osg",
+              "version": "2026-01-30",
+              "spdxSha256": "7b2c426a71ed383d71ab5340d93101cd4fec7755a867e7d90e71146f2e876043"
+            }
+          ],
+          "packagedFiles": [
+            {
+              "path": "MWNet-1.0.0-macOS-arm64/MWNet.app/Contents/PlugIns/osgPlugins/osgdb_dae.so",
+              "sha256": "952e871ca8140861779c345119ba11118dade93700311afba1581d133835743d"
+            },
+            {
+              "path": "MWNet-1.0.0-macOS-arm64/OpenMW-CS.app/Contents/PlugIns/osgPlugins/osgdb_dae.so",
+              "sha256": "952e871ca8140861779c345119ba11118dade93700311afba1581d133835743d"
+            }
+          ]
+        },
+        {
+          "sdkPath": "vcpkg-arm64-osx-dynamic-8306cb2556b92c9bb891b13f4769889838fe3c10/installed/arm64-osx-dynamic/lib/osgPlugins-3.6.5/osgdb_dds.so",
+          "sdkSha256": "ea2d1e3c145133ea7f29eee8a3f7413663278f9893a514c8db1b8f1c73a2925f",
+          "sectionPayloadSha256": "39865efd003b924e8138afbe6558daa30bb539a75d1592b53cde8ab5c540acd5",
+          "sdkOwners": [
+            {
+              "name": "openmw-osg",
+              "version": "2026-01-30",
+              "spdxSha256": "7b2c426a71ed383d71ab5340d93101cd4fec7755a867e7d90e71146f2e876043"
+            }
+          ],
+          "packagedFiles": [
+            {
+              "path": "MWNet-1.0.0-macOS-arm64/MWNet.app/Contents/PlugIns/osgPlugins/osgdb_dds.so",
+              "sha256": "e9367064f0e4ffe8bae3d871af919acf29692df071a0c16fd3ca28922d90320d"
+            },
+            {
+              "path": "MWNet-1.0.0-macOS-arm64/OpenMW-CS.app/Contents/PlugIns/osgPlugins/osgdb_dds.so",
+              "sha256": "e9367064f0e4ffe8bae3d871af919acf29692df071a0c16fd3ca28922d90320d"
+            }
+          ]
+        },
+        {
+          "sdkPath": "vcpkg-arm64-osx-dynamic-8306cb2556b92c9bb891b13f4769889838fe3c10/installed/arm64-osx-dynamic/lib/osgPlugins-3.6.5/osgdb_freetype.so",
+          "sdkSha256": "9168e83da2ed9efe62cc12bc5e6af27b4708e282d7fa9f3eea604238a1c3432c",
+          "sectionPayloadSha256": "82964d7cd9b1aa3b959e00adcc89d3b31ed55ba332f7b9de7b21b43ae3dfa79e",
+          "sdkOwners": [
+            {
+              "name": "openmw-osg",
+              "version": "2026-01-30",
+              "spdxSha256": "7b2c426a71ed383d71ab5340d93101cd4fec7755a867e7d90e71146f2e876043"
+            }
+          ],
+          "packagedFiles": [
+            {
+              "path": "MWNet-1.0.0-macOS-arm64/MWNet.app/Contents/PlugIns/osgPlugins/osgdb_freetype.so",
+              "sha256": "6fe7b74cf6cf44ee98eea4cad5c76dca45629dd04ae7ec39c88f473076cfe162"
+            },
+            {
+              "path": "MWNet-1.0.0-macOS-arm64/OpenMW-CS.app/Contents/PlugIns/osgPlugins/osgdb_freetype.so",
+              "sha256": "6fe7b74cf6cf44ee98eea4cad5c76dca45629dd04ae7ec39c88f473076cfe162"
+            }
+          ]
+        },
+        {
+          "sdkPath": "vcpkg-arm64-osx-dynamic-8306cb2556b92c9bb891b13f4769889838fe3c10/installed/arm64-osx-dynamic/lib/osgPlugins-3.6.5/osgdb_jpeg.so",
+          "sdkSha256": "f093484dab0c941b207326769558f9b2287f7ba6294497b29a982e8f9638bc5d",
+          "sectionPayloadSha256": "9bb990d7063b875028276598f77689fb26ef7d93262e2fd5e122a4852ad008c2",
+          "sdkOwners": [
+            {
+              "name": "openmw-osg",
+              "version": "2026-01-30",
+              "spdxSha256": "7b2c426a71ed383d71ab5340d93101cd4fec7755a867e7d90e71146f2e876043"
+            }
+          ],
+          "packagedFiles": [
+            {
+              "path": "MWNet-1.0.0-macOS-arm64/MWNet.app/Contents/PlugIns/osgPlugins/osgdb_jpeg.so",
+              "sha256": "2bc1895ae4ed074de86e711e73e77bd737c07a55e233a7ed38ae98c0c57249f6"
+            },
+            {
+              "path": "MWNet-1.0.0-macOS-arm64/OpenMW-CS.app/Contents/PlugIns/osgPlugins/osgdb_jpeg.so",
+              "sha256": "2bc1895ae4ed074de86e711e73e77bd737c07a55e233a7ed38ae98c0c57249f6"
+            }
+          ]
+        },
+        {
+          "sdkPath": "vcpkg-arm64-osx-dynamic-8306cb2556b92c9bb891b13f4769889838fe3c10/installed/arm64-osx-dynamic/lib/osgPlugins-3.6.5/osgdb_osg.so",
+          "sdkSha256": "258c496a91b636e4241b18b8afca1479747b693d518c0bfc3b5977102658e3a1",
+          "sectionPayloadSha256": "b54ed695e93e0a4d472a87e0a58681270afa93f63d279e3b4e6f7301f26bec75",
+          "sdkOwners": [
+            {
+              "name": "openmw-osg",
+              "version": "2026-01-30",
+              "spdxSha256": "7b2c426a71ed383d71ab5340d93101cd4fec7755a867e7d90e71146f2e876043"
+            }
+          ],
+          "packagedFiles": [
+            {
+              "path": "MWNet-1.0.0-macOS-arm64/MWNet.app/Contents/PlugIns/osgPlugins/osgdb_osg.so",
+              "sha256": "6154c95cdf20cd2ae034c4930facbb426524ec67dc44d11709a5f55a16bd2e31"
+            },
+            {
+              "path": "MWNet-1.0.0-macOS-arm64/OpenMW-CS.app/Contents/PlugIns/osgPlugins/osgdb_osg.so",
+              "sha256": "6154c95cdf20cd2ae034c4930facbb426524ec67dc44d11709a5f55a16bd2e31"
+            }
+          ]
+        },
+        {
+          "sdkPath": "vcpkg-arm64-osx-dynamic-8306cb2556b92c9bb891b13f4769889838fe3c10/installed/arm64-osx-dynamic/lib/osgPlugins-3.6.5/osgdb_png.so",
+          "sdkSha256": "532fe85afb035055b5c0b05be78e04756d750884bd5eaa4ae5af1e802dfd128a",
+          "sectionPayloadSha256": "ffb09983cc1b7bcdcc33a753f30dcc3339a6d03c91ca57e4594db1b3b5be26ee",
+          "sdkOwners": [
+            {
+              "name": "openmw-osg",
+              "version": "2026-01-30",
+              "spdxSha256": "7b2c426a71ed383d71ab5340d93101cd4fec7755a867e7d90e71146f2e876043"
+            }
+          ],
+          "packagedFiles": [
+            {
+              "path": "MWNet-1.0.0-macOS-arm64/MWNet.app/Contents/PlugIns/osgPlugins/osgdb_png.so",
+              "sha256": "eb359fd01ae1e172ef250cf387fd92225b5460353c84e80e3e04fa3b69e65909"
+            },
+            {
+              "path": "MWNet-1.0.0-macOS-arm64/OpenMW-CS.app/Contents/PlugIns/osgPlugins/osgdb_png.so",
+              "sha256": "eb359fd01ae1e172ef250cf387fd92225b5460353c84e80e3e04fa3b69e65909"
+            }
+          ]
+        },
+        {
+          "sdkPath": "vcpkg-arm64-osx-dynamic-8306cb2556b92c9bb891b13f4769889838fe3c10/installed/arm64-osx-dynamic/lib/osgPlugins-3.6.5/osgdb_serializers_osg.so",
+          "sdkSha256": "153215285abbcb5a0ed2ef82218bfaf4fbbba2c9c008e38ea7dfa28d63b7dd4e",
+          "sectionPayloadSha256": "538cb34fefe14f75238e0a59e190da78681dab49be059baf965ff554d81b581d",
+          "sdkOwners": [
+            {
+              "name": "openmw-osg",
+              "version": "2026-01-30",
+              "spdxSha256": "7b2c426a71ed383d71ab5340d93101cd4fec7755a867e7d90e71146f2e876043"
+            }
+          ],
+          "packagedFiles": [
+            {
+              "path": "MWNet-1.0.0-macOS-arm64/MWNet.app/Contents/PlugIns/osgPlugins/osgdb_serializers_osg.so",
+              "sha256": "141073be115c6c25d2b0851756b836274f3528914c8a10097a4d2d23184b5d45"
+            },
+            {
+              "path": "MWNet-1.0.0-macOS-arm64/OpenMW-CS.app/Contents/PlugIns/osgPlugins/osgdb_serializers_osg.so",
+              "sha256": "141073be115c6c25d2b0851756b836274f3528914c8a10097a4d2d23184b5d45"
+            }
+          ]
+        },
+        {
+          "sdkPath": "vcpkg-arm64-osx-dynamic-8306cb2556b92c9bb891b13f4769889838fe3c10/installed/arm64-osx-dynamic/lib/osgPlugins-3.6.5/osgdb_tga.so",
+          "sdkSha256": "997915b8f17aeb4c8d4f16036e5b37c05ea93b975e77b64219b775a62389434e",
+          "sectionPayloadSha256": "0a35d8967cc6a9ddec63b42c36d99278f175c1a5a6db2e4d759be2cd4a136d05",
+          "sdkOwners": [
+            {
+              "name": "openmw-osg",
+              "version": "2026-01-30",
+              "spdxSha256": "7b2c426a71ed383d71ab5340d93101cd4fec7755a867e7d90e71146f2e876043"
+            }
+          ],
+          "packagedFiles": [
+            {
+              "path": "MWNet-1.0.0-macOS-arm64/MWNet.app/Contents/PlugIns/osgPlugins/osgdb_tga.so",
+              "sha256": "3238832e9c44d18e6113ef6d8358ee4bc6f7db7e9f96695ba56c8567d70b1c12"
+            },
+            {
+              "path": "MWNet-1.0.0-macOS-arm64/OpenMW-CS.app/Contents/PlugIns/osgPlugins/osgdb_tga.so",
+              "sha256": "3238832e9c44d18e6113ef6d8358ee4bc6f7db7e9f96695ba56c8567d70b1c12"
+            }
+          ]
+        },
+        {
+          "sdkPath": "vcpkg-arm64-osx-dynamic-8306cb2556b92c9bb891b13f4769889838fe3c10/installed/arm64-osx-dynamic/lib/libavcodec.62.11.100.dylib",
+          "sdkSha256": "88e818677bc8f9c50280ec4ac277c3fd5c76b11a5762bb83ffb60a3372d9fcac",
+          "sectionPayloadSha256": "d3387500b359c6009af7f555e0ae1aa1f981f563a262f5101183cf50d4a997b3",
+          "sdkOwners": [
+            {
+              "name": "ffmpeg",
+              "version": "8.0.1#2",
+              "spdxSha256": "125bb79f6c27fe61a9f7c605d347c57d72f40d5c9a608eb9234540e2f618101e"
+            }
+          ],
+          "packagedFiles": [
+            {
+              "path": "MWNet-1.0.0-macOS-arm64/MWNet.app/Contents/Frameworks/libavcodec.62.11.100.dylib",
+              "sha256": "11d4099543821a13e6b2ec40b9155a864c6dc0c296970084b0e628931bdaca44"
+            }
+          ]
+        },
+        {
+          "sdkPath": "vcpkg-arm64-osx-dynamic-8306cb2556b92c9bb891b13f4769889838fe3c10/installed/arm64-osx-dynamic/lib/libavformat.62.3.100.dylib",
+          "sdkSha256": "3c9f88e4bb95caacaeb74adb60be2dc5f71d0f6ae5f85e1d52daae2838be15de",
+          "sectionPayloadSha256": "c92f7f8f0e6c465fe3138651ad20a8f47e5cb9d95c346f309f02b39523e042d0",
+          "sdkOwners": [
+            {
+              "name": "ffmpeg",
+              "version": "8.0.1#2",
+              "spdxSha256": "125bb79f6c27fe61a9f7c605d347c57d72f40d5c9a608eb9234540e2f618101e"
+            }
+          ],
+          "packagedFiles": [
+            {
+              "path": "MWNet-1.0.0-macOS-arm64/MWNet.app/Contents/Frameworks/libavformat.62.3.100.dylib",
+              "sha256": "91334cce7b10ea441ff42b2a995011bfd1c867a6fdeff59d9d098114ad53a778"
+            }
+          ]
+        },
+        {
+          "sdkPath": "vcpkg-arm64-osx-dynamic-8306cb2556b92c9bb891b13f4769889838fe3c10/installed/arm64-osx-dynamic/lib/libavutil.60.8.100.dylib",
+          "sdkSha256": "0429818c539fb1702df556abd60bc1f90b37557778b6eef32d71ae1fca146143",
+          "sectionPayloadSha256": "25c80dc21ef9002c42e8f511739c1804f8ece061c886b34a9a970d041ea54bd5",
+          "sdkOwners": [
+            {
+              "name": "ffmpeg",
+              "version": "8.0.1#2",
+              "spdxSha256": "125bb79f6c27fe61a9f7c605d347c57d72f40d5c9a608eb9234540e2f618101e"
+            }
+          ],
+          "packagedFiles": [
+            {
+              "path": "MWNet-1.0.0-macOS-arm64/MWNet.app/Contents/Frameworks/libavutil.60.8.100.dylib",
+              "sha256": "6606b41b5477f132144ab075a3e28bea81c0100f14df3e32db2d3f000b79ba5d"
+            }
+          ]
+        },
+        {
+          "sdkPath": "vcpkg-arm64-osx-dynamic-8306cb2556b92c9bb891b13f4769889838fe3c10/installed/arm64-osx-dynamic/lib/libboost_atomic.1.90.0.dylib",
+          "sdkSha256": "3e46d4e5b364259762e06096c4af1cb30f67263b355129b8e51f116033eb9da3",
+          "sectionPayloadSha256": "b9ad6dc628687df30f64c01315986168ec7a3f6375295667bfe708d8edc4cc3c",
+          "sdkOwners": [
+            {
+              "name": "boost-atomic",
+              "version": "1.90.0#1",
+              "spdxSha256": "09763ffa6ab4f76a14d64416813cacfeb15a8380ce05fa0c31fbb183aaf7b446"
+            }
+          ],
+          "packagedFiles": [
+            {
+              "path": "MWNet-1.0.0-macOS-arm64/MWNet.app/Contents/Frameworks/libboost_atomic.1.90.0.dylib",
+              "sha256": "1ecc93272def0e071c113a1a09f82cef584571d73e96c2ab3a63f07bfc0480bb"
+            },
+            {
+              "path": "MWNet-1.0.0-macOS-arm64/OpenMW-CS.app/Contents/Frameworks/libboost_atomic.1.90.0.dylib",
+              "sha256": "1ecc93272def0e071c113a1a09f82cef584571d73e96c2ab3a63f07bfc0480bb"
+            }
+          ]
+        },
+        {
+          "sdkPath": "vcpkg-arm64-osx-dynamic-8306cb2556b92c9bb891b13f4769889838fe3c10/installed/arm64-osx-dynamic/lib/libboost_container.1.90.0.dylib",
+          "sdkSha256": "d71194fa4011146d58de0b3e0857ff9c77bb36dabd8b68d9d793c3a684ccc23a",
+          "sectionPayloadSha256": "632d87984eded58251cc955173b8bfbea08712a9a19a49fa865ad4967bccbe27",
+          "sdkOwners": [
+            {
+              "name": "boost-container",
+              "version": "1.90.0#1",
+              "spdxSha256": "ea4c627805a38762a1248e82c91d6a12e3bf9e7d9848801dc4f82f60ceab3ee9"
+            }
+          ],
+          "packagedFiles": [
+            {
+              "path": "MWNet-1.0.0-macOS-arm64/MWNet.app/Contents/Frameworks/libboost_container.1.90.0.dylib",
+              "sha256": "b6f82ba8dcb1d32b0a08c44c1e72c6dfa6390c16faa0a1db5c9e334bf76ea85e"
+            },
+            {
+              "path": "MWNet-1.0.0-macOS-arm64/OpenMW-CS.app/Contents/Frameworks/libboost_container.1.90.0.dylib",
+              "sha256": "b6f82ba8dcb1d32b0a08c44c1e72c6dfa6390c16faa0a1db5c9e334bf76ea85e"
+            }
+          ]
+        },
+        {
+          "sdkPath": "vcpkg-arm64-osx-dynamic-8306cb2556b92c9bb891b13f4769889838fe3c10/installed/arm64-osx-dynamic/lib/libboost_filesystem.1.90.0.dylib",
+          "sdkSha256": "23e13a3aad01e13b2f9b5acde9801bb5f543883d8be655179ad0e21ed022de21",
+          "sectionPayloadSha256": "296a9bcf4aa2c62a8f33e27b05c30f5b67fc14b891faac91f819bf8c72c59ff1",
+          "sdkOwners": [
+            {
+              "name": "boost-filesystem",
+              "version": "1.90.0#1",
+              "spdxSha256": "71b5287a90fc50faef2b312ca779a54e96d74708dccca6d8cb510af243fe3605"
+            }
+          ],
+          "packagedFiles": [
+            {
+              "path": "MWNet-1.0.0-macOS-arm64/MWNet.app/Contents/Frameworks/libboost_filesystem.1.90.0.dylib",
+              "sha256": "e3987a340891111ac21ed919f758a9bfc4341034ad972ee7af3a538aabc599d0"
+            },
+            {
+              "path": "MWNet-1.0.0-macOS-arm64/OpenMW-CS.app/Contents/Frameworks/libboost_filesystem.1.90.0.dylib",
+              "sha256": "e3987a340891111ac21ed919f758a9bfc4341034ad972ee7af3a538aabc599d0"
+            }
+          ]
+        },
+        {
+          "sdkPath": "vcpkg-arm64-osx-dynamic-8306cb2556b92c9bb891b13f4769889838fe3c10/installed/arm64-osx-dynamic/lib/libboost_iostreams.1.90.0.dylib",
+          "sdkSha256": "5754a9b3e5fff4da4db406d2f38837c462fe530241881983b05d7f58e206c1ea",
+          "sectionPayloadSha256": "a4bdb40634a0b4d629687ac20bbda30c28ca8ea2299d65ec862c80a6610c5ee3",
+          "sdkOwners": [
+            {
+              "name": "boost-iostreams",
+              "version": "1.90.0#1",
+              "spdxSha256": "c9096eff58f9f78275c0a377f8bc44e4549127309137ce595fd0d053988e9bc4"
+            }
+          ],
+          "packagedFiles": [
+            {
+              "path": "MWNet-1.0.0-macOS-arm64/MWNet.app/Contents/Frameworks/libboost_iostreams.1.90.0.dylib",
+              "sha256": "d46aad79691d473e54c378acdb10392fe675f29579908d405ff62f44bd9e66c4"
+            },
+            {
+              "path": "MWNet-1.0.0-macOS-arm64/OpenMW-CS.app/Contents/Frameworks/libboost_iostreams.1.90.0.dylib",
+              "sha256": "d46aad79691d473e54c378acdb10392fe675f29579908d405ff62f44bd9e66c4"
+            }
+          ]
+        },
+        {
+          "sdkPath": "vcpkg-arm64-osx-dynamic-8306cb2556b92c9bb891b13f4769889838fe3c10/installed/arm64-osx-dynamic/lib/libboost_program_options.1.90.0.dylib",
+          "sdkSha256": "ae2418995133c8a133be419d45c59adb6689d7450b4f56bbbe1f5aa1bc30a8d7",
+          "sectionPayloadSha256": "2da58fe31731d13c70cda130c0529b0ba7cf8fd6c0c4905dc72f241a7c699488",
+          "sdkOwners": [
+            {
+              "name": "boost-program-options",
+              "version": "1.90.0#1",
+              "spdxSha256": "c45f92768aeed5ec884b4c2ceed5f7a32262bfb08e2d5891adca035c234cca93"
+            }
+          ],
+          "packagedFiles": [
+            {
+              "path": "MWNet-1.0.0-macOS-arm64/MWNet.app/Contents/Frameworks/libboost_program_options.1.90.0.dylib",
+              "sha256": "d3657335f06942b22c6dae58a4cc07d6b66fd64a8d7bb9843967c3e11f72ec72"
+            },
+            {
+              "path": "MWNet-1.0.0-macOS-arm64/OpenMW-CS.app/Contents/Frameworks/libboost_program_options.1.90.0.dylib",
+              "sha256": "d3657335f06942b22c6dae58a4cc07d6b66fd64a8d7bb9843967c3e11f72ec72"
+            }
+          ]
+        },
+        {
+          "sdkPath": "vcpkg-arm64-osx-dynamic-8306cb2556b92c9bb891b13f4769889838fe3c10/installed/arm64-osx-dynamic/lib/libboost_random.1.90.0.dylib",
+          "sdkSha256": "2a88384a3d43fc5f8b68f1c21e0ec3f5f0f3878f0374ae2b9b14afaabcebfd96",
+          "sectionPayloadSha256": "14021d4f1f2b4d10795f32901ee57e5bb4aeecb29190f519396685942703f75e",
+          "sdkOwners": [
+            {
+              "name": "boost-random",
+              "version": "1.90.0#1",
+              "spdxSha256": "634f0bc011e14c3fdeb549c6c6f35d36d301d3329066a55e2507fc948ac99ec0"
+            }
+          ],
+          "packagedFiles": [
+            {
+              "path": "MWNet-1.0.0-macOS-arm64/MWNet.app/Contents/Frameworks/libboost_random.1.90.0.dylib",
+              "sha256": "acb6914fbdd102ab1ddfee042517cd641b3277e255b721df4d0b5acb662bba74"
+            },
+            {
+              "path": "MWNet-1.0.0-macOS-arm64/OpenMW-CS.app/Contents/Frameworks/libboost_random.1.90.0.dylib",
+              "sha256": "acb6914fbdd102ab1ddfee042517cd641b3277e255b721df4d0b5acb662bba74"
+            }
+          ]
+        },
+        {
+          "sdkPath": "vcpkg-arm64-osx-dynamic-8306cb2556b92c9bb891b13f4769889838fe3c10/installed/arm64-osx-dynamic/lib/libbrotlicommon.1.2.0.dylib",
+          "sdkSha256": "6a0eac9c3b3f48df19ce68a794ef0176944f69ffd6a5e36d4254175134215c2a",
+          "sectionPayloadSha256": "1961d1ce4a1858adf0e1db3455d1eda05e2c6095ba23c42618e1be82bc4a1a8c",
+          "sdkOwners": [
+            {
+              "name": "brotli",
+              "version": "1.2.0",
+              "spdxSha256": "a9b3c70248360a3d46e4c48382a41b0cc94cbb42262a2f80428081cc62ebdac6"
+            }
+          ],
+          "packagedFiles": [
+            {
+              "path": "MWNet-1.0.0-macOS-arm64/MWNet.app/Contents/Frameworks/libbrotlicommon.1.2.0.dylib",
+              "sha256": "ec38c07fc43c90113b47ff38ff9f3f38055da319de9d39d6242573fffd4b7f36"
+            },
+            {
+              "path": "MWNet-1.0.0-macOS-arm64/OpenMW-CS.app/Contents/Frameworks/libbrotlicommon.1.2.0.dylib",
+              "sha256": "ec38c07fc43c90113b47ff38ff9f3f38055da319de9d39d6242573fffd4b7f36"
+            }
+          ]
+        },
+        {
+          "sdkPath": "vcpkg-arm64-osx-dynamic-8306cb2556b92c9bb891b13f4769889838fe3c10/installed/arm64-osx-dynamic/lib/libbrotlidec.1.2.0.dylib",
+          "sdkSha256": "a026995c58493b2b165a9e0ca0818957a339e1e0894fc4a7d36cc1c2daab8914",
+          "sectionPayloadSha256": "ab2db968d795e1c772214aacde3c623e5fd9609753952d4197f959d417001088",
+          "sdkOwners": [
+            {
+              "name": "brotli",
+              "version": "1.2.0",
+              "spdxSha256": "a9b3c70248360a3d46e4c48382a41b0cc94cbb42262a2f80428081cc62ebdac6"
+            }
+          ],
+          "packagedFiles": [
+            {
+              "path": "MWNet-1.0.0-macOS-arm64/MWNet.app/Contents/Frameworks/libbrotlidec.1.2.0.dylib",
+              "sha256": "1da71c88318591d1d2b0cd024850c954933a3485023f9266447834aaed743125"
+            },
+            {
+              "path": "MWNet-1.0.0-macOS-arm64/OpenMW-CS.app/Contents/Frameworks/libbrotlidec.1.2.0.dylib",
+              "sha256": "1da71c88318591d1d2b0cd024850c954933a3485023f9266447834aaed743125"
+            }
+          ]
+        },
+        {
+          "sdkPath": "vcpkg-arm64-osx-dynamic-8306cb2556b92c9bb891b13f4769889838fe3c10/installed/arm64-osx-dynamic/lib/libBulletCollision.3.25.dylib",
+          "sdkSha256": "84190287069b28867c6b84320ce5e2273dacee8aeabe0250f7d55c4523f9ec62",
+          "sectionPayloadSha256": "112b1e39d09efb92b0e777fc87bd202afce8aef0f214200b611c6ed33ed59d8b",
+          "sdkOwners": [
+            {
+              "name": "bullet3",
+              "version": "3.25#3",
+              "spdxSha256": "04cc694c1072da0ce56e7e2e7e0cdc04c93ef7779e8b912cdc923dd478cec2d7"
+            }
+          ],
+          "packagedFiles": [
+            {
+              "path": "MWNet-1.0.0-macOS-arm64/MWNet.app/Contents/Frameworks/libBulletCollision.3.25.dylib",
+              "sha256": "baf65cd329e3bbc70af0ecea54cca8560233be922845a22b711d4933d795355c"
+            },
+            {
+              "path": "MWNet-1.0.0-macOS-arm64/OpenMW-CS.app/Contents/Frameworks/libBulletCollision.3.25.dylib",
+              "sha256": "baf65cd329e3bbc70af0ecea54cca8560233be922845a22b711d4933d795355c"
+            }
+          ]
+        },
+        {
+          "sdkPath": "vcpkg-arm64-osx-dynamic-8306cb2556b92c9bb891b13f4769889838fe3c10/installed/arm64-osx-dynamic/lib/libbz2.1.0.8.dylib",
+          "sdkSha256": "b03bc819f37b1c11637710a66293ee711a8b4c73501f7b9b84cf5dbd300446dc",
+          "sectionPayloadSha256": "981d7f3fd205a0a23a247ebe3dad40042eeec7004931ff8db2ae850bcb8ee17e",
+          "sdkOwners": [
+            {
+              "name": "bzip2",
+              "version": "1.0.8#6",
+              "spdxSha256": "caba73f7754d966fc0273d51ef3f0e3ee41776228e710a57cdb3aee81717d57c"
+            }
+          ],
+          "packagedFiles": [
+            {
+              "path": "MWNet-1.0.0-macOS-arm64/MWNet.app/Contents/Frameworks/libbz2.1.0.8.dylib",
+              "sha256": "9009eb453fdc362f3772a270aacabb054548b95e5d7a329ff6254d8b8cdeb400"
+            },
+            {
+              "path": "MWNet-1.0.0-macOS-arm64/OpenMW-CS.app/Contents/Frameworks/libbz2.1.0.8.dylib",
+              "sha256": "9009eb453fdc362f3772a270aacabb054548b95e5d7a329ff6254d8b8cdeb400"
+            }
+          ]
+        },
+        {
+          "sdkPath": "vcpkg-arm64-osx-dynamic-8306cb2556b92c9bb891b13f4769889838fe3c10/installed/arm64-osx-dynamic/lib/libcollada-dom2.5-dp.2.5.0.dylib",
+          "sdkSha256": "0b441cc80d02d627ded213e229a2eaedb1346eed536addc9e60320e13230801e",
+          "sectionPayloadSha256": "fd1967ed66029ff28367fdd420284ae88c627a6c52125a80101e23006951fb5d",
+          "sdkOwners": [
+            {
+              "name": "collada-dom",
+              "version": "2.5.0#11",
+              "spdxSha256": "ce99014d20a703ad8fb8d302296e8ac772b1521bb2502bdafb8bd69a5cbd4d42"
+            }
+          ],
+          "packagedFiles": [
+            {
+              "path": "MWNet-1.0.0-macOS-arm64/MWNet.app/Contents/Frameworks/libcollada-dom2.5-dp.2.5.0.dylib",
+              "sha256": "05c5ab2079f9979accace39d4651899e41043b61c5213abcc31243adad55f3eb"
+            },
+            {
+              "path": "MWNet-1.0.0-macOS-arm64/OpenMW-CS.app/Contents/Frameworks/libcollada-dom2.5-dp.2.5.0.dylib",
+              "sha256": "05c5ab2079f9979accace39d4651899e41043b61c5213abcc31243adad55f3eb"
+            }
+          ]
+        },
+        {
+          "sdkPath": "vcpkg-arm64-osx-dynamic-8306cb2556b92c9bb891b13f4769889838fe3c10/installed/arm64-osx-dynamic/lib/libfmt.12.1.0.dylib",
+          "sdkSha256": "0c5a77b5c9ef1c0ce12f0e7f7e95c3d1fbbc6d17df6c8504734316f649e1f9ff",
+          "sectionPayloadSha256": "793752b7fe83772e608b5c64fe44f10f02ecae2840efc4dd291d399f16ae1970",
+          "sdkOwners": [
+            {
+              "name": "fmt",
+              "version": "12.1.0",
+              "spdxSha256": "488918d8e16f69a84cfe4d6926f33c6195af5443fd9743335593c4d3e337751f"
+            }
+          ],
+          "packagedFiles": [
+            {
+              "path": "MWNet-1.0.0-macOS-arm64/MWNet.app/Contents/Frameworks/libfmt.12.1.0.dylib",
+              "sha256": "41c03376d55e84e19eb5f8f945e2798a8e69043377631cd7ddabe7da34b97d1d"
+            }
+          ]
+        },
+        {
+          "sdkPath": "vcpkg-arm64-osx-dynamic-8306cb2556b92c9bb891b13f4769889838fe3c10/installed/arm64-osx-dynamic/lib/libfreetype.6.20.2.dylib",
+          "sdkSha256": "98506eaccc26bc45c5045cf322c7a19f687d138cf7f053fd8edcbafb7854602b",
+          "sectionPayloadSha256": "e88a9db16ccf71950335efd25b4e1bbe16aff64c272e66a442aa226e930a628c",
+          "sdkOwners": [
+            {
+              "name": "freetype",
+              "version": "2.13.3",
+              "spdxSha256": "32f346cd3da903b5ab7869b954fd20994457588401f09937323d90c29621d8c3"
+            }
+          ],
+          "packagedFiles": [
+            {
+              "path": "MWNet-1.0.0-macOS-arm64/MWNet.app/Contents/Frameworks/libfreetype.6.20.2.dylib",
+              "sha256": "7e2e4dddcf15fb81577d6dcf97eba37f46463f5f68423eb54e67164d1c1220cc"
+            },
+            {
+              "path": "MWNet-1.0.0-macOS-arm64/OpenMW-CS.app/Contents/Frameworks/libfreetype.6.20.2.dylib",
+              "sha256": "7e2e4dddcf15fb81577d6dcf97eba37f46463f5f68423eb54e67164d1c1220cc"
+            }
+          ]
+        },
+        {
+          "sdkPath": "vcpkg-arm64-osx-dynamic-8306cb2556b92c9bb891b13f4769889838fe3c10/installed/arm64-osx-dynamic/lib/libicudata.78.2.dylib",
+          "sdkSha256": "605fc021ee2c52f1f72f6d78cc555b18156bfc904491feea0babd98b70d3e79b",
+          "sectionPayloadSha256": "797d0d336da874603c36fec79d82f2a91e950636ba5f489f323e2254f6a81f84",
+          "sdkOwners": [
+            {
+              "name": "icu",
+              "version": "78.2",
+              "spdxSha256": "4aeadfddbafe694a0703e09a9cae142dc410ff8b92a9f3d493f37c33e30343b0"
+            }
+          ],
+          "packagedFiles": [
+            {
+              "path": "MWNet-1.0.0-macOS-arm64/MWNet.app/Contents/Frameworks/libicudata.78.2.dylib",
+              "sha256": "225f43a340bb7c0ba9b01db9f6f93cba9a9832f02b96013cfb5663d53b635dc2"
+            },
+            {
+              "path": "MWNet-1.0.0-macOS-arm64/OpenMW-CS.app/Contents/Frameworks/libicudata.78.2.dylib",
+              "sha256": "225f43a340bb7c0ba9b01db9f6f93cba9a9832f02b96013cfb5663d53b635dc2"
+            }
+          ]
+        },
+        {
+          "sdkPath": "vcpkg-arm64-osx-dynamic-8306cb2556b92c9bb891b13f4769889838fe3c10/installed/arm64-osx-dynamic/lib/libicui18n.78.2.dylib",
+          "sdkSha256": "27834ff7ca96cb30db4ab111559002812403c497e78647bff3ad1fc262c6ee0c",
+          "sectionPayloadSha256": "eaa7e09cc230bbb464507c77f7c849c719548fd04651f7275b1b18f40da75523",
+          "sdkOwners": [
+            {
+              "name": "icu",
+              "version": "78.2",
+              "spdxSha256": "4aeadfddbafe694a0703e09a9cae142dc410ff8b92a9f3d493f37c33e30343b0"
+            }
+          ],
+          "packagedFiles": [
+            {
+              "path": "MWNet-1.0.0-macOS-arm64/MWNet.app/Contents/Frameworks/libicui18n.78.2.dylib",
+              "sha256": "1163d08e9be1c6cbca94682edfc6d0d0545cc9bc7938e16e97c7332fe362f981"
+            },
+            {
+              "path": "MWNet-1.0.0-macOS-arm64/OpenMW-CS.app/Contents/Frameworks/libicui18n.78.2.dylib",
+              "sha256": "1163d08e9be1c6cbca94682edfc6d0d0545cc9bc7938e16e97c7332fe362f981"
+            }
+          ]
+        },
+        {
+          "sdkPath": "vcpkg-arm64-osx-dynamic-8306cb2556b92c9bb891b13f4769889838fe3c10/installed/arm64-osx-dynamic/lib/libicuuc.78.2.dylib",
+          "sdkSha256": "f45f90771a14b057b01f2c42206c3395662834683b37f4af0195428fb4700e6e",
+          "sectionPayloadSha256": "e88af03d0a73edc6bfddfc2d6da5bd150ae6bd9076111e988f0d85f2b57a4289",
+          "sdkOwners": [
+            {
+              "name": "icu",
+              "version": "78.2",
+              "spdxSha256": "4aeadfddbafe694a0703e09a9cae142dc410ff8b92a9f3d493f37c33e30343b0"
+            }
+          ],
+          "packagedFiles": [
+            {
+              "path": "MWNet-1.0.0-macOS-arm64/MWNet.app/Contents/Frameworks/libicuuc.78.2.dylib",
+              "sha256": "f577f2f6f356d36cee924ca00d2b3ef2aa6b4fa99c708efc96087a59a7428600"
+            },
+            {
+              "path": "MWNet-1.0.0-macOS-arm64/OpenMW-CS.app/Contents/Frameworks/libicuuc.78.2.dylib",
+              "sha256": "f577f2f6f356d36cee924ca00d2b3ef2aa6b4fa99c708efc96087a59a7428600"
+            }
+          ]
+        },
+        {
+          "sdkPath": "vcpkg-arm64-osx-dynamic-8306cb2556b92c9bb891b13f4769889838fe3c10/installed/arm64-osx-dynamic/lib/libjpeg.62.4.0.dylib",
+          "sdkSha256": "9ca46a1812a194572cf45c1793ccd7c3dc6a0eb3a2fde30bbb804e031be92b20",
+          "sectionPayloadSha256": "5d8a1c591bc71399a30761777a974e3ae91cf9117a0dd217b22e9b1e7c2cd970",
+          "sdkOwners": [
+            {
+              "name": "libjpeg-turbo",
+              "version": "3.1.3",
+              "spdxSha256": "859dd5c4e4fcc912182a0ce4da75bd5305871f23ffba61a2c20d67b4bec98efa"
+            }
+          ],
+          "packagedFiles": [
+            {
+              "path": "MWNet-1.0.0-macOS-arm64/MWNet.app/Contents/Frameworks/libjpeg.62.4.0.dylib",
+              "sha256": "4ae1748063755eda094700b9d1843baa18b2adedd13ed3f5084ab6c3733073fd"
+            },
+            {
+              "path": "MWNet-1.0.0-macOS-arm64/OpenMW-CS.app/Contents/Frameworks/libjpeg.62.4.0.dylib",
+              "sha256": "4ae1748063755eda094700b9d1843baa18b2adedd13ed3f5084ab6c3733073fd"
+            }
+          ]
+        },
+        {
+          "sdkPath": "vcpkg-arm64-osx-dynamic-8306cb2556b92c9bb891b13f4769889838fe3c10/installed/arm64-osx-dynamic/lib/libLinearMath.3.25.dylib",
+          "sdkSha256": "6d4ba5a7088c53834431550a4998bb05ff7d893b869e9d135fed570a8666ccfb",
+          "sectionPayloadSha256": "1e2d4cfe0d2b76e88d674be80e6c89a732fc1c93e025a0fb930fa3d7f1715d9c",
+          "sdkOwners": [
+            {
+              "name": "bullet3",
+              "version": "3.25#3",
+              "spdxSha256": "04cc694c1072da0ce56e7e2e7e0cdc04c93ef7779e8b912cdc923dd478cec2d7"
+            }
+          ],
+          "packagedFiles": [
+            {
+              "path": "MWNet-1.0.0-macOS-arm64/MWNet.app/Contents/Frameworks/libLinearMath.3.25.dylib",
+              "sha256": "6daf31132679aa67424880941558ed271c1346afdb213ddbb5448a7c50673fd7"
+            },
+            {
+              "path": "MWNet-1.0.0-macOS-arm64/OpenMW-CS.app/Contents/Frameworks/libLinearMath.3.25.dylib",
+              "sha256": "6daf31132679aa67424880941558ed271c1346afdb213ddbb5448a7c50673fd7"
+            }
+          ]
+        },
+        {
+          "sdkPath": "vcpkg-arm64-osx-dynamic-8306cb2556b92c9bb891b13f4769889838fe3c10/installed/arm64-osx-dynamic/lib/libluajit-5.1.2.1.1767980792.dylib",
+          "sdkSha256": "f428f54593a2a719850eca1f732b176708969c68892987fecb6196a884209f91",
+          "sectionPayloadSha256": "84f48a1146ab9cfee80c69c764ca7387d04efa649ad055869078bfa87430b954",
+          "sdkOwners": [
+            {
+              "name": "luajit",
+              "version": "2026-01-09",
+              "spdxSha256": "2af6c5761748d3d9ee738e194e7c8eec1bd412562de9424fb66ff394e15dfea2"
+            }
+          ],
+          "packagedFiles": [
+            {
+              "path": "MWNet-1.0.0-macOS-arm64/MWNet.app/Contents/Frameworks/libluajit-5.1.2.1.1767980792.dylib",
+              "sha256": "42036c78def891bd8b99cca0ec4cb1ebe8e3b3ce634766833d4ac25f77d55c76"
+            },
+            {
+              "path": "MWNet-1.0.0-macOS-arm64/OpenMW-CS.app/Contents/Frameworks/libluajit-5.1.2.1.1767980792.dylib",
+              "sha256": "42036c78def891bd8b99cca0ec4cb1ebe8e3b3ce634766833d4ac25f77d55c76"
+            }
+          ]
+        },
+        {
+          "sdkPath": "vcpkg-arm64-osx-dynamic-8306cb2556b92c9bb891b13f4769889838fe3c10/installed/arm64-osx-dynamic/lib/liblz4.1.10.0.dylib",
+          "sdkSha256": "64a7991504c55ccf96be0aa6604590c0a06133b8c75f0154fd9ee85971ad7f81",
+          "sectionPayloadSha256": "c2af0d18df4ba656fa073990c4172582866d259705080694efc3220c51eec71a",
+          "sdkOwners": [
+            {
+              "name": "lz4",
+              "version": "1.10.0",
+              "spdxSha256": "6046e643983271b52b89921e385cbea1702530c2a97acaa617739c5db243e510"
+            }
+          ],
+          "packagedFiles": [
+            {
+              "path": "MWNet-1.0.0-macOS-arm64/MWNet.app/Contents/Frameworks/liblz4.1.10.0.dylib",
+              "sha256": "16d4c9c46e773a9dc653a9cc78c57dc3a1780410b67527eba5b0c2ac683eb87f"
+            },
+            {
+              "path": "MWNet-1.0.0-macOS-arm64/OpenMW-CS.app/Contents/Frameworks/liblz4.1.10.0.dylib",
+              "sha256": "16d4c9c46e773a9dc653a9cc78c57dc3a1780410b67527eba5b0c2ac683eb87f"
+            }
+          ]
+        },
+        {
+          "sdkPath": "vcpkg-arm64-osx-dynamic-8306cb2556b92c9bb891b13f4769889838fe3c10/installed/arm64-osx-dynamic/lib/liblzma.5.8.2.dylib",
+          "sdkSha256": "e4987a5736b9f2902eaf74d3e1e1c8d0712bf3491561623f938841198d3fe865",
+          "sectionPayloadSha256": "e6197c7af41d4fa595f1cac670d20a4e98a51bea72f0993e8b84d970a7be5d25",
+          "sdkOwners": [
+            {
+              "name": "liblzma",
+              "version": "5.8.2",
+              "spdxSha256": "628946f81607dcad4f048fdb279d3903bb2205b57008dda730c79e64cc247284"
+            }
+          ],
+          "packagedFiles": [
+            {
+              "path": "MWNet-1.0.0-macOS-arm64/MWNet.app/Contents/Frameworks/liblzma.5.8.2.dylib",
+              "sha256": "e41124dd748ece59b822a29ed05c6c1d43639b2ef695fabd8c934c03f95a33c6"
+            },
+            {
+              "path": "MWNet-1.0.0-macOS-arm64/OpenMW-CS.app/Contents/Frameworks/liblzma.5.8.2.dylib",
+              "sha256": "e41124dd748ece59b822a29ed05c6c1d43639b2ef695fabd8c934c03f95a33c6"
+            }
+          ]
+        },
+        {
+          "sdkPath": "vcpkg-arm64-osx-dynamic-8306cb2556b92c9bb891b13f4769889838fe3c10/installed/arm64-osx-dynamic/lib/libminizip.dylib",
+          "sdkSha256": "306df8d4eea044678b52047ba07b666ecee120cf9ef08bfbda205ba0d9e070aa",
+          "sectionPayloadSha256": "e28b71db29e68a0a01cb6fb4179167ef86d846784ce203de0c3410e1b1883b82",
+          "sdkOwners": [
+            {
+              "name": "minizip",
+              "version": "1.3.1#1",
+              "spdxSha256": "c2e85c7b8ff9e7b89c5c3fbccc2728afbd3e43b7aea7e2cb8044c28d52e55ece"
+            }
+          ],
+          "packagedFiles": [
+            {
+              "path": "MWNet-1.0.0-macOS-arm64/MWNet.app/Contents/Frameworks/libminizip.dylib",
+              "sha256": "e2e2c2d0d01fb70269376e989ba69c35cd1816349a5122bada1b34666e4dc165"
+            },
+            {
+              "path": "MWNet-1.0.0-macOS-arm64/OpenMW-CS.app/Contents/Frameworks/libminizip.dylib",
+              "sha256": "e2e2c2d0d01fb70269376e989ba69c35cd1816349a5122bada1b34666e4dc165"
+            }
+          ]
+        },
+        {
+          "sdkPath": "vcpkg-arm64-osx-dynamic-8306cb2556b92c9bb891b13f4769889838fe3c10/installed/arm64-osx-dynamic/lib/libopenal.1.25.0.dylib",
+          "sdkSha256": "27eeb85f9c2a1efe905d242f2f393484e50723457115ef126aab8a411445cc55",
+          "sectionPayloadSha256": "f6fcdb8345639ed5b587c596ee40d4d582db9ac762b6ba91cab2ee94bdd1f4c9",
+          "sdkOwners": [
+            {
+              "name": "openal-soft",
+              "version": "1.25.0",
+              "spdxSha256": "290fcf3a557edd68534891e983a7ead10ce9c82bee6982cdaa4ce0d15978b43e"
+            }
+          ],
+          "packagedFiles": [
+            {
+              "path": "MWNet-1.0.0-macOS-arm64/MWNet.app/Contents/Frameworks/libopenal.1.25.0.dylib",
+              "sha256": "a46b3d201db07ae533721c71e94c371172ba6a50be7124d6af465b5ff2042b8d"
+            }
+          ]
+        },
+        {
+          "sdkPath": "vcpkg-arm64-osx-dynamic-8306cb2556b92c9bb891b13f4769889838fe3c10/installed/arm64-osx-dynamic/lib/libOpenThreads.3.3.1.dylib",
+          "sdkSha256": "fa1ac048e44c804c637f2e63665782a271bd18f65c6bb696cf0acfb6a4066db2",
+          "sectionPayloadSha256": "4b7705143c387520f1f07e74666ff14de35bf9b6b9f054753e9ea5ef4ffc98d2",
+          "sdkOwners": [
+            {
+              "name": "openmw-osg",
+              "version": "2026-01-30",
+              "spdxSha256": "7b2c426a71ed383d71ab5340d93101cd4fec7755a867e7d90e71146f2e876043"
+            }
+          ],
+          "packagedFiles": [
+            {
+              "path": "MWNet-1.0.0-macOS-arm64/MWNet.app/Contents/Frameworks/libOpenThreads.3.3.1.dylib",
+              "sha256": "c754596e24731a459d8c0a828cf8e4c47eddff0eeffd82368c18ae46ca22f0b7"
+            },
+            {
+              "path": "MWNet-1.0.0-macOS-arm64/OpenMW-CS.app/Contents/Frameworks/libOpenThreads.3.3.1.dylib",
+              "sha256": "c754596e24731a459d8c0a828cf8e4c47eddff0eeffd82368c18ae46ca22f0b7"
+            }
+          ]
+        },
+        {
+          "sdkPath": "vcpkg-arm64-osx-dynamic-8306cb2556b92c9bb891b13f4769889838fe3c10/installed/arm64-osx-dynamic/lib/libosg.3.6.5.dylib",
+          "sdkSha256": "faa44f24019ddd8ce1fc2ff7bde0c280282c325ee1b18dd9482e352f83cc7373",
+          "sectionPayloadSha256": "efd181afc13222ffdb7a3a6a6fc03d731ad33197e25bf140be2868ad3c91e99b",
+          "sdkOwners": [
+            {
+              "name": "openmw-osg",
+              "version": "2026-01-30",
+              "spdxSha256": "7b2c426a71ed383d71ab5340d93101cd4fec7755a867e7d90e71146f2e876043"
+            }
+          ],
+          "packagedFiles": [
+            {
+              "path": "MWNet-1.0.0-macOS-arm64/MWNet.app/Contents/Frameworks/libosg.3.6.5.dylib",
+              "sha256": "11d25e97f65305aeb22969e5d5e1efd2342861b058fedfd7f8a3050999e2331b"
+            },
+            {
+              "path": "MWNet-1.0.0-macOS-arm64/OpenMW-CS.app/Contents/Frameworks/libosg.3.6.5.dylib",
+              "sha256": "11d25e97f65305aeb22969e5d5e1efd2342861b058fedfd7f8a3050999e2331b"
+            }
+          ]
+        },
+        {
+          "sdkPath": "vcpkg-arm64-osx-dynamic-8306cb2556b92c9bb891b13f4769889838fe3c10/installed/arm64-osx-dynamic/lib/libosgAnimation.3.6.5.dylib",
+          "sdkSha256": "9905c927019db6eb5836aeca350aad17aeae759bcacd584bc57501d1d4d0dd56",
+          "sectionPayloadSha256": "ee33c24cacc0a994c8703eb542f429aef66e2299e4b9279cecc5c1317236ab97",
+          "sdkOwners": [
+            {
+              "name": "openmw-osg",
+              "version": "2026-01-30",
+              "spdxSha256": "7b2c426a71ed383d71ab5340d93101cd4fec7755a867e7d90e71146f2e876043"
+            }
+          ],
+          "packagedFiles": [
+            {
+              "path": "MWNet-1.0.0-macOS-arm64/MWNet.app/Contents/Frameworks/libosgAnimation.3.6.5.dylib",
+              "sha256": "0b6b8c399bb53b071fda6a6ade6836aec003df32723b464121cf605e50dd5b3d"
+            },
+            {
+              "path": "MWNet-1.0.0-macOS-arm64/OpenMW-CS.app/Contents/Frameworks/libosgAnimation.3.6.5.dylib",
+              "sha256": "0b6b8c399bb53b071fda6a6ade6836aec003df32723b464121cf605e50dd5b3d"
+            }
+          ]
+        },
+        {
+          "sdkPath": "vcpkg-arm64-osx-dynamic-8306cb2556b92c9bb891b13f4769889838fe3c10/installed/arm64-osx-dynamic/lib/libosgDB.3.6.5.dylib",
+          "sdkSha256": "c53326956b2a7d4fc19f94294393f6295e31e41fb5bc51f153fd611c23f8b7fe",
+          "sectionPayloadSha256": "704cc823ef8c0b127bd24913867c737082a8e1eaf665880d231f906f10b0c001",
+          "sdkOwners": [
+            {
+              "name": "openmw-osg",
+              "version": "2026-01-30",
+              "spdxSha256": "7b2c426a71ed383d71ab5340d93101cd4fec7755a867e7d90e71146f2e876043"
+            }
+          ],
+          "packagedFiles": [
+            {
+              "path": "MWNet-1.0.0-macOS-arm64/MWNet.app/Contents/Frameworks/libosgDB.3.6.5.dylib",
+              "sha256": "30b93605b579c4baab4f9a97fba196bddec9832ef9a1e0736df7e5e6c6713486"
+            },
+            {
+              "path": "MWNet-1.0.0-macOS-arm64/OpenMW-CS.app/Contents/Frameworks/libosgDB.3.6.5.dylib",
+              "sha256": "30b93605b579c4baab4f9a97fba196bddec9832ef9a1e0736df7e5e6c6713486"
+            }
+          ]
+        },
+        {
+          "sdkPath": "vcpkg-arm64-osx-dynamic-8306cb2556b92c9bb891b13f4769889838fe3c10/installed/arm64-osx-dynamic/lib/libosgGA.3.6.5.dylib",
+          "sdkSha256": "0a740c82d8887afe9742e06c49f02d498d4b1263664bdeeb076af3e86680ebbb",
+          "sectionPayloadSha256": "d20772b66369c3480f2167282bb2762cc30bbe2a27a0e953cd6756902b723d23",
+          "sdkOwners": [
+            {
+              "name": "openmw-osg",
+              "version": "2026-01-30",
+              "spdxSha256": "7b2c426a71ed383d71ab5340d93101cd4fec7755a867e7d90e71146f2e876043"
+            }
+          ],
+          "packagedFiles": [
+            {
+              "path": "MWNet-1.0.0-macOS-arm64/MWNet.app/Contents/Frameworks/libosgGA.3.6.5.dylib",
+              "sha256": "e618864bac21167f95fe647413be9575bfbce116223d095cae38499e7e44d3a8"
+            },
+            {
+              "path": "MWNet-1.0.0-macOS-arm64/OpenMW-CS.app/Contents/Frameworks/libosgGA.3.6.5.dylib",
+              "sha256": "e618864bac21167f95fe647413be9575bfbce116223d095cae38499e7e44d3a8"
+            }
+          ]
+        },
+        {
+          "sdkPath": "vcpkg-arm64-osx-dynamic-8306cb2556b92c9bb891b13f4769889838fe3c10/installed/arm64-osx-dynamic/lib/libosgParticle.3.6.5.dylib",
+          "sdkSha256": "c8523dbdc80aaa1497a5943cd3463cbfcc05e04808a4d0d2b3fd7e82d5304326",
+          "sectionPayloadSha256": "08d7a0a0819b400ef1f5f855615738ce8762a4eeddbc1f325a6509c2ed7d67a8",
+          "sdkOwners": [
+            {
+              "name": "openmw-osg",
+              "version": "2026-01-30",
+              "spdxSha256": "7b2c426a71ed383d71ab5340d93101cd4fec7755a867e7d90e71146f2e876043"
+            }
+          ],
+          "packagedFiles": [
+            {
+              "path": "MWNet-1.0.0-macOS-arm64/MWNet.app/Contents/Frameworks/libosgParticle.3.6.5.dylib",
+              "sha256": "7d4022d86398b5011f06a4b3f6b2614e38de5829450ae5f0fea180c5d015f257"
+            },
+            {
+              "path": "MWNet-1.0.0-macOS-arm64/OpenMW-CS.app/Contents/Frameworks/libosgParticle.3.6.5.dylib",
+              "sha256": "7d4022d86398b5011f06a4b3f6b2614e38de5829450ae5f0fea180c5d015f257"
+            }
+          ]
+        },
+        {
+          "sdkPath": "vcpkg-arm64-osx-dynamic-8306cb2556b92c9bb891b13f4769889838fe3c10/installed/arm64-osx-dynamic/lib/libosgShadow.3.6.5.dylib",
+          "sdkSha256": "561c31c27396333d86628d53e58045185e88709669b48055d540e699290ae43c",
+          "sectionPayloadSha256": "030e2bbee09f2915e2326a32668c6206fc8b9eaa3605fa65c448a8f1ab7d11d9",
+          "sdkOwners": [
+            {
+              "name": "openmw-osg",
+              "version": "2026-01-30",
+              "spdxSha256": "7b2c426a71ed383d71ab5340d93101cd4fec7755a867e7d90e71146f2e876043"
+            }
+          ],
+          "packagedFiles": [
+            {
+              "path": "MWNet-1.0.0-macOS-arm64/MWNet.app/Contents/Frameworks/libosgShadow.3.6.5.dylib",
+              "sha256": "693b3042adf0940929041bc88d40aa684428e871939380ff3a525e8bca8c9a0d"
+            },
+            {
+              "path": "MWNet-1.0.0-macOS-arm64/OpenMW-CS.app/Contents/Frameworks/libosgShadow.3.6.5.dylib",
+              "sha256": "693b3042adf0940929041bc88d40aa684428e871939380ff3a525e8bca8c9a0d"
+            }
+          ]
+        },
+        {
+          "sdkPath": "vcpkg-arm64-osx-dynamic-8306cb2556b92c9bb891b13f4769889838fe3c10/installed/arm64-osx-dynamic/lib/libosgSim.3.6.5.dylib",
+          "sdkSha256": "c7b534fcb85043e68b28a22f578562aa3fd07d8f386829ff0964098ad1a8455a",
+          "sectionPayloadSha256": "c06de295b2d6beb66dc9a165df3678d94a99c0cb4eeb21ea55d00b0cc06ad718",
+          "sdkOwners": [
+            {
+              "name": "openmw-osg",
+              "version": "2026-01-30",
+              "spdxSha256": "7b2c426a71ed383d71ab5340d93101cd4fec7755a867e7d90e71146f2e876043"
+            }
+          ],
+          "packagedFiles": [
+            {
+              "path": "MWNet-1.0.0-macOS-arm64/MWNet.app/Contents/Frameworks/libosgSim.3.6.5.dylib",
+              "sha256": "bbbaeb380ab7ff8aace07e942f8150eb45a68081e26a2c0a96497289b87a9136"
+            },
+            {
+              "path": "MWNet-1.0.0-macOS-arm64/OpenMW-CS.app/Contents/Frameworks/libosgSim.3.6.5.dylib",
+              "sha256": "bbbaeb380ab7ff8aace07e942f8150eb45a68081e26a2c0a96497289b87a9136"
+            }
+          ]
+        },
+        {
+          "sdkPath": "vcpkg-arm64-osx-dynamic-8306cb2556b92c9bb891b13f4769889838fe3c10/installed/arm64-osx-dynamic/lib/libosgText.3.6.5.dylib",
+          "sdkSha256": "87d83f949b77f78d0b62ddb62b839b68ba56dd3546f8919d6445043433ec5933",
+          "sectionPayloadSha256": "cc3224cde02994b8924227df553d6aec02fdbc7eea1ee9050f01c048ed0eb733",
+          "sdkOwners": [
+            {
+              "name": "openmw-osg",
+              "version": "2026-01-30",
+              "spdxSha256": "7b2c426a71ed383d71ab5340d93101cd4fec7755a867e7d90e71146f2e876043"
+            }
+          ],
+          "packagedFiles": [
+            {
+              "path": "MWNet-1.0.0-macOS-arm64/MWNet.app/Contents/Frameworks/libosgText.3.6.5.dylib",
+              "sha256": "3b429d81a5366a57eba0483fd519b2ed4c1cc63546db90a48610daa207a6acd5"
+            },
+            {
+              "path": "MWNet-1.0.0-macOS-arm64/OpenMW-CS.app/Contents/Frameworks/libosgText.3.6.5.dylib",
+              "sha256": "3b429d81a5366a57eba0483fd519b2ed4c1cc63546db90a48610daa207a6acd5"
+            }
+          ]
+        },
+        {
+          "sdkPath": "vcpkg-arm64-osx-dynamic-8306cb2556b92c9bb891b13f4769889838fe3c10/installed/arm64-osx-dynamic/lib/libosgUtil.3.6.5.dylib",
+          "sdkSha256": "2c9ae5c9f10c1fdcff678e152e8129904f2585ddb2db6bdaee7b6640bcb0285a",
+          "sectionPayloadSha256": "355926a970c93c832ae9a0ac87e1750db0ace9a3f70b3550b616bb64b00f29b5",
+          "sdkOwners": [
+            {
+              "name": "openmw-osg",
+              "version": "2026-01-30",
+              "spdxSha256": "7b2c426a71ed383d71ab5340d93101cd4fec7755a867e7d90e71146f2e876043"
+            }
+          ],
+          "packagedFiles": [
+            {
+              "path": "MWNet-1.0.0-macOS-arm64/MWNet.app/Contents/Frameworks/libosgUtil.3.6.5.dylib",
+              "sha256": "3ae124c2c84076bf7a3259ca817463315a21bbff5d77244862d4aecc35859ceb"
+            },
+            {
+              "path": "MWNet-1.0.0-macOS-arm64/OpenMW-CS.app/Contents/Frameworks/libosgUtil.3.6.5.dylib",
+              "sha256": "3ae124c2c84076bf7a3259ca817463315a21bbff5d77244862d4aecc35859ceb"
+            }
+          ]
+        },
+        {
+          "sdkPath": "vcpkg-arm64-osx-dynamic-8306cb2556b92c9bb891b13f4769889838fe3c10/installed/arm64-osx-dynamic/lib/libosgViewer.3.6.5.dylib",
+          "sdkSha256": "b0bd54301cdad57ed22023b8d6649331758d940f1e14863597a51e3870268d84",
+          "sectionPayloadSha256": "e3a10deea16eab9979a42ae1db07cd2aa6d7d790bf686bdabbd2e00d07623453",
+          "sdkOwners": [
+            {
+              "name": "openmw-osg",
+              "version": "2026-01-30",
+              "spdxSha256": "7b2c426a71ed383d71ab5340d93101cd4fec7755a867e7d90e71146f2e876043"
+            }
+          ],
+          "packagedFiles": [
+            {
+              "path": "MWNet-1.0.0-macOS-arm64/MWNet.app/Contents/Frameworks/libosgViewer.3.6.5.dylib",
+              "sha256": "0db2f8d40f6bf91b82bdebd2b196c5867e22a1056120f8f940d27399aa0434a5"
+            },
+            {
+              "path": "MWNet-1.0.0-macOS-arm64/OpenMW-CS.app/Contents/Frameworks/libosgViewer.3.6.5.dylib",
+              "sha256": "0db2f8d40f6bf91b82bdebd2b196c5867e22a1056120f8f940d27399aa0434a5"
+            }
+          ]
+        },
+        {
+          "sdkPath": "vcpkg-arm64-osx-dynamic-8306cb2556b92c9bb891b13f4769889838fe3c10/installed/arm64-osx-dynamic/lib/libpng16.16.54.0.dylib",
+          "sdkSha256": "c2687123e93f073e644b3a41af991ef91309be8c723a34ca6cae776d96d9a99a",
+          "sectionPayloadSha256": "a7515257dfef9c2556fd2233d0747d06ca012d3ce0768ad5e32a7b167817c81f",
+          "sdkOwners": [
+            {
+              "name": "libpng",
+              "version": "1.6.54",
+              "spdxSha256": "9923016ebe5d78c9a30540110ec8eacf4d36734c6928f18b0cfb8fb7458706cf"
+            }
+          ],
+          "packagedFiles": [
+            {
+              "path": "MWNet-1.0.0-macOS-arm64/MWNet.app/Contents/Frameworks/libpng16.16.54.0.dylib",
+              "sha256": "20b174d98809dd40bd75d7191e46ab5cab4433becfbba9c806edf28dd3917dcc"
+            },
+            {
+              "path": "MWNet-1.0.0-macOS-arm64/OpenMW-CS.app/Contents/Frameworks/libpng16.16.54.0.dylib",
+              "sha256": "20b174d98809dd40bd75d7191e46ab5cab4433becfbba9c806edf28dd3917dcc"
+            }
+          ]
+        },
+        {
+          "sdkPath": "vcpkg-arm64-osx-dynamic-8306cb2556b92c9bb891b13f4769889838fe3c10/installed/arm64-osx-dynamic/lib/libSDL2-2.0.0.dylib",
+          "sdkSha256": "8d3f2d78d5e9b82f48caff7c986d496bc4b9c5f3aea33b748d9025ae2e5d6efb",
+          "sectionPayloadSha256": "a6b129adf12ff8c2cceaeb4cfa75dfa9b33d8a9fc280c456be68b978bd7f9936",
+          "sdkOwners": [
+            {
+              "name": "sdl2",
+              "version": "2.32.10",
+              "spdxSha256": "732e412533f1642925f2523460d1a8c084d6b3d736bc2aa40c9feefccc249715"
+            }
+          ],
+          "packagedFiles": [
+            {
+              "path": "MWNet-1.0.0-macOS-arm64/MWNet.app/Contents/Frameworks/libSDL2-2.0.0.dylib",
+              "sha256": "2327159a970cc2a68c8a3a3038c5e0cf313ca95aa2bd4a9aaa0ef067f843dc1a"
+            },
+            {
+              "path": "MWNet-1.0.0-macOS-arm64/OpenMW-CS.app/Contents/Frameworks/libSDL2-2.0.0.dylib",
+              "sha256": "2327159a970cc2a68c8a3a3038c5e0cf313ca95aa2bd4a9aaa0ef067f843dc1a"
+            }
+          ]
+        },
+        {
+          "sdkPath": "vcpkg-arm64-osx-dynamic-8306cb2556b92c9bb891b13f4769889838fe3c10/installed/arm64-osx-dynamic/lib/libswresample.6.1.100.dylib",
+          "sdkSha256": "e77c7d6924f83bcb7ef54b93cab3b5f46b10a588a2726a3b3befe1d5aa2c60e3",
+          "sectionPayloadSha256": "4ea23679d60b6bc9376554178d2d960505a2165b9159efc90340eca2f667817d",
+          "sdkOwners": [
+            {
+              "name": "ffmpeg",
+              "version": "8.0.1#2",
+              "spdxSha256": "125bb79f6c27fe61a9f7c605d347c57d72f40d5c9a608eb9234540e2f618101e"
+            }
+          ],
+          "packagedFiles": [
+            {
+              "path": "MWNet-1.0.0-macOS-arm64/MWNet.app/Contents/Frameworks/libswresample.6.1.100.dylib",
+              "sha256": "f8f5b228c6d3309d460e736ca54b23ee81ae58d8cb1c6560c9c18d776ce155b8"
+            }
+          ]
+        },
+        {
+          "sdkPath": "vcpkg-arm64-osx-dynamic-8306cb2556b92c9bb891b13f4769889838fe3c10/installed/arm64-osx-dynamic/lib/libswscale.9.1.100.dylib",
+          "sdkSha256": "3354fcfb95756743b924e3fcd2dad7c0588a4a7527cb6449853bfe26720abf0b",
+          "sectionPayloadSha256": "34ab5bb87e5db92497ec9eb77fc2246e9036dda125f33954635d811eb068118b",
+          "sdkOwners": [
+            {
+              "name": "ffmpeg",
+              "version": "8.0.1#2",
+              "spdxSha256": "125bb79f6c27fe61a9f7c605d347c57d72f40d5c9a608eb9234540e2f618101e"
+            }
+          ],
+          "packagedFiles": [
+            {
+              "path": "MWNet-1.0.0-macOS-arm64/MWNet.app/Contents/Frameworks/libswscale.9.1.100.dylib",
+              "sha256": "9561d573b216f9d6cf181b2d583ea78fbc1e7b1011c8b9b1c3ab156101c70228"
+            }
+          ]
+        },
+        {
+          "sdkPath": "vcpkg-arm64-osx-dynamic-8306cb2556b92c9bb891b13f4769889838fe3c10/installed/arm64-osx-dynamic/lib/libunshield.0.0.0.dylib",
+          "sdkSha256": "0891842aca3ffdf565e99c2d60180ba13a685e8624007b941e1500fcc76122db",
+          "sectionPayloadSha256": "98c2800cffb860de9e32f3dfbfbdb0549083b9360c8995ee260c859e58941291",
+          "sdkOwners": [
+            {
+              "name": "unshield",
+              "version": "1.4.2#1",
+              "spdxSha256": "a33982ca0452eae64680331335d4dfcc73c1e6cd72bafe5e66222c18b61e6912"
+            }
+          ],
+          "packagedFiles": [
+            {
+              "path": "MWNet-1.0.0-macOS-arm64/MWNet.app/Contents/Frameworks/libunshield.0.0.0.dylib",
+              "sha256": "138ef51c0843e289eb7554f057a2f3a2c196439f53198a31658be060be288de4"
+            }
+          ]
+        },
+        {
+          "sdkPath": "vcpkg-arm64-osx-dynamic-8306cb2556b92c9bb891b13f4769889838fe3c10/installed/arm64-osx-dynamic/lib/liburiparser.1.1.0.dylib",
+          "sdkSha256": "a2283e40bcd29561f065fe14fea026caf5e8d2339635d8df50e1da2961ee721e",
+          "sectionPayloadSha256": "fcd6888e8febfa12c5561584948becc825af5fbca993f6621e50b4763c4718e2",
+          "sdkOwners": [
+            {
+              "name": "uriparser",
+              "version": "0.9.9",
+              "spdxSha256": "6fc0b9d9fadec412b024684c98162364b615d79656975957281cdd7232b84481"
+            }
+          ],
+          "packagedFiles": [
+            {
+              "path": "MWNet-1.0.0-macOS-arm64/MWNet.app/Contents/Frameworks/liburiparser.1.1.0.dylib",
+              "sha256": "bf5828598968a9b1c57206183ee31b3d7e8cdacda4e46be29238b637ab1a07c0"
+            },
+            {
+              "path": "MWNet-1.0.0-macOS-arm64/OpenMW-CS.app/Contents/Frameworks/liburiparser.1.1.0.dylib",
+              "sha256": "bf5828598968a9b1c57206183ee31b3d7e8cdacda4e46be29238b637ab1a07c0"
+            }
+          ]
+        },
+        {
+          "sdkPath": "vcpkg-arm64-osx-dynamic-8306cb2556b92c9bb891b13f4769889838fe3c10/installed/arm64-osx-dynamic/lib/libxml2.16.1.1.dylib",
+          "sdkSha256": "7dc9e3617562258c8ff4c6e1f0a5dfd7e4e1293e0b804d06afdb7db0fd4f3550",
+          "sectionPayloadSha256": "a10d1a82f90b3dd259181cca91010ba9bc35a58ecf3da9096d91021d17011b29",
+          "sdkOwners": [
+            {
+              "name": "libxml2",
+              "version": "2.15.1",
+              "spdxSha256": "b801a62e6fe62e5150cf9d799f85cd924b2c4d1f89d363624526b777f802aeef"
+            }
+          ],
+          "packagedFiles": [
+            {
+              "path": "MWNet-1.0.0-macOS-arm64/MWNet.app/Contents/Frameworks/libxml2.16.1.1.dylib",
+              "sha256": "60202cc6f4b0fc70399d95c4a9131fddd0ab091da87e06d14753bf535cbf38da"
+            },
+            {
+              "path": "MWNet-1.0.0-macOS-arm64/OpenMW-CS.app/Contents/Frameworks/libxml2.16.1.1.dylib",
+              "sha256": "60202cc6f4b0fc70399d95c4a9131fddd0ab091da87e06d14753bf535cbf38da"
+            }
+          ]
+        },
+        {
+          "sdkPath": "vcpkg-arm64-osx-dynamic-8306cb2556b92c9bb891b13f4769889838fe3c10/installed/arm64-osx-dynamic/lib/libz.1.3.1.dylib",
+          "sdkSha256": "c3d1ee03702b15a92b73f2303cd56469c34694eecd23601f639e457c9fd43520",
+          "sectionPayloadSha256": "9dff31cd82fe86642609f4a28c884f4d0289374f3a0c97321e11efd597d0349b",
+          "sdkOwners": [
+            {
+              "name": "zlib",
+              "version": "1.3.1",
+              "spdxSha256": "45f1f431f1fa01ff977876419dba625512157929c71fc59fdee2ec5231dc1f7d"
+            }
+          ],
+          "packagedFiles": [
+            {
+              "path": "MWNet-1.0.0-macOS-arm64/MWNet.app/Contents/Frameworks/libz.1.3.1.dylib",
+              "sha256": "4e9934f656f6da2cc458950e8798c586a8ea7dad60ed7b5314385df838d5d24b"
+            },
+            {
+              "path": "MWNet-1.0.0-macOS-arm64/OpenMW-CS.app/Contents/Frameworks/libz.1.3.1.dylib",
+              "sha256": "4e9934f656f6da2cc458950e8798c586a8ea7dad60ed7b5314385df838d5d24b"
+            }
+          ]
+        },
+        {
+          "sdkPath": "vcpkg-arm64-osx-dynamic-8306cb2556b92c9bb891b13f4769889838fe3c10/installed/arm64-osx-dynamic/lib/libzstd.1.5.7.dylib",
+          "sdkSha256": "d2e91a0c957654e830180d8a207c542e3208b99338129f24702671c8cb8666e5",
+          "sectionPayloadSha256": "9faf0d144de88dc9f71725b2b4ba077057743556bf2296566ae0c2cd0af6bc90",
+          "sdkOwners": [
+            {
+              "name": "zstd",
+              "version": "1.5.7",
+              "spdxSha256": "39ad7d32c6a66f89b64b1a07da53ce7a3559279b25d798531ece69da43069ffe"
+            }
+          ],
+          "packagedFiles": [
+            {
+              "path": "MWNet-1.0.0-macOS-arm64/MWNet.app/Contents/Frameworks/libzstd.1.5.7.dylib",
+              "sha256": "ad62014b8de5535de32ab90aa7143e047f21fdfb7331d9295621166e063ce578"
+            },
+            {
+              "path": "MWNet-1.0.0-macOS-arm64/OpenMW-CS.app/Contents/Frameworks/libzstd.1.5.7.dylib",
+              "sha256": "ad62014b8de5535de32ab90aa7143e047f21fdfb7331d9295621166e063ce578"
+            }
+          ]
+        },
+        {
+          "sdkPath": "vcpkg-arm64-osx-dynamic-8306cb2556b92c9bb891b13f4769889838fe3c10/installed/arm64-osx-dynamic/lib/libosgFX.3.6.5.dylib",
+          "sdkSha256": "d12558a52b1d4855bd9b33426be8a54e78808dd51bc2cda0d24c5723082e1089",
+          "sectionPayloadSha256": "6e2f744539f6147ebc446985e1b8a5810a17d27716b825dc47aaf00747be0d3d",
+          "sdkOwners": [
+            {
+              "name": "openmw-osg",
+              "version": "2026-01-30",
+              "spdxSha256": "7b2c426a71ed383d71ab5340d93101cd4fec7755a867e7d90e71146f2e876043"
+            }
+          ],
+          "packagedFiles": [
+            {
+              "path": "MWNet-1.0.0-macOS-arm64/OpenMW-CS.app/Contents/Frameworks/libosgFX.3.6.5.dylib",
+              "sha256": "f39c4e73c1f40fdda45eee648aec9b7b4964a85e9ee46f81c59b3122047e58fb"
+            }
+          ]
+        }
+      ],
+      "unmatchedDistinctBasenameGroups": {
+        "abseil": 79,
+        "other": 28,
+        "Qt": 12
+      },
+      "minimumOsVersionCounts": {
+        "14.8.0": 19,
+        "13.0.0": 21,
+        "14.0.0": 103,
+        "15.0.0": 93
+      },
+      "emptySectionPayloadsNotMatched": [
+        "MWNet-1.0.0-macOS-arm64/MWNet.app/Contents/Frameworks/libabsl_source_location.2608.0.0.dylib"
+      ],
+      "selectedDuplicateProviderFacts": [
+        {
+          "path": "MWNet-1.0.0-macOS-arm64/MWNet.app/Contents/Frameworks/libbrotlicommon.1.2.0.dylib",
+          "sha256": "ec38c07fc43c90113b47ff38ff9f3f38055da319de9d39d6242573fffd4b7f36",
+          "sdkPayloadMatched": true,
+          "minimumOsVersions": [
+            {
+              "platform": 1,
+              "minimum": "14.0.0",
+              "sdk": "15.5.0"
+            }
+          ],
+          "installName": {
+            "name": "@executable_path/../Frameworks/libbrotlicommon.1.2.0.dylib",
+            "currentVersion": "1.2.0",
+            "compatibilityVersion": "1.0.0",
+            "command": "0xd"
+          }
+        },
+        {
+          "path": "MWNet-1.0.0-macOS-arm64/MWNet.app/Contents/Frameworks/libbrotlidec.1.2.0.dylib",
+          "sha256": "1da71c88318591d1d2b0cd024850c954933a3485023f9266447834aaed743125",
+          "sdkPayloadMatched": true,
+          "minimumOsVersions": [
+            {
+              "platform": 1,
+              "minimum": "14.0.0",
+              "sdk": "15.5.0"
+            }
+          ],
+          "installName": {
+            "name": "@executable_path/../Frameworks/libbrotlidec.1.2.0.dylib",
+            "currentVersion": "1.2.0",
+            "compatibilityVersion": "1.0.0",
+            "command": "0xd"
+          }
+        },
+        {
+          "path": "MWNet-1.0.0-macOS-arm64/MWNet.app/Contents/Frameworks/libbrotlidec.1.2.1.dylib",
+          "sha256": "43f881a67b4257bfb54b6b01f5268006010f79348c110dc65d0007a37b7ac5e1",
+          "sdkPayloadMatched": false,
+          "minimumOsVersions": [
+            {
+              "platform": 1,
+              "minimum": "15.0.0",
+              "sdk": "15.4.0"
+            }
+          ],
+          "installName": {
+            "name": "@executable_path/../Frameworks/libbrotlidec.1.2.1.dylib",
+            "currentVersion": "1.2.1",
+            "compatibilityVersion": "1.0.0",
+            "command": "0xd"
+          }
+        },
+        {
+          "path": "MWNet-1.0.0-macOS-arm64/MWNet.app/Contents/Frameworks/libfontconfig.1.dylib",
+          "sha256": "bf8c878ad67d5b05728b330c2e35ab2c508472ea8596a9ba953d953b4fb6edce",
+          "sdkPayloadMatched": false,
+          "minimumOsVersions": [
+            {
+              "platform": 1,
+              "minimum": "15.0.0",
+              "sdk": "15.4.0"
+            }
+          ],
+          "installName": {
+            "name": "@executable_path/../Frameworks/libfontconfig.1.dylib",
+            "currentVersion": "18.0.0",
+            "compatibilityVersion": "18.0.0",
+            "command": "0xd"
+          }
+        },
+        {
+          "path": "MWNet-1.0.0-macOS-arm64/MWNet.app/Contents/Frameworks/libfreetype.6.20.2.dylib",
+          "sha256": "7e2e4dddcf15fb81577d6dcf97eba37f46463f5f68423eb54e67164d1c1220cc",
+          "sdkPayloadMatched": true,
+          "minimumOsVersions": [
+            {
+              "platform": 1,
+              "minimum": "14.0.0",
+              "sdk": "15.5.0"
+            }
+          ],
+          "installName": {
+            "name": "@executable_path/../Frameworks/libfreetype.6.20.2.dylib",
+            "currentVersion": "6.20.2",
+            "compatibilityVersion": "6.0.0",
+            "command": "0xd"
+          }
+        },
+        {
+          "path": "MWNet-1.0.0-macOS-arm64/MWNet.app/Contents/Frameworks/libfreetype.6.dylib",
+          "sha256": "afb3d080a4b4976ffdb688d0268a51f68f0066cd28b93ab8c2ba536e1e39f5bc",
+          "sdkPayloadMatched": false,
+          "minimumOsVersions": [
+            {
+              "platform": 1,
+              "minimum": "15.0.0",
+              "sdk": "15.4.0"
+            }
+          ],
+          "installName": {
+            "name": "@executable_path/../Frameworks/libfreetype.6.dylib",
+            "currentVersion": "27.7.0",
+            "compatibilityVersion": "27.0.0",
+            "command": "0xd"
+          }
+        },
+        {
+          "path": "MWNet-1.0.0-macOS-arm64/MWNet.app/Contents/Frameworks/libpng16.16.54.0.dylib",
+          "sha256": "20b174d98809dd40bd75d7191e46ab5cab4433becfbba9c806edf28dd3917dcc",
+          "sdkPayloadMatched": true,
+          "minimumOsVersions": [
+            {
+              "platform": 1,
+              "minimum": "14.0.0",
+              "sdk": "15.5.0"
+            }
+          ],
+          "installName": {
+            "name": "@executable_path/../Frameworks/libpng16.16.54.0.dylib",
+            "currentVersion": "16.54.0",
+            "compatibilityVersion": "16.0.0",
+            "command": "0xd"
+          }
+        },
+        {
+          "path": "MWNet-1.0.0-macOS-arm64/MWNet.app/Contents/Frameworks/libpng16.16.dylib",
+          "sha256": "253cbc98dc6f093b3445dd22ca32b0974b85d2f5b13af61b2b301c1c15573dc8",
+          "sdkPayloadMatched": false,
+          "minimumOsVersions": [
+            {
+              "platform": 1,
+              "minimum": "15.0.0",
+              "sdk": "15.4.0"
+            }
+          ],
+          "installName": {
+            "name": "@executable_path/../Frameworks/libpng16.16.dylib",
+            "currentVersion": "76.0.0",
+            "compatibilityVersion": "76.0.0",
+            "command": "0xd"
+          }
+        }
+      ],
+      "supportedNativeTestHost": "macOS 15 only; minimum deployment targets are static evidence, not gameplay/platform acceptance"
+    },
+    "intel": {
+      "package": {
+        "name": "MWNet-1.0.0-macOS-x86_64.dmg",
+        "sha256": "6aaf2af3432f29382c45277ab41cb7ceb69a994363494bbb8eed54e7a82edda6"
+      },
+      "sdk": {
+        "name": "vcpkg-x64-osx-dynamic-2026-02-24.7z",
+        "sha256": "a529f60e0dcb9cd4a80ebb2a802878fd68dbf0f32fd424886ffe845084c6928f"
+      },
+      "privateDetailedReport": "build/platform-stable-1.0.0-a6868387dc/macos-intel-sdk-section-inspection-v3/payload-comparison.json",
+      "detailedReportSha256": "d62ae71ef3c20b420843a0f5e6828bf78fbdfa3684f3d4eacd29cd6b148ee8c4",
+      "packageBinaryFiles": 234,
+      "selectedArchitectureSlices": 234,
+      "sdkLibrariesCompared": 100,
+      "sdkMatchedPackageFiles": 103,
+      "sdkMatchedWholeFileHashes": 0,
+      "mwnetAppBinaryFiles": 169,
+      "mwnetAppSdkMatchedFiles": 55,
+      "distinctSdkProvidersMatched": 56,
+      "sdkComponentNames": [
+        "boost-atomic",
+        "boost-container",
+        "boost-filesystem",
+        "boost-iostreams",
+        "boost-program-options",
+        "boost-random",
+        "brotli",
+        "bullet3",
+        "bzip2",
+        "collada-dom",
+        "ffmpeg",
+        "fmt",
+        "freetype",
+        "icu",
+        "libjpeg-turbo",
+        "liblzma",
+        "libpng",
+        "libxml2",
+        "luajit",
+        "lz4",
+        "minizip",
+        "openal-soft",
+        "openmw-osg",
+        "sdl2",
+        "unshield",
+        "uriparser",
+        "zlib",
+        "zstd"
+      ],
+      "providerMatches": [
+        {
+          "sdkPath": "vcpkg-x64-osx-dynamic-8306cb2556b92c9bb891b13f4769889838fe3c10/installed/x64-osx-dynamic/lib/osgPlugins-3.6.5/osgdb_bmp.so",
+          "sdkSha256": "c0b6df15c4d8b29f8c05ad6df9ff01be27871d646a805bea3ace1aed15f9e0ca",
+          "sectionPayloadSha256": "3fcac616470bd99d49601757308f0ddfdfdfcc6b13d9e0152274aa6eca3bb7b8",
+          "sdkOwners": [
+            {
+              "name": "openmw-osg",
+              "version": "2026-01-30",
+              "spdxSha256": "9531cc99ae4accbb81f505cb5ce6daea65bad3a9b12aaff3d99212ed1723418d"
+            }
+          ],
+          "packagedFiles": [
+            {
+              "path": "MWNet-1.0.0-macOS-x86_64/MWNet.app/Contents/PlugIns/osgPlugins/osgdb_bmp.so",
+              "sha256": "6dbcc260433c50e18e1620236fe612e10b55d1b950fdf24d2e6daf89b48a557f"
+            },
+            {
+              "path": "MWNet-1.0.0-macOS-x86_64/OpenMW-CS.app/Contents/PlugIns/osgPlugins/osgdb_bmp.so",
+              "sha256": "6dbcc260433c50e18e1620236fe612e10b55d1b950fdf24d2e6daf89b48a557f"
+            }
+          ]
+        },
+        {
+          "sdkPath": "vcpkg-x64-osx-dynamic-8306cb2556b92c9bb891b13f4769889838fe3c10/installed/x64-osx-dynamic/lib/osgPlugins-3.6.5/osgdb_dae.so",
+          "sdkSha256": "17e7ec344c2fff133341a7957746673de15df77dc8f9ee3855013d84beea594d",
+          "sectionPayloadSha256": "ebe99f4b97a2327c0f5a5ea46bd61f21097af07d8b1f9c6f7a0ccbf2e0379f6e",
+          "sdkOwners": [
+            {
+              "name": "openmw-osg",
+              "version": "2026-01-30",
+              "spdxSha256": "9531cc99ae4accbb81f505cb5ce6daea65bad3a9b12aaff3d99212ed1723418d"
+            }
+          ],
+          "packagedFiles": [
+            {
+              "path": "MWNet-1.0.0-macOS-x86_64/MWNet.app/Contents/PlugIns/osgPlugins/osgdb_dae.so",
+              "sha256": "6da1e6be83b58b11c2f63792f1771a3a2a650feff9341dfe5284091801210594"
+            },
+            {
+              "path": "MWNet-1.0.0-macOS-x86_64/OpenMW-CS.app/Contents/PlugIns/osgPlugins/osgdb_dae.so",
+              "sha256": "6da1e6be83b58b11c2f63792f1771a3a2a650feff9341dfe5284091801210594"
+            }
+          ]
+        },
+        {
+          "sdkPath": "vcpkg-x64-osx-dynamic-8306cb2556b92c9bb891b13f4769889838fe3c10/installed/x64-osx-dynamic/lib/osgPlugins-3.6.5/osgdb_dds.so",
+          "sdkSha256": "6b6a84d262229934cea59f1212f502a9d45922d9bb3d1b0d3d806967efc1711c",
+          "sectionPayloadSha256": "0b71cc280882f63f772ef5d873c5ee155d6c4bacd82d3128ee75aba2fc67c9c9",
+          "sdkOwners": [
+            {
+              "name": "openmw-osg",
+              "version": "2026-01-30",
+              "spdxSha256": "9531cc99ae4accbb81f505cb5ce6daea65bad3a9b12aaff3d99212ed1723418d"
+            }
+          ],
+          "packagedFiles": [
+            {
+              "path": "MWNet-1.0.0-macOS-x86_64/MWNet.app/Contents/PlugIns/osgPlugins/osgdb_dds.so",
+              "sha256": "48c1b1cf958705477fac531a9e29e3d93ace08eb0b647b25826d2442fea45078"
+            },
+            {
+              "path": "MWNet-1.0.0-macOS-x86_64/OpenMW-CS.app/Contents/PlugIns/osgPlugins/osgdb_dds.so",
+              "sha256": "48c1b1cf958705477fac531a9e29e3d93ace08eb0b647b25826d2442fea45078"
+            }
+          ]
+        },
+        {
+          "sdkPath": "vcpkg-x64-osx-dynamic-8306cb2556b92c9bb891b13f4769889838fe3c10/installed/x64-osx-dynamic/lib/osgPlugins-3.6.5/osgdb_freetype.so",
+          "sdkSha256": "d6f8e28b09ac048afdc0826deb803d88ced586961a17633d8cd65fc088fbd2e6",
+          "sectionPayloadSha256": "bbf821356243c7e4a91ee7e60b7b2b3a733ffb265af27563ed601a57f123d538",
+          "sdkOwners": [
+            {
+              "name": "openmw-osg",
+              "version": "2026-01-30",
+              "spdxSha256": "9531cc99ae4accbb81f505cb5ce6daea65bad3a9b12aaff3d99212ed1723418d"
+            }
+          ],
+          "packagedFiles": [
+            {
+              "path": "MWNet-1.0.0-macOS-x86_64/MWNet.app/Contents/PlugIns/osgPlugins/osgdb_freetype.so",
+              "sha256": "3968bec2f546b130aca8c384e646e0291f7eb1145dc84eec672073b6ce508992"
+            },
+            {
+              "path": "MWNet-1.0.0-macOS-x86_64/OpenMW-CS.app/Contents/PlugIns/osgPlugins/osgdb_freetype.so",
+              "sha256": "3968bec2f546b130aca8c384e646e0291f7eb1145dc84eec672073b6ce508992"
+            }
+          ]
+        },
+        {
+          "sdkPath": "vcpkg-x64-osx-dynamic-8306cb2556b92c9bb891b13f4769889838fe3c10/installed/x64-osx-dynamic/lib/osgPlugins-3.6.5/osgdb_jpeg.so",
+          "sdkSha256": "7fe75238c10cd2e3a1275a735773568bf0bbcc7fcf2f980851853c4ce93e5ef7",
+          "sectionPayloadSha256": "29883d46495076f0bef8743f19a02a6db0e30c2cccc45b1c7c2506f6c040e1dc",
+          "sdkOwners": [
+            {
+              "name": "openmw-osg",
+              "version": "2026-01-30",
+              "spdxSha256": "9531cc99ae4accbb81f505cb5ce6daea65bad3a9b12aaff3d99212ed1723418d"
+            }
+          ],
+          "packagedFiles": [
+            {
+              "path": "MWNet-1.0.0-macOS-x86_64/MWNet.app/Contents/PlugIns/osgPlugins/osgdb_jpeg.so",
+              "sha256": "332bc4226b2e11b9b87ed0144ac48705660fefa7cb1757711cc27cc3d9873bd9"
+            },
+            {
+              "path": "MWNet-1.0.0-macOS-x86_64/OpenMW-CS.app/Contents/PlugIns/osgPlugins/osgdb_jpeg.so",
+              "sha256": "332bc4226b2e11b9b87ed0144ac48705660fefa7cb1757711cc27cc3d9873bd9"
+            }
+          ]
+        },
+        {
+          "sdkPath": "vcpkg-x64-osx-dynamic-8306cb2556b92c9bb891b13f4769889838fe3c10/installed/x64-osx-dynamic/lib/osgPlugins-3.6.5/osgdb_osg.so",
+          "sdkSha256": "8632b0534c5a8a63bf4a0f49379580a4586025a09eca2adf4e78f34689e5ea04",
+          "sectionPayloadSha256": "56f494e42ed8a7c5b4aff266fe3a2db02dd291c64e6ceba86015c6f81c18a3cf",
+          "sdkOwners": [
+            {
+              "name": "openmw-osg",
+              "version": "2026-01-30",
+              "spdxSha256": "9531cc99ae4accbb81f505cb5ce6daea65bad3a9b12aaff3d99212ed1723418d"
+            }
+          ],
+          "packagedFiles": [
+            {
+              "path": "MWNet-1.0.0-macOS-x86_64/MWNet.app/Contents/PlugIns/osgPlugins/osgdb_osg.so",
+              "sha256": "a523a2ad8951de2ed0ee2949574a6ed5764c6454da60c6ab96dec6df7db93725"
+            },
+            {
+              "path": "MWNet-1.0.0-macOS-x86_64/OpenMW-CS.app/Contents/PlugIns/osgPlugins/osgdb_osg.so",
+              "sha256": "a523a2ad8951de2ed0ee2949574a6ed5764c6454da60c6ab96dec6df7db93725"
+            }
+          ]
+        },
+        {
+          "sdkPath": "vcpkg-x64-osx-dynamic-8306cb2556b92c9bb891b13f4769889838fe3c10/installed/x64-osx-dynamic/lib/osgPlugins-3.6.5/osgdb_png.so",
+          "sdkSha256": "77f160e7469138e31d88c4e52e58cc4010e27210f3e5b2674155533f1b192051",
+          "sectionPayloadSha256": "d563c97c187b985ed4b44ebfaec7caa42d83a3352d0b2c24640cb5bd36c895d6",
+          "sdkOwners": [
+            {
+              "name": "openmw-osg",
+              "version": "2026-01-30",
+              "spdxSha256": "9531cc99ae4accbb81f505cb5ce6daea65bad3a9b12aaff3d99212ed1723418d"
+            }
+          ],
+          "packagedFiles": [
+            {
+              "path": "MWNet-1.0.0-macOS-x86_64/MWNet.app/Contents/PlugIns/osgPlugins/osgdb_png.so",
+              "sha256": "099bb668ea28f301224eb959a3a0f3d8a5872709d809c99cf52eb6a4923f80c2"
+            },
+            {
+              "path": "MWNet-1.0.0-macOS-x86_64/OpenMW-CS.app/Contents/PlugIns/osgPlugins/osgdb_png.so",
+              "sha256": "099bb668ea28f301224eb959a3a0f3d8a5872709d809c99cf52eb6a4923f80c2"
+            }
+          ]
+        },
+        {
+          "sdkPath": "vcpkg-x64-osx-dynamic-8306cb2556b92c9bb891b13f4769889838fe3c10/installed/x64-osx-dynamic/lib/osgPlugins-3.6.5/osgdb_serializers_osg.so",
+          "sdkSha256": "0b6db69d9191524184c7d2b43c8efbd1b6a9dcfe1237753e2fc3831d9c316b43",
+          "sectionPayloadSha256": "e3a52a8b0895297a652153d08c8444dbe570c3ba2c27e1a3ce65751cdf69a418",
+          "sdkOwners": [
+            {
+              "name": "openmw-osg",
+              "version": "2026-01-30",
+              "spdxSha256": "9531cc99ae4accbb81f505cb5ce6daea65bad3a9b12aaff3d99212ed1723418d"
+            }
+          ],
+          "packagedFiles": [
+            {
+              "path": "MWNet-1.0.0-macOS-x86_64/MWNet.app/Contents/PlugIns/osgPlugins/osgdb_serializers_osg.so",
+              "sha256": "30f4144df8310beeaee470f4149d009e23c17c3c9966193bf93cd4f479a4a81e"
+            },
+            {
+              "path": "MWNet-1.0.0-macOS-x86_64/OpenMW-CS.app/Contents/PlugIns/osgPlugins/osgdb_serializers_osg.so",
+              "sha256": "30f4144df8310beeaee470f4149d009e23c17c3c9966193bf93cd4f479a4a81e"
+            }
+          ]
+        },
+        {
+          "sdkPath": "vcpkg-x64-osx-dynamic-8306cb2556b92c9bb891b13f4769889838fe3c10/installed/x64-osx-dynamic/lib/osgPlugins-3.6.5/osgdb_tga.so",
+          "sdkSha256": "458133e8406d0f2ad4749df04eecac98e544c712aa86135a3c8abc5b17b7844b",
+          "sectionPayloadSha256": "f7e586b4e9a67395f560e995bf91d654faedde7daeaf6a0b60893028830ea25e",
+          "sdkOwners": [
+            {
+              "name": "openmw-osg",
+              "version": "2026-01-30",
+              "spdxSha256": "9531cc99ae4accbb81f505cb5ce6daea65bad3a9b12aaff3d99212ed1723418d"
+            }
+          ],
+          "packagedFiles": [
+            {
+              "path": "MWNet-1.0.0-macOS-x86_64/MWNet.app/Contents/PlugIns/osgPlugins/osgdb_tga.so",
+              "sha256": "703decb60296cf0ef0329f9e73ffa443098d4d1ec1c7ea529591f8b5bbce29b3"
+            },
+            {
+              "path": "MWNet-1.0.0-macOS-x86_64/OpenMW-CS.app/Contents/PlugIns/osgPlugins/osgdb_tga.so",
+              "sha256": "703decb60296cf0ef0329f9e73ffa443098d4d1ec1c7ea529591f8b5bbce29b3"
+            }
+          ]
+        },
+        {
+          "sdkPath": "vcpkg-x64-osx-dynamic-8306cb2556b92c9bb891b13f4769889838fe3c10/installed/x64-osx-dynamic/lib/libavcodec.62.11.100.dylib",
+          "sdkSha256": "d24353b3486cb682f9572ba48ba3f57ec22f5f64e5f7198856f634d96c02ed9b",
+          "sectionPayloadSha256": "a57975efafcb0fe4d974520480e6fb8e8848e1ba56e146381ef346a30e20cf85",
+          "sdkOwners": [
+            {
+              "name": "ffmpeg",
+              "version": "8.0.1#2",
+              "spdxSha256": "c4c9085158d94f9fb66528c7cc15de3cba299daa336d23034733804fdd662761"
+            }
+          ],
+          "packagedFiles": [
+            {
+              "path": "MWNet-1.0.0-macOS-x86_64/MWNet.app/Contents/Frameworks/libavcodec.62.11.100.dylib",
+              "sha256": "7a31734aed2a8616d5c472fb807c868f4e293f289930351b3f4d641f782b85aa"
+            }
+          ]
+        },
+        {
+          "sdkPath": "vcpkg-x64-osx-dynamic-8306cb2556b92c9bb891b13f4769889838fe3c10/installed/x64-osx-dynamic/lib/libavformat.62.3.100.dylib",
+          "sdkSha256": "698f31f21ceffe5f692fbd7d27f5b7e9923cc9f322d34f6744773f1ff1014ae1",
+          "sectionPayloadSha256": "a32d253d732d373669602a072e19e56211b16cf6cef8b709e60c623dca4927f6",
+          "sdkOwners": [
+            {
+              "name": "ffmpeg",
+              "version": "8.0.1#2",
+              "spdxSha256": "c4c9085158d94f9fb66528c7cc15de3cba299daa336d23034733804fdd662761"
+            }
+          ],
+          "packagedFiles": [
+            {
+              "path": "MWNet-1.0.0-macOS-x86_64/MWNet.app/Contents/Frameworks/libavformat.62.3.100.dylib",
+              "sha256": "467cb1e30c28ef1d20cf28c34ec52e395a012018ef2ff6e770c7f87a8f8c8aa4"
+            }
+          ]
+        },
+        {
+          "sdkPath": "vcpkg-x64-osx-dynamic-8306cb2556b92c9bb891b13f4769889838fe3c10/installed/x64-osx-dynamic/lib/libavutil.60.8.100.dylib",
+          "sdkSha256": "e875db2394c5738c2947179645c020af67f2ff9aa75369ce06070eb0077658b7",
+          "sectionPayloadSha256": "aa5370d3cdaf2415493bf628cba2f865e6afeb63530a81a64a08147d03897f31",
+          "sdkOwners": [
+            {
+              "name": "ffmpeg",
+              "version": "8.0.1#2",
+              "spdxSha256": "c4c9085158d94f9fb66528c7cc15de3cba299daa336d23034733804fdd662761"
+            }
+          ],
+          "packagedFiles": [
+            {
+              "path": "MWNet-1.0.0-macOS-x86_64/MWNet.app/Contents/Frameworks/libavutil.60.8.100.dylib",
+              "sha256": "b750c6020ed6cdc1679e8babe14985066aeff3b249618710b6af9caf302c4cc3"
+            }
+          ]
+        },
+        {
+          "sdkPath": "vcpkg-x64-osx-dynamic-8306cb2556b92c9bb891b13f4769889838fe3c10/installed/x64-osx-dynamic/lib/libboost_atomic.1.90.0.dylib",
+          "sdkSha256": "b2ec688bac59819fd73cc8ebb53557bc3cf1d70af116c59fc3bc89764b282d55",
+          "sectionPayloadSha256": "cd73aaab9f7fd6739d4ffc4ceac88dd8c8e2762e316ca8d54469fc28d0617515",
+          "sdkOwners": [
+            {
+              "name": "boost-atomic",
+              "version": "1.90.0#1",
+              "spdxSha256": "ab9c7674c93b8b8772bab0eeb890389c9288e266fc51fe424497e879a303c63b"
+            }
+          ],
+          "packagedFiles": [
+            {
+              "path": "MWNet-1.0.0-macOS-x86_64/MWNet.app/Contents/Frameworks/libboost_atomic.1.90.0.dylib",
+              "sha256": "c3f9da66a0af6b5de3a87161b888a3fde63198d07b0b0749c48e05d01acd70cb"
+            },
+            {
+              "path": "MWNet-1.0.0-macOS-x86_64/OpenMW-CS.app/Contents/Frameworks/libboost_atomic.1.90.0.dylib",
+              "sha256": "c3f9da66a0af6b5de3a87161b888a3fde63198d07b0b0749c48e05d01acd70cb"
+            }
+          ]
+        },
+        {
+          "sdkPath": "vcpkg-x64-osx-dynamic-8306cb2556b92c9bb891b13f4769889838fe3c10/installed/x64-osx-dynamic/lib/libboost_container.1.90.0.dylib",
+          "sdkSha256": "b7ecd9f429bc306ba768d6131f84618e93d8eb97501bda81782a65fc918f5bd8",
+          "sectionPayloadSha256": "221dad9e0c08aea7cb22e681f590ac0b73a996b01154d831bf71947c4a89f86b",
+          "sdkOwners": [
+            {
+              "name": "boost-container",
+              "version": "1.90.0#1",
+              "spdxSha256": "616b9ec1736106989c69c0ed47f5df5b9b6cf72912af381e2f02da6ee4026fe9"
+            }
+          ],
+          "packagedFiles": [
+            {
+              "path": "MWNet-1.0.0-macOS-x86_64/MWNet.app/Contents/Frameworks/libboost_container.1.90.0.dylib",
+              "sha256": "db1921175b3621d21a3ff7093cc05be6e6f13670de5bd393c61c391204ebfd21"
+            },
+            {
+              "path": "MWNet-1.0.0-macOS-x86_64/OpenMW-CS.app/Contents/Frameworks/libboost_container.1.90.0.dylib",
+              "sha256": "db1921175b3621d21a3ff7093cc05be6e6f13670de5bd393c61c391204ebfd21"
+            }
+          ]
+        },
+        {
+          "sdkPath": "vcpkg-x64-osx-dynamic-8306cb2556b92c9bb891b13f4769889838fe3c10/installed/x64-osx-dynamic/lib/libboost_filesystem.1.90.0.dylib",
+          "sdkSha256": "d2fb4674af1b11143022a44ba7440e0730b63b597f26afd71e603ec1ff45b1aa",
+          "sectionPayloadSha256": "67e7a7933e162b79fdc82e83a0a68ded670963cb37169d1ccbf9b8cdb861a40c",
+          "sdkOwners": [
+            {
+              "name": "boost-filesystem",
+              "version": "1.90.0#1",
+              "spdxSha256": "bf9cc9774db33155708f53bc481d9bb97506a045d91612bffae724c0fc38cf42"
+            }
+          ],
+          "packagedFiles": [
+            {
+              "path": "MWNet-1.0.0-macOS-x86_64/MWNet.app/Contents/Frameworks/libboost_filesystem.1.90.0.dylib",
+              "sha256": "6f68c6d8c33a8bdcddd244387388578451516db4f94b5ca4033ab3a4f8530347"
+            },
+            {
+              "path": "MWNet-1.0.0-macOS-x86_64/OpenMW-CS.app/Contents/Frameworks/libboost_filesystem.1.90.0.dylib",
+              "sha256": "6f68c6d8c33a8bdcddd244387388578451516db4f94b5ca4033ab3a4f8530347"
+            }
+          ]
+        },
+        {
+          "sdkPath": "vcpkg-x64-osx-dynamic-8306cb2556b92c9bb891b13f4769889838fe3c10/installed/x64-osx-dynamic/lib/libboost_iostreams.1.90.0.dylib",
+          "sdkSha256": "886f3bd802044af19f52759ff044bd62145eccd46b2e2f768b00699f18b7e5d1",
+          "sectionPayloadSha256": "67a9bfd8a2312a3c62c383e0110ea09a0077a23d587a7e1827db2d0392d3ad4d",
+          "sdkOwners": [
+            {
+              "name": "boost-iostreams",
+              "version": "1.90.0#1",
+              "spdxSha256": "98b98b58408b867c29f9c38d65b3fcedeb5ec60249045213308e4ef51373526e"
+            }
+          ],
+          "packagedFiles": [
+            {
+              "path": "MWNet-1.0.0-macOS-x86_64/MWNet.app/Contents/Frameworks/libboost_iostreams.1.90.0.dylib",
+              "sha256": "78be08e98b034eb5f16b22685dd63353d7020b1447f2362ecb8622b64fea5992"
+            },
+            {
+              "path": "MWNet-1.0.0-macOS-x86_64/OpenMW-CS.app/Contents/Frameworks/libboost_iostreams.1.90.0.dylib",
+              "sha256": "78be08e98b034eb5f16b22685dd63353d7020b1447f2362ecb8622b64fea5992"
+            }
+          ]
+        },
+        {
+          "sdkPath": "vcpkg-x64-osx-dynamic-8306cb2556b92c9bb891b13f4769889838fe3c10/installed/x64-osx-dynamic/lib/libboost_program_options.1.90.0.dylib",
+          "sdkSha256": "8a6de8cc68ebc54383e5cc83c8c27e5001667232f1f1070290401c9d6a76e396",
+          "sectionPayloadSha256": "1eb3e4d18d8117394e1b2917fcc356d1378477ff4c4878f04427762d7dd7dbe5",
+          "sdkOwners": [
+            {
+              "name": "boost-program-options",
+              "version": "1.90.0#1",
+              "spdxSha256": "2d4d1374ecd675c505c814bab2544232641ae79ea849c5da50ffbccceea5c4bd"
+            }
+          ],
+          "packagedFiles": [
+            {
+              "path": "MWNet-1.0.0-macOS-x86_64/MWNet.app/Contents/Frameworks/libboost_program_options.1.90.0.dylib",
+              "sha256": "42829d54f27a8510d9db7aba73896fe7c5ad1f31ca80fd96c271a832b05b50a7"
+            },
+            {
+              "path": "MWNet-1.0.0-macOS-x86_64/OpenMW-CS.app/Contents/Frameworks/libboost_program_options.1.90.0.dylib",
+              "sha256": "42829d54f27a8510d9db7aba73896fe7c5ad1f31ca80fd96c271a832b05b50a7"
+            }
+          ]
+        },
+        {
+          "sdkPath": "vcpkg-x64-osx-dynamic-8306cb2556b92c9bb891b13f4769889838fe3c10/installed/x64-osx-dynamic/lib/libboost_random.1.90.0.dylib",
+          "sdkSha256": "c5c96b7d38da506f683727c419ec662e6a79b92b6adf811a05d1d5a9bab9a488",
+          "sectionPayloadSha256": "4a10f8e33ac65c8f2ebfe10e8a4663d006c80f2124c71bb87b4ea038ad7111c8",
+          "sdkOwners": [
+            {
+              "name": "boost-random",
+              "version": "1.90.0#1",
+              "spdxSha256": "a855d374646aff49127c06e99a7480400eae4ca305f072b75535ae42f5c1866d"
+            }
+          ],
+          "packagedFiles": [
+            {
+              "path": "MWNet-1.0.0-macOS-x86_64/MWNet.app/Contents/Frameworks/libboost_random.1.90.0.dylib",
+              "sha256": "5413040ff77455ef69b098176285cfc470ab0f2b8d1a8cdd96d2465237537d7a"
+            },
+            {
+              "path": "MWNet-1.0.0-macOS-x86_64/OpenMW-CS.app/Contents/Frameworks/libboost_random.1.90.0.dylib",
+              "sha256": "5413040ff77455ef69b098176285cfc470ab0f2b8d1a8cdd96d2465237537d7a"
+            }
+          ]
+        },
+        {
+          "sdkPath": "vcpkg-x64-osx-dynamic-8306cb2556b92c9bb891b13f4769889838fe3c10/installed/x64-osx-dynamic/lib/libbrotlicommon.1.2.0.dylib",
+          "sdkSha256": "840316b3260f1970370654966c2654bf57271bd460f662360e9753e64bac080d",
+          "sectionPayloadSha256": "7174354136d85042243f2926b338894e6ee7984a452d4886af6a40a761a8554c",
+          "sdkOwners": [
+            {
+              "name": "brotli",
+              "version": "1.2.0",
+              "spdxSha256": "a5cd3b5797ee0eaa47877116ac20e43be01df9fe04ca7b5e2ba01a5f4a48e82f"
+            }
+          ],
+          "packagedFiles": [
+            {
+              "path": "MWNet-1.0.0-macOS-x86_64/MWNet.app/Contents/Frameworks/libbrotlicommon.1.2.0.dylib",
+              "sha256": "391bd49268280cbe63e5b160a33367d82b104e8a5d5887627920dd31df7b2707"
+            },
+            {
+              "path": "MWNet-1.0.0-macOS-x86_64/OpenMW-CS.app/Contents/Frameworks/libbrotlicommon.1.2.0.dylib",
+              "sha256": "391bd49268280cbe63e5b160a33367d82b104e8a5d5887627920dd31df7b2707"
+            }
+          ]
+        },
+        {
+          "sdkPath": "vcpkg-x64-osx-dynamic-8306cb2556b92c9bb891b13f4769889838fe3c10/installed/x64-osx-dynamic/lib/libbrotlidec.1.2.0.dylib",
+          "sdkSha256": "c0abbc143ed593768b2e32579ad41f32a6e4115429b27b1eb0d5834b10e6a058",
+          "sectionPayloadSha256": "58ab4682dcdd81d6486432548c2fa59c455e44f443da3cfe5ae67399e709024c",
+          "sdkOwners": [
+            {
+              "name": "brotli",
+              "version": "1.2.0",
+              "spdxSha256": "a5cd3b5797ee0eaa47877116ac20e43be01df9fe04ca7b5e2ba01a5f4a48e82f"
+            }
+          ],
+          "packagedFiles": [
+            {
+              "path": "MWNet-1.0.0-macOS-x86_64/MWNet.app/Contents/Frameworks/libbrotlidec.1.2.0.dylib",
+              "sha256": "62391767ae5ac63433e97bc049be60b08ea6f15bd7fe9782e9ee54f4e5e0169c"
+            },
+            {
+              "path": "MWNet-1.0.0-macOS-x86_64/OpenMW-CS.app/Contents/Frameworks/libbrotlidec.1.2.0.dylib",
+              "sha256": "62391767ae5ac63433e97bc049be60b08ea6f15bd7fe9782e9ee54f4e5e0169c"
+            }
+          ]
+        },
+        {
+          "sdkPath": "vcpkg-x64-osx-dynamic-8306cb2556b92c9bb891b13f4769889838fe3c10/installed/x64-osx-dynamic/lib/libBulletCollision.3.25.dylib",
+          "sdkSha256": "a8574e44408a00cbc83ef74f582bcd9e14be0bda399351d200c254bffaa8843c",
+          "sectionPayloadSha256": "ef71b21d834b7f23bc659b8c8e2b9bc9a999e8136ee57d39cdb6585c8b9c2046",
+          "sdkOwners": [
+            {
+              "name": "bullet3",
+              "version": "3.25#3",
+              "spdxSha256": "50ab67f09f81803a409b2a5700076796a2df71c0174d7636b1a2b28090db8dc2"
+            }
+          ],
+          "packagedFiles": [
+            {
+              "path": "MWNet-1.0.0-macOS-x86_64/MWNet.app/Contents/Frameworks/libBulletCollision.3.25.dylib",
+              "sha256": "37acf061b77788105bda196ba7c62f6b9ad14d42338e3bb3e9cb3f9557358c17"
+            },
+            {
+              "path": "MWNet-1.0.0-macOS-x86_64/OpenMW-CS.app/Contents/Frameworks/libBulletCollision.3.25.dylib",
+              "sha256": "37acf061b77788105bda196ba7c62f6b9ad14d42338e3bb3e9cb3f9557358c17"
+            }
+          ]
+        },
+        {
+          "sdkPath": "vcpkg-x64-osx-dynamic-8306cb2556b92c9bb891b13f4769889838fe3c10/installed/x64-osx-dynamic/lib/libbz2.1.0.8.dylib",
+          "sdkSha256": "f1442fa99bb11076f9e462b6cb326bbb9bb45d00c3179fb0fce4e06bc5fa3a92",
+          "sectionPayloadSha256": "4f34a1ef73d99dcdf69228739db0fefe2befeb4cbb756fec8fbbc6042cc2400a",
+          "sdkOwners": [
+            {
+              "name": "bzip2",
+              "version": "1.0.8#6",
+              "spdxSha256": "f8db668a6bcc5d972b3b9b0d49da222a329c67ab1f43ef42ea59df95b0383128"
+            }
+          ],
+          "packagedFiles": [
+            {
+              "path": "MWNet-1.0.0-macOS-x86_64/MWNet.app/Contents/Frameworks/libbz2.1.0.8.dylib",
+              "sha256": "a84a8d2023bbde621fc8e4291bac0e92d2b9529b33738c245ed3ed95e9315507"
+            },
+            {
+              "path": "MWNet-1.0.0-macOS-x86_64/OpenMW-CS.app/Contents/Frameworks/libbz2.1.0.8.dylib",
+              "sha256": "a84a8d2023bbde621fc8e4291bac0e92d2b9529b33738c245ed3ed95e9315507"
+            }
+          ]
+        },
+        {
+          "sdkPath": "vcpkg-x64-osx-dynamic-8306cb2556b92c9bb891b13f4769889838fe3c10/installed/x64-osx-dynamic/lib/libcollada-dom2.5-dp.2.5.0.dylib",
+          "sdkSha256": "29f68e2234fde55151e4d2de65a5eb00d06beb9dcdc43b8b2363192d9fc644be",
+          "sectionPayloadSha256": "fa85fc5b734501925ea32b8d230f7d1bdc2a3a1987a7ffb609e0f91189eb2678",
+          "sdkOwners": [
+            {
+              "name": "collada-dom",
+              "version": "2.5.0#11",
+              "spdxSha256": "7629b9df9f5bd1202648e2d3fb62eaaddaa5c09d79909224bbc761938a035541"
+            }
+          ],
+          "packagedFiles": [
+            {
+              "path": "MWNet-1.0.0-macOS-x86_64/MWNet.app/Contents/Frameworks/libcollada-dom2.5-dp.2.5.0.dylib",
+              "sha256": "52cdac652d3282d296b9b8b659ec448fa51011f52a5644b536324651ff5d80e2"
+            },
+            {
+              "path": "MWNet-1.0.0-macOS-x86_64/OpenMW-CS.app/Contents/Frameworks/libcollada-dom2.5-dp.2.5.0.dylib",
+              "sha256": "52cdac652d3282d296b9b8b659ec448fa51011f52a5644b536324651ff5d80e2"
+            }
+          ]
+        },
+        {
+          "sdkPath": "vcpkg-x64-osx-dynamic-8306cb2556b92c9bb891b13f4769889838fe3c10/installed/x64-osx-dynamic/lib/libfmt.12.1.0.dylib",
+          "sdkSha256": "ff84e75629d58bd55832df0de3ccf6c9f7812f8b4cca49681ece78c05792bfca",
+          "sectionPayloadSha256": "8935d3269702d3bdb88337b4ddf67453f82361b22647bfc2f8423c4dd2d1c762",
+          "sdkOwners": [
+            {
+              "name": "fmt",
+              "version": "12.1.0",
+              "spdxSha256": "072aad8d48a723f19203fc3e7bfaf9822afffb02607ea6b8668bf47c6437c816"
+            }
+          ],
+          "packagedFiles": [
+            {
+              "path": "MWNet-1.0.0-macOS-x86_64/MWNet.app/Contents/Frameworks/libfmt.12.1.0.dylib",
+              "sha256": "70a2fc798b96eab2e7ee0b67edda8022809faa3aa2a14573f32d93344fe48ce4"
+            }
+          ]
+        },
+        {
+          "sdkPath": "vcpkg-x64-osx-dynamic-8306cb2556b92c9bb891b13f4769889838fe3c10/installed/x64-osx-dynamic/lib/libfreetype.6.20.2.dylib",
+          "sdkSha256": "c1582d58a465b726a703f48f1862b8eaeb34664a776220c1cbc5f8e394bbb94f",
+          "sectionPayloadSha256": "4fc417f5db0024542202eafe5d52902d98e36f8e66a7dcddb81c6fea27f06c26",
+          "sdkOwners": [
+            {
+              "name": "freetype",
+              "version": "2.13.3",
+              "spdxSha256": "60d4d3c8c2fb89b9695787126a6f22f2d11a7457bfc2ab5681cd377f4d530bc3"
+            }
+          ],
+          "packagedFiles": [
+            {
+              "path": "MWNet-1.0.0-macOS-x86_64/MWNet.app/Contents/Frameworks/libfreetype.6.20.2.dylib",
+              "sha256": "90823a5f14e78c8038b2973bc8e61114c33bd8eaf0535932a88d11b4d07316d8"
+            },
+            {
+              "path": "MWNet-1.0.0-macOS-x86_64/OpenMW-CS.app/Contents/Frameworks/libfreetype.6.20.2.dylib",
+              "sha256": "90823a5f14e78c8038b2973bc8e61114c33bd8eaf0535932a88d11b4d07316d8"
+            }
+          ]
+        },
+        {
+          "sdkPath": "vcpkg-x64-osx-dynamic-8306cb2556b92c9bb891b13f4769889838fe3c10/installed/x64-osx-dynamic/lib/libicudata.78.2.dylib",
+          "sdkSha256": "5f96eb6b04a7f324d0b2a1fe71ad675638ff6570cd2a9751db85b861b15e841b",
+          "sectionPayloadSha256": "b98d22c6499885cd123a8554fee415d679854c2b4cb47041f36ebcd84b709a26",
+          "sdkOwners": [
+            {
+              "name": "icu",
+              "version": "78.2",
+              "spdxSha256": "9739b07c31848154de902215e0b3344b1f06ba47edcd64374c64ae740963a6fa"
+            }
+          ],
+          "packagedFiles": [
+            {
+              "path": "MWNet-1.0.0-macOS-x86_64/MWNet.app/Contents/Frameworks/libicudata.78.2.dylib",
+              "sha256": "099440a9bd8c0a6536ad80d6415663de1cfd153b17bcd374fd7141a7b2165d48"
+            },
+            {
+              "path": "MWNet-1.0.0-macOS-x86_64/OpenMW-CS.app/Contents/Frameworks/libicudata.78.2.dylib",
+              "sha256": "099440a9bd8c0a6536ad80d6415663de1cfd153b17bcd374fd7141a7b2165d48"
+            }
+          ]
+        },
+        {
+          "sdkPath": "vcpkg-x64-osx-dynamic-8306cb2556b92c9bb891b13f4769889838fe3c10/installed/x64-osx-dynamic/lib/libicui18n.78.2.dylib",
+          "sdkSha256": "ef29d167f32166eefd088b2169af0b6193fe4278a59f5853e1cb9c6b8bf88972",
+          "sectionPayloadSha256": "00679ea389af10a3e06c4024cd55e07bdd06f4415dba5f4c7f933432d94af405",
+          "sdkOwners": [
+            {
+              "name": "icu",
+              "version": "78.2",
+              "spdxSha256": "9739b07c31848154de902215e0b3344b1f06ba47edcd64374c64ae740963a6fa"
+            }
+          ],
+          "packagedFiles": [
+            {
+              "path": "MWNet-1.0.0-macOS-x86_64/MWNet.app/Contents/Frameworks/libicui18n.78.2.dylib",
+              "sha256": "15d386c2bf6ad9033135cf1f98879a436232cd8d79d21bfa42dfd267f6b4419f"
+            },
+            {
+              "path": "MWNet-1.0.0-macOS-x86_64/OpenMW-CS.app/Contents/Frameworks/libicui18n.78.2.dylib",
+              "sha256": "15d386c2bf6ad9033135cf1f98879a436232cd8d79d21bfa42dfd267f6b4419f"
+            }
+          ]
+        },
+        {
+          "sdkPath": "vcpkg-x64-osx-dynamic-8306cb2556b92c9bb891b13f4769889838fe3c10/installed/x64-osx-dynamic/lib/libicuuc.78.2.dylib",
+          "sdkSha256": "392a9d05b5fd8182cedb5f41e13dcf3084fccd042d73ea7c45cdb945896568c5",
+          "sectionPayloadSha256": "3f35f093bdecdc9d38c7ae84a1bfc37643da8cff0fb79c41c8a5879b38a5ce12",
+          "sdkOwners": [
+            {
+              "name": "icu",
+              "version": "78.2",
+              "spdxSha256": "9739b07c31848154de902215e0b3344b1f06ba47edcd64374c64ae740963a6fa"
+            }
+          ],
+          "packagedFiles": [
+            {
+              "path": "MWNet-1.0.0-macOS-x86_64/MWNet.app/Contents/Frameworks/libicuuc.78.2.dylib",
+              "sha256": "e43edba6baab41b52e9dab878f929610ac601c4f8afb23780682a7f8b3f01d31"
+            },
+            {
+              "path": "MWNet-1.0.0-macOS-x86_64/OpenMW-CS.app/Contents/Frameworks/libicuuc.78.2.dylib",
+              "sha256": "e43edba6baab41b52e9dab878f929610ac601c4f8afb23780682a7f8b3f01d31"
+            }
+          ]
+        },
+        {
+          "sdkPath": "vcpkg-x64-osx-dynamic-8306cb2556b92c9bb891b13f4769889838fe3c10/installed/x64-osx-dynamic/lib/libjpeg.62.4.0.dylib",
+          "sdkSha256": "932823d294f2048d0e227b837bd08d5e08a27ab2e1a0489b321418b7c3d107c8",
+          "sectionPayloadSha256": "9a455db12dfcafd793cde04bee8747cda8eb9f2aa5779a34ae2de04ed733aa3d",
+          "sdkOwners": [
+            {
+              "name": "libjpeg-turbo",
+              "version": "3.1.3",
+              "spdxSha256": "0477a47208ccf1f32dfa620a492d69d33f8ed0cd7b6a547ea925f90bd8c2c904"
+            }
+          ],
+          "packagedFiles": [
+            {
+              "path": "MWNet-1.0.0-macOS-x86_64/MWNet.app/Contents/Frameworks/libjpeg.62.4.0.dylib",
+              "sha256": "d9ca1a7bf94053ac1341b91140694c11bde84b1e7e14275491d72f31826a8ea9"
+            },
+            {
+              "path": "MWNet-1.0.0-macOS-x86_64/OpenMW-CS.app/Contents/Frameworks/libjpeg.62.4.0.dylib",
+              "sha256": "d9ca1a7bf94053ac1341b91140694c11bde84b1e7e14275491d72f31826a8ea9"
+            }
+          ]
+        },
+        {
+          "sdkPath": "vcpkg-x64-osx-dynamic-8306cb2556b92c9bb891b13f4769889838fe3c10/installed/x64-osx-dynamic/lib/libLinearMath.3.25.dylib",
+          "sdkSha256": "6b33867109fb2c35a868941c4be5ce016d0b45d8ff9ffae48081557bb6e62fec",
+          "sectionPayloadSha256": "2d4fe2d09353b154a0ed0e9b8a0efe3db323d70f79de97a455ec0d32592b04ca",
+          "sdkOwners": [
+            {
+              "name": "bullet3",
+              "version": "3.25#3",
+              "spdxSha256": "50ab67f09f81803a409b2a5700076796a2df71c0174d7636b1a2b28090db8dc2"
+            }
+          ],
+          "packagedFiles": [
+            {
+              "path": "MWNet-1.0.0-macOS-x86_64/MWNet.app/Contents/Frameworks/libLinearMath.3.25.dylib",
+              "sha256": "2a7624d38997ccea7bbad3187acd36fead61a02c3c5af4a3459a5626c298b37c"
+            },
+            {
+              "path": "MWNet-1.0.0-macOS-x86_64/OpenMW-CS.app/Contents/Frameworks/libLinearMath.3.25.dylib",
+              "sha256": "2a7624d38997ccea7bbad3187acd36fead61a02c3c5af4a3459a5626c298b37c"
+            }
+          ]
+        },
+        {
+          "sdkPath": "vcpkg-x64-osx-dynamic-8306cb2556b92c9bb891b13f4769889838fe3c10/installed/x64-osx-dynamic/lib/libluajit-5.1.2.1.1767980792.dylib",
+          "sdkSha256": "2daf69075462ab2c20454baec59131127bb2eb5153f6eba351f9b53a4b0106fb",
+          "sectionPayloadSha256": "30bff7ccc31c8cf5ffc13b1e8acee972c5ff1d62261ba3aa31063f684e1d1846",
+          "sdkOwners": [
+            {
+              "name": "luajit",
+              "version": "2026-01-09",
+              "spdxSha256": "aefd83d8475f2b148d52cf5b5316c1303b7b3d5cd8969b8dc306f78b4e8467cd"
+            }
+          ],
+          "packagedFiles": [
+            {
+              "path": "MWNet-1.0.0-macOS-x86_64/MWNet.app/Contents/Frameworks/libluajit-5.1.2.1.1767980792.dylib",
+              "sha256": "55dd31ba1f6f70ec89473e1930abea9b3b91906f245def7669a90f449e621ef3"
+            },
+            {
+              "path": "MWNet-1.0.0-macOS-x86_64/OpenMW-CS.app/Contents/Frameworks/libluajit-5.1.2.1.1767980792.dylib",
+              "sha256": "55dd31ba1f6f70ec89473e1930abea9b3b91906f245def7669a90f449e621ef3"
+            }
+          ]
+        },
+        {
+          "sdkPath": "vcpkg-x64-osx-dynamic-8306cb2556b92c9bb891b13f4769889838fe3c10/installed/x64-osx-dynamic/lib/liblz4.1.10.0.dylib",
+          "sdkSha256": "5d2c096cddddb9c973f4f588ed76890f04940f5b258ae771fdc3e795dda1d72c",
+          "sectionPayloadSha256": "3eb8011360c2c6aa6f8675cedbc590e1ce3eb803664c58ee58ab895ec431b93b",
+          "sdkOwners": [
+            {
+              "name": "lz4",
+              "version": "1.10.0",
+              "spdxSha256": "ea3d290274a83d3be6162eff7cde4d6bacc853831df38b2daf51b23f030d6873"
+            }
+          ],
+          "packagedFiles": [
+            {
+              "path": "MWNet-1.0.0-macOS-x86_64/MWNet.app/Contents/Frameworks/liblz4.1.10.0.dylib",
+              "sha256": "84d07f9125d8b44ceeaa526ff6dc96c69cf4ebee6cec93ec3e56d07e18353a32"
+            },
+            {
+              "path": "MWNet-1.0.0-macOS-x86_64/OpenMW-CS.app/Contents/Frameworks/liblz4.1.10.0.dylib",
+              "sha256": "84d07f9125d8b44ceeaa526ff6dc96c69cf4ebee6cec93ec3e56d07e18353a32"
+            }
+          ]
+        },
+        {
+          "sdkPath": "vcpkg-x64-osx-dynamic-8306cb2556b92c9bb891b13f4769889838fe3c10/installed/x64-osx-dynamic/lib/liblzma.5.8.2.dylib",
+          "sdkSha256": "ddfd15fb155342eb9b47a1e17b429a5039581b8817e13a8046ff161b74f7012c",
+          "sectionPayloadSha256": "24f87cf670321726f73ef71c8fcefc7339f22b683a09dc2a24c79507798e54fa",
+          "sdkOwners": [
+            {
+              "name": "liblzma",
+              "version": "5.8.2",
+              "spdxSha256": "fe0a70d8fbaa7cda14c9f783086c5a0ad88b1378b759a6489713e97f9cebdb5c"
+            }
+          ],
+          "packagedFiles": [
+            {
+              "path": "MWNet-1.0.0-macOS-x86_64/MWNet.app/Contents/Frameworks/liblzma.5.8.2.dylib",
+              "sha256": "7a1d66280d3787d9a59382bd9ac7fea67d5034edbcd8a1cf06a93aa82ad53a5f"
+            },
+            {
+              "path": "MWNet-1.0.0-macOS-x86_64/OpenMW-CS.app/Contents/Frameworks/liblzma.5.8.2.dylib",
+              "sha256": "7a1d66280d3787d9a59382bd9ac7fea67d5034edbcd8a1cf06a93aa82ad53a5f"
+            }
+          ]
+        },
+        {
+          "sdkPath": "vcpkg-x64-osx-dynamic-8306cb2556b92c9bb891b13f4769889838fe3c10/installed/x64-osx-dynamic/lib/libminizip.dylib",
+          "sdkSha256": "786d21ef37cda76acadfef44a355d4a1b3434b20d28d7b2c923891b27145d87e",
+          "sectionPayloadSha256": "7e6189453f8f28d242beef38f9e8160209324a47d6605f5413375c7054e21005",
+          "sdkOwners": [
+            {
+              "name": "minizip",
+              "version": "1.3.1#1",
+              "spdxSha256": "41c05625fe5bedaae1140d0f535161f05303dd3a1c78ad7ea58310460ff6824d"
+            }
+          ],
+          "packagedFiles": [
+            {
+              "path": "MWNet-1.0.0-macOS-x86_64/MWNet.app/Contents/Frameworks/libminizip.dylib",
+              "sha256": "dac89c3ac8428b7af7599c547c6d2c16f3d78d31e1efc5bbb85a192fc9634fb7"
+            },
+            {
+              "path": "MWNet-1.0.0-macOS-x86_64/OpenMW-CS.app/Contents/Frameworks/libminizip.dylib",
+              "sha256": "dac89c3ac8428b7af7599c547c6d2c16f3d78d31e1efc5bbb85a192fc9634fb7"
+            }
+          ]
+        },
+        {
+          "sdkPath": "vcpkg-x64-osx-dynamic-8306cb2556b92c9bb891b13f4769889838fe3c10/installed/x64-osx-dynamic/lib/libopenal.1.25.0.dylib",
+          "sdkSha256": "5638eef47106d01a4bad76f2d982cda33c016daa3dce98bf5fa79e94d1a5d46b",
+          "sectionPayloadSha256": "26055948f8f1eee35bf55ad0ea1d54da634c54ecddb1b9308b348d11fcb5fc8f",
+          "sdkOwners": [
+            {
+              "name": "openal-soft",
+              "version": "1.25.0",
+              "spdxSha256": "03e245b5fff8b411169ca3c82434f6faf2c7089b3eaad852a258b5032ca3bab1"
+            }
+          ],
+          "packagedFiles": [
+            {
+              "path": "MWNet-1.0.0-macOS-x86_64/MWNet.app/Contents/Frameworks/libopenal.1.25.0.dylib",
+              "sha256": "2fd3c78264da0b2705e59deaa0a0ca6f4435001fc53598f77e4038552f62814d"
+            }
+          ]
+        },
+        {
+          "sdkPath": "vcpkg-x64-osx-dynamic-8306cb2556b92c9bb891b13f4769889838fe3c10/installed/x64-osx-dynamic/lib/libOpenThreads.3.3.1.dylib",
+          "sdkSha256": "a09afb27af4a838472f825e479a3586d16a1bf77abcabe15ecab1889b372e706",
+          "sectionPayloadSha256": "531a7b65e0c9d37e986e4449fbcf4561ee678b3502cb64d23de4490b4f03d473",
+          "sdkOwners": [
+            {
+              "name": "openmw-osg",
+              "version": "2026-01-30",
+              "spdxSha256": "9531cc99ae4accbb81f505cb5ce6daea65bad3a9b12aaff3d99212ed1723418d"
+            }
+          ],
+          "packagedFiles": [
+            {
+              "path": "MWNet-1.0.0-macOS-x86_64/MWNet.app/Contents/Frameworks/libOpenThreads.3.3.1.dylib",
+              "sha256": "fd53837d4060d175ca28a2955976a5c7329c9641bac03f5f74abebee86c3a41c"
+            },
+            {
+              "path": "MWNet-1.0.0-macOS-x86_64/OpenMW-CS.app/Contents/Frameworks/libOpenThreads.3.3.1.dylib",
+              "sha256": "fd53837d4060d175ca28a2955976a5c7329c9641bac03f5f74abebee86c3a41c"
+            }
+          ]
+        },
+        {
+          "sdkPath": "vcpkg-x64-osx-dynamic-8306cb2556b92c9bb891b13f4769889838fe3c10/installed/x64-osx-dynamic/lib/libosg.3.6.5.dylib",
+          "sdkSha256": "40e913c93d0e7692131696a22bff0b86850876be3cb44b83d69b30a835ea9ca1",
+          "sectionPayloadSha256": "26c2c5828fa64d06328adb7d35636e2520db05cb3f823e6e376dbe30da168965",
+          "sdkOwners": [
+            {
+              "name": "openmw-osg",
+              "version": "2026-01-30",
+              "spdxSha256": "9531cc99ae4accbb81f505cb5ce6daea65bad3a9b12aaff3d99212ed1723418d"
+            }
+          ],
+          "packagedFiles": [
+            {
+              "path": "MWNet-1.0.0-macOS-x86_64/MWNet.app/Contents/Frameworks/libosg.3.6.5.dylib",
+              "sha256": "0319a416719464722253918dc00da0808c3dca1e65553af4b2207e6face54282"
+            },
+            {
+              "path": "MWNet-1.0.0-macOS-x86_64/OpenMW-CS.app/Contents/Frameworks/libosg.3.6.5.dylib",
+              "sha256": "0319a416719464722253918dc00da0808c3dca1e65553af4b2207e6face54282"
+            }
+          ]
+        },
+        {
+          "sdkPath": "vcpkg-x64-osx-dynamic-8306cb2556b92c9bb891b13f4769889838fe3c10/installed/x64-osx-dynamic/lib/libosgAnimation.3.6.5.dylib",
+          "sdkSha256": "bc9c5e42dd7d61847fb6cb02d85345b1939f1a37c80a74d9d72c15d96837bcd3",
+          "sectionPayloadSha256": "580c3f800b200ddcb1436515c109811a40d00fa775b55c8e2c15bd061863acbc",
+          "sdkOwners": [
+            {
+              "name": "openmw-osg",
+              "version": "2026-01-30",
+              "spdxSha256": "9531cc99ae4accbb81f505cb5ce6daea65bad3a9b12aaff3d99212ed1723418d"
+            }
+          ],
+          "packagedFiles": [
+            {
+              "path": "MWNet-1.0.0-macOS-x86_64/MWNet.app/Contents/Frameworks/libosgAnimation.3.6.5.dylib",
+              "sha256": "533f27dc456f72fa284ab853f5dcfc4daa54086e43557ab44d6237e96b6e0822"
+            },
+            {
+              "path": "MWNet-1.0.0-macOS-x86_64/OpenMW-CS.app/Contents/Frameworks/libosgAnimation.3.6.5.dylib",
+              "sha256": "533f27dc456f72fa284ab853f5dcfc4daa54086e43557ab44d6237e96b6e0822"
+            }
+          ]
+        },
+        {
+          "sdkPath": "vcpkg-x64-osx-dynamic-8306cb2556b92c9bb891b13f4769889838fe3c10/installed/x64-osx-dynamic/lib/libosgDB.3.6.5.dylib",
+          "sdkSha256": "a11cacf0793b37d58289538c5803aa7d40ab2583158c44952335906a057623e3",
+          "sectionPayloadSha256": "c184994ecc99560a5e52ba17b396272bf5c5cf745c9e7bf2e9010022344a9210",
+          "sdkOwners": [
+            {
+              "name": "openmw-osg",
+              "version": "2026-01-30",
+              "spdxSha256": "9531cc99ae4accbb81f505cb5ce6daea65bad3a9b12aaff3d99212ed1723418d"
+            }
+          ],
+          "packagedFiles": [
+            {
+              "path": "MWNet-1.0.0-macOS-x86_64/MWNet.app/Contents/Frameworks/libosgDB.3.6.5.dylib",
+              "sha256": "225bd6a9a2e05982bb04c27fc739b50fc4b0fbfa18f1b5d371754d9e7897df9c"
+            },
+            {
+              "path": "MWNet-1.0.0-macOS-x86_64/OpenMW-CS.app/Contents/Frameworks/libosgDB.3.6.5.dylib",
+              "sha256": "225bd6a9a2e05982bb04c27fc739b50fc4b0fbfa18f1b5d371754d9e7897df9c"
+            }
+          ]
+        },
+        {
+          "sdkPath": "vcpkg-x64-osx-dynamic-8306cb2556b92c9bb891b13f4769889838fe3c10/installed/x64-osx-dynamic/lib/libosgGA.3.6.5.dylib",
+          "sdkSha256": "a579377ab07819bbdb0a24b7a05a244e0b5b9b378b2b7f069b85f0ea54abc5a6",
+          "sectionPayloadSha256": "e1f18f30b4d4b53f64b4fb578147118b209fec9064d8a0b165456794997c5262",
+          "sdkOwners": [
+            {
+              "name": "openmw-osg",
+              "version": "2026-01-30",
+              "spdxSha256": "9531cc99ae4accbb81f505cb5ce6daea65bad3a9b12aaff3d99212ed1723418d"
+            }
+          ],
+          "packagedFiles": [
+            {
+              "path": "MWNet-1.0.0-macOS-x86_64/MWNet.app/Contents/Frameworks/libosgGA.3.6.5.dylib",
+              "sha256": "dfe502de07510b9b0fb8336cc352955e4b0f0ee0f3087dd337b001248628b0c7"
+            },
+            {
+              "path": "MWNet-1.0.0-macOS-x86_64/OpenMW-CS.app/Contents/Frameworks/libosgGA.3.6.5.dylib",
+              "sha256": "dfe502de07510b9b0fb8336cc352955e4b0f0ee0f3087dd337b001248628b0c7"
+            }
+          ]
+        },
+        {
+          "sdkPath": "vcpkg-x64-osx-dynamic-8306cb2556b92c9bb891b13f4769889838fe3c10/installed/x64-osx-dynamic/lib/libosgParticle.3.6.5.dylib",
+          "sdkSha256": "9dcaa3e7138a0c67c4add82825b9061280596f6528918e2e0a1348149d499f67",
+          "sectionPayloadSha256": "070d59f6061770482c8344fa5bb7629d7a95e58296075b0499c1d0b075356463",
+          "sdkOwners": [
+            {
+              "name": "openmw-osg",
+              "version": "2026-01-30",
+              "spdxSha256": "9531cc99ae4accbb81f505cb5ce6daea65bad3a9b12aaff3d99212ed1723418d"
+            }
+          ],
+          "packagedFiles": [
+            {
+              "path": "MWNet-1.0.0-macOS-x86_64/MWNet.app/Contents/Frameworks/libosgParticle.3.6.5.dylib",
+              "sha256": "5fafed9f9688a34a358ed1824c9c8034ad6c6571065e7841c323ddfc7fc2d057"
+            },
+            {
+              "path": "MWNet-1.0.0-macOS-x86_64/OpenMW-CS.app/Contents/Frameworks/libosgParticle.3.6.5.dylib",
+              "sha256": "5fafed9f9688a34a358ed1824c9c8034ad6c6571065e7841c323ddfc7fc2d057"
+            }
+          ]
+        },
+        {
+          "sdkPath": "vcpkg-x64-osx-dynamic-8306cb2556b92c9bb891b13f4769889838fe3c10/installed/x64-osx-dynamic/lib/libosgShadow.3.6.5.dylib",
+          "sdkSha256": "437e06650944a5555abe964735e1452fa1cfda091db7aa04fc3dd1bc6a88d000",
+          "sectionPayloadSha256": "fb5e584fcbff7e7fd3372a8cc613991d9dd9e740f91ac3685ca5b1a60545ddc4",
+          "sdkOwners": [
+            {
+              "name": "openmw-osg",
+              "version": "2026-01-30",
+              "spdxSha256": "9531cc99ae4accbb81f505cb5ce6daea65bad3a9b12aaff3d99212ed1723418d"
+            }
+          ],
+          "packagedFiles": [
+            {
+              "path": "MWNet-1.0.0-macOS-x86_64/MWNet.app/Contents/Frameworks/libosgShadow.3.6.5.dylib",
+              "sha256": "48401e53713e33d2964b09a336232fed66d1cfbce83f0fa45e946a4f2a4a4f67"
+            },
+            {
+              "path": "MWNet-1.0.0-macOS-x86_64/OpenMW-CS.app/Contents/Frameworks/libosgShadow.3.6.5.dylib",
+              "sha256": "48401e53713e33d2964b09a336232fed66d1cfbce83f0fa45e946a4f2a4a4f67"
+            }
+          ]
+        },
+        {
+          "sdkPath": "vcpkg-x64-osx-dynamic-8306cb2556b92c9bb891b13f4769889838fe3c10/installed/x64-osx-dynamic/lib/libosgSim.3.6.5.dylib",
+          "sdkSha256": "2b88fe1a9e7d942014ccd0d3799f4e696477993ed040b646b3dce92e09ca6c16",
+          "sectionPayloadSha256": "55c1d4508cd3a400283a2dac3f2e72decf86c76e198238633a2692459c27f7ba",
+          "sdkOwners": [
+            {
+              "name": "openmw-osg",
+              "version": "2026-01-30",
+              "spdxSha256": "9531cc99ae4accbb81f505cb5ce6daea65bad3a9b12aaff3d99212ed1723418d"
+            }
+          ],
+          "packagedFiles": [
+            {
+              "path": "MWNet-1.0.0-macOS-x86_64/MWNet.app/Contents/Frameworks/libosgSim.3.6.5.dylib",
+              "sha256": "7d5f047e3572d2d5909b2ead5b71e25cca30849b0b4be49d095aa38c43bcd689"
+            },
+            {
+              "path": "MWNet-1.0.0-macOS-x86_64/OpenMW-CS.app/Contents/Frameworks/libosgSim.3.6.5.dylib",
+              "sha256": "7d5f047e3572d2d5909b2ead5b71e25cca30849b0b4be49d095aa38c43bcd689"
+            }
+          ]
+        },
+        {
+          "sdkPath": "vcpkg-x64-osx-dynamic-8306cb2556b92c9bb891b13f4769889838fe3c10/installed/x64-osx-dynamic/lib/libosgText.3.6.5.dylib",
+          "sdkSha256": "fc74769edb4dbf5db91d05ea40664b891317086fa0115bca79f8b016c3efe262",
+          "sectionPayloadSha256": "907b38031dab1b2ba0933506d421f62012a9f7c7d6b92c57522acde35260c394",
+          "sdkOwners": [
+            {
+              "name": "openmw-osg",
+              "version": "2026-01-30",
+              "spdxSha256": "9531cc99ae4accbb81f505cb5ce6daea65bad3a9b12aaff3d99212ed1723418d"
+            }
+          ],
+          "packagedFiles": [
+            {
+              "path": "MWNet-1.0.0-macOS-x86_64/MWNet.app/Contents/Frameworks/libosgText.3.6.5.dylib",
+              "sha256": "a7592b16dfb554965be0be63b444488af876fadd62795b3e49882637ca696722"
+            },
+            {
+              "path": "MWNet-1.0.0-macOS-x86_64/OpenMW-CS.app/Contents/Frameworks/libosgText.3.6.5.dylib",
+              "sha256": "a7592b16dfb554965be0be63b444488af876fadd62795b3e49882637ca696722"
+            }
+          ]
+        },
+        {
+          "sdkPath": "vcpkg-x64-osx-dynamic-8306cb2556b92c9bb891b13f4769889838fe3c10/installed/x64-osx-dynamic/lib/libosgUtil.3.6.5.dylib",
+          "sdkSha256": "f9218fdcb47498e89484be0ea8a71da44de0982fb8d485aa049cd1c1a8e58fa4",
+          "sectionPayloadSha256": "b46bece3fbf622c9c360bfa8c4e3dc0c8d45e9f720bb25f2f3b2289e4eab9664",
+          "sdkOwners": [
+            {
+              "name": "openmw-osg",
+              "version": "2026-01-30",
+              "spdxSha256": "9531cc99ae4accbb81f505cb5ce6daea65bad3a9b12aaff3d99212ed1723418d"
+            }
+          ],
+          "packagedFiles": [
+            {
+              "path": "MWNet-1.0.0-macOS-x86_64/MWNet.app/Contents/Frameworks/libosgUtil.3.6.5.dylib",
+              "sha256": "84c2e27965ff69c16c054c6cc950411828e5901a9f90849a79d35e23f184bbe3"
+            },
+            {
+              "path": "MWNet-1.0.0-macOS-x86_64/OpenMW-CS.app/Contents/Frameworks/libosgUtil.3.6.5.dylib",
+              "sha256": "84c2e27965ff69c16c054c6cc950411828e5901a9f90849a79d35e23f184bbe3"
+            }
+          ]
+        },
+        {
+          "sdkPath": "vcpkg-x64-osx-dynamic-8306cb2556b92c9bb891b13f4769889838fe3c10/installed/x64-osx-dynamic/lib/libosgViewer.3.6.5.dylib",
+          "sdkSha256": "f39ed844942265829488929abb4658701caf1e1b347c0475016dc51fc2b086a6",
+          "sectionPayloadSha256": "8b01d0d603fbe9aff70886dcd749b45458f8f94a3288f5eba877fa7a7a8830dd",
+          "sdkOwners": [
+            {
+              "name": "openmw-osg",
+              "version": "2026-01-30",
+              "spdxSha256": "9531cc99ae4accbb81f505cb5ce6daea65bad3a9b12aaff3d99212ed1723418d"
+            }
+          ],
+          "packagedFiles": [
+            {
+              "path": "MWNet-1.0.0-macOS-x86_64/MWNet.app/Contents/Frameworks/libosgViewer.3.6.5.dylib",
+              "sha256": "dd50f04953b7640ea7ef888332a510a9ec24821a8010a971952fa0dda5c8584a"
+            },
+            {
+              "path": "MWNet-1.0.0-macOS-x86_64/OpenMW-CS.app/Contents/Frameworks/libosgViewer.3.6.5.dylib",
+              "sha256": "dd50f04953b7640ea7ef888332a510a9ec24821a8010a971952fa0dda5c8584a"
+            }
+          ]
+        },
+        {
+          "sdkPath": "vcpkg-x64-osx-dynamic-8306cb2556b92c9bb891b13f4769889838fe3c10/installed/x64-osx-dynamic/lib/libpng16.16.54.0.dylib",
+          "sdkSha256": "4089a1a3e978d2629769dadfcc73487ee90ba067f6a3688b24af15218f96d446",
+          "sectionPayloadSha256": "bae670f361b21698186713f5d583d3997598040dfce10836f4b419366a5ae276",
+          "sdkOwners": [
+            {
+              "name": "libpng",
+              "version": "1.6.54",
+              "spdxSha256": "70e5356218e9a95f3e5ac1537f1367edc36ac2e2cff3e976bd3816e32ca1d2ce"
+            }
+          ],
+          "packagedFiles": [
+            {
+              "path": "MWNet-1.0.0-macOS-x86_64/MWNet.app/Contents/Frameworks/libpng16.16.54.0.dylib",
+              "sha256": "5c26129cf0a1a10fd2d4eca05527db2e241811f84dba82036a78adf50c90ab74"
+            },
+            {
+              "path": "MWNet-1.0.0-macOS-x86_64/OpenMW-CS.app/Contents/Frameworks/libpng16.16.54.0.dylib",
+              "sha256": "5c26129cf0a1a10fd2d4eca05527db2e241811f84dba82036a78adf50c90ab74"
+            }
+          ]
+        },
+        {
+          "sdkPath": "vcpkg-x64-osx-dynamic-8306cb2556b92c9bb891b13f4769889838fe3c10/installed/x64-osx-dynamic/lib/libSDL2-2.0.0.dylib",
+          "sdkSha256": "1c655cd41c37989b58aef3e4acde59d7f19cf83e567c6adf58e6ed7cf74be34c",
+          "sectionPayloadSha256": "bfccd220f1da0937f56f4c00ac680d9a0b4c67935a6afbd1193800be16a02283",
+          "sdkOwners": [
+            {
+              "name": "sdl2",
+              "version": "2.32.10",
+              "spdxSha256": "d4020b62f17bea26ae92f83bcfa6989e3d9ae3b9462bb14419fc8b07dd7e2a67"
+            }
+          ],
+          "packagedFiles": [
+            {
+              "path": "MWNet-1.0.0-macOS-x86_64/MWNet.app/Contents/Frameworks/libSDL2-2.0.0.dylib",
+              "sha256": "2eb6d7a340e93855211251951bb6de6835bc43fe2e6490c14647a7308befe617"
+            },
+            {
+              "path": "MWNet-1.0.0-macOS-x86_64/OpenMW-CS.app/Contents/Frameworks/libSDL2-2.0.0.dylib",
+              "sha256": "2eb6d7a340e93855211251951bb6de6835bc43fe2e6490c14647a7308befe617"
+            }
+          ]
+        },
+        {
+          "sdkPath": "vcpkg-x64-osx-dynamic-8306cb2556b92c9bb891b13f4769889838fe3c10/installed/x64-osx-dynamic/lib/libswresample.6.1.100.dylib",
+          "sdkSha256": "c662fad0c8792e1f4ccfaf454457b494827595dcb7ca7142f24bb28db993628e",
+          "sectionPayloadSha256": "1c87936dbe68ca28f2a2c5a0ab5856ed0f18237c5b57f1d88409ef4658ebdcc2",
+          "sdkOwners": [
+            {
+              "name": "ffmpeg",
+              "version": "8.0.1#2",
+              "spdxSha256": "c4c9085158d94f9fb66528c7cc15de3cba299daa336d23034733804fdd662761"
+            }
+          ],
+          "packagedFiles": [
+            {
+              "path": "MWNet-1.0.0-macOS-x86_64/MWNet.app/Contents/Frameworks/libswresample.6.1.100.dylib",
+              "sha256": "348eabdfd2ad23d6cfd5d849f86bb46596c620ddd5ec7940ac6daa8355709ab2"
+            }
+          ]
+        },
+        {
+          "sdkPath": "vcpkg-x64-osx-dynamic-8306cb2556b92c9bb891b13f4769889838fe3c10/installed/x64-osx-dynamic/lib/libswscale.9.1.100.dylib",
+          "sdkSha256": "f1a91c52c2112e8815283be44b70fe65c522e5cb4548cba7d2a26a7137549b64",
+          "sectionPayloadSha256": "bad4243e1904f9d5b042fb1956a5497b63d0ec91021ac426c8f75ea0e3ad9c02",
+          "sdkOwners": [
+            {
+              "name": "ffmpeg",
+              "version": "8.0.1#2",
+              "spdxSha256": "c4c9085158d94f9fb66528c7cc15de3cba299daa336d23034733804fdd662761"
+            }
+          ],
+          "packagedFiles": [
+            {
+              "path": "MWNet-1.0.0-macOS-x86_64/MWNet.app/Contents/Frameworks/libswscale.9.1.100.dylib",
+              "sha256": "c8d4ed10db72d2110960175751ec139e0203cc3f3d6659ca0f95680f290f4d7b"
+            }
+          ]
+        },
+        {
+          "sdkPath": "vcpkg-x64-osx-dynamic-8306cb2556b92c9bb891b13f4769889838fe3c10/installed/x64-osx-dynamic/lib/libunshield.0.0.0.dylib",
+          "sdkSha256": "5785b3a58872f693764bdd46672ad88c8e7bc49ad94fed9cae51757f719fb1a2",
+          "sectionPayloadSha256": "824554946d37278be79c7c5caa248724ba81bd1ca741c677d0ce6a550ffcfbdb",
+          "sdkOwners": [
+            {
+              "name": "unshield",
+              "version": "1.4.2#1",
+              "spdxSha256": "cb9d9c677fda6e7e4e5ace4e33a54130f5a6229d531bb84d302c2ff4891126a6"
+            }
+          ],
+          "packagedFiles": [
+            {
+              "path": "MWNet-1.0.0-macOS-x86_64/MWNet.app/Contents/Frameworks/libunshield.0.0.0.dylib",
+              "sha256": "cbd79f26c87fb3698da14bd8d697d582f5a610ce80c7d39110efc9c2340ffe95"
+            }
+          ]
+        },
+        {
+          "sdkPath": "vcpkg-x64-osx-dynamic-8306cb2556b92c9bb891b13f4769889838fe3c10/installed/x64-osx-dynamic/lib/liburiparser.1.1.0.dylib",
+          "sdkSha256": "e8adaa9748351129ae33d2c31f367791145a9182b9cace580fa0d70ca4e52b0c",
+          "sectionPayloadSha256": "76bc9093e85131bc3c9b3c6896079ec142fd71775c4ff28aca5bcd983bdcc08a",
+          "sdkOwners": [
+            {
+              "name": "uriparser",
+              "version": "0.9.9",
+              "spdxSha256": "6622440ef210acffffcb11c186c6a2dcfdfeb9b6c1ed447c5305cbf73eced1b3"
+            }
+          ],
+          "packagedFiles": [
+            {
+              "path": "MWNet-1.0.0-macOS-x86_64/MWNet.app/Contents/Frameworks/liburiparser.1.1.0.dylib",
+              "sha256": "ee50efc55b1b12d44a5d9fd6fcd20e396819661035eee07de575a29521bdc30e"
+            },
+            {
+              "path": "MWNet-1.0.0-macOS-x86_64/OpenMW-CS.app/Contents/Frameworks/liburiparser.1.1.0.dylib",
+              "sha256": "ee50efc55b1b12d44a5d9fd6fcd20e396819661035eee07de575a29521bdc30e"
+            }
+          ]
+        },
+        {
+          "sdkPath": "vcpkg-x64-osx-dynamic-8306cb2556b92c9bb891b13f4769889838fe3c10/installed/x64-osx-dynamic/lib/libxml2.16.1.1.dylib",
+          "sdkSha256": "e33fcc8f4e77b93cb0c9214ba0367bc3ec6bb080ee0c501db91cd2b6d8b520d7",
+          "sectionPayloadSha256": "d3c6e40b720ade4e771ef322302715f375fc8ee86f318905b5130e47e0ea9347",
+          "sdkOwners": [
+            {
+              "name": "libxml2",
+              "version": "2.15.1",
+              "spdxSha256": "98579b3431fe37e569a54ecc0e8d02a2016d8cb4888c5f8ba73fd1831e6c4b48"
+            }
+          ],
+          "packagedFiles": [
+            {
+              "path": "MWNet-1.0.0-macOS-x86_64/MWNet.app/Contents/Frameworks/libxml2.16.1.1.dylib",
+              "sha256": "2fd1aa95155b8a1f18450862b763b7b61cf6d64026ba83f0eddeb9ca01946e4e"
+            },
+            {
+              "path": "MWNet-1.0.0-macOS-x86_64/OpenMW-CS.app/Contents/Frameworks/libxml2.16.1.1.dylib",
+              "sha256": "2fd1aa95155b8a1f18450862b763b7b61cf6d64026ba83f0eddeb9ca01946e4e"
+            }
+          ]
+        },
+        {
+          "sdkPath": "vcpkg-x64-osx-dynamic-8306cb2556b92c9bb891b13f4769889838fe3c10/installed/x64-osx-dynamic/lib/libz.1.3.1.dylib",
+          "sdkSha256": "50ebdba434501df4c19bbbd61e763f28c8050ed587c78560f3ab24a388827f1f",
+          "sectionPayloadSha256": "5f85e408b6bd43f88920b6ea2b773af9d7f4396c786e573c1ea9ec07f3426397",
+          "sdkOwners": [
+            {
+              "name": "zlib",
+              "version": "1.3.1",
+              "spdxSha256": "7bbea7011b5d78dfd6cf64f23c9c146e507e0ea20e3726e7c53ada2e80f28209"
+            }
+          ],
+          "packagedFiles": [
+            {
+              "path": "MWNet-1.0.0-macOS-x86_64/MWNet.app/Contents/Frameworks/libz.1.3.1.dylib",
+              "sha256": "fc94eb08b3feff4f87ae6d1307c3f8b171ea0dd1506aaeb117cfe7159cbb9e21"
+            },
+            {
+              "path": "MWNet-1.0.0-macOS-x86_64/OpenMW-CS.app/Contents/Frameworks/libz.1.3.1.dylib",
+              "sha256": "fc94eb08b3feff4f87ae6d1307c3f8b171ea0dd1506aaeb117cfe7159cbb9e21"
+            }
+          ]
+        },
+        {
+          "sdkPath": "vcpkg-x64-osx-dynamic-8306cb2556b92c9bb891b13f4769889838fe3c10/installed/x64-osx-dynamic/lib/libzstd.1.5.7.dylib",
+          "sdkSha256": "6bfc232b3a64bfbdfd8f769917bbfe8bc60e354344ec0c2c2dd054724b0e97c6",
+          "sectionPayloadSha256": "c5a42b6dc05cece86e40cce12e0dfda77ba436d8382f3a6a07f8d6d60ef83c3f",
+          "sdkOwners": [
+            {
+              "name": "zstd",
+              "version": "1.5.7",
+              "spdxSha256": "a78a6e8f200f06083ca43eecd24bf8da0a23152ac675ab0ac9b98c197dc27736"
+            }
+          ],
+          "packagedFiles": [
+            {
+              "path": "MWNet-1.0.0-macOS-x86_64/MWNet.app/Contents/Frameworks/libzstd.1.5.7.dylib",
+              "sha256": "e121cb6ededf6008584a4dd04f367f63d73baefb715b667b6d104467e3e59e2a"
+            },
+            {
+              "path": "MWNet-1.0.0-macOS-x86_64/OpenMW-CS.app/Contents/Frameworks/libzstd.1.5.7.dylib",
+              "sha256": "e121cb6ededf6008584a4dd04f367f63d73baefb715b667b6d104467e3e59e2a"
+            }
+          ]
+        },
+        {
+          "sdkPath": "vcpkg-x64-osx-dynamic-8306cb2556b92c9bb891b13f4769889838fe3c10/installed/x64-osx-dynamic/lib/libosgFX.3.6.5.dylib",
+          "sdkSha256": "9c9cdb92c5a49e60918385f8b8c3034d1d0788ad2650c6b87b04a941df80766e",
+          "sectionPayloadSha256": "3718a2e234f264a945ac81fd0a2e88cc57ed994ab2dbce3e762159cd9a45b9ea",
+          "sdkOwners": [
+            {
+              "name": "openmw-osg",
+              "version": "2026-01-30",
+              "spdxSha256": "9531cc99ae4accbb81f505cb5ce6daea65bad3a9b12aaff3d99212ed1723418d"
+            }
+          ],
+          "packagedFiles": [
+            {
+              "path": "MWNet-1.0.0-macOS-x86_64/OpenMW-CS.app/Contents/Frameworks/libosgFX.3.6.5.dylib",
+              "sha256": "32a8944f49a6a81442ac7d0e152588fa34da288b2ab7f26e49b934b3e54ccc94"
+            }
+          ]
+        }
+      ],
+      "unmatchedDistinctBasenameGroups": {
+        "abseil": 79,
+        "other": 27,
+        "Qt": 12
+      },
+      "minimumOsVersionCounts": {
+        "13.7.0": 19,
+        "13.0.0": 124,
+        "14.0.0": 90,
+        "15.0.0": 1
+      },
+      "emptySectionPayloadsNotMatched": [
+        "MWNet-1.0.0-macOS-x86_64/MWNet.app/Contents/Frameworks/libabsl_source_location.2608.0.0.dylib"
+      ],
+      "selectedDuplicateProviderFacts": [
+        {
+          "path": "MWNet-1.0.0-macOS-x86_64/MWNet.app/Contents/Frameworks/libbrotlicommon.1.2.0.dylib",
+          "sha256": "391bd49268280cbe63e5b160a33367d82b104e8a5d5887627920dd31df7b2707",
+          "sdkPayloadMatched": true,
+          "minimumOsVersions": [
+            {
+              "platform": 1,
+              "minimum": "13.0.0",
+              "sdk": "15.5.0"
+            }
+          ],
+          "installName": {
+            "name": "@executable_path/../Frameworks/libbrotlicommon.1.2.0.dylib",
+            "currentVersion": "1.2.0",
+            "compatibilityVersion": "1.0.0",
+            "command": "0xd"
+          }
+        },
+        {
+          "path": "MWNet-1.0.0-macOS-x86_64/MWNet.app/Contents/Frameworks/libbrotlidec.1.2.0.dylib",
+          "sha256": "62391767ae5ac63433e97bc049be60b08ea6f15bd7fe9782e9ee54f4e5e0169c",
+          "sdkPayloadMatched": true,
+          "minimumOsVersions": [
+            {
+              "platform": 1,
+              "minimum": "13.0.0",
+              "sdk": "15.5.0"
+            }
+          ],
+          "installName": {
+            "name": "@executable_path/../Frameworks/libbrotlidec.1.2.0.dylib",
+            "currentVersion": "1.2.0",
+            "compatibilityVersion": "1.0.0",
+            "command": "0xd"
+          }
+        },
+        {
+          "path": "MWNet-1.0.0-macOS-x86_64/MWNet.app/Contents/Frameworks/libfontconfig.1.dylib",
+          "sha256": "08e5bcb5d057e6dc7c95e138634c77be5f30146153e9e7ff8dcf1fdf48ca8a1a",
+          "sdkPayloadMatched": false,
+          "minimumOsVersions": [
+            {
+              "platform": 1,
+              "minimum": "14.0.0",
+              "sdk": "14.5.0"
+            }
+          ],
+          "installName": {
+            "name": "@executable_path/../Frameworks/libfontconfig.1.dylib",
+            "currentVersion": "18.0.0",
+            "compatibilityVersion": "18.0.0",
+            "command": "0xd"
+          }
+        },
+        {
+          "path": "MWNet-1.0.0-macOS-x86_64/MWNet.app/Contents/Frameworks/libfreetype.6.20.2.dylib",
+          "sha256": "90823a5f14e78c8038b2973bc8e61114c33bd8eaf0535932a88d11b4d07316d8",
+          "sdkPayloadMatched": true,
+          "minimumOsVersions": [
+            {
+              "platform": 1,
+              "minimum": "13.0.0",
+              "sdk": "15.5.0"
+            }
+          ],
+          "installName": {
+            "name": "@executable_path/../Frameworks/libfreetype.6.20.2.dylib",
+            "currentVersion": "6.20.2",
+            "compatibilityVersion": "6.0.0",
+            "command": "0xd"
+          }
+        },
+        {
+          "path": "MWNet-1.0.0-macOS-x86_64/MWNet.app/Contents/Frameworks/libfreetype.6.dylib",
+          "sha256": "9df907d636bbe857c15f4e218a1653c02c2a0ec1ceba3d6df7d06e7852963a27",
+          "sdkPayloadMatched": false,
+          "minimumOsVersions": [
+            {
+              "platform": 1,
+              "minimum": "14.0.0",
+              "sdk": "14.5.0"
+            }
+          ],
+          "installName": {
+            "name": "@executable_path/../Frameworks/libfreetype.6.dylib",
+            "currentVersion": "27.6.0",
+            "compatibilityVersion": "27.0.0",
+            "command": "0xd"
+          }
+        },
+        {
+          "path": "MWNet-1.0.0-macOS-x86_64/MWNet.app/Contents/Frameworks/libpng16.16.54.0.dylib",
+          "sha256": "5c26129cf0a1a10fd2d4eca05527db2e241811f84dba82036a78adf50c90ab74",
+          "sdkPayloadMatched": true,
+          "minimumOsVersions": [
+            {
+              "platform": 1,
+              "minimum": "13.0.0",
+              "sdk": "15.5.0"
+            }
+          ],
+          "installName": {
+            "name": "@executable_path/../Frameworks/libpng16.16.54.0.dylib",
+            "currentVersion": "16.54.0",
+            "compatibilityVersion": "16.0.0",
+            "command": "0xd"
+          }
+        },
+        {
+          "path": "MWNet-1.0.0-macOS-x86_64/MWNet.app/Contents/Frameworks/libpng16.16.dylib",
+          "sha256": "4f2737e29fb9cebcd797f529b91c461834034fe2856ee9542dfa6fdbf70e4f75",
+          "sdkPayloadMatched": false,
+          "minimumOsVersions": [
+            {
+              "platform": 1,
+              "minimum": "14.0.0",
+              "sdk": "14.5.0"
+            }
+          ],
+          "installName": {
+            "name": "@executable_path/../Frameworks/libpng16.16.dylib",
+            "currentVersion": "75.0.0",
+            "compatibilityVersion": "75.0.0",
+            "command": "0xd"
+          }
+        }
+      ],
+      "supportedNativeTestHost": "macOS 15 only; minimum deployment targets are static evidence, not gameplay/platform acceptance"
+    }
+  },
+  "preservedLocalFailures": [
+    {
+      "path": "build/platform-stable-1.0.0-a6868387dc/macos-arm64-sdk-section-inspection/payload-comparison.json",
+      "sha256": "cbb2273cbdff4c7b1d58c57ee1d0980cf1d725b0873156cee70498f50bc3e470",
+      "cause": "7z refused SDK alias symlink chains; regular files were selected in the corrected procedure",
+      "scope": "Local read-only analysis tooling failure, not a native package/build/runtime failure",
+      "preservedToolSource": "build/platform-stable-1.0.0-a6868387dc/macos-sdk-section-inspection-attempt1-tool.py"
+    },
+    {
+      "path": "build/platform-stable-1.0.0-a6868387dc/macos-intel-sdk-section-inspection/payload-comparison.json",
+      "sha256": "5d4d9b26e061c7e1f3a1c067415abcc0d2b3989f482b6d54481835f1f690936f",
+      "cause": "7z refused SDK alias symlink chains; regular files were selected in the corrected procedure",
+      "scope": "Local read-only analysis tooling failure, not a native package/build/runtime failure",
+      "preservedToolSource": "build/platform-stable-1.0.0-a6868387dc/macos-sdk-section-inspection-attempt1-tool.py"
+    },
+    {
+      "path": "build/platform-stable-1.0.0-a6868387dc/macos-arm64-sdk-section-inspection-regular-files/payload-comparison.json",
+      "sha256": "d3ff63c5d358c16156ccd14862c35737d98c64001546e1e148e8ef5b3d726851",
+      "cause": "Valid Abseil empty compatibility library had no file-backed payload; corrected procedure inventories it without accepting an empty-payload provider match",
+      "scope": "Local read-only analysis tooling failure, not a native package/build/runtime failure",
+      "preservedToolSource": "build/platform-stable-1.0.0-a6868387dc/macos-sdk-section-inspection-attempt2-tool.py"
+    },
+    {
+      "path": "build/platform-stable-1.0.0-a6868387dc/macos-intel-sdk-section-inspection-regular-files/payload-comparison.json",
+      "sha256": "63f3945a84f1a1068c5bc8d18beb7820f2bc685f753a5a57a19b7996ba1b0dd3",
+      "cause": "Valid Abseil empty compatibility library had no file-backed payload; corrected procedure inventories it without accepting an empty-payload provider match",
+      "scope": "Local read-only analysis tooling failure, not a native package/build/runtime failure",
+      "preservedToolSource": "build/platform-stable-1.0.0-a6868387dc/macos-sdk-section-inspection-attempt2-tool.py"
+    }
+  ],
+  "distributionAccepted": false,
+  "graphicalGameplayAccepted": false
+}
