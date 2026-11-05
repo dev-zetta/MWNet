@@ -1,0 +1,117 @@
+{
+  "schemaVersion": 1,
+  "scope": "Five actual native FreeType/libpng/brotli provider source inputs; full source/notice and graphical acceptance remain separate",
+  "runtimeSourceCommit": "a6868387dc80dcafd9b8ebad3d8c708511d9a615",
+  "sources": [
+    {
+      "name": "freetype",
+      "version": "2.15.0",
+      "filename": "freetype-2.15.0-actual-macos-provider-source.tar.xz",
+      "urls": [
+        "https://downloads.sourceforge.net/project/freetype/freetype2/2.15.0/freetype-2.15.0.tar.xz"
+      ],
+      "algorithm": "sha256",
+      "checksum": "93cd47eb719c325107f2d3cf087d06299e944c3b48a40b55537302304dea1dd5",
+      "pinProvenance": "Actual delivered native API version agrees with captured installed dependency version and immutable recorded-tap formula source version; original keg build options are not recreated",
+      "formulaInput": {
+        "architecture": "arm64",
+        "tapRevision": "ce55aa0fbe1a705fdfcecf2eee4a5a39a9ed6d54",
+        "formulaPath": "Formula/f/freetype.rb",
+        "gitBlob": "2951a6dfc384a782226ad9e28613be2a4e99a603",
+        "formulaSha256": "55306144d6c059f30be7c8d2c0b4909836c259edc470c48fb4375d1f3e08fd34",
+        "sourceUrl": "https://downloads.sourceforge.net/project/freetype/freetype2/2.15.0/freetype-2.15.0.tar.xz",
+        "sourceSha256": "93cd47eb719c325107f2d3cf087d06299e944c3b48a40b55537302304dea1dd5",
+        "actualNativeCiRunId": 42086147577,
+        "actualRuntimeVersion": "2.15.0"
+      }
+    },
+    {
+      "name": "libpng",
+      "version": "1.6.59",
+      "filename": "libpng-1.6.59-actual-macos-provider-source.tar.xz",
+      "urls": [
+        "https://downloads.sourceforge.net/project/libpng/libpng16/1.6.59/libpng-1.6.59.tar.xz"
+      ],
+      "algorithm": "sha256",
+      "checksum": "d80dd2a38a37f803cb9b6ac7b14bd6e74ddc3b654780a8380bdf93523fdb4389",
+      "pinProvenance": "Actual delivered native API version agrees with captured installed dependency version and immutable recorded-tap formula source version; original keg build options are not recreated",
+      "formulaInput": {
+        "architecture": "arm64",
+        "tapRevision": "ce55aa0fbe1a705fdfcecf2eee4a5a39a9ed6d54",
+        "formulaPath": "Formula/lib/libpng.rb",
+        "gitBlob": "14189bd8e21c8ef2c3fd5bd10fdaae6392be819f",
+        "formulaSha256": "b4c719b087e0ba9c8f724846b984b51e9edb2d71926bf65a654a0c54d339eac1",
+        "sourceUrl": "https://downloads.sourceforge.net/project/libpng/libpng16/1.6.59/libpng-1.6.59.tar.xz",
+        "sourceSha256": "d80dd2a38a37f803cb9b6ac7b14bd6e74ddc3b654780a8380bdf93523fdb4389",
+        "actualNativeCiRunId": 42086147577,
+        "actualRuntimeVersion": "1.6.59"
+      }
+    },
+    {
+      "name": "brotli",
+      "version": "1.2.1",
+      "filename": "brotli-1.2.1-actual-macos-provider-source.tar.gz",
+      "urls": [
+        "https://github.com/google/brotli/archive/refs/tags/v1.2.1.tar.gz"
+      ],
+      "algorithm": "sha256",
+      "checksum": "98d35d11a78dc453aebb7d10c3748f3f73ff78c8267c0dc697b8631f67bf7e8f",
+      "pinProvenance": "Actual delivered native API version agrees with captured installed dependency version and immutable recorded-tap formula source version; original keg build options are not recreated",
+      "formulaInput": {
+        "architecture": "arm64",
+        "tapRevision": "ce55aa0fbe1a705fdfcecf2eee4a5a39a9ed6d54",
+        "formulaPath": "Formula/b/brotli.rb",
+        "gitBlob": "e6ab9845d0839c04db72c3950480a52e69944d80",
+        "formulaSha256": "dd52c7983ad63e4f322a3d44f610dec3ada3448583c3c66e35030ebbaee3433c",
+        "sourceUrl": "https://github.com/google/brotli/archive/refs/tags/v1.2.1.tar.gz",
+        "sourceSha256": "98d35d11a78dc453aebb7d10c3748f3f73ff78c8267c0dc697b8631f67bf7e8f",
+        "actualNativeCiRunId": 42086147577,
+        "actualRuntimeVersion": "1.2.1"
+      }
+    },
+    {
+      "name": "freetype",
+      "version": "2.14.3",
+      "filename": "freetype-2.14.3-actual-macos-provider-source.tar.xz",
+      "urls": [
+        "https://downloads.sourceforge.net/project/freetype/freetype2/2.14.3/freetype-2.14.3.tar.xz"
+      ],
+      "algorithm": "sha256",
+      "checksum": "36bc4f1cc413335368ee656c42afca65c5a3987e8768cc28cf11ba775e785a5f",
+      "pinProvenance": "Actual delivered native API version agrees with captured installed dependency version and immutable recorded-tap formula source version; original keg build options are not recreated",
+      "formulaInput": {
+        "architecture": "x86_64",
+        "tapRevision": "09417d15c1d23155fd7474db26918bbaebf76235",
+        "formulaPath": "Formula/f/freetype.rb",
+        "gitBlob": "86cb1426ed78873239afb6f4b8bb6929114bf660",
+        "formulaSha256": "9d3ea68e58d204cb55a0750e7705422968d6f69867ebc51952fcb37a68c4b713",
+        "sourceUrl": "https://downloads.sourceforge.net/project/freetype/freetype2/2.14.3/freetype-2.14.3.tar.xz",
+        "sourceSha256": "36bc4f1cc413335368ee656c42afca65c5a3987e8768cc28cf11ba775e785a5f",
+        "actualNativeCiRunId": 42086147577,
+        "actualRuntimeVersion": "2.14.3"
+      }
+    },
+    {
+      "name": "libpng",
+      "version": "1.6.58",
+      "filename": "libpng-1.6.58-actual-macos-provider-source.tar.xz",
+      "urls": [
+        "https://downloads.sourceforge.net/project/libpng/libpng16/1.6.58/libpng-1.6.58.tar.xz"
+      ],
+      "algorithm": "sha256",
+      "checksum": "28eb403f51f0f7405249132cecfe82ea5c0ef97f1b32c5a65828814ae0d34775",
+      "pinProvenance": "Actual delivered native API version agrees with captured installed dependency version and immutable recorded-tap formula source version; original keg build options are not recreated",
+      "formulaInput": {
+        "architecture": "x86_64",
+        "tapRevision": "09417d15c1d23155fd7474db26918bbaebf76235",
+        "formulaPath": "Formula/lib/libpng.rb",
+        "gitBlob": "f45b4b672f202a90a33b2e45b875fd8e30e58671",
+        "formulaSha256": "18814d6ee041754dcdaf0728ecd0383485f2e0ef79c70637bccc2f1db1e2d661",
+        "sourceUrl": "https://downloads.sourceforge.net/project/libpng/libpng16/1.6.58/libpng-1.6.58.tar.xz",
+        "sourceSha256": "28eb403f51f0f7405249132cecfe82ea5c0ef97f1b32c5a65828814ae0d34775",
+        "actualNativeCiRunId": 42086147577,
+        "actualRuntimeVersion": "1.6.58"
+      }
+    }
+  ]
+}

@@ -1,0 +1,137 @@
+{
+  "schemaVersion": 1,
+  "scope": "Additional source inputs for nine Windows SDK components beyond Mac selection; full transitive/header/SDK and native distribution acceptance remain separate",
+  "runtimeSourceCommit": "a6868387dc80dcafd9b8ebad3d8c708511d9a615",
+  "sources": [
+    {
+      "name": "boost-chrono",
+      "version": "1.90.0#1",
+      "filename": "windows-sdk-boost-chrono-1.90.0.tar.gz",
+      "inputType": "archive",
+      "urls": [
+        "https://codeload.github.com/boostorg/chrono/tar.gz/boost-1.90.0"
+      ],
+      "algorithm": "sha512",
+      "checksum": "6402b4dd9ec8eefeb365bbffe81e5a6a17ca0db9a9b0b2f9e94da25866a99848016a347f4855788f4101af5ba69bdff7883f162246ecf1a38f1316c542e61aca",
+      "pinProvenance": "Exact delivered Windows DLL SHA256 matches preserved SDK bytes and actual SDK SPDX binary file checksum; source checksum from the same component SPDX",
+      "sdkSpdxSha256": "de37c5e50481fc28d946f2646eed71344527eaa654907a2061629e4fca193e30"
+    },
+    {
+      "name": "boost-date-time",
+      "version": "1.90.0#1",
+      "filename": "windows-sdk-boost-date-time-1.90.0.tar.gz",
+      "inputType": "archive",
+      "urls": [
+        "https://codeload.github.com/boostorg/date_time/tar.gz/boost-1.90.0"
+      ],
+      "algorithm": "sha512",
+      "checksum": "5f373b04e994c0b7e8163dab97ae11947825d1fbfcea826a6e458a501b7322dbe4633fa478d0954bb77b60097e7cb8e1f628fb367c954784be5e3c0665940974",
+      "pinProvenance": "Exact delivered Windows DLL SHA256 matches preserved SDK bytes and actual SDK SPDX binary file checksum; source checksum from the same component SPDX",
+      "sdkSpdxSha256": "5e31a4364e7b0d20482c37e1b3fb16db2f2fd4ca226ec8e2bc0a9e6f69cd65be"
+    },
+    {
+      "name": "boost-graph",
+      "version": "1.90.0#1",
+      "filename": "windows-sdk-boost-graph-1.90.0.tar.gz",
+      "inputType": "archive",
+      "urls": [
+        "https://codeload.github.com/boostorg/graph/tar.gz/boost-1.90.0"
+      ],
+      "algorithm": "sha512",
+      "checksum": "b5bc09eef542bfd022d6d6bf0fe41d50e8ff5c8c606f63aa4a69fb32ef9ea1295d9b616d5fa9efd7a1e8009a2e53b675bdd3abfceb27175f6b5e48818259e87b",
+      "pinProvenance": "Exact delivered Windows DLL SHA256 matches preserved SDK bytes and actual SDK SPDX binary file checksum; source checksum from the same component SPDX",
+      "sdkSpdxSha256": "8b30aa50b1ded9d78ffaa01719c777c88de2a58e0a05556ab4afc3c5a647810f"
+    },
+    {
+      "name": "boost-serialization",
+      "version": "1.90.0#1",
+      "filename": "windows-sdk-boost-serialization-1.90.0.tar.gz",
+      "inputType": "archive",
+      "urls": [
+        "https://codeload.github.com/boostorg/serialization/tar.gz/boost-1.90.0"
+      ],
+      "algorithm": "sha512",
+      "checksum": "7bf9632023cac688a5064addce811b230b6fd946e68822525fe63fb3a0652c590b30ad7e00f158eec438daf727a5c014621aced748a8539b3311a50b28947f96",
+      "pinProvenance": "Exact delivered Windows DLL SHA256 matches preserved SDK bytes and actual SDK SPDX binary file checksum; source checksum from the same component SPDX",
+      "sdkSpdxSha256": "49f40a50a24f70c74b2c93240e1b8501ff6c05dd84d2c16b9cf6d7847e2849aa"
+    },
+    {
+      "name": "boost-thread",
+      "version": "1.90.0#1",
+      "filename": "windows-sdk-boost-thread-1.90.0.tar.gz",
+      "inputType": "archive",
+      "urls": [
+        "https://codeload.github.com/boostorg/thread/tar.gz/boost-1.90.0"
+      ],
+      "algorithm": "sha512",
+      "checksum": "14348a5dcc89cadbb9224da8bef0a90726d610cf2f0b4d61e360bc764fed89f10bc93c63cbe669b84ab4c6eecafb2e6dc13ce6d98ecffe2d2f937a9daad61f9a",
+      "pinProvenance": "Exact delivered Windows DLL SHA256 matches preserved SDK bytes and actual SDK SPDX binary file checksum; source checksum from the same component SPDX",
+      "sdkSpdxSha256": "53420cecfc24e14a4c899c38255ff944c414f8ed2a3fcf6c44b55c9ab1038a69"
+    },
+    {
+      "name": "libiconv",
+      "version": "1.18#3",
+      "filename": "libiconv-1.18.tar.gz",
+      "inputType": "archive",
+      "urls": [
+        "https://ftpmirror.gnu.org/gnu/libiconv/libiconv-1.18.tar.gz"
+      ],
+      "algorithm": "sha512",
+      "checksum": "a55eb3b7b785a78ab8918db8af541c9e11deb5ff4f89d54483287711ed797d87848ce0eafffa7ce26d9a7adb4b5a9891cb484f94bd4f51d3ce97a6a47b4c719a",
+      "pinProvenance": "Exact delivered Windows DLL SHA256 matches preserved SDK bytes and actual SDK SPDX binary file checksum; source checksum from the same component SPDX",
+      "sdkSpdxSha256": "2bc1ae2cf7f5a57694b7696ad3f35d8263c22027b4201aae5ce84cade03ae953"
+    },
+    {
+      "name": "mygui",
+      "version": "3.4.3#4",
+      "filename": "windows-sdk-mygui-3.4.3.tar.gz",
+      "inputType": "archive",
+      "urls": [
+        "https://codeload.github.com/MyGUI/mygui/tar.gz/MyGUI3.4.3"
+      ],
+      "algorithm": "sha512",
+      "checksum": "88c69ca2e706af364b72d425f95013eb285501881d8094f8d67e31a54c45ca11b0eb5b62c382af0d4c43f69aa8197648259ac306b72efa7ef3e25eecb9b039cb",
+      "pinProvenance": "Exact delivered Windows DLL SHA256 matches preserved SDK bytes and actual SDK SPDX binary file checksum; source checksum from the same component SPDX",
+      "sdkSpdxSha256": "4c3ddb923ae4a021b24ef280632313afe5b03d681be0c7f43988039f013a4797"
+    },
+    {
+      "name": "mygui",
+      "version": "3.4.3#4",
+      "filename": "windows-sdk-mygui-3.4.3.diff",
+      "inputType": "patch",
+      "urls": [
+        "https://github.com/MyGUI/mygui/commit/0731785d83431bd17a0854f19bea9a7d687de5a7.diff?full_index=1"
+      ],
+      "algorithm": "sha512",
+      "checksum": "4ca252b8d37d9b98b9a1295c181325a33c30534757f8adbbcceceafacd97ff6987fb7a5d1f087b960519c923007e6adff2e8b1d873d75e7faff05b9a20b9cd79",
+      "pinProvenance": "Exact delivered Windows DLL SHA256 matches preserved SDK bytes and actual SDK SPDX binary file checksum; source checksum from the same component SPDX",
+      "sdkSpdxSha256": "4c3ddb923ae4a021b24ef280632313afe5b03d681be0c7f43988039f013a4797"
+    },
+    {
+      "name": "sdl2-image",
+      "version": "2.8.8#2",
+      "filename": "windows-sdk-sdl2-image-2.8.8.tar.gz",
+      "inputType": "archive",
+      "urls": [
+        "https://codeload.github.com/libsdl-org/SDL_image/tar.gz/release-2.8.8"
+      ],
+      "algorithm": "sha512",
+      "checksum": "3fef846eb0ad51a8b346bb421c87eb81f0e2f186d700a219ebf17146397da404b3683853322989ed939b1672cc36b799582f24bc58a0393fc6c698a65cda2b82",
+      "pinProvenance": "Exact delivered Windows DLL SHA256 matches preserved SDK bytes and actual SDK SPDX binary file checksum; source checksum from the same component SPDX",
+      "sdkSpdxSha256": "5bf86057bdafe9355e5b67f27e0cd73348324912e59b98036b7085e2afc9f562"
+    },
+    {
+      "name": "tiff",
+      "version": "4.7.1",
+      "filename": "windows-sdk-tiff-4.7.1.tar.gz",
+      "inputType": "archive",
+      "urls": [
+        "https://gitlab.com/libtiff/libtiff/-/archive/v4.7.1/libtiff-v4.7.1.tar.gz"
+      ],
+      "algorithm": "sha512",
+      "checksum": "dcdabe2598db33a973d06f0009dd528aa1f38813bd6015e2595097b838a42240f9ccbe7524b5235ea2f4207a10d5d706339c7a6f4772b531e00a20281a00f67b",
+      "pinProvenance": "Exact delivered Windows DLL SHA256 matches preserved SDK bytes and actual SDK SPDX binary file checksum; source checksum from the same component SPDX",
+      "sdkSpdxSha256": "25c79f62f31febaaa5e435e2bd4b27c30a63c945aec9b6c44f22d6645b5a49ec"
+    }
+  ]
+}
