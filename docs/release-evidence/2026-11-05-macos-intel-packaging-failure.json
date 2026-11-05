@@ -38,5 +38,17 @@
   },
   "recoveryPlan": "Separately validate the preserved exact-source original Intel DMG natively, including original build OpenSSL3.6.3 versus actual bundle runtime, without rebuilding, resigning or rerunning the failed image-creation step",
   "graphicalAccepted": false,
-  "distributionAccepted": false
+  "distributionAccepted": false,
+  "separateRecoveryValidation": {
+    "runId": 42071394992,
+    "url": "https://github.com/dev-zetta/MWNet/actions/runs/42071394992",
+    "workflowRevision": "8e1cbaac8cd12673be552ab955e6f2e4fe1ed0de",
+    "selectedRuntimeSourceCommit": "a6868387dc80dcafd9b8ebad3d8c708511d9a615",
+    "selectedOriginalBuildRun": 42025424431,
+    "expectedOriginalArchiveSha256": "6aaf2af3432f29382c45277ab41cb7ceb69a994363494bbb8eed54e7a82edda6",
+    "expectedOriginalBuildOpenSslVersion": "3.6.3",
+    "statusAtCheckpoint": "queued",
+    "rebuildOrImageCreationRetry": false,
+    "acceptancePending": true
+  }
 }
