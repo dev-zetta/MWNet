@@ -1,5 +1,5 @@
 {
-  "checkedUtc": "2026-11-05T18:05:53.757336+00:00",
+  "checkedUtc": "2026-11-05T18:52:28.151233+00:00",
   "scope": "Selected actual source/formula/notice inputs; not complete final dependency coverage, distribution acceptance or native gameplay",
   "runtimeSourceCommit": "a6868387dc80dcafd9b8ebad3d8c708511d9a615",
   "intelSourceDelivery": {
@@ -83,7 +83,7 @@
   "intelSourceArchiveBytes": 97633454,
   "intelSourceNoticeFiles": 28,
   "intelNoticeManifestSha256": "32ac6d7acdb26e1e443621625d4fc6f994e01156b6e25b48c6dc9af4ff56cdd8",
-  "uniqueSelectedUpstreamArchiveCount": 47,
+  "uniqueSelectedUpstreamArchiveCount": 60,
   "capturedHomebrewFormulae": {
     "checkedUtc": "2026-11-05T17:19:43.122668+00:00",
     "scope": "Byte-checked captured Homebrew formula source inputs only, not complete final package dependency/source acceptance",
@@ -313,12 +313,17 @@
     "preservedFailure": "windows-additional-provider-recipes/fetch-failure.json"
   },
   "uniqueSelectedCompressedPatchCount": 1,
-  "totalUniqueSelectedSourceInputDigests": 48,
+  "totalUniqueSelectedSourceInputDigests": 62,
   "sdkSourceDeliveryCheckpoint": "2026-11-05-macos-sdk-source-delivery.json",
   "sdkSourceInputCount": 28,
   "sdkSourceInputBytes": 227202184,
   "sdkRecipeFilesMatched": 165,
   "sdkNoticeFiles": 166,
   "actualVersionAbseilSourceInputBytes": 2430876,
-  "actualVersionAbseilSourceNoticeFiles": 2
+  "actualVersionAbseilSourceNoticeFiles": 2,
+  "uniqueSelectedPatchCount": 2,
+  "uniqueSelectedPlainDiffPatchCount": 1,
+  "windowsSdkAdditionalSourceCheckpoint": "2026-11-05-windows-sdk-source-delivery.json",
+  "actualMacProviderSourcesCheckpoint": "2026-11-05-macos-native-provider-sources.json",
+  "actualMacProviderApiCheckpoint": "2026-11-05-macos-provider-api-verification.json"
 }
