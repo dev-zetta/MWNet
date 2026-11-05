@@ -1,0 +1,1301 @@
+{
+  "scope": "65 upstream source archives and two patches; actual SHA256 deduplication",
+  "sources": [
+    {
+      "name": "ffmpeg",
+      "filename": "ffmpeg-n8.0.1.tar.gz",
+      "urls": [
+        "https://codeload.github.com/ffmpeg/ffmpeg/tar.gz/n8.0.1"
+      ],
+      "algorithm": "sha512",
+      "checksum": "f31769a7ed52865165e7db4a03e9378b3376012b7aaf0bbc022aa76c3e999e71c3927e6eb8639d8681e04e33362dd73eafa9e7c62a3c71599ff78da09f5cee0a",
+      "pinProvenance": "OpenMW SDK 2026-02-24 installed vcpkg.spdx.json source resource",
+      "upstreamSource": "git+https://github.com/ffmpeg/ffmpeg@n8.0.1",
+      "bytes": 16408559,
+      "sha256": "679aa13a19415d5ddab91e580084e3ab20c963c8240001e5cbb955a97bdd81b1"
+    },
+    {
+      "name": "openal-soft",
+      "filename": "openal-soft-1.25.0.tar.gz",
+      "urls": [
+        "https://codeload.github.com/kcat/openal-soft/tar.gz/1.25.0"
+      ],
+      "algorithm": "sha512",
+      "checksum": "33cdc03198c4fdbd6c67bae460328d8f910baf0a522891735590df140ef727a5d7a1acc64826128994700e7d75c75c938b20483858575ff4e0ebc3f120a9e206",
+      "pinProvenance": "OpenMW SDK 2026-02-24 installed vcpkg.spdx.json source resource",
+      "upstreamSource": "git+https://github.com/kcat/openal-soft@1.25.0",
+      "bytes": 1379216,
+      "sha256": "c07424e16cc53632a58f7ccaf7f4cd1cf2efde7fe4d2cdca1edbf618ea9470d1"
+    },
+    {
+      "name": "libiconv",
+      "filename": "libiconv-1.18.tar.gz",
+      "urls": [
+        "https://ftp.gnu.org/gnu/libiconv/libiconv-1.18.tar.gz"
+      ],
+      "algorithm": "sha512",
+      "checksum": "a55eb3b7b785a78ab8918db8af541c9e11deb5ff4f89d54483287711ed797d87848ce0eafffa7ce26d9a7adb4b5a9891cb484f94bd4f51d3ce97a6a47b4c719a",
+      "pinProvenance": "OpenMW SDK 2026-02-24 installed vcpkg.spdx.json source resource",
+      "upstreamSource": "https://ftpmirror.gnu.org/gnu/libiconv/libiconv-1.18.tar.gz",
+      "bytes": 5822590,
+      "sha256": "3b08f5f4f9b4eb82f151a7040bfd6fe6c6fb922efe4b1659c66ea933276965e8"
+    },
+    {
+      "name": "openmw-osg",
+      "filename": "openmw-osg-8aa8d91747ff414ab0de19aae1e0dbd739acea2c.tar.gz",
+      "urls": [
+        "https://codeload.github.com/openmw/osg/tar.gz/8aa8d91747ff414ab0de19aae1e0dbd739acea2c"
+      ],
+      "algorithm": "sha512",
+      "checksum": "698372ddf8751a927f8f6bd71d67bd9428e9e12207b8f40f8aa13e5e84bd1e8db8fc6c6bbeb5f7e930d78915d5d3570463dbfc9e44dc155e0475a374f39a6280",
+      "pinProvenance": "OpenMW SDK 2026-02-24 installed vcpkg.spdx.json source resource",
+      "upstreamSource": "git+https://github.com/openmw/osg@8aa8d91747ff414ab0de19aae1e0dbd739acea2c",
+      "bytes": 5793189,
+      "sha256": "e91a1510bd73cbe1af580b70945a36424bdcc9aa9002174cafa76e4f6f27fd4e"
+    },
+    {
+      "name": "qtbase",
+      "version": "6.6.3",
+      "filename": "qtbase-everywhere-src-6.6.3.tar.xz",
+      "urls": [
+        "https://download.qt.io/archive/qt/6.6/6.6.3/submodules/qtbase-everywhere-src-6.6.3.tar.xz"
+      ],
+      "algorithm": "sha256",
+      "checksum": "0493fd0b380c4edf8872f011a7f26d245aa4cdd75b349904ef340a22dedf7462",
+      "pinProvenance": "https://download.qt.io/archive/qt/6.6/6.6.3/submodules/qtbase-everywhere-src-6.6.3.tar.xz.sha256",
+      "bytes": 48784716,
+      "sha256": "0493fd0b380c4edf8872f011a7f26d245aa4cdd75b349904ef340a22dedf7462"
+    },
+    {
+      "name": "qtsvg",
+      "version": "6.6.3",
+      "filename": "qtsvg-everywhere-src-6.6.3.tar.xz",
+      "urls": [
+        "https://download.qt.io/archive/qt/6.6/6.6.3/submodules/qtsvg-everywhere-src-6.6.3.tar.xz"
+      ],
+      "algorithm": "sha256",
+      "checksum": "4acb1e576eca55e955cf2b0d15c914a200df290e737accd7c1901fa1e33a25c7",
+      "pinProvenance": "https://download.qt.io/archive/qt/6.6/6.6.3/submodules/qtsvg-everywhere-src-6.6.3.tar.xz.sha256",
+      "bytes": 1643424,
+      "sha256": "4acb1e576eca55e955cf2b0d15c914a200df290e737accd7c1901fa1e33a25c7"
+    },
+    {
+      "name": "qtbase",
+      "version": "6.10.3",
+      "filename": "qtbase-everywhere-src-6.10.3.tar.xz",
+      "urls": [
+        "https://download.qt.io/archive/qt/6.10/6.10.3/submodules/qtbase-everywhere-src-6.10.3.tar.xz"
+      ],
+      "algorithm": "sha256",
+      "checksum": "383dc907816338f0cba72088a524c07458dfc69ce684ca9132fcc4fe91c24b0b",
+      "pinProvenance": "https://download.qt.io/archive/qt/6.10/6.10.3/submodules/qtbase-everywhere-src-6.10.3.tar.xz.sha256",
+      "bytes": 50509856,
+      "sha256": "383dc907816338f0cba72088a524c07458dfc69ce684ca9132fcc4fe91c24b0b"
+    },
+    {
+      "name": "qtsvg",
+      "version": "6.10.3",
+      "filename": "qtsvg-everywhere-src-6.10.3.tar.xz",
+      "urls": [
+        "https://download.qt.io/archive/qt/6.10/6.10.3/submodules/qtsvg-everywhere-src-6.10.3.tar.xz"
+      ],
+      "algorithm": "sha256",
+      "checksum": "b3223fe005f6a4c7f21f34e4ee6ce0094737cff9503ba15bbb171ac18794f76d",
+      "pinProvenance": "https://download.qt.io/archive/qt/6.10/6.10.3/submodules/qtsvg-everywhere-src-6.10.3.tar.xz.sha256",
+      "bytes": 2614032,
+      "sha256": "b3223fe005f6a4c7f21f34e4ee6ce0094737cff9503ba15bbb171ac18794f76d"
+    },
+    {
+      "name": "openssl",
+      "version": "3.6.1",
+      "filename": "openssl-openssl-3.6.1.tar.gz",
+      "urls": [
+        "https://codeload.github.com/openssl/openssl/tar.gz/openssl-3.6.1"
+      ],
+      "algorithm": "sha512",
+      "checksum": "07cfcc71336ece71e713aab8be4a05e2b474bfab175d4c7a4ebcf378f4b1478bcf0e4a46ec88fc6163454fdf7fdf375ab856a5de1c444a41420a02510ae1ac7b",
+      "pinProvenance": "microsoft/vcpkg e0edebd1dc2d03cf7d02349df91de74ef4d0c00e ports/openssl",
+      "recipeSha256": "faee0a22cc83e5d01d340d3a361dc30ccf23a2bf5efabf29508d0e33b0bc5145",
+      "bytes": 55075621,
+      "sha256": "f68e6e3a19902c0487d684a4122d4127bc649b4f8f51c15324bb36e0e4dc0bfa"
+    },
+    {
+      "name": "libsodium",
+      "version": "1.0.21",
+      "filename": "libsodium-1.0.21-RELEASE.tar.gz",
+      "urls": [
+        "https://codeload.github.com/jedisct1/libsodium/tar.gz/1.0.21-RELEASE"
+      ],
+      "algorithm": "sha512",
+      "checksum": "0229d2e7def68da6b953b819203a8d9ab91366d13562d7dbad98ee36777dc6ff11df70f1cd216620d635bd2550e0c49428ffac0b8f0e0e24a325e706c4f43328",
+      "pinProvenance": "microsoft/vcpkg e0edebd1dc2d03cf7d02349df91de74ef4d0c00e ports/libsodium",
+      "recipeSha256": "e66100fda01e1bdf08b87650304213c89ccdd4d05b1e0819ac9ee0b5f0b3ca77",
+      "bytes": 2229176,
+      "sha256": "42e0ca94faaec901f4fbeda84b1b94b18f5309c360c66345cf52a7ab515b245b"
+    },
+    {
+      "name": "protobuf",
+      "version": "6.33.4",
+      "filename": "protobuf-v33.4.tar.gz",
+      "urls": [
+        "https://codeload.github.com/protocolbuffers/protobuf/tar.gz/v33.4"
+      ],
+      "algorithm": "sha512",
+      "checksum": "540059a93721447cf4723bcca06e91c43a4399cb366c05bf84e9d8e2c439f3107ba17803f9d912549b54c471f2dcc4c9fc834145ec441dff31ca24f9a3543aa9",
+      "pinProvenance": "microsoft/vcpkg e0edebd1dc2d03cf7d02349df91de74ef4d0c00e ports/protobuf",
+      "recipeSha256": "fa0588dfa41b939d3433c4aa82d47409146b06c44b2499eb0d8b856ce77559ff",
+      "bytes": 6889595,
+      "sha256": "136a07aad488cc502b11c4416fe4a7df2dfdea1d0833a7a8211000bf952728ba"
+    },
+    {
+      "name": "abseil",
+      "version": "20250814.1",
+      "filename": "abseil-20250814.1.tar.gz",
+      "urls": [
+        "https://codeload.github.com/abseil/abseil-cpp/tar.gz/20250814.1"
+      ],
+      "algorithm": "sha512",
+      "checksum": "7083b73c3cf763f6f7a7edb70a5171f44d27045a0f5e52ca043e0a86379af2c50cf85dbfea30ebaa22a7bb2929452581d26b1ba18945023b057267d4c3bad2f7",
+      "pinProvenance": "microsoft/vcpkg e0edebd1dc2d03cf7d02349df91de74ef4d0c00e ports/abseil",
+      "recipeSha256": "8b24279376bd43ab6d50b0984f4d67bea96843cc0ffd0dadad7ce4afa9c36244",
+      "bytes": 2235716,
+      "sha256": "1692f77d1739bacf3f94337188b78583cf09bab7e420d2dc6c5605a4f86785a1"
+    },
+    {
+      "name": "curl",
+      "version": "8.18.0",
+      "filename": "curl-curl-8_18_0.tar.gz",
+      "urls": [
+        "https://codeload.github.com/curl/curl/tar.gz/curl-8_18_0"
+      ],
+      "algorithm": "sha512",
+      "checksum": "1dca42354d29b9326a3e9be34c74433c3a7364318d69519e2f5b9a164e81db739d3ef1eed79e3313296fe72af73281e0fc61e57a21e9dede1ef240c8fa6af4fe",
+      "pinProvenance": "microsoft/vcpkg e0edebd1dc2d03cf7d02349df91de74ef4d0c00e ports/curl",
+      "recipeSha256": "ff6dc6bea19bf989fe718ac9f15f0d8acee8e6522283eacfbaeed1a317f74cf6",
+      "bytes": 3476953,
+      "sha256": "be4b1e146ddd84bbb57f081e5c7238eee794e40563976ba2c89a44c433da219c"
+    },
+    {
+      "name": "sqlite3",
+      "version": "3.51.2",
+      "filename": "sqlite-autoconf-3510200.tar.gz",
+      "urls": [
+        "https://sqlite.org/2026/sqlite-autoconf-3510200.tar.gz"
+      ],
+      "algorithm": "sha512",
+      "checksum": "0f59037e537543154711fdfa5707592658121e8b0973eb07396a9fb980e6c0c822717d0a787c564ebd6bf7383a3388f128fce6adbbf98b417909855d42ac8710",
+      "pinProvenance": "microsoft/vcpkg e0edebd1dc2d03cf7d02349df91de74ef4d0c00e ports/sqlite3",
+      "recipeSha256": "00d60cfd97a5d43f7b443e6fc401655a01d9a6bf0419b5e218c31f1e4fd54e71",
+      "bytes": 3208444,
+      "sha256": "fbd89f866b1403bb66a143065440089dd76100f2238314d92274a082d4f2b7bb"
+    },
+    {
+      "name": "openssl@3",
+      "version": "3.5.9",
+      "filename": "openssl-3-3.5.9-homebrew-source.tar.gz",
+      "urls": [
+        "https://github.com/openssl/openssl/releases/download/openssl-3.5.9/openssl-3.5.9.tar.gz"
+      ],
+      "algorithm": "sha256",
+      "checksum": "603f5602e2eef00d77fbd429d34dcd5822bb301757a1bc9cdb24c670f1eb859a",
+      "pinProvenance": "Actual native CI42059980428 ARM Homebrew JSON; installed version equals formula source version",
+      "formulaSha256": "ff38ac43aa86a0484a12bace87feca515c745b3caf38a5b0738288b56fb86c97",
+      "bytes": 53279637,
+      "sha256": "603f5602e2eef00d77fbd429d34dcd5822bb301757a1bc9cdb24c670f1eb859a"
+    },
+    {
+      "name": "libsodium",
+      "version": "1.0.22",
+      "filename": "libsodium-1.0.22-homebrew-source.tar.gz",
+      "urls": [
+        "https://download.libsodium.org/libsodium/releases/libsodium-1.0.22.tar.gz"
+      ],
+      "algorithm": "sha256",
+      "checksum": "adbdd8f16149e81ac6078a03aca6fc03b592b89ef7b5ed83841c086191be3349",
+      "pinProvenance": "Actual native CI42059980428 ARM Homebrew JSON; installed version equals formula source version",
+      "formulaSha256": "97116400ef5a3ef2647f58b650fe55bbf59b6b50ad3aa49f9c3be7163168f2b2",
+      "bytes": 2008529,
+      "sha256": "adbdd8f16149e81ac6078a03aca6fc03b592b89ef7b5ed83841c086191be3349"
+    },
+    {
+      "name": "protobuf",
+      "version": "36.2",
+      "filename": "protobuf-36.2-homebrew-source.tar.gz",
+      "urls": [
+        "https://github.com/protocolbuffers/protobuf/releases/download/v36.2/protobuf-36.2.tar.gz"
+      ],
+      "algorithm": "sha256",
+      "checksum": "3d9642a662d10e68ebae5e53f14dcce5105684212d5078f8e0d47d1ab3ae6b64",
+      "pinProvenance": "Actual native CI42059980428 ARM Homebrew JSON; installed version equals formula source version",
+      "formulaSha256": "7992732dfd8e12ea27faade9f2b6a2db76448e1ff8bf50c32f4000028f9f1374",
+      "bytes": 7339736,
+      "sha256": "3d9642a662d10e68ebae5e53f14dcce5105684212d5078f8e0d47d1ab3ae6b64"
+    },
+    {
+      "name": "fontconfig",
+      "version": "2.18.3",
+      "filename": "fontconfig-2.18.3-homebrew-source.tar.gz",
+      "urls": [
+        "https://gitlab.freedesktop.org/fontconfig/fontconfig/-/archive/2.18.3/fontconfig-2.18.3.tar.gz"
+      ],
+      "algorithm": "sha256",
+      "checksum": "9ae01e1d53acdef56010c5451cd34aa41d325b2faccd8606448d8fa01b2496b3",
+      "pinProvenance": "Actual native CI42059980428 ARM Homebrew JSON; installed version equals formula source version",
+      "formulaSha256": "377fd40fc05503009a2ecc23e447b7413e6aca2e99eabe277a18689c0340bcc9",
+      "bytes": 666753,
+      "sha256": "9ae01e1d53acdef56010c5451cd34aa41d325b2faccd8606448d8fa01b2496b3"
+    },
+    {
+      "name": "gettext",
+      "version": "1.0",
+      "filename": "gettext-1.0-homebrew-source.tar.gz",
+      "urls": [
+        "https://ftpmirror.gnu.org/gettext/gettext-1.0.tar.gz",
+        "https://ftp.gnu.org/gnu/gettext/gettext-1.0.tar.gz"
+      ],
+      "algorithm": "sha256",
+      "checksum": "85d99b79c981a404874c02e0342176cf75c7698e2b51fe41031cf6526d974f1a",
+      "pinProvenance": "Actual native CI42059980428 ARM Homebrew JSON; installed version equals formula source version",
+      "formulaSha256": "9c90f7cf5a45c828e2a66d9339b25b781302cf49316e939d029e6079e1b9d916",
+      "bytes": 32694085,
+      "sha256": "85d99b79c981a404874c02e0342176cf75c7698e2b51fe41031cf6526d974f1a"
+    },
+    {
+      "name": "openssl@3",
+      "version": "3.6.3",
+      "filename": "openssl-3-3.6.3-homebrew-source.tar.gz",
+      "urls": [
+        "https://github.com/openssl/openssl/releases/download/openssl-3.6.3/openssl-3.6.3.tar.gz"
+      ],
+      "algorithm": "sha256",
+      "checksum": "243a86649cf6f23eeb6a2ff2456e09e5d77dd9018a54d3d96b0c6bdd6ba6c7f1",
+      "formulaSha256": "e15cca35502166eb7a93940f3fe489e490b09a7b9e07ba3145d7ec1471bcd8d1",
+      "pinProvenance": "Actual Intel build job127358628840 installed/formula input capture; not recreated original package build metadata",
+      "bytes": 54953005,
+      "sha256": "243a86649cf6f23eeb6a2ff2456e09e5d77dd9018a54d3d96b0c6bdd6ba6c7f1"
+    },
+    {
+      "name": "protobuf",
+      "version": "36.0",
+      "filename": "protobuf-36.0-homebrew-source.tar.gz",
+      "urls": [
+        "https://github.com/protocolbuffers/protobuf/releases/download/v36.0/protobuf-36.0.tar.gz"
+      ],
+      "algorithm": "sha256",
+      "checksum": "399931c793f4ac6db81045b00b06dd07c877b48aeecf36c797f65c541fb533e7",
+      "formulaSha256": "cfca412ed25ec0cdea07655d916dd3ae16da3855b620cc5cef7937218766a72d",
+      "pinProvenance": "Actual Intel build job127358628840 installed/formula input capture; not recreated original package build metadata",
+      "bytes": 7311082,
+      "sha256": "399931c793f4ac6db81045b00b06dd07c877b48aeecf36c797f65c541fb533e7"
+    },
+    {
+      "name": "zlib",
+      "version": "1.3.1",
+      "filename": "zlib-1.3.1-vcpkg-source.tar.gz",
+      "urls": [
+        "https://codeload.github.com/madler/zlib/tar.gz/v1.3.1"
+      ],
+      "algorithm": "sha512",
+      "checksum": "8c9642495bafd6fad4ab9fb67f09b268c69ff9af0f4f20cf15dfc18852ff1f312bd8ca41de761b3f8d8e90e77d79f2ccacd3d4c5b19e475ecf09d021fdfe9088",
+      "pinProvenance": "Actual Windows CI42057767417 installed zlib 1.3.1; microsoft/vcpkg e0edebd1dc2d03cf7d02349df91de74ef4d0c00e ports/zlib; native version API verified for zlib, pkgconf final binary version remains unresolved",
+      "recipeSha256": "b14cee469c2da06e036e63293c0b6e6509924462e9b341b317986df46b281695",
+      "bytes": 1572744,
+      "sha256": "17e88863f3600672ab49182f217281b6fc4d3c762bde361935e436a95214d05c"
+    },
+    {
+      "name": "pkgconf",
+      "version": "2.5.1",
+      "filename": "pkgconf-2.5.1-vcpkg-source.tar.gz",
+      "urls": [
+        "https://codeload.github.com/pkgconf/pkgconf/tar.gz/pkgconf-2.5.1"
+      ],
+      "algorithm": "sha512",
+      "checksum": "53244f372ea21125a1d97c5b89a84299740b55a66165782e807ed23adab3a07408a1547f1f40156e3060359660d07f49846c8b4893beef10ac9440ab7e8611cc",
+      "pinProvenance": "Actual Windows CI42057767417 installed pkgconf 2.5.1; microsoft/vcpkg e0edebd1dc2d03cf7d02349df91de74ef4d0c00e ports/pkgconf; native version API verified for zlib, pkgconf final binary version remains unresolved",
+      "recipeSha256": "0d5457a78d2de915ce06c0df4494e32dfe2a44a41df52105c8638ad77b30853c",
+      "bytes": 133113,
+      "sha256": "79721badcad1987dead9c3609eb4877ab9b58821c06bdacb824f2c8897c11f2a"
+    },
+    {
+      "name": "abseil",
+      "version": "20260817.0",
+      "filename": "abseil-20260817.0-homebrew-source.tar.gz",
+      "urls": [
+        "https://github.com/abseil/abseil-cpp/archive/refs/tags/20260817.0.tar.gz"
+      ],
+      "algorithm": "sha256",
+      "checksum": "f7e05179df39c45434cad433f5783840bb3788ef322976f9138bc6b72b3a107d",
+      "pinProvenance": "Both captured Homebrew installed runtime dependency versions and both immutable recorded-tap formula sources agree",
+      "formulaInputs": [
+        {
+          "architecture": "arm64",
+          "capturedInstalledVersion": "20260817.0",
+          "capturedHomebrewReceiptSha256": "d6e2b7b4efa859f1a7cfc580be40542309bbd8ce55e9e2c876f93746f2752d40",
+          "tapRevision": "ce55aa0fbe1a705fdfcecf2eee4a5a39a9ed6d54",
+          "formulaPath": "Formula/a/abseil.rb",
+          "gitBlob": "fc89a329ed6ac82ba10d55533042c6e2db2e1a6f",
+          "formulaSha256": "593fc7901a8949808a470c6b505b095cb0944367e64b2db876ea73661e59b3e7",
+          "sourceUrl": "https://github.com/abseil/abseil-cpp/archive/refs/tags/20260817.0.tar.gz",
+          "sourceSha256": "f7e05179df39c45434cad433f5783840bb3788ef322976f9138bc6b72b3a107d"
+        },
+        {
+          "architecture": "intel",
+          "capturedInstalledVersion": "20260817.0",
+          "capturedHomebrewReceiptSha256": "30dd068e85f74c5e1b834271997d6bb0a16e4fad6a5c6f83c483d613e9666ca9",
+          "tapRevision": "09417d15c1d23155fd7474db26918bbaebf76235",
+          "formulaPath": "Formula/a/abseil.rb",
+          "gitBlob": "976f4b1d3b1da59fd3361f1ca19b6297976e063b",
+          "formulaSha256": "39d3133e8975cf63013f07c6c725f8a1dd6a369fdb4d7e82295b64adc92e05bd",
+          "sourceUrl": "https://github.com/abseil/abseil-cpp/archive/refs/tags/20260817.0.tar.gz",
+          "sourceSha256": "f7e05179df39c45434cad433f5783840bb3788ef322976f9138bc6b72b3a107d"
+        }
+      ],
+      "bytes": 2430876,
+      "sha256": "f7e05179df39c45434cad433f5783840bb3788ef322976f9138bc6b72b3a107d"
+    },
+    {
+      "name": "boost-atomic",
+      "version": "1.90.0#1",
+      "filename": "sdk-boost-atomic-1.90.0.tar.gz",
+      "urls": [
+        "https://codeload.github.com/boostorg/atomic/tar.gz/boost-1.90.0"
+      ],
+      "algorithm": "sha512",
+      "checksum": "ce478eec6f3d822076157bfe0828b435793d418bf9120c3834ac4cc7871ec0295f412521d5e1c2aee2ada3e744cd484148f00c69f8697af4ef8ee0196f80832a",
+      "pinProvenance": "Both actual preserved SDK SPDX documents agree on checksum/source origin; selected delivered section payloads match these SDK providers",
+      "sdkComponents": [
+        "boost-atomic"
+      ],
+      "sdkSpdxInputs": [
+        {
+          "architecture": "arm64",
+          "spdxSha256": "09763ffa6ab4f76a14d64416813cacfeb15a8380ce05fa0c31fbb183aaf7b446"
+        },
+        {
+          "architecture": "x64",
+          "spdxSha256": "ab9c7674c93b8b8772bab0eeb890389c9288e266fc51fe424497e879a303c63b"
+        }
+      ],
+      "bytes": 212404,
+      "sha256": "df98aa2bfe841de7f9ca0c92988bfb1727c6c715560268f91e38c6411a0d4da5"
+    },
+    {
+      "name": "boost-container",
+      "version": "1.90.0#1",
+      "filename": "sdk-boost-container-1.90.0.tar.gz",
+      "urls": [
+        "https://codeload.github.com/boostorg/container/tar.gz/boost-1.90.0"
+      ],
+      "algorithm": "sha512",
+      "checksum": "35ff7d7435704d3b004970b321ffff1d59db976723de2d6543ab0788a349d9acca894655136835ed6bbd3d5027872a2b5e4faba8202adf1834688bec9ed39a1c",
+      "pinProvenance": "Both actual preserved SDK SPDX documents agree on checksum/source origin; selected delivered section payloads match these SDK providers",
+      "sdkComponents": [
+        "boost-container"
+      ],
+      "sdkSpdxInputs": [
+        {
+          "architecture": "arm64",
+          "spdxSha256": "ea4c627805a38762a1248e82c91d6a12e3bf9e7d9848801dc4f82f60ceab3ee9"
+        },
+        {
+          "architecture": "x64",
+          "spdxSha256": "616b9ec1736106989c69c0ed47f5df5b9b6cf72912af381e2f02da6ee4026fe9"
+        }
+      ],
+      "bytes": 1400606,
+      "sha256": "74eea0c1d1ba0704f3f3ba49ac36e2989293d22cc6dc59fdcdfd2a7d9d63950c"
+    },
+    {
+      "name": "boost-filesystem",
+      "version": "1.90.0#1",
+      "filename": "sdk-boost-filesystem-1.90.0.tar.gz",
+      "urls": [
+        "https://codeload.github.com/boostorg/filesystem/tar.gz/boost-1.90.0"
+      ],
+      "algorithm": "sha512",
+      "checksum": "76fcf5d0e3490c2f986a932929362fa6ae4b86c96b1b26d024f9fdd484de76ff7934e76388b87befd107a51cdf3d9d73cbbf10d6b3569c2307a112d138a4ade0",
+      "pinProvenance": "Both actual preserved SDK SPDX documents agree on checksum/source origin; selected delivered section payloads match these SDK providers",
+      "sdkComponents": [
+        "boost-filesystem"
+      ],
+      "sdkSpdxInputs": [
+        {
+          "architecture": "arm64",
+          "spdxSha256": "71b5287a90fc50faef2b312ca779a54e96d74708dccca6d8cb510af243fe3605"
+        },
+        {
+          "architecture": "x64",
+          "spdxSha256": "bf9cc9774db33155708f53bc481d9bb97506a045d91612bffae724c0fc38cf42"
+        }
+      ],
+      "bytes": 293003,
+      "sha256": "529d2e402a8ec11cb0b90782511693ff9959355179a8d9f93bfcbb860c32ce25"
+    },
+    {
+      "name": "boost-iostreams",
+      "version": "1.90.0#1",
+      "filename": "sdk-boost-iostreams-1.90.0.tar.gz",
+      "urls": [
+        "https://codeload.github.com/boostorg/iostreams/tar.gz/boost-1.90.0"
+      ],
+      "algorithm": "sha512",
+      "checksum": "771fdd29afbf163353af32c2a989cf2c6137060871b4430798f27ec0f12c67c235295723aa4cf7b3f3edb859914fbc9c1625788bd0f1205096353370d7cb48dd",
+      "pinProvenance": "Both actual preserved SDK SPDX documents agree on checksum/source origin; selected delivered section payloads match these SDK providers",
+      "sdkComponents": [
+        "boost-iostreams"
+      ],
+      "sdkSpdxInputs": [
+        {
+          "architecture": "arm64",
+          "spdxSha256": "c9096eff58f9f78275c0a377f8bc44e4549127309137ce595fd0d053988e9bc4"
+        },
+        {
+          "architecture": "x64",
+          "spdxSha256": "98b98b58408b867c29f9c38d65b3fcedeb5ec60249045213308e4ef51373526e"
+        }
+      ],
+      "bytes": 1905516,
+      "sha256": "7dde6363b6c6296d7cc2edcf9b486d4bb31ef8cb1d012ce617d810955ca2e0a8"
+    },
+    {
+      "name": "boost-program-options",
+      "version": "1.90.0#1",
+      "filename": "sdk-boost-program-options-1.90.0.tar.gz",
+      "urls": [
+        "https://codeload.github.com/boostorg/program_options/tar.gz/boost-1.90.0"
+      ],
+      "algorithm": "sha512",
+      "checksum": "1d75b12b53304b08b7af184b0c6028788bd925aada10f0dcb4f5324e1d424be80fb054767889bc628b356f9cdfa4ca855a575447950ccb1859538c0108ad3318",
+      "pinProvenance": "Both actual preserved SDK SPDX documents agree on checksum/source origin; selected delivered section payloads match these SDK providers",
+      "sdkComponents": [
+        "boost-program-options"
+      ],
+      "sdkSpdxInputs": [
+        {
+          "architecture": "arm64",
+          "spdxSha256": "c45f92768aeed5ec884b4c2ceed5f7a32262bfb08e2d5891adca035c234cca93"
+        },
+        {
+          "architecture": "x64",
+          "spdxSha256": "2d4d1374ecd675c505c814bab2544232641ae79ea849c5da50ffbccceea5c4bd"
+        }
+      ],
+      "bytes": 135213,
+      "sha256": "aab287ed25d4b5988963bddb0bb279548e97a6589bfa0cac57ad40b90950706c"
+    },
+    {
+      "name": "boost-random",
+      "version": "1.90.0#1",
+      "filename": "sdk-boost-random-1.90.0.tar.gz",
+      "urls": [
+        "https://codeload.github.com/boostorg/random/tar.gz/boost-1.90.0"
+      ],
+      "algorithm": "sha512",
+      "checksum": "69ed917251441003c07aa205305bbc5ef38335e721c6f80cb87783ef35aa0971ca9019610363187dd10707d40cc57ba87f9c933ba01f43a00a360dfa2741bef1",
+      "pinProvenance": "Both actual preserved SDK SPDX documents agree on checksum/source origin; selected delivered section payloads match these SDK providers",
+      "sdkComponents": [
+        "boost-random"
+      ],
+      "sdkSpdxInputs": [
+        {
+          "architecture": "arm64",
+          "spdxSha256": "634f0bc011e14c3fdeb549c6c6f35d36d301d3329066a55e2507fc948ac99ec0"
+        },
+        {
+          "architecture": "x64",
+          "spdxSha256": "a855d374646aff49127c06e99a7480400eae4ca305f072b75535ae42f5c1866d"
+        }
+      ],
+      "bytes": 381770,
+      "sha256": "bd10f0aa1d8bbdd66dc2ce029b189bdb3030957682403a80a5c4c61a6d4179f3"
+    },
+    {
+      "name": "brotli",
+      "version": "1.2.0",
+      "filename": "sdk-brotli-1.2.0.tar.gz",
+      "urls": [
+        "https://codeload.github.com/google/brotli/tar.gz/v1.2.0"
+      ],
+      "algorithm": "sha512",
+      "checksum": "f94542afd2ecd96cc41fd21a805a3da314281ae558c10650f3e6d9ca732b8425bba8fde312823f0a564c7de3993bdaab5b43378edab65ebb798cefb6fd702256",
+      "pinProvenance": "Both actual preserved SDK SPDX documents agree on checksum/source origin; selected delivered section payloads match these SDK providers",
+      "sdkComponents": [
+        "brotli"
+      ],
+      "sdkSpdxInputs": [
+        {
+          "architecture": "arm64",
+          "spdxSha256": "a9b3c70248360a3d46e4c48382a41b0cc94cbb42262a2f80428081cc62ebdac6"
+        },
+        {
+          "architecture": "x64",
+          "spdxSha256": "a5cd3b5797ee0eaa47877116ac20e43be01df9fe04ca7b5e2ba01a5f4a48e82f"
+        }
+      ],
+      "bytes": 646315,
+      "sha256": "816c96e8e8f193b40151dad7e8ff37b1221d019dbcb9c35cd3fadbfe6477dfec"
+    },
+    {
+      "name": "bullet3",
+      "version": "3.25#3",
+      "filename": "sdk-bullet3-3.25.tar.gz",
+      "urls": [
+        "https://codeload.github.com/bulletphysics/bullet3/tar.gz/3.25"
+      ],
+      "algorithm": "sha512",
+      "checksum": "7086e5fcf69635801bb311261173cb8d173b712ca1bd78be03df48fad884674e85512861190e45a1a62d5627aaad65cde08c175c44a3be9afa410d3dfd5358d4",
+      "pinProvenance": "Both actual preserved SDK SPDX documents agree on checksum/source origin; selected delivered section payloads match these SDK providers",
+      "sdkComponents": [
+        "bullet3"
+      ],
+      "sdkSpdxInputs": [
+        {
+          "architecture": "arm64",
+          "spdxSha256": "04cc694c1072da0ce56e7e2e7e0cdc04c93ef7779e8b912cdc923dd478cec2d7"
+        },
+        {
+          "architecture": "x64",
+          "spdxSha256": "50ab67f09f81803a409b2a5700076796a2df71c0174d7636b1a2b28090db8dc2"
+        }
+      ],
+      "bytes": 139789551,
+      "sha256": "c45afb6399e3f68036ddb641c6bf6f552bf332d5ab6be62f7e6c54eda05ceb77"
+    },
+    {
+      "name": "bzip2",
+      "version": "1.0.8#6",
+      "filename": "sdk-bzip2-1.0.8.tar.gz",
+      "urls": [
+        "https://sourceware.org/pub/bzip2/bzip2-1.0.8.tar.gz"
+      ],
+      "algorithm": "sha512",
+      "checksum": "083f5e675d73f3233c7930ebe20425a533feedeaaa9d8cc86831312a6581cefbe6ed0d08d2fa89be81082f2a5abdabca8b3c080bf97218a1bd59dc118a30b9f3",
+      "pinProvenance": "Both actual preserved SDK SPDX documents agree on checksum/source origin; selected delivered section payloads match these SDK providers",
+      "sdkComponents": [
+        "bzip2"
+      ],
+      "sdkSpdxInputs": [
+        {
+          "architecture": "arm64",
+          "spdxSha256": "caba73f7754d966fc0273d51ef3f0e3ee41776228e710a57cdb3aee81717d57c"
+        },
+        {
+          "architecture": "x64",
+          "spdxSha256": "f8db668a6bcc5d972b3b9b0d49da222a329c67ab1f43ef42ea59df95b0383128"
+        }
+      ],
+      "bytes": 810029,
+      "sha256": "ab5a03176ee106d3f0fa90e381da478ddae405918153cca248e682cd0c4a2269"
+    },
+    {
+      "name": "collada-dom",
+      "version": "2.5.0#11",
+      "filename": "sdk-collada-dom-2.5.0.tar.gz",
+      "urls": [
+        "https://codeload.github.com/rdiankov/collada-dom/tar.gz/d37ae7532e350b87c88712e9f6ab4b1f440d20cd"
+      ],
+      "algorithm": "sha512",
+      "checksum": "cb923d296219765096f5246cc7a2b69712931f58171ae885dbdbd215fca86d911c34d12748d3304d6a5a350dc737ff0caead2495acac488af5431b437cbacc7d",
+      "pinProvenance": "Both actual preserved SDK SPDX documents agree on checksum/source origin; selected delivered section payloads match these SDK providers",
+      "sdkComponents": [
+        "collada-dom"
+      ],
+      "sdkSpdxInputs": [
+        {
+          "architecture": "arm64",
+          "spdxSha256": "ce99014d20a703ad8fb8d302296e8ac772b1521bb2502bdafb8bd69a5cbd4d42"
+        },
+        {
+          "architecture": "x64",
+          "spdxSha256": "7629b9df9f5bd1202648e2d3fb62eaaddaa5c09d79909224bbc761938a035541"
+        }
+      ],
+      "bytes": 4511437,
+      "sha256": "e63d5ddbdfca0ce9d904022b368f6daded67eb2d2c6d43a6a68f2b4cab291a5b"
+    },
+    {
+      "name": "fmt",
+      "version": "12.1.0",
+      "filename": "sdk-fmt-12.1.0.tar.gz",
+      "urls": [
+        "https://codeload.github.com/fmtlib/fmt/tar.gz/12.1.0"
+      ],
+      "algorithm": "sha512",
+      "checksum": "f0da82c545b01692e9fd30fdfb613dbb8dd9716983dcd0ff19ac2a8d36f74beb5540ef38072fdecc1e34191b3682a8542ecbf3a61ef287dbba0a2679d4e023f2",
+      "pinProvenance": "Both actual preserved SDK SPDX documents agree on checksum/source origin; selected delivered section payloads match these SDK providers",
+      "sdkComponents": [
+        "fmt"
+      ],
+      "sdkSpdxInputs": [
+        {
+          "architecture": "arm64",
+          "spdxSha256": "488918d8e16f69a84cfe4d6926f33c6195af5443fd9743335593c4d3e337751f"
+        },
+        {
+          "architecture": "x64",
+          "spdxSha256": "072aad8d48a723f19203fc3e7bfaf9822afffb02607ea6b8668bf47c6437c816"
+        }
+      ],
+      "bytes": 711419,
+      "sha256": "ea7de4299689e12b6dddd392f9896f08fb0777ac7168897a244a6d6085043fea"
+    },
+    {
+      "name": "freetype",
+      "version": "2.13.3",
+      "filename": "sdk-freetype-2.13.3.tar.gz",
+      "urls": [
+        "https://gitlab.freedesktop.org/freetype/freetype/-/archive/VER-2-13-3/freetype-VER-2-13-3.tar.gz"
+      ],
+      "algorithm": "sha512",
+      "checksum": "fccfaa15eb79a105981bf634df34ac9ddf1c53550ec0b334903a1b21f9f8bf5eb2b3f9476e554afa112a0fca58ec85ab212d674dfd853670efec876bacbe8a53",
+      "pinProvenance": "Both actual preserved SDK SPDX documents agree on checksum/source origin; selected delivered section payloads match these SDK providers",
+      "sdkComponents": [
+        "freetype"
+      ],
+      "sdkSpdxInputs": [
+        {
+          "architecture": "arm64",
+          "spdxSha256": "32f346cd3da903b5ab7869b954fd20994457588401f09937323d90c29621d8c3"
+        },
+        {
+          "architecture": "x64",
+          "spdxSha256": "60d4d3c8c2fb89b9695787126a6f22f2d11a7457bfc2ab5681cd377f4d530bc3"
+        }
+      ],
+      "bytes": 2482495,
+      "sha256": "bc5c898e4756d373e0d991bab053036c5eb2aa7c0d5c67e8662ddc6da40c4103"
+    },
+    {
+      "name": "icu",
+      "version": "78.2",
+      "filename": "sdk-icu-78.2.tar.gz",
+      "urls": [
+        "https://github.com/unicode-org/icu/releases/download/release-78.2/icu4c-78.2-sources.tgz"
+      ],
+      "algorithm": "sha512",
+      "checksum": "92feddfe81c57336f386c7cbc9f6d976bf349db148a77a247c4559676f51116115c8c52c4d907feb50933f72ab75fd8e48be092bf9c8ca33a3e8fabc9372a5d6",
+      "pinProvenance": "Both actual preserved SDK SPDX documents agree on checksum/source origin; selected delivered section payloads match these SDK providers",
+      "sdkComponents": [
+        "icu"
+      ],
+      "sdkSpdxInputs": [
+        {
+          "architecture": "arm64",
+          "spdxSha256": "4aeadfddbafe694a0703e09a9cae142dc410ff8b92a9f3d493f37c33e30343b0"
+        },
+        {
+          "architecture": "x64",
+          "spdxSha256": "9739b07c31848154de902215e0b3344b1f06ba47edcd64374c64ae740963a6fa"
+        }
+      ],
+      "bytes": 27970651,
+      "sha256": "3e99687b5c435d4b209630e2d2ebb79906c984685e78635078b672e03c89df35"
+    },
+    {
+      "name": "libjpeg-turbo",
+      "version": "3.1.3",
+      "filename": "sdk-libjpeg-turbo-3.1.3.tar.gz",
+      "urls": [
+        "https://codeload.github.com/libjpeg-turbo/libjpeg-turbo/tar.gz/3.1.3"
+      ],
+      "algorithm": "sha512",
+      "checksum": "d95bf0689fb2862ad5ea9e902b73724098d911d9c312aa69157bec9de77f32e4d5ac7dfa105d844110cc66dbdb0336056ba7f96781fcbc848b72fd0661604d50",
+      "pinProvenance": "Both actual preserved SDK SPDX documents agree on checksum/source origin; selected delivered section payloads match these SDK providers",
+      "sdkComponents": [
+        "libjpeg-turbo"
+      ],
+      "sdkSpdxInputs": [
+        {
+          "architecture": "arm64",
+          "spdxSha256": "859dd5c4e4fcc912182a0ce4da75bd5305871f23ffba61a2c20d67b4bec98efa"
+        },
+        {
+          "architecture": "x64",
+          "spdxSha256": "0477a47208ccf1f32dfa620a492d69d33f8ed0cd7b6a547ea925f90bd8c2c904"
+        }
+      ],
+      "bytes": 2516606,
+      "sha256": "3a13a5ba767dc8264bc40b185e41368a80d5d5f945944d1dbaa4b2fb0099f4e5"
+    },
+    {
+      "name": "liblzma",
+      "version": "5.8.2",
+      "filename": "sdk-liblzma-5.8.2.tar.gz",
+      "urls": [
+        "https://codeload.github.com/tukaani-project/xz/tar.gz/v5.8.2"
+      ],
+      "algorithm": "sha512",
+      "checksum": "a14c9d0a118c611d1156cd9a605269c706b976a752c048db7f2eea956e2bf717ce595f46186d951a6c4493e35658e08fa3fe4b256898c6ca08e3695c0ee7b0e5",
+      "pinProvenance": "Both actual preserved SDK SPDX documents agree on checksum/source origin; selected delivered section payloads match these SDK providers",
+      "sdkComponents": [
+        "liblzma"
+      ],
+      "sdkSpdxInputs": [
+        {
+          "architecture": "arm64",
+          "spdxSha256": "628946f81607dcad4f048fdb279d3903bb2205b57008dda730c79e64cc247284"
+        },
+        {
+          "architecture": "x64",
+          "spdxSha256": "fe0a70d8fbaa7cda14c9f783086c5a0ad88b1378b759a6489713e97f9cebdb5c"
+        }
+      ],
+      "bytes": 1603572,
+      "sha256": "f21fdf2c1ee004de30ca40377a273e3369186e6b7ab7b50a410eaa2e2bbefafb"
+    },
+    {
+      "name": "libpng",
+      "version": "1.6.54",
+      "filename": "sdk-libpng-1.6.54.tar.gz",
+      "urls": [
+        "https://codeload.github.com/pnggroup/libpng/tar.gz/v1.6.54"
+      ],
+      "algorithm": "sha512",
+      "checksum": "f09e41c5e05714760b8dd05bd11bfe8b6b5840c277e5377a3854f5260879b69709c708f9581c07bdc2ffafda45796066ec258b67b0e96af64614b12346bedb1b",
+      "pinProvenance": "Both actual preserved SDK SPDX documents agree on checksum/source origin; selected delivered section payloads match these SDK providers",
+      "sdkComponents": [
+        "libpng"
+      ],
+      "sdkSpdxInputs": [
+        {
+          "architecture": "arm64",
+          "spdxSha256": "9923016ebe5d78c9a30540110ec8eacf4d36734c6928f18b0cfb8fb7458706cf"
+        },
+        {
+          "architecture": "x64",
+          "spdxSha256": "70e5356218e9a95f3e5ac1537f1367edc36ac2e2cff3e976bd3816e32ca1d2ce"
+        }
+      ],
+      "bytes": 1585700,
+      "sha256": "ba7efce137409079989df4667706c339bebfbb10e9f413474718012a13c8cd4c"
+    },
+    {
+      "name": "libpng",
+      "version": "1.6.54",
+      "filename": "sdk-libpng-1.6.54.patch.gz",
+      "urls": [
+        "https://downloads.sourceforge.net/project/libpng-apng/libpng16/1.6.54/libpng-1.6.54-apng.patch.gz"
+      ],
+      "algorithm": "sha512",
+      "checksum": "217449d76fab45707a696ee5926039c6091196abfc33b4e3bec0a5f63d5b17fd4a7e48af41c4cc2536edc527837dc10fe718092d5b1ffc89ee4dc66883e7267a",
+      "pinProvenance": "Both actual preserved SDK SPDX documents agree on checksum/source origin; selected delivered section payloads match these SDK providers",
+      "sdkComponents": [
+        "libpng"
+      ],
+      "sdkSpdxInputs": [
+        {
+          "architecture": "arm64",
+          "spdxSha256": "9923016ebe5d78c9a30540110ec8eacf4d36734c6928f18b0cfb8fb7458706cf"
+        },
+        {
+          "architecture": "x64",
+          "spdxSha256": "70e5356218e9a95f3e5ac1537f1367edc36ac2e2cff3e976bd3816e32ca1d2ce"
+        }
+      ],
+      "bytes": 10604,
+      "sha256": "5638fc4500eaf48457b4d7c9e553fd82ab01d77304a70077d83368429d44f1b4"
+    },
+    {
+      "name": "libxml2",
+      "version": "2.15.1",
+      "filename": "sdk-libxml2-2.15.1.tar.gz",
+      "urls": [
+        "https://codeload.github.com/GNOME/libxml2/tar.gz/v2.15.1"
+      ],
+      "algorithm": "sha512",
+      "checksum": "05d998e611a8b59cb6688d9432a0f8977cae94aa17b2f01a81c75333c4610b801d1b7e4d19e3206fb06eab4303a7046fc3cac9c814529c0757d61825ebb0aa4e",
+      "pinProvenance": "Both actual preserved SDK SPDX documents agree on checksum/source origin; selected delivered section payloads match these SDK providers",
+      "sdkComponents": [
+        "libxml2"
+      ],
+      "sdkSpdxInputs": [
+        {
+          "architecture": "arm64",
+          "spdxSha256": "b801a62e6fe62e5150cf9d799f85cd924b2c4d1f89d363624526b777f802aeef"
+        },
+        {
+          "architecture": "x64",
+          "spdxSha256": "98579b3431fe37e569a54ecc0e8d02a2016d8cb4888c5f8ba73fd1831e6c4b48"
+        }
+      ],
+      "bytes": 2952276,
+      "sha256": "23b1ebd74cc562cd592cd2618c2bd88dc06fa0dfdbcd56e03cb26d6ff6b7e373"
+    },
+    {
+      "name": "luajit",
+      "version": "2026-01-09",
+      "filename": "sdk-luajit-2026-01-09.tar.gz",
+      "urls": [
+        "https://codeload.github.com/LuaJIT/LuaJIT/tar.gz/707c12bf00dafdfd3899b1a6c36435dbbf6c7022"
+      ],
+      "algorithm": "sha512",
+      "checksum": "c02b3600577936b9de04358fe03b3d995ee68e3416174c287022100aa0862b4e138c88e459b18a590dda7c08c1b6aded440bebfc80bbead2ae6b54cc4c82a2e9",
+      "pinProvenance": "Both actual preserved SDK SPDX documents agree on checksum/source origin; selected delivered section payloads match these SDK providers",
+      "sdkComponents": [
+        "luajit"
+      ],
+      "sdkSpdxInputs": [
+        {
+          "architecture": "arm64",
+          "spdxSha256": "2af6c5761748d3d9ee738e194e7c8eec1bd412562de9424fb66ff394e15dfea2"
+        },
+        {
+          "architecture": "x64",
+          "spdxSha256": "aefd83d8475f2b148d52cf5b5316c1303b7b3d5cd8969b8dc306f78b4e8467cd"
+        }
+      ],
+      "bytes": 1093686,
+      "sha256": "ac2defd1e9b4ab07ac0a52f2403318ffb0d54505b975dff0cfc49a927ab84d90"
+    },
+    {
+      "name": "lz4",
+      "version": "1.10.0",
+      "filename": "sdk-lz4-1.10.0.tar.gz",
+      "urls": [
+        "https://codeload.github.com/lz4/lz4/tar.gz/v1.10.0"
+      ],
+      "algorithm": "sha512",
+      "checksum": "8c4ceb217e6dc8e7e0beba99adc736aca8963867bcf9f970d621978ba11ce92855912f8b66138037a1d2ae171e8e17beb7be99281fea840106aa60373c455b28",
+      "pinProvenance": "Both actual preserved SDK SPDX documents agree on checksum/source origin; selected delivered section payloads match these SDK providers",
+      "sdkComponents": [
+        "lz4"
+      ],
+      "sdkSpdxInputs": [
+        {
+          "architecture": "arm64",
+          "spdxSha256": "6046e643983271b52b89921e385cbea1702530c2a97acaa617739c5db243e510"
+        },
+        {
+          "architecture": "x64",
+          "spdxSha256": "ea3d290274a83d3be6162eff7cde4d6bacc853831df38b2daf51b23f030d6873"
+        }
+      ],
+      "bytes": 387114,
+      "sha256": "537512904744b35e232912055ccf8ec66d768639ff3abe5788d90d792ec5f48b"
+    },
+    {
+      "name": "sdl2",
+      "version": "2.32.10",
+      "filename": "sdk-sdl2-2.32.10.tar.gz",
+      "urls": [
+        "https://codeload.github.com/libsdl-org/SDL/tar.gz/release-2.32.10"
+      ],
+      "algorithm": "sha512",
+      "checksum": "d5622d6bb7266f7942a7b8ad43e8a22524893bf0c2ea1af91204838d9b78d32768843f6faa248757427b8404b8c6443776d4afa6b672cd8571a4e0c03a829383",
+      "pinProvenance": "Both actual preserved SDK SPDX documents agree on checksum/source origin; selected delivered section payloads match these SDK providers",
+      "sdkComponents": [
+        "sdl2"
+      ],
+      "sdkSpdxInputs": [
+        {
+          "architecture": "arm64",
+          "spdxSha256": "732e412533f1642925f2523460d1a8c084d6b3d736bc2aa40c9feefccc249715"
+        },
+        {
+          "architecture": "x64",
+          "spdxSha256": "d4020b62f17bea26ae92f83bcfa6989e3d9ae3b9462bb14419fc8b07dd7e2a67"
+        }
+      ],
+      "bytes": 7883298,
+      "sha256": "03f9d7c191a837525c9cda6406af2f2e48be02b5e7eb03d949cc9f1e9ca41c8b"
+    },
+    {
+      "name": "unshield",
+      "version": "1.4.2#1",
+      "filename": "sdk-unshield-1.4.2.tar.gz",
+      "urls": [
+        "https://codeload.github.com/twogood/unshield/tar.gz/1.4.2"
+      ],
+      "algorithm": "sha512",
+      "checksum": "3ddd5df47198adade66acf89644efe3a1c87d60fcdf511f8e5c1fb29bbb07e77a9abc57a05b161ecb54a26a2a86242bbcba6e90df770b1325965ff5aa8eddf58",
+      "pinProvenance": "Both actual preserved SDK SPDX documents agree on checksum/source origin; selected delivered section payloads match these SDK providers",
+      "sdkComponents": [
+        "unshield"
+      ],
+      "sdkSpdxInputs": [
+        {
+          "architecture": "arm64",
+          "spdxSha256": "a33982ca0452eae64680331335d4dfcc73c1e6cd72bafe5e66222c18b61e6912"
+        },
+        {
+          "architecture": "x64",
+          "spdxSha256": "cb9d9c677fda6e7e4e5ace4e33a54130f5a6229d531bb84d302c2ff4891126a6"
+        }
+      ],
+      "bytes": 46051,
+      "sha256": "5dd4ea0c7e97ad8e3677ff3a254b116df08a5d041c2df8859aad5c4f88d1f774"
+    },
+    {
+      "name": "uriparser",
+      "version": "0.9.9",
+      "filename": "sdk-uriparser-0.9.9.tar.gz",
+      "urls": [
+        "https://codeload.github.com/uriparser/uriparser/tar.gz/uriparser-0.9.9"
+      ],
+      "algorithm": "sha512",
+      "checksum": "0ab98e3172d9767ec0a62018c70190efb5aec813c310e7305fb4ffeb187976734d35ba2f83f6ea0b3f390f13740491d9538e5960b93ca1bbb848a1fe41c559a3",
+      "pinProvenance": "Both actual preserved SDK SPDX documents agree on checksum/source origin; selected delivered section payloads match these SDK providers",
+      "sdkComponents": [
+        "uriparser"
+      ],
+      "sdkSpdxInputs": [
+        {
+          "architecture": "arm64",
+          "spdxSha256": "6fc0b9d9fadec412b024684c98162364b615d79656975957281cdd7232b84481"
+        },
+        {
+          "architecture": "x64",
+          "spdxSha256": "6622440ef210acffffcb11c186c6a2dcfdfeb9b6c1ed447c5305cbf73eced1b3"
+        }
+      ],
+      "bytes": 267276,
+      "sha256": "128554f11013af67f727a6bde8bfbff037df9bd20ca201d5ffe0cea786c43ff4"
+    },
+    {
+      "name": "zstd",
+      "version": "1.5.7",
+      "filename": "sdk-zstd-1.5.7.tar.gz",
+      "urls": [
+        "https://codeload.github.com/facebook/zstd/tar.gz/v1.5.7"
+      ],
+      "algorithm": "sha512",
+      "checksum": "26e441267305f6e58080460f96ab98645219a90d290a533410b1b0b1d2f870721c95f8384e342ee647c5e968385a5b7e30c2d04340c37f59b3e6d86762c3260c",
+      "pinProvenance": "Both actual preserved SDK SPDX documents agree on checksum/source origin; selected delivered section payloads match these SDK providers",
+      "sdkComponents": [
+        "zstd"
+      ],
+      "sdkSpdxInputs": [
+        {
+          "architecture": "arm64",
+          "spdxSha256": "39ad7d32c6a66f89b64b1a07da53ce7a3559279b25d798531ece69da43069ffe"
+        },
+        {
+          "architecture": "x64",
+          "spdxSha256": "a78a6e8f200f06083ca43eecd24bf8da0a23152ac675ab0ac9b98c197dc27736"
+        }
+      ],
+      "bytes": 2451884,
+      "sha256": "37d7284556b20954e56e1ca85b80226768902e2edabd3b649e9e72c0c9012ee3"
+    },
+    {
+      "name": "boost-chrono",
+      "version": "1.90.0#1",
+      "filename": "windows-sdk-boost-chrono-1.90.0.tar.gz",
+      "inputType": "archive",
+      "urls": [
+        "https://codeload.github.com/boostorg/chrono/tar.gz/boost-1.90.0"
+      ],
+      "algorithm": "sha512",
+      "checksum": "6402b4dd9ec8eefeb365bbffe81e5a6a17ca0db9a9b0b2f9e94da25866a99848016a347f4855788f4101af5ba69bdff7883f162246ecf1a38f1316c542e61aca",
+      "pinProvenance": "Exact delivered Windows DLL SHA256 matches preserved SDK bytes and actual SDK SPDX binary file checksum; source checksum from the same component SPDX",
+      "sdkSpdxSha256": "de37c5e50481fc28d946f2646eed71344527eaa654907a2061629e4fca193e30",
+      "bytes": 205240,
+      "sha256": "6f843586afa778e5df4184e78cac1e37bc065458f40657380508297cbfe880b1"
+    },
+    {
+      "name": "boost-date-time",
+      "version": "1.90.0#1",
+      "filename": "windows-sdk-boost-date-time-1.90.0.tar.gz",
+      "inputType": "archive",
+      "urls": [
+        "https://codeload.github.com/boostorg/date_time/tar.gz/boost-1.90.0"
+      ],
+      "algorithm": "sha512",
+      "checksum": "5f373b04e994c0b7e8163dab97ae11947825d1fbfcea826a6e458a501b7322dbe4633fa478d0954bb77b60097e7cb8e1f628fb367c954784be5e3c0665940974",
+      "pinProvenance": "Exact delivered Windows DLL SHA256 matches preserved SDK bytes and actual SDK SPDX binary file checksum; source checksum from the same component SPDX",
+      "sdkSpdxSha256": "5e31a4364e7b0d20482c37e1b3fb16db2f2fd4ca226ec8e2bc0a9e6f69cd65be",
+      "bytes": 342995,
+      "sha256": "655e7ce3bdef1ca547648c1864a30d190f601794d6a39eff00521af94eaf3c98"
+    },
+    {
+      "name": "boost-graph",
+      "version": "1.90.0#1",
+      "filename": "windows-sdk-boost-graph-1.90.0.tar.gz",
+      "inputType": "archive",
+      "urls": [
+        "https://codeload.github.com/boostorg/graph/tar.gz/boost-1.90.0"
+      ],
+      "algorithm": "sha512",
+      "checksum": "b5bc09eef542bfd022d6d6bf0fe41d50e8ff5c8c606f63aa4a69fb32ef9ea1295d9b616d5fa9efd7a1e8009a2e53b675bdd3abfceb27175f6b5e48818259e87b",
+      "pinProvenance": "Exact delivered Windows DLL SHA256 matches preserved SDK bytes and actual SDK SPDX binary file checksum; source checksum from the same component SPDX",
+      "sdkSpdxSha256": "8b30aa50b1ded9d78ffaa01719c777c88de2a58e0a05556ab4afc3c5a647810f",
+      "bytes": 5452538,
+      "sha256": "d0f9ec78d1cd633ff11efddebe54be0d8fd151a945984c6a86b90ae34db8325a"
+    },
+    {
+      "name": "boost-serialization",
+      "version": "1.90.0#1",
+      "filename": "windows-sdk-boost-serialization-1.90.0.tar.gz",
+      "inputType": "archive",
+      "urls": [
+        "https://codeload.github.com/boostorg/serialization/tar.gz/boost-1.90.0"
+      ],
+      "algorithm": "sha512",
+      "checksum": "7bf9632023cac688a5064addce811b230b6fd946e68822525fe63fb3a0652c590b30ad7e00f158eec438daf727a5c014621aced748a8539b3311a50b28947f96",
+      "pinProvenance": "Exact delivered Windows DLL SHA256 matches preserved SDK bytes and actual SDK SPDX binary file checksum; source checksum from the same component SPDX",
+      "sdkSpdxSha256": "49f40a50a24f70c74b2c93240e1b8501ff6c05dd84d2c16b9cf6d7847e2849aa",
+      "bytes": 381070,
+      "sha256": "b2a508903605c2b5d569e6eb313d8aa64cc72623f6bf350976ca0dd0109215c5"
+    },
+    {
+      "name": "boost-thread",
+      "version": "1.90.0#1",
+      "filename": "windows-sdk-boost-thread-1.90.0.tar.gz",
+      "inputType": "archive",
+      "urls": [
+        "https://codeload.github.com/boostorg/thread/tar.gz/boost-1.90.0"
+      ],
+      "algorithm": "sha512",
+      "checksum": "14348a5dcc89cadbb9224da8bef0a90726d610cf2f0b4d61e360bc764fed89f10bc93c63cbe669b84ab4c6eecafb2e6dc13ce6d98ecffe2d2f937a9daad61f9a",
+      "pinProvenance": "Exact delivered Windows DLL SHA256 matches preserved SDK bytes and actual SDK SPDX binary file checksum; source checksum from the same component SPDX",
+      "sdkSpdxSha256": "53420cecfc24e14a4c899c38255ff944c414f8ed2a3fcf6c44b55c9ab1038a69",
+      "bytes": 449339,
+      "sha256": "6b9f3ceb472e52ff03b9a478f4d6e2da43a243ebc4fd30d31873c55a383d2f3a"
+    },
+    {
+      "name": "mygui",
+      "version": "3.4.3#4",
+      "filename": "windows-sdk-mygui-3.4.3.tar.gz",
+      "inputType": "archive",
+      "urls": [
+        "https://codeload.github.com/MyGUI/mygui/tar.gz/MyGUI3.4.3"
+      ],
+      "algorithm": "sha512",
+      "checksum": "88c69ca2e706af364b72d425f95013eb285501881d8094f8d67e31a54c45ca11b0eb5b62c382af0d4c43f69aa8197648259ac306b72efa7ef3e25eecb9b039cb",
+      "pinProvenance": "Exact delivered Windows DLL SHA256 matches preserved SDK bytes and actual SDK SPDX binary file checksum; source checksum from the same component SPDX",
+      "sdkSpdxSha256": "4c3ddb923ae4a021b24ef280632313afe5b03d681be0c7f43988039f013a4797",
+      "bytes": 18797995,
+      "sha256": "33c91b531993047e77cace36d6fea73634b8c17bd0ed193d4cd12ac7c6328abd"
+    },
+    {
+      "name": "mygui",
+      "version": "3.4.3#4",
+      "filename": "windows-sdk-mygui-3.4.3.diff",
+      "inputType": "patch",
+      "urls": [
+        "https://github.com/MyGUI/mygui/commit/0731785d83431bd17a0854f19bea9a7d687de5a7.diff?full_index=1"
+      ],
+      "algorithm": "sha512",
+      "checksum": "4ca252b8d37d9b98b9a1295c181325a33c30534757f8adbbcceceafacd97ff6987fb7a5d1f087b960519c923007e6adff2e8b1d873d75e7faff05b9a20b9cd79",
+      "pinProvenance": "Exact delivered Windows DLL SHA256 matches preserved SDK bytes and actual SDK SPDX binary file checksum; source checksum from the same component SPDX",
+      "sdkSpdxSha256": "4c3ddb923ae4a021b24ef280632313afe5b03d681be0c7f43988039f013a4797",
+      "bytes": 664,
+      "sha256": "e63ac955b63594575ad4d5a72531b5119422acd3ae5d6c72e53c08d47f35ba58"
+    },
+    {
+      "name": "sdl2-image",
+      "version": "2.8.8#2",
+      "filename": "windows-sdk-sdl2-image-2.8.8.tar.gz",
+      "inputType": "archive",
+      "urls": [
+        "https://codeload.github.com/libsdl-org/SDL_image/tar.gz/release-2.8.8"
+      ],
+      "algorithm": "sha512",
+      "checksum": "3fef846eb0ad51a8b346bb421c87eb81f0e2f186d700a219ebf17146397da404b3683853322989ed939b1672cc36b799582f24bc58a0393fc6c698a65cda2b82",
+      "pinProvenance": "Exact delivered Windows DLL SHA256 matches preserved SDK bytes and actual SDK SPDX binary file checksum; source checksum from the same component SPDX",
+      "sdkSpdxSha256": "5bf86057bdafe9355e5b67f27e0cd73348324912e59b98036b7085e2afc9f562",
+      "bytes": 6925189,
+      "sha256": "2bd2c17cab3744ebfe7351ded8c70dc2078d8c7c24eb9f4ebb1b26a623e2a747"
+    },
+    {
+      "name": "tiff",
+      "version": "4.7.1",
+      "filename": "windows-sdk-tiff-4.7.1.tar.gz",
+      "inputType": "archive",
+      "urls": [
+        "https://gitlab.com/libtiff/libtiff/-/archive/v4.7.1/libtiff-v4.7.1.tar.gz"
+      ],
+      "algorithm": "sha512",
+      "checksum": "dcdabe2598db33a973d06f0009dd528aa1f38813bd6015e2595097b838a42240f9ccbe7524b5235ea2f4207a10d5d706339c7a6f4772b531e00a20281a00f67b",
+      "pinProvenance": "Exact delivered Windows DLL SHA256 matches preserved SDK bytes and actual SDK SPDX binary file checksum; source checksum from the same component SPDX",
+      "sdkSpdxSha256": "25c79f62f31febaaa5e435e2bd4b27c30a63c945aec9b6c44f22d6645b5a49ec",
+      "bytes": 2542874,
+      "sha256": "6ab956415ddb6cae497faad18398ff0fd056d17d8bf7b5921cc194c55b0191fc"
+    },
+    {
+      "name": "freetype",
+      "version": "2.15.0",
+      "filename": "freetype-2.15.0-actual-macos-provider-source.tar.xz",
+      "urls": [
+        "https://downloads.sourceforge.net/project/freetype/freetype2/2.15.0/freetype-2.15.0.tar.xz"
+      ],
+      "algorithm": "sha256",
+      "checksum": "93cd47eb719c325107f2d3cf087d06299e944c3b48a40b55537302304dea1dd5",
+      "pinProvenance": "Actual delivered native API version agrees with captured installed dependency version and immutable recorded-tap formula source version; original keg build options are not recreated",
+      "formulaInput": {
+        "architecture": "arm64",
+        "tapRevision": "ce55aa0fbe1a705fdfcecf2eee4a5a39a9ed6d54",
+        "formulaPath": "Formula/f/freetype.rb",
+        "gitBlob": "2951a6dfc384a782226ad9e28613be2a4e99a603",
+        "formulaSha256": "55306144d6c059f30be7c8d2c0b4909836c259edc470c48fb4375d1f3e08fd34",
+        "sourceUrl": "https://downloads.sourceforge.net/project/freetype/freetype2/2.15.0/freetype-2.15.0.tar.xz",
+        "sourceSha256": "93cd47eb719c325107f2d3cf087d06299e944c3b48a40b55537302304dea1dd5",
+        "actualNativeCiRunId": 42086147577,
+        "actualRuntimeVersion": "2.15.0"
+      },
+      "bytes": 2716928,
+      "sha256": "93cd47eb719c325107f2d3cf087d06299e944c3b48a40b55537302304dea1dd5"
+    },
+    {
+      "name": "libpng",
+      "version": "1.6.59",
+      "filename": "libpng-1.6.59-actual-macos-provider-source.tar.xz",
+      "urls": [
+        "https://downloads.sourceforge.net/project/libpng/libpng16/1.6.59/libpng-1.6.59.tar.xz"
+      ],
+      "algorithm": "sha256",
+      "checksum": "d80dd2a38a37f803cb9b6ac7b14bd6e74ddc3b654780a8380bdf93523fdb4389",
+      "pinProvenance": "Actual delivered native API version agrees with captured installed dependency version and immutable recorded-tap formula source version; original keg build options are not recreated",
+      "formulaInput": {
+        "architecture": "arm64",
+        "tapRevision": "ce55aa0fbe1a705fdfcecf2eee4a5a39a9ed6d54",
+        "formulaPath": "Formula/lib/libpng.rb",
+        "gitBlob": "14189bd8e21c8ef2c3fd5bd10fdaae6392be819f",
+        "formulaSha256": "b4c719b087e0ba9c8f724846b984b51e9edb2d71926bf65a654a0c54d339eac1",
+        "sourceUrl": "https://downloads.sourceforge.net/project/libpng/libpng16/1.6.59/libpng-1.6.59.tar.xz",
+        "sourceSha256": "d80dd2a38a37f803cb9b6ac7b14bd6e74ddc3b654780a8380bdf93523fdb4389",
+        "actualNativeCiRunId": 42086147577,
+        "actualRuntimeVersion": "1.6.59"
+      },
+      "bytes": 1074540,
+      "sha256": "d80dd2a38a37f803cb9b6ac7b14bd6e74ddc3b654780a8380bdf93523fdb4389"
+    },
+    {
+      "name": "brotli",
+      "version": "1.2.1",
+      "filename": "brotli-1.2.1-actual-macos-provider-source.tar.gz",
+      "urls": [
+        "https://github.com/google/brotli/archive/refs/tags/v1.2.1.tar.gz"
+      ],
+      "algorithm": "sha256",
+      "checksum": "98d35d11a78dc453aebb7d10c3748f3f73ff78c8267c0dc697b8631f67bf7e8f",
+      "pinProvenance": "Actual delivered native API version agrees with captured installed dependency version and immutable recorded-tap formula source version; original keg build options are not recreated",
+      "formulaInput": {
+        "architecture": "arm64",
+        "tapRevision": "ce55aa0fbe1a705fdfcecf2eee4a5a39a9ed6d54",
+        "formulaPath": "Formula/b/brotli.rb",
+        "gitBlob": "e6ab9845d0839c04db72c3950480a52e69944d80",
+        "formulaSha256": "dd52c7983ad63e4f322a3d44f610dec3ada3448583c3c66e35030ebbaee3433c",
+        "sourceUrl": "https://github.com/google/brotli/archive/refs/tags/v1.2.1.tar.gz",
+        "sourceSha256": "98d35d11a78dc453aebb7d10c3748f3f73ff78c8267c0dc697b8631f67bf7e8f",
+        "actualNativeCiRunId": 42086147577,
+        "actualRuntimeVersion": "1.2.1"
+      },
+      "bytes": 646598,
+      "sha256": "98d35d11a78dc453aebb7d10c3748f3f73ff78c8267c0dc697b8631f67bf7e8f"
+    },
+    {
+      "name": "freetype",
+      "version": "2.14.3",
+      "filename": "freetype-2.14.3-actual-macos-provider-source.tar.xz",
+      "urls": [
+        "https://downloads.sourceforge.net/project/freetype/freetype2/2.14.3/freetype-2.14.3.tar.xz"
+      ],
+      "algorithm": "sha256",
+      "checksum": "36bc4f1cc413335368ee656c42afca65c5a3987e8768cc28cf11ba775e785a5f",
+      "pinProvenance": "Actual delivered native API version agrees with captured installed dependency version and immutable recorded-tap formula source version; original keg build options are not recreated",
+      "formulaInput": {
+        "architecture": "x86_64",
+        "tapRevision": "09417d15c1d23155fd7474db26918bbaebf76235",
+        "formulaPath": "Formula/f/freetype.rb",
+        "gitBlob": "86cb1426ed78873239afb6f4b8bb6929114bf660",
+        "formulaSha256": "9d3ea68e58d204cb55a0750e7705422968d6f69867ebc51952fcb37a68c4b713",
+        "sourceUrl": "https://downloads.sourceforge.net/project/freetype/freetype2/2.14.3/freetype-2.14.3.tar.xz",
+        "sourceSha256": "36bc4f1cc413335368ee656c42afca65c5a3987e8768cc28cf11ba775e785a5f",
+        "actualNativeCiRunId": 42086147577,
+        "actualRuntimeVersion": "2.14.3"
+      },
+      "bytes": 2670220,
+      "sha256": "36bc4f1cc413335368ee656c42afca65c5a3987e8768cc28cf11ba775e785a5f"
+    },
+    {
+      "name": "libpng",
+      "version": "1.6.58",
+      "filename": "libpng-1.6.58-actual-macos-provider-source.tar.xz",
+      "urls": [
+        "https://downloads.sourceforge.net/project/libpng/libpng16/1.6.58/libpng-1.6.58.tar.xz"
+      ],
+      "algorithm": "sha256",
+      "checksum": "28eb403f51f0f7405249132cecfe82ea5c0ef97f1b32c5a65828814ae0d34775",
+      "pinProvenance": "Actual delivered native API version agrees with captured installed dependency version and immutable recorded-tap formula source version; original keg build options are not recreated",
+      "formulaInput": {
+        "architecture": "x86_64",
+        "tapRevision": "09417d15c1d23155fd7474db26918bbaebf76235",
+        "formulaPath": "Formula/lib/libpng.rb",
+        "gitBlob": "f45b4b672f202a90a33b2e45b875fd8e30e58671",
+        "formulaSha256": "18814d6ee041754dcdaf0728ecd0383485f2e0ef79c70637bccc2f1db1e2d661",
+        "sourceUrl": "https://downloads.sourceforge.net/project/libpng/libpng16/1.6.58/libpng-1.6.58.tar.xz",
+        "sourceSha256": "28eb403f51f0f7405249132cecfe82ea5c0ef97f1b32c5a65828814ae0d34775",
+        "actualNativeCiRunId": 42086147577,
+        "actualRuntimeVersion": "1.6.58"
+      },
+      "bytes": 1070096,
+      "sha256": "28eb403f51f0f7405249132cecfe82ea5c0ef97f1b32c5a65828814ae0d34775"
+    },
+    {
+      "name": "boost-complete-headers",
+      "version": "1.90.0",
+      "filename": "boost_1_90_0.tar.gz",
+      "urls": [
+        "https://archives.boost.io/release/1.90.0/source/boost_1_90_0.tar.gz"
+      ],
+      "algorithm": "sha256",
+      "checksum": "5e93d582aff26868d581a52ae78c7d8edf3f3064742c6e77901a1f18a437eea9",
+      "pinProvenance": "Exact archive hash printed by complete_boost_headers.py in all three actual native build logs; SDK Boost headers were overlaid from this archive",
+      "bytes": 210975925,
+      "sha256": "5e93d582aff26868d581a52ae78c7d8edf3f3064742c6e77901a1f18a437eea9"
+    },
+    {
+      "name": "GameNetworkingSockets",
+      "version": "fa489fd2cb0fc86ef2503e330935d3eb03a6a064",
+      "filename": "gns-fa489fd2cb0f-selected-source.tar.gz",
+      "urls": [
+        "https://api.github.com/repos/ValveSoftware/GameNetworkingSockets/tarball/fa489fd2cb0fc86ef2503e330935d3eb03a6a064"
+      ],
+      "algorithm": "sha256",
+      "checksum": "93a7b28f93f2c0aa1386f7480e50d1641cd38321d76c60c3487d57ede01a8705",
+      "pinProvenance": "Preserved selected-implementation archive and runtime MWNetDependencies.cmake Git pin; rechecked before cache reuse",
+      "bytes": 11041102,
+      "sha256": "93a7b28f93f2c0aa1386f7480e50d1641cd38321d76c60c3487d57ede01a8705"
+    },
+    {
+      "name": "yaml-cpp",
+      "version": "c2680200486572baf8221ba052ef50b58ecd816e",
+      "filename": "yaml-cpp-c268020048657.zip",
+      "urls": [
+        "https://github.com/jbeder/yaml-cpp/archive/c2680200486572baf8221ba052ef50b58ecd816e.zip"
+      ],
+      "algorithm": "sha512",
+      "checksum": "9eb328e37ff547e7f681d64e3a8f268a8a5645cb1c258106d1d9f959eec498dfc7c466690c56f210ad7d5fb95b806a30c87ccbb019cccf5c3c6135cfc3c13fe1",
+      "pinProvenance": "Frozen runtime extern/CMakeLists.txt fetched source pin; full archive delivered conservatively alongside any SDK provider version",
+      "bytes": 1339583,
+      "sha256": "9cbd53685951e13eaa3257dd33b9f2cdcdda144488ce93c7f438c72533faf303"
+    },
+    {
+      "name": "recastnavigation",
+      "version": "03259f3287ff8330f0d66fcd98d022edddffaa97",
+      "filename": "recastnavigation-03259f3287ff.zip",
+      "urls": [
+        "https://github.com/OpenMW/recastnavigation/archive/03259f3287ff8330f0d66fcd98d022edddffaa97.zip"
+      ],
+      "algorithm": "sha512",
+      "checksum": "63db2ac90904764d7f1466d3c95994ec51d777cddd870b70f8ef674c09ed166b3d16ffc4ac1d18d0eab865fda4bf51b6ea17049025b66a338d3cadd0f48dc712",
+      "pinProvenance": "Frozen runtime extern/CMakeLists.txt fetched source pin; full archive delivered conservatively alongside any SDK provider version",
+      "bytes": 1446030,
+      "sha256": "b337d8ceebd66641e1a9b9ca2c3dbaebc5aa68a3a30f09435e5c420c177b2c62"
+    },
+    {
+      "name": "mygui-static",
+      "version": "MyGUI3.4.3",
+      "filename": "mygui-MyGUI3.4.3-selected.zip",
+      "urls": [
+        "https://github.com/MyGUI/mygui/archive/refs/tags/MyGUI3.4.3.zip"
+      ],
+      "algorithm": "sha512",
+      "checksum": "c804ef665e786076582367f171082cd2181fdbd214300ddcca4a4245c5a0f45e62e72778ee2d96ec46b393e22477dd729f9bb3006e6eecbf536674e34a057721",
+      "pinProvenance": "Frozen runtime extern/CMakeLists.txt fetched source pin; full archive delivered conservatively alongside any SDK provider version",
+      "bytes": 19797926,
+      "sha256": "5dd90e8d2c069377f1690db075c9838086e540572e4d8ebdcddb6d76a25309c3"
+    }
+  ]
+}

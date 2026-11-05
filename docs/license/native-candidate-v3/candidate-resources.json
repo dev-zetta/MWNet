@@ -1,0 +1,28 @@
+{
+  "schemaVersion": 1,
+  "runtimeSourceCommit": "a6868387dc80dcafd9b8ebad3d8c708511d9a615",
+  "scope": "Verbatim license/source-reference resources for separate experimental native candidates; not runtime or distribution acceptance",
+  "sourceMaterialCompanion": {
+    "name": "MWNet-1.0.0-native-candidate-source-materials-v3.tar.gz",
+    "bytes": 894276452,
+    "sha256": "f4649e5248b213503702713b563339c41002ff3641f560c01d37b4a564c89cff"
+  },
+  "files": {
+    "SOURCE_MATERIALS.txt": {
+      "sha256": "9cd829f986c2b9b3f2d09550b29b322459815266209a6946b9689461c3d3a0c9",
+      "bytes": 1388
+    },
+    "THIRD_PARTY_NOTICES.txt": {
+      "sha256": "7bc595a061061ec527f83f1888e83a129d49d165fae102933a29d141d5bac573",
+      "bytes": 3102977
+    },
+    "notice-materials.json": {
+      "sha256": "32e6184357efefb5c4ceaa59255f8b582ede38dd1108ac5503dcb3c09f3a62d4",
+      "bytes": 455549
+    },
+    "source-inputs.json": {
+      "sha256": "a7ac6f9cb92333b097409287c2b5c9f53f52e44a111122e1969de863f6778298",
+      "bytes": 60041
+    }
+  }
+}

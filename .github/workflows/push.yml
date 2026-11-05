@@ -40,6 +40,7 @@ jobs:
         bash CI/with_disk_tmp.sh python3 CI/test_mwnet_native_notices.py
         bash CI/with_disk_tmp.sh python3 CI/test_mwnet_macos_openssl.py
         bash CI/with_disk_tmp.sh python3 CI/test_mwnet_macos_payloads.py
+        bash CI/with_disk_tmp.sh python3 CI/test_mwnet_macos_notice_candidate.py
         bash CI/with_disk_tmp.sh python3 CI/test_mwnet_macos_dependencies.py
         bash CI/with_disk_tmp.sh python3 CI/test_mwnet_windows_dependencies.py
         bash CI/with_disk_tmp.sh python3 CI/test_mwnet_windows_installer.py

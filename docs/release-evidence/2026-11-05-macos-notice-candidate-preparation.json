@@ -1,0 +1,24 @@
+{
+  "checkedUtc": "2026-11-05T19:40:53.725365+00:00",
+  "status": "prepared-for-separate-native-workflow",
+  "runtimeSourceCommit": "a6868387dc80dcafd9b8ebad3d8c708511d9a615",
+  "scope": "Separate read-only-original DMG to notice-resource ZIP/app candidate; not rebuild/image retry or graphical/distribution acceptance",
+  "workflow": ".github/workflows/mwnet-macos-notice-candidates.yml",
+  "workflowSha256": "80e6a8e29f6d672a3ffcb3bde0da5807bdd7d207bc6b3e20187d7ad8a13d4eeb",
+  "controllerSha256": "8b671be30cec05801f1545c1a3b67c5c66253f9138e079cdaf23d66a98c29178",
+  "resourceManifestSha256": "9776bec02ab4a0542d2234c8cdf646eb68d508f76369237361688c0187093d7d",
+  "resourceBookSha256": "7bc595a061061ec527f83f1888e83a129d49d165fae102933a29d141d5bac573",
+  "actualAppNames": [
+    "MWNet.app",
+    "OpenMW-CS.app"
+  ],
+  "offlineRegressionTestsPassed": 8,
+  "originalImagePins": {
+    "arm64": "20679685dcd60299fa43eed4f2da53008fee9ef5bf3d99fd1565b8fc37f2524f",
+    "x86_64": "6aaf2af3432f29382c45277ab41cb7ceb69a994363494bbb8eed54e7a82edda6"
+  },
+  "nativeResult": null,
+  "nativeGraphicalAccepted": false,
+  "fullDistributionAccepted": false,
+  "published": false
+}

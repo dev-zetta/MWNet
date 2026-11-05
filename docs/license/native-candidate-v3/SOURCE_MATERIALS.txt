@@ -1,0 +1,24 @@
+MWNet 1.0.0 experimental native candidate
+
+Frozen application source: a6868387dc80dcafd9b8ebad3d8c708511d9a615.
+Project, upstream and embedded-component notices are in THIRD_PARTY_NOTICES.txt.
+Runtime/upstream source, patches, recipes and labeled original SDK header/
+configuration snapshots are provided separately in this exact companion:
+
+MWNet-1.0.0-native-candidate-source-materials-v3.tar.gz
+SHA256 f4649e5248b213503702713b563339c41002ff3641f560c01d37b4a564c89cff
+894276452 bytes
+
+The companion and accepted native packages must be co-delivered before public
+release; this private candidate does not claim a public source-download URL.
+The original SDK snapshots are not relabeled as final runner header overlays.
+Complete Boost header-overlay source and named actual-version runner inputs
+are supplied separately within the companion. Captured Homebrew formula
+sources do not recreate unretained installed-keg build options.
+
+Existing upstream terms and credits apply; collected texts do not relicense
+one another. No additional restriction is imposed on modifying or replacing
+the delivered dynamic libraries or reverse engineering for that purpose.
+No owned Morrowind Data Files, private server state or signing credentials
+are included. Native support remains experimental pending actual graphical
+and complete final distribution acceptance. Ad-hoc signing is not notarization.

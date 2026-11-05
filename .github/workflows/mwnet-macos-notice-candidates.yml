@@ -1,0 +1,86 @@
+name: Prepare separate macOS notice candidates
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  actions: read
+
+jobs:
+  prepare:
+    name: notice-candidate-${{ matrix.architecture }}
+    runs-on: ${{ matrix.image }}
+    timeout-minutes: 20
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - architecture: arm64
+            image: macos-15
+            build-run: '42059980428'
+            artifact: openmw-macos-dmg-arm64-4ca4c25c74a2fb252ebeab8bedd3ecd85a727cba
+            dmg-sha256: 20679685dcd60299fa43eed4f2da53008fee9ef5bf3d99fd1565b8fc37f2524f
+          - architecture: x86_64
+            image: macos-15-intel
+            build-run: '42025424431'
+            artifact: openmw-macos-dmg-x86_64-a6868387dc80dcafd9b8ebad3d8c708511d9a615
+            dmg-sha256: 6aaf2af3432f29382c45277ab41cb7ceb69a994363494bbb8eed54e7a82edda6
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          ref: a6868387dc80dcafd9b8ebad3d8c708511d9a615
+      - uses: actions/checkout@v6
+        with:
+          ref: ${{ github.sha }}
+          path: release-tools
+          sparse-checkout: |
+            CI/prepare_mwnet_macos_notice_candidate.py
+            CI/inspect_mwnet_macos_payloads.py
+            CI/inventory_mwnet_package_licenses.py
+            CI/smoke_mwnet_package.py
+            CI/mwnet_temp.py
+            docs/license/native-candidate-v3
+          sparse-checkout-cone-mode: false
+      - uses: actions/setup-python@v6
+        with:
+          python-version: '3.12'
+      - name: Select private disk temporary storage
+        shell: python
+        run: |
+          import os, pathlib, subprocess, sys
+          root = subprocess.check_output([sys.executable, 'release-tools/CI/mwnet_temp.py', '--print-root'], text=True).strip()
+          with pathlib.Path(os.environ['GITHUB_ENV']).open('a') as output:
+              for name in ('TMPDIR', 'TMP', 'TEMP'):
+                  output.write(name + '=' + root + '\n')
+      - uses: actions/download-artifact@v5
+        with:
+          name: ${{ matrix.artifact }}
+          run-id: ${{ matrix.build-run }}
+          github-token: ${{ github.token }}
+          path: incoming
+      - name: Add notice resources, sign separate apps and verify final ZIP
+        shell: bash
+        env:
+          EXPECTED_DMG_SHA256: ${{ matrix.dmg-sha256 }}
+          CANDIDATE_ARCHITECTURE: ${{ matrix.architecture }}
+        run: |
+          set -euo pipefail
+          images=(incoming/*.dmg)
+          test "${#images[@]}" -eq 1
+          python release-tools/CI/prepare_mwnet_macos_notice_candidate.py \
+            --dmg "${images[0]}" --dmg-sha256 "$EXPECTED_DMG_SHA256" \
+            --runtime a6868387dc80dcafd9b8ebad3d8c708511d9a615 \
+            --architecture "$CANDIDATE_ARCHITECTURE" \
+            --notices release-tools/docs/license/native-candidate-v3 \
+            --output candidate-output
+      - name: Retain actual candidate and bounded verification evidence
+        if: always()
+        uses: actions/upload-artifact@v6
+        with:
+          name: mwnet-macos-notice-candidate-${{ matrix.architecture }}-${{ github.run_id }}
+          path: |
+            candidate-output/*.zip
+            candidate-output/*.json
+            candidate-output/*.log
+          if-no-files-found: error

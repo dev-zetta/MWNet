@@ -1,0 +1,4 @@
+# Candidate resources are checksum pinned; keep exact upstream newline bytes.
+docs/license/native-candidate-v3/* -text
+# Verbatim upstream notice texts retain their original whitespace.
+docs/license/native-candidate-v3/THIRD_PARTY_NOTICES.txt -whitespace conflict-marker-size=128
