@@ -1,0 +1,42 @@
+{
+  "schemaVersion": 1,
+  "scope": "Abseil 20260817.0 archive selected from captured installed dependency metadata and immutable formulas; actual bundled ABI is2608, complete binary/source acceptance remains separate",
+  "runtimeSourceCommit": "a6868387dc80dcafd9b8ebad3d8c708511d9a615",
+  "sources": [
+    {
+      "name": "abseil",
+      "version": "20260817.0",
+      "filename": "abseil-20260817.0-homebrew-source.tar.gz",
+      "urls": [
+        "https://github.com/abseil/abseil-cpp/archive/refs/tags/20260817.0.tar.gz"
+      ],
+      "algorithm": "sha256",
+      "checksum": "f7e05179df39c45434cad433f5783840bb3788ef322976f9138bc6b72b3a107d",
+      "pinProvenance": "Both captured Homebrew installed runtime dependency versions and both immutable recorded-tap formula sources agree",
+      "formulaInputs": [
+        {
+          "architecture": "arm64",
+          "capturedInstalledVersion": "20260817.0",
+          "capturedHomebrewReceiptSha256": "d6e2b7b4efa859f1a7cfc580be40542309bbd8ce55e9e2c876f93746f2752d40",
+          "tapRevision": "ce55aa0fbe1a705fdfcecf2eee4a5a39a9ed6d54",
+          "formulaPath": "Formula/a/abseil.rb",
+          "gitBlob": "fc89a329ed6ac82ba10d55533042c6e2db2e1a6f",
+          "formulaSha256": "593fc7901a8949808a470c6b505b095cb0944367e64b2db876ea73661e59b3e7",
+          "sourceUrl": "https://github.com/abseil/abseil-cpp/archive/refs/tags/20260817.0.tar.gz",
+          "sourceSha256": "f7e05179df39c45434cad433f5783840bb3788ef322976f9138bc6b72b3a107d"
+        },
+        {
+          "architecture": "intel",
+          "capturedInstalledVersion": "20260817.0",
+          "capturedHomebrewReceiptSha256": "30dd068e85f74c5e1b834271997d6bb0a16e4fad6a5c6f83c483d613e9666ca9",
+          "tapRevision": "09417d15c1d23155fd7474db26918bbaebf76235",
+          "formulaPath": "Formula/a/abseil.rb",
+          "gitBlob": "976f4b1d3b1da59fd3361f1ca19b6297976e063b",
+          "formulaSha256": "39d3133e8975cf63013f07c6c725f8a1dd6a369fdb4d7e82295b64adc92e05bd",
+          "sourceUrl": "https://github.com/abseil/abseil-cpp/archive/refs/tags/20260817.0.tar.gz",
+          "sourceSha256": "f7e05179df39c45434cad433f5783840bb3788ef322976f9138bc6b72b3a107d"
+        }
+      ]
+    }
+  ]
+}
