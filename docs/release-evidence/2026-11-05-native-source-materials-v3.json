@@ -1,0 +1,51 @@
+{
+  "status": "assembled-and-every-member-readback-verified",
+  "runtimeSourceCommit": "a6868387dc80dcafd9b8ebad3d8c708511d9a615",
+  "procedureSha256": "f06c203c079d92e6d0661b923389bb8e1eaddde5da30afa21db2a11a0073c389",
+  "fullDistributionAccepted": false,
+  "nativeGraphicalAccepted": false,
+  "checkedUtc": "2026-11-05T19:28:07.291700+00:00",
+  "archive": {
+    "name": "MWNet-1.0.0-native-candidate-source-materials-v3.tar.gz",
+    "bytes": 894276452,
+    "sha256": "f4649e5248b213503702713b563339c41002ff3641f560c01d37b4a564c89cff"
+  },
+  "sourceInputCount": 67,
+  "upstreamArchiveCount": 65,
+  "patchCount": 2,
+  "upstreamInputBytes": 858385975,
+  "fileCount": 10561,
+  "noticeBookSha256": "7bc595a061061ec527f83f1888e83a129d49d165fae102933a29d141d5bac573",
+  "snapshotReceiptSha256": "c764213bd17b53455590a4c0858cd0afc36e3b679d40cc1cbc2fdebea52162ab",
+  "materialIndexSha256": "1f32050ba94ecd656b300a716741796190fdb029f1a9a788c2395cfdd64f2611",
+  "scope": "Private companion source/recipe/header/notice material; not public source availability or final distribution/graphical acceptance",
+  "originalSdkHeaderShareSnapshots": [
+    {
+      "architecture": "arm64",
+      "files": 3406,
+      "bytes": 41404859,
+      "sdkArchiveSha256": "9364f93dfa841d16dc696ac46c95e5ae88f07e4131f4d53ed2d4225734b15307"
+    },
+    {
+      "architecture": "intel",
+      "files": 3406,
+      "bytes": 41373651,
+      "sdkArchiveSha256": "a529f60e0dcb9cd4a80ebb2a802878fd68dbf0f32fd424886ffe845084c6928f"
+    },
+    {
+      "architecture": "windows",
+      "files": 3401,
+      "bytes": 41365675,
+      "sdkArchiveSha256": "3e0f2c2c22d61e549b5d67cabe9ac04bd816a327141219ca755e3354b0a55709"
+    }
+  ],
+  "runtimeSourceArchiveSha256": "291abccb3a369d2ee9fa3f6f871aae14b1d901a5e6770db103f6cb46aab95d77",
+  "originalV2Sha256Unchanged": "823e4d8a327d811a94c06eec8a3e82a562c79e615944d6d4cbaf6ed491b156ec",
+  "privateProcedures": {
+    "assemble_materials_v3.py": "f06c203c079d92e6d0661b923389bb8e1eaddde5da30afa21db2a11a0073c389",
+    "export_sdk_headers_v3.py": "0725949dc1871f1c92b9d35969417884fb4774b82965437e7e484206da4ede81"
+  },
+  "preservedLocalSnapshotSelectionFailure": "sdk-original-header-share-snapshots-v3/failure.json",
+  "snapshotCorrection": "Regular non-Boost include/share/ownership members only; nonempty exact selected/extracted path equality; root-installed and prefixed-installed layouts handled",
+  "published": false
+}

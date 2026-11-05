@@ -327,5 +327,7 @@
   "actualMacProviderSourcesCheckpoint": "2026-11-05-macos-native-provider-sources.json",
   "actualMacProviderApiCheckpoint": "2026-11-05-macos-provider-api-verification.json",
   "staticHeaderSourceCheckpoint": "2026-11-05-native-static-header-sources.json",
-  "noticeAssemblyCheckpoint": "2026-11-05-native-notice-material-assembly.json"
+  "noticeAssemblyCheckpoint": "2026-11-05-native-notice-material-assembly.json",
+  "sourceMaterialV3Checkpoint": "2026-11-05-native-source-materials-v3.json",
+  "windowsNoticeCandidateV3Checkpoint": "2026-11-05-windows-notice-candidate-v3.json"
 }

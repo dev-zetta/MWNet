@@ -1,0 +1,7 @@
+# Private Windows portable notice candidate, version 3
+
+`MWNet-1.0.0-Windows-x64-native-candidate-notices-v3.zip` is 110,671,246 bytes with SHA256 `17053647668aaa3615492228c8f60eb35824d8f01c07743326a547b3dca1f6a3`. Its [receipt](2026-11-05-windows-notice-candidate-v3.json) records successful ZIP CRC checks and SHA256 readback equality for all 620 original payload files from original package SHA256 `f8da81b16677c2c1a1086f9fc632fc67a776fadcd915cb61c9929c3c64144b21`. Four files are added under `distribution/`: the verbatim notice book, notice index, source-input index and exact companion source-material reference. No original binary, script or asset bytes changed.
+
+The companion is the [new v3 source/recipe/header/notice bundle](2026-11-05-native-source-materials-v3.md); its exact filename, byte size and digest are included in the portable candidate. Both artifacts remain private, and the reference explicitly requires co-delivery before publication without inventing a public URL. All previous portable candidates and the original installer remain unchanged. The existing [portable startup](2026-11-05-windows-package-candidate.md) and [installer](2026-11-05-windows-installer-verification.md) results retain their original artifact scopes; this text-only candidate did not perform a new native install or graphical run.
+
+Final per-binary distribution assessment and native rendered gameplay remain open. Windows support remains experimental, and no native stable assets, Linux assets or NUC service were changed.

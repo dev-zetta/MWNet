@@ -1,0 +1,32 @@
+{
+  "status": "assembled-and-all-payloads-readback-verified",
+  "procedureSha256": "01c2b786e1ca0a8da41ebd9370e31c7cf094f8b151f6d43fc22eff5e76715ea7",
+  "runtimeSourceCommit": "a6868387dc80dcafd9b8ebad3d8c708511d9a615",
+  "fullDistributionAccepted": false,
+  "nativeGraphicalAccepted": false,
+  "published": false,
+  "checkedUtc": "2026-11-05T19:29:24.351572+00:00",
+  "originalPortable": {
+    "name": "MWNet-1.0.0-Windows-x64.zip",
+    "sha256": "f8da81b16677c2c1a1086f9fc632fc67a776fadcd915cb61c9929c3c64144b21",
+    "bytes": 109795739
+  },
+  "candidate": {
+    "name": "MWNet-1.0.0-Windows-x64-native-candidate-notices-v3.zip",
+    "bytes": 110671246,
+    "sha256": "17053647668aaa3615492228c8f60eb35824d8f01c07743326a547b3dca1f6a3"
+  },
+  "originalPayloadsUnchanged": 620,
+  "addedNoticeSourceFiles": 4,
+  "zipCrcChecked": true,
+  "noticeBookSha256": "7bc595a061061ec527f83f1888e83a129d49d165fae102933a29d141d5bac573",
+  "sourceMaterialCompanion": {
+    "name": "MWNet-1.0.0-native-candidate-source-materials-v3.tar.gz",
+    "bytes": 894276452,
+    "sha256": "f4649e5248b213503702713b563339c41002ff3641f560c01d37b4a564c89cff"
+  },
+  "nativeEvidenceReuseScope": "Original code and script bytes unchanged; no new install or graphical run claimed",
+  "privateReceiptSha256": "b26b0f0ab19dc5461968219e4373c80a553adeed9824e16a10a7739de8e10ef4",
+  "scope": "Notice/source metadata additions to unchanged tested Windows portable code; not a new native run or stable promotion",
+  "originalInstallerUnchangedAndNotRepackaged": true
+}
