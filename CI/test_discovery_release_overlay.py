@@ -57,6 +57,37 @@ class ReleaseOverlayTests(unittest.TestCase):
         self.assertEqual(temporary['source'], '/srv/mwnet/release/tmp')
         self.assertEqual(len(base['services']['game']['tmpfs']), 2)
 
+    def test_verified_previous_release_can_be_upgraded(self):
+        previous = '/srv/mwnet/releases/' + 'a' * 40
+        selected = '/srv/mwnet/releases/' + 'b' * 40
+        old = MODULE.game_overlay({'services': {'game': {'volumes': ['game-state:/state']}}}, previous)
+        with self.assertRaises(ValueError):
+            MODULE.game_overlay(old, selected)
+        new = MODULE.game_overlay(old, selected, previous)
+        self.assertEqual(new['services']['game']['volumes'][0], 'game-state:/state')
+        for mount in new['services']['game']['volumes'][1:]:
+            self.assertTrue(mount['source'].startswith(selected + '/'))
+        self.assertEqual(MODULE.game_overlay(new, selected, previous), new)
+        old_directory = MODULE.directory_overlay({'services': {'directory': {'volumes': ['directory-data:/data']}}}, previous + '/mwnet-directory')
+        with self.assertRaises(ValueError):
+            MODULE.directory_overlay(old_directory, selected + '/mwnet-directory')
+        new_directory = MODULE.directory_overlay(old_directory, selected + '/mwnet-directory', previous)
+        self.assertEqual(new_directory['services']['directory']['volumes'][0], 'directory-data:/data')
+
+    def test_previous_release_paths_and_writable_code_are_rejected(self):
+        for previous in ['/operator/custom', '/srv/mwnet/releases/' + 'a' * 40 + '/../other']:
+            with self.assertRaises(ValueError):
+                MODULE.game_overlay({'services': {'game': {}}}, '/srv/mwnet/releases/new', previous)
+        previous = '/srv/mwnet/releases/' + 'a' * 40
+        old = MODULE.game_overlay({'services': {'game': {}}}, previous)
+        old['services']['game']['volumes'][0]['read_only'] = False
+        with self.assertRaises(ValueError):
+            MODULE.game_overlay(old, '/srv/mwnet/releases/new', previous)
+        directory = {'services': {'directory': {'volumes': [MODULE.bind(previous + '/mwnet-directory', '/usr/local/bin/mwnet-directory')]}}}
+        directory['services']['directory']['volumes'][0]['read_only'] = False
+        with self.assertRaises(ValueError):
+            MODULE.directory_overlay(directory, '/srv/mwnet/releases/new/mwnet-directory', previous)
+
 
 if __name__ == '__main__':
     unittest.main()

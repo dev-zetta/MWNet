@@ -75,6 +75,10 @@ def validate_manifest(manifest):
     for key in ('previousGameBinarySha256', 'serverSha256', 'directorySha256'):
         if not re.fullmatch('[0-9a-f]{64}', str(manifest.get(key, ''))):
             raise ValueError('Invalid binary digest')
+    if 'previousRuntimeSourceCommit' in manifest or 'previousDirectorySha256' in manifest:
+        if (not re.fullmatch('[0-9a-f]{40}', str(manifest.get('previousRuntimeSourceCommit', '')))
+                or not re.fullmatch('[0-9a-f]{64}', str(manifest.get('previousDirectorySha256', '')))):
+            raise ValueError('Invalid previous release identity')
     images = manifest.get('acceptedGameImageIds')
     if (not isinstance(images, list) or not 1 <= len(images) <= 3
             or any(not isinstance(value, str) or not re.fullmatch('sha256:[0-9a-f]{64}', value) for value in images)):
@@ -130,6 +134,11 @@ def apply_locked(bundle):
         raise ValueError('The existing game base image differs from the reviewed deployment')
     if call(['docker', '--context', 'default', 'exec', game_old['Id'], 'sha256sum', '/opt/mwnet/build/mwnet-server']).split()[0] not in (manifest['previousGameBinarySha256'], manifest['serverSha256']):
         raise ValueError('The running game binary changed since update preparation')
+    previous_release = None
+    if 'previousRuntimeSourceCommit' in manifest:
+        previous_release = '/srv/mwnet/releases/' + manifest['previousRuntimeSourceCommit']
+        if call(['docker', '--context', 'default', 'exec', directory_old['Id'], 'sha256sum', '/usr/local/bin/mwnet-directory']).split()[0] not in (manifest['previousDirectorySha256'], manifest['directorySha256']):
+            raise ValueError('The running directory binary changed since update preparation')
     content = next(m for m in game_old['Mounts'] if m['Destination'] == '/game-content')
     if content['RW']:
         raise ValueError('Canonical content must remain read-only')
@@ -154,8 +163,8 @@ def apply_locked(bundle):
     (release / 'smoke-tmp').mkdir(mode=0o700, exist_ok=True)
     os.chown(release / 'smoke-tmp', 10001, 10001)
     next_base = game_base(yaml.safe_load(base_file.read_text()))
-    next_game = game_overlay(yaml.safe_load(game_file.read_text()), str(release))
-    next_directory = directory_overlay(yaml.safe_load(directory_file.read_text()), str(release / 'mwnet-directory'))
+    next_game = game_overlay(yaml.safe_load(game_file.read_text()), str(release), previous_release)
+    next_directory = directory_overlay(yaml.safe_load(directory_file.read_text()), str(release / 'mwnet-directory'), previous_release)
     stamp = datetime.now(timezone.utc).strftime('%Y%m%dT%H%M%SZ')
     backup = Path('/var/backups/mwnet-release') / stamp
     backup.mkdir(parents=True, mode=0o700)
@@ -172,7 +181,7 @@ def apply_locked(bundle):
     game_mounts = ['--mount', f'type=bind,src={release / "server-package"},dst=/opt/mwnet,readonly',
                    '--mount', f'type=bind,src={release / "entrypoint.py"},dst=/opt/registration/entrypoint.py,readonly',
                    '--mount', f'type=bind,src={content["Source"]},dst=/game-content,readonly']
-    report = {'scope': 'NUC beta code update; not sixteen-player capacity acceptance', 'outcome': 'running',
+    report = {'scope': 'NUC release code update; not sixteen-player capacity acceptance', 'outcome': 'running',
               'runtimeSourceCommit': manifest['runtimeSourceCommit'], 'version': manifest['version'],
               'backup': str(backup), 'identityFingerprint': manifest['fingerprint']}
     try:
@@ -259,7 +268,7 @@ def apply_locked(bundle):
     with receipt.open('x') as stream:
         stream.write(json.dumps(report, indent=2) + '\n')
     os.chown(receipt, bundle.stat().st_uid, bundle.stat().st_gid)
-    print('PASS: matching beta game/scripts and directory code running; identity and signed heartbeats verified.')
+    print('PASS: matching release game/scripts and directory code running; identity and signed heartbeats verified.')
 
 
 if __name__ == '__main__':

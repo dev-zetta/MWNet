@@ -1,0 +1,204 @@
+{
+  "runtimeSourceCommit": "a6868387dc80dcafd9b8ebad3d8c708511d9a615",
+  "version": "1.0.0",
+  "protocol": 13,
+  "status": "candidate-acceptance-passed-deployment-pending",
+  "package": {
+    "runtimeSourceCommit": "a6868387dc80dcafd9b8ebad3d8c708511d9a615",
+    "version": "1.0.0",
+    "protocol": 13,
+    "archive": "build/stable-1.0.0-a6868387dc/evidence/packages/MWNet-1.0.0-Linux-x86_64-client-server-a6868387dc.tar.gz",
+    "archiveSha256": "bfa073490a3f23c6fd784dbe361564198324a64da7d2ddc4571235cf6d57723c",
+    "packageRoot": "/mnt/e70cf882-32f8-4345-ab1a-48f4f0e16f2b/dev/TES3MP/build/stable-1.0.0-a6868387dc/accepted-package/MWNet-1.0.0-Linux-x86_64-client-server-a6868387dc",
+    "verifiedFiles": 463,
+    "noticeInputCount": 16,
+    "noticeBytesAndPinsUnchangedFromBeta": true,
+    "noticeOriginRevisionUpdated": true,
+    "nativeControlCasesPassed": 14,
+    "binarySha256": {
+      "mwnet": "d96a61a59083e2c5da3122dd248d88e58fdd85ce8036d6ff310600e7ee6c3ca9",
+      "mwnet-server": "0c6aaed0052d703ee0e079d5ffcfef8dcf21d1701e3ca1b81cedb775f235cf8a"
+    }
+  },
+  "native": {
+    "runtimeSourceCommit": "a6868387dc80dcafd9b8ebad3d8c708511d9a615",
+    "builderImageId": "sha256:abbdee8b62e728bcb70828b84e0dff05c01a5c174667076e3af5d20e5c5a47fc",
+    "cases": [
+      {
+        "name": "mwnet-headless",
+        "seconds": 3.39,
+        "passed": true
+      },
+      {
+        "name": "mwnet-headless-idle-peers",
+        "seconds": 43.56,
+        "passed": true
+      },
+      {
+        "name": "mwnet-unit",
+        "seconds": 14.97,
+        "passed": true
+      },
+      {
+        "name": "mwnet-actor-packets",
+        "seconds": 0.01,
+        "passed": true
+      },
+      {
+        "name": "mwnet-magic-content",
+        "seconds": 0.0,
+        "passed": true
+      },
+      {
+        "name": "mwnet-persistence-fault",
+        "seconds": 0.02,
+        "passed": true
+      },
+      {
+        "name": "mwnet-discovery",
+        "seconds": 2.86,
+        "passed": true
+      }
+    ],
+    "passed": 7,
+    "binarySha256": {
+      "mwnet-server": "cc6d76b86a98f23e70a9ca07e21dcb6f7ac597818b64f9540a6f056816a56395",
+      "mwnet-directory": "6baee09c5cc914554321f21a2597a8850eb6355dcecb6ba38819db35cfe92dcd",
+      "mwnet-headless-integration": "11321afedffbb039df52346e783fdee6d5192e39db7592979ab1a1cfb9b6ad83",
+      "mwnet-tests": "a40b2177832d943d4ea3388cee455842b2e3edecdfbe6b52cd44171902c3db1c",
+      "mwnet-actor-packet-tests": "1eda7d1bffab854a3339decf4e1833d95dddbaa81bf8e9c0defce0ea8ffe668f",
+      "mwnet-magic-content-tests": "0a8d3db27c36544aa67fae7cba8160f0fbc782e1a359201526904277556bc9d6",
+      "mwnet-persistence-fault": "ba81764f98faef443b71622560e0e29393ddec7aeaf4c369192681c17a0ec7d7",
+      "mwnet-discovery-tests": "4322a4d74f924eb901e6d40ee2cb683af48128717d92ca6415347fe037576d4c"
+    },
+    "buildLogSha256": "fcde8988d0cf892121825efa5b4d11adb5988905b168ed88a714046e21df1088",
+    "scope": "Actual stable native build and seven CTest passes; no new overnight or rendered acceptance",
+    "setupAttempt1": "Configuration failed before testing because cached build/dependency mount paths differed; original log and cache retained"
+  },
+  "compiledProvenance": {
+    "schemaVersion": 1,
+    "reviewer": "Codex AI read-only source provenance check",
+    "sourceCommit": "a6868387dc80dcafd9b8ebad3d8c708511d9a615",
+    "verifiedUtc": "2026-11-05T12:27:38.273391+00:00",
+    "scope": "current mwnet and mwnet-server transitive CMake Makefiles link/compile/dependency closure; repository bytes verified against selected Git blobs; actual archive membership cross-checked",
+    "generator": "Unix Makefiles",
+    "compiler": "c++ (Ubuntu 13.3.0-6ubuntu2~24.04.1) 13.3.0",
+    "builderImageId": "sha256:abbdee8b62e728bcb70828b84e0dff05c01a5c174667076e3af5d20e5c5a47fc",
+    "targets": [
+      "mwnet",
+      "mwnet-server"
+    ],
+    "binarySha256": {
+      "mwnet": "d96a61a59083e2c5da3122dd248d88e58fdd85ce8036d6ff310600e7ee6c3ca9",
+      "mwnet-server": "0c6aaed0052d703ee0e079d5ffcfef8dcf21d1701e3ca1b81cedb775f235cf8a"
+    },
+    "repositoryInputCount": 2688,
+    "vendorInputCount": 408,
+    "generatedInputCount": 10,
+    "systemHeaderInputCount": 3560,
+    "selectedCompileObjects": 1216,
+    "selectedLinkRecipes": 24,
+    "verifiedArchives": 22,
+    "inputsNewerThanObjectCount": 0,
+    "allRepositoryInputsMatchCandidate": true,
+    "sourceAndTrackedTreeCleanAtCapture": true,
+    "selectedInputsMetadataAndBinariesStableDuringCapture": true,
+    "packageBinaryBinding": {
+      "mwnet": {
+        "cacheSha256": "d96a61a59083e2c5da3122dd248d88e58fdd85ce8036d6ff310600e7ee6c3ca9",
+        "recordedPackageSha256": "d96a61a59083e2c5da3122dd248d88e58fdd85ce8036d6ff310600e7ee6c3ca9",
+        "exactHashMatch": true
+      },
+      "mwnet-server": {
+        "cacheSha256": "0c6aaed0052d703ee0e079d5ffcfef8dcf21d1701e3ca1b81cedb775f235cf8a",
+        "recordedPackageSha256": "0c6aaed0052d703ee0e079d5ffcfef8dcf21d1701e3ca1b81cedb775f235cf8a",
+        "exactHashMatch": true
+      }
+    },
+    "cacheMountedReadOnly": true,
+    "buildInvoked": false,
+    "renderedExecutableInvoked": false,
+    "suiteTouched": false,
+    "limitations": [
+      "Compiler metadata describes the selected archive build-input closure; archive members not retained by final linking can remain in this conservative input set.",
+      "Current source/header hashes, dependency records, actual archive membership and separate critical-object DWARF/member checks provide engineering evidence; this is not an independent clean rebuild or mathematical binary reproducibility proof.",
+      "Generated and vendor bytes are hashed, not regenerated by this check. System headers/libraries are qualified by the builder image and recorded hashes.",
+      "Resource/content and rendered acceptance are separate receipts owned by the rendered-candidate procedure."
+    ]
+  },
+  "runtimeImpactAndOvernightReuse": {
+    "baselineRuntime": "adc751899eade2b04086a794753f9540124c5e05",
+    "stableCandidateRuntime": "a6868387dc80dcafd9b8ebad3d8c708511d9a615",
+    "changedProductionFiles": [
+      "components/openmw-mp/Version.hpp"
+    ],
+    "versionStringOnly": true,
+    "gameplayProtocol": 13,
+    "runtimeAlgorithmsDependenciesContentPersistenceUnchanged": true,
+    "overnightReusePolicy": "Reuse original beta eight-hour result for version/package metadata only; never relabel its original runtime or binary hashes",
+    "originalOvernightResultSha256": "bf8b2dc3a295655f973cff4a93a437f1814c6f5af3c0e98ae733ce4b130b35b6",
+    "limitations": [
+      "Original full eight-hour workload ran beta binaries, not these new stable binaries.",
+      "Stable package/rendered/native and live deployment checks require new receipts."
+    ],
+    "renderedRepositoryInputsCompared": 2688,
+    "changedCompiledRepositoryInputs": [
+      "components/openmw-mp/Version.hpp"
+    ],
+    "vendorCompilerInputsByteIdentical": true,
+    "systemHeaderInputsByteIdentical": true,
+    "changedGeneratedInputs": [
+      "/tes3mp/build/components/version/version.cpp"
+    ],
+    "generatedInputChangeIsCommitMetadataOnly": true
+  },
+  "rendered": {
+    "procedureRevision": "a6868387dc80dcafd9b8ebad3d8c708511d9a615",
+    "procedureTrackedDirty": false,
+    "outcome": "pass",
+    "caseCount": 10,
+    "positiveAssertions": 130,
+    "durationSeconds": 64.793,
+    "containerResources": {
+      "peakMemoryBytes": 1593798656,
+      "memoryLimitBytes": 6442450944,
+      "usage_usec": 222876652,
+      "user_usec": 204128872,
+      "system_usec": 18747779
+    },
+    "receiptSha256": "f25e18db48541a9953373f4122d010094f5263ffc103f5705ae4a5a648f81a72",
+    "videos": [
+      {
+        "case": "registration-movement-door",
+        "file": "registration-movement-door.mp4",
+        "sha256": "599f058a3eebc48eea9bda4dabd9d1c07d32aeda6b4523e8d924d132dd344b8a"
+      },
+      {
+        "case": "fresh-reconnect-combat-respawn",
+        "file": "fresh-reconnect-combat-respawn.mp4",
+        "sha256": "3d95cb92019cc4f12e9ac80dc58a53100b152c268fd9c9ceeaaaba8038d28104"
+      },
+      {
+        "case": "two-player-secondary",
+        "file": "two-player-secondary.mp4",
+        "sha256": "c9235ea5c417663a95caf5036720578819a0d0d60f1f79709585dc6f97068800"
+      }
+    ],
+    "sampledFramesVisuallyInspected": 3
+  },
+  "nativeControlCasesPassed": 14,
+  "sourceArchive": {
+    "runtimeSourceCommit": "a6868387dc80dcafd9b8ebad3d8c708511d9a615",
+    "archive": "MWNet-1.0.0-source-a6868387dc.tar.gz",
+    "sha256": "291abccb3a369d2ee9fa3f6f871aae14b1d901a5e6770db103f6cb46aab95d77",
+    "gitBlobsVerified": 4806,
+    "excludedGitlinks": {
+      "extern/breakpad": "e6d1c032baa222d8a8dc87813e9067199ec0266d"
+    }
+  },
+  "limits": [
+    "Original overnight acceptance ran beta binaries; reuse is limited to verified version/package metadata changes.",
+    "No sixteen-rendered-player capacity, physical audio or new production-account gameplay acceptance is claimed.",
+    "Deployment and stable publication remain pending."
+  ]
+}

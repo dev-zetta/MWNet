@@ -63,7 +63,22 @@ class ReleaseUpdateTests(unittest.TestCase):
     def test_success_requires_runtime_hashes_and_signed_listing_observation(self):
         self.exercise_release(injected_failure=False)
 
-    def exercise_release(self, injected_failure):
+    def test_verified_previous_release_upgrade_passes(self):
+        self.exercise_release(injected_failure=False, previous_release=True)
+
+    def test_previous_release_upgrade_rolls_back_both_configs_and_state(self):
+        self.exercise_release(injected_failure=True, previous_release=True)
+
+    def test_changed_previous_directory_is_rejected_before_stopping(self):
+        self.exercise_release(injected_failure=False, previous_release=True, wrong_directory=True)
+
+    def test_previous_release_requires_both_source_and_directory_digest(self):
+        for fields in [{'previousRuntimeSourceCommit': 'f' * 40}, {'previousDirectorySha256': 'f' * 64},
+                       {'previousRuntimeSourceCommit': '../escape', 'previousDirectorySha256': 'f' * 64}]:
+            with self.assertRaises(ValueError):
+                MODULE.validate_manifest(manifest() | fields)
+
+    def exercise_release(self, injected_failure, previous_release=False, wrong_directory=False):
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory); bundle = root / 'bundle'; bundle.mkdir()
             original_path = Path
@@ -80,6 +95,12 @@ class ReleaseUpdateTests(unittest.TestCase):
                 '/home/gmax/mwnet-registration/compose.yml': {'services': {'game': {'tmpfs': ['/tmp:rw,size=16m']}}},
                 '/opt/mwnet/discovery-appliance/compose.yml': {'services': {'directory': {'volumes': ['directory-data:/data']}}},
             }
+            if previous_release:
+                previous = '/srv/mwnet/releases/' + 'f' * 40
+                settings['/etc/mwnet-gameplay/compose.content.yml'] = MODULE.game_overlay(
+                    {'services': {'game': {'volumes': ['game-state:/state'], 'mem_limit': '2g'}}}, previous)
+                settings['/opt/mwnet/discovery-appliance/compose.yml'] = MODULE.directory_overlay(
+                    {'services': {'directory': {'volumes': ['directory-data:/data']}}}, previous + '/mwnet-directory')
             for name, data in settings.items():
                 path = mapped(name); path.parent.mkdir(parents=True, exist_ok=True)
                 path.write_text(yaml.safe_dump(data)); files[name] = path.read_bytes()
@@ -90,6 +111,8 @@ class ReleaseUpdateTests(unittest.TestCase):
                                ('mwnet-directory', b'new-directory')]:
                 path = bundle / name; path.parent.mkdir(parents=True, exist_ok=True); path.write_bytes(data)
             selected = manifest()
+            if previous_release:
+                selected.update(version='1.0.0', previousRuntimeSourceCommit='f' * 40, previousDirectorySha256='f' * 64)
             selected['inputs'] = {str(p.relative_to(bundle)): hashlib.sha256(p.read_bytes()).hexdigest()
                                   for p in bundle.rglob('*') if p.is_file()}
             selected['serverSha256'] = selected['inputs']['server-package/build/mwnet-server']
@@ -109,12 +132,14 @@ class ReleaseUpdateTests(unittest.TestCase):
                 if args[:4] == ['docker', '--context', 'default', 'exec']:
                     if 'python3' in args:
                         return '42\n'
-                    if 'server-package' in mapped('/etc/mwnet-gameplay/compose.content.yml').read_text():
+                    if selected['runtimeSourceCommit'] in mapped('/etc/mwnet-gameplay/compose.content.yml').read_text():
                         key = 'serverSha256' if args[-1].endswith('mwnet-server') else 'directorySha256'
                         return selected[key] + '  binary\n'
+                    if args[-1].endswith('mwnet-directory'):
+                        return ('0' * 64 if wrong_directory else selected['previousDirectorySha256']) + '  binary\n'
                     return selected['previousGameBinarySha256'] + '  binary\n'
                 if '/verify.py' in args:
-                    self.assertEqual(args[args.index('--expected-version') + 1], '1.0.0-beta.1')
+                    self.assertEqual(args[args.index('--expected-version') + 1], selected['version'])
                     return json.dumps({'signedListingObservation': 'accepted-by-verifier'}) + '\n'
                 if output is not None:
                     service = 'game' if any('src=game-volume,' in str(a) for a in args) else 'directory'
@@ -130,7 +155,7 @@ class ReleaseUpdateTests(unittest.TestCase):
                         self.assertIn('/etc/mwnet-directory.env', args)
                     action, service = ('stop' if 'stop' in args else 'up'), args[-1]
                     events.append((action, service))
-                    if action == 'up' and '/usr/local/bin/mwnet-directory' in mapped('/opt/mwnet/discovery-appliance/compose.yml').read_text():
+                    if action == 'up' and selected['runtimeSourceCommit'] in mapped('/opt/mwnet/discovery-appliance/compose.yml').read_text():
                         states['directory'] = b'changed-after-upgrade'
                 return ''
             def process(args, **kwargs):
@@ -152,11 +177,19 @@ class ReleaseUpdateTests(unittest.TestCase):
                  mock.patch.object(MODULE, 'call', side_effect=command), \
                  mock.patch.object(MODULE, 'wait_ready', side_effect=ready), \
                  mock.patch.object(MODULE.subprocess, 'run', side_effect=process):
-                if injected_failure:
+                if wrong_directory:
+                    with self.assertRaisesRegex(ValueError, 'running directory binary changed'):
+                        MODULE.run(bundle)
+                elif injected_failure:
                     with self.assertRaisesRegex(RuntimeError, 'injected post-swap failure'):
                         MODULE.run(bundle)
                 else:
                     MODULE.run(bundle)
+            if wrong_directory:
+                self.assertEqual(events, [])
+                self.assertEqual(states, originals)
+                self.assertTrue(all(mapped(name).read_bytes() == data for name, data in files.items()))
+                return
             if not injected_failure:
                 report = json.loads((bundle / 'deployment-result.json').read_text())
                 self.assertEqual(report['outcome'], 'pass')

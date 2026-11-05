@@ -2,6 +2,7 @@
 """Replace managed runtime code mounts without changing persistent state mounts."""
 from copy import deepcopy
 from pathlib import PurePosixPath
+import re
 
 
 def target(volume):
@@ -18,7 +19,13 @@ def bind(source, destination):
             'read_only': True, 'bind': {'create_host_path': False}}
 
 
-def game_overlay(configuration, release_root):
+def previous_root(value):
+    if value is not None and not re.fullmatch(r'/srv/mwnet/releases/[0-9a-f]{40}', str(value)):
+        raise ValueError('Previous release must be an explicitly verified source revision')
+    return PurePosixPath(value) if value is not None else None
+
+
+def game_overlay(configuration, release_root, previous_release_root=None):
     root = PurePosixPath(release_root)
     if not root.is_absolute() or '..' in root.parts:
         raise ValueError('Release code directory must be absolute')
@@ -29,6 +36,7 @@ def game_overlay(configuration, release_root):
                     '/opt/registration/entrypoint.py': root / 'entrypoint.py',
                     '/opt/registration/verify_listing.py': root / 'verify_listing.py',
                     '/tmp': root / 'tmp'}
+    previous = previous_root(previous_release_root)
     for volume in game.get('volumes', []):
         destination = target(volume)
         if destination == '/opt/mwnet/build/mwnet-server':
@@ -39,7 +47,12 @@ def game_overlay(configuration, release_root):
                     or PurePosixPath(source).name != 'mwnet-server'):
                 raise ValueError('Unrecognized existing server binary override')
         elif destination in replacements:
-            if not isinstance(volume, dict) or volume.get('source') != str(replacements[destination]):
+            permitted = {str(replacements[destination])}
+            if previous is not None:
+                permitted.add(str(previous / replacements[destination].relative_to(root)))
+            if (not isinstance(volume, dict) or volume.get('type') != 'bind'
+                    or volume.get('source') not in permitted
+                    or volume.get('read_only') is not (destination != '/tmp')):
                 raise ValueError('Unrecognized existing runtime code override')
         else:
             retained.append(volume)
@@ -63,15 +76,20 @@ def game_base(configuration):
     return result
 
 
-def directory_overlay(configuration, binary):
+def directory_overlay(configuration, binary, previous_release_root=None):
     if not PurePosixPath(binary).is_absolute():
         raise ValueError('Directory binary must be absolute')
     result = deepcopy(configuration)
     directory = result['services']['directory']
+    previous = previous_root(previous_release_root)
+    permitted = {str(binary)}
+    if previous is not None:
+        permitted.add(str(previous / 'mwnet-directory'))
     retained = []
     for volume in directory.get('volumes', []):
         if target(volume) == '/usr/local/bin/mwnet-directory':
-            if not isinstance(volume, dict) or volume.get('source') != str(binary):
+            if (not isinstance(volume, dict) or volume.get('type') != 'bind'
+                    or volume.get('source') not in permitted or volume.get('read_only') is not True):
                 raise ValueError('Unrecognized existing directory binary override')
         else:
             retained.append(volume)
