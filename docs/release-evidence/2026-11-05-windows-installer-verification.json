@@ -1,0 +1,52 @@
+{
+  "checkedUtc": "2026-11-05T18:22:56.093789+00:00",
+  "runtimeSourceCommit": "a6868387dc80dcafd9b8ebad3d8c708511d9a615",
+  "controllerRevision": "3514dfe98312b83a01a6f94e00db6ca8b301c540",
+  "ciRunId": 42082866169,
+  "ciJobId": 127440205170,
+  "ciConclusion": "success",
+  "completedAt": "2026-11-05T18:18:40Z",
+  "ciUrl": "https://github.com/dev-zetta/MWNet/actions/runs/42082866169",
+  "scope": "Fresh silent installation, actual installed payload/startup and uninstall on disposable Windows CI; not upgrade, graphical gameplay or distribution acceptance",
+  "host": "Windows-2022Server-10.0.20348-SP0",
+  "installerSha256": "959e6d7b03b444d0711138e2930f9e9f1025a29483c01b458b5dea8776bac893",
+  "portableSha256": "f8da81b16677c2c1a1086f9fc632fc67a776fadcd915cb61c9929c3c64144b21",
+  "toolSha256": "3f8343ab899354fe42e4190cab4d25fb18ad07cff477c5fb9d7dab31c0eb92b3",
+  "noPreviousMwnetInstallation": true,
+  "portableFiles": 620,
+  "byteIdenticalInstalledPayloadFiles": 619,
+  "portableOnlyRedistributableRemovedByInstallHook": "redist/vc_redist.x64.exe",
+  "installationAccepted": true,
+  "installedStartupAccepted": true,
+  "uninstallationAccepted": true,
+  "actualExitCodes": {
+    "installExitCode": 0,
+    "startupExitCode": 0,
+    "uninstallExitCode": 0
+  },
+  "registeredAfterInstall": [
+    {
+      "hive": "HKLM",
+      "view": 512,
+      "key": "MWNet 1.0.0",
+      "displayName": "MWNet 1.0.0"
+    }
+  ],
+  "registeredAfterUninstall": [],
+  "remainingGeneratedUninstaller": [
+    {
+      "path": "Uninstall.exe",
+      "sha256": "f939c4697c267f950a929c54f75161e2b774d8d4fd6e3996da63a74bf1d98c9a",
+      "bytes": 139730
+    }
+  ],
+  "evidenceArtifact": {
+    "artifactId": 13441262115,
+    "artifactSha256": "edbbda911ef7bb8e98138358c1f4ee69ec659925e2d38653d0d4d79de8426473",
+    "githubDigestAndCrcVerified": true
+  },
+  "privateNativeResultSha256": "3cf6550fbbe6cc4da87e70d6da890a75f45f1cb7842012c0e8d6fcb51eb8ae3d",
+  "vcRuntimeBootstrapOnCleanOsAccepted": false,
+  "graphicalGameplayAccepted": false,
+  "distributionAccepted": false
+}
