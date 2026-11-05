@@ -1,0 +1,140 @@
+{
+  "schemaVersion": 1,
+  "runtimeSourceCommit": "a6868387dc80dcafd9b8ebad3d8c708511d9a615",
+  "scope": "Frozen actual package byte pins and separately recorded provider expectations; expected versions do not pass until actual native APIs agree",
+  "brotliFixture": {
+    "plainUtf8": "MWNet dependency probe\nMWNet dependency probe\nMWNet dependency probe\nMWNet dependency probe\nMWNet dependency probe\nMWNet dependency probe\nMWNet dependency probe\nMWNet dependency probe\n",
+    "compressedHex": "1bb70000444fd65fd263a1eaec9999a26ed1adaa130bd7f177bcd573b65320",
+    "compressedSha256": "39b3b43d672036672cd53b76e421e7e9e680651b664ca412b2c00da1f906a8c4",
+    "generatorVersion": "BrotliEncoderVersion0x1002000",
+    "quality": 5,
+    "window": 22,
+    "mode": 0
+  },
+  "packages": {
+    "arm64": {
+      "archiveSha256": "20679685dcd60299fa43eed4f2da53008fee9ef5bf3d99fd1565b8fc37f2524f",
+      "probes": [
+        {
+          "path": "QtCore.framework/Versions/A/QtCore",
+          "kind": "qt",
+          "expectedVersion": "6.10.3",
+          "sha256": "8c6549f250fb398f63090b9a695d9469f121ed74472700a168c3c999d12d99ea"
+        },
+        {
+          "path": "libsodium.26.dylib",
+          "kind": "sodium",
+          "expectedVersion": "1.0.22",
+          "sha256": "a7aa5404ac254235b270dc81b32042895ca98a25f6447ded2d44a00c061b7977"
+        },
+        {
+          "path": "libfontconfig.1.dylib",
+          "kind": "fontconfig",
+          "expectedVersion": "2.18.3",
+          "sha256": "bf8c878ad67d5b05728b330c2e35ab2c508472ea8596a9ba953d953b4fb6edce"
+        },
+        {
+          "path": "libintl.8.dylib",
+          "kind": "intl",
+          "expectedVersion": "1.0.0",
+          "sha256": "ccc95c4cdb726b62ba8c0c55042e2d8109427eb8366fdccb8ac861b93fd4e5c8"
+        },
+        {
+          "path": "libfreetype.6.20.2.dylib",
+          "kind": "freetype",
+          "expectedVersion": "2.13.3",
+          "sha256": "7e2e4dddcf15fb81577d6dcf97eba37f46463f5f68423eb54e67164d1c1220cc"
+        },
+        {
+          "path": "libpng16.16.54.0.dylib",
+          "kind": "png",
+          "expectedVersion": "1.6.54",
+          "sha256": "20b174d98809dd40bd75d7191e46ab5cab4433becfbba9c806edf28dd3917dcc"
+        },
+        {
+          "path": "libbrotlidec.1.2.0.dylib",
+          "kind": "brotli",
+          "expectedVersion": "1.2.0",
+          "sha256": "1da71c88318591d1d2b0cd024850c954933a3485023f9266447834aaed743125"
+        },
+        {
+          "path": "libfreetype.6.dylib",
+          "kind": "freetype",
+          "expectedVersion": "2.15.0",
+          "sha256": "afb3d080a4b4976ffdb688d0268a51f68f0066cd28b93ab8c2ba536e1e39f5bc"
+        },
+        {
+          "path": "libpng16.16.dylib",
+          "kind": "png",
+          "expectedVersion": "1.6.59",
+          "sha256": "253cbc98dc6f093b3445dd22ca32b0974b85d2f5b13af61b2b301c1c15573dc8"
+        },
+        {
+          "path": "libbrotlidec.1.2.1.dylib",
+          "kind": "brotli",
+          "expectedVersion": "1.2.1",
+          "sha256": "43f881a67b4257bfb54b6b01f5268006010f79348c110dc65d0007a37b7ac5e1"
+        }
+      ]
+    },
+    "x86_64": {
+      "archiveSha256": "6aaf2af3432f29382c45277ab41cb7ceb69a994363494bbb8eed54e7a82edda6",
+      "probes": [
+        {
+          "path": "QtCore.framework/Versions/A/QtCore",
+          "kind": "qt",
+          "expectedVersion": "6.10.3",
+          "sha256": "8c6549f250fb398f63090b9a695d9469f121ed74472700a168c3c999d12d99ea"
+        },
+        {
+          "path": "libsodium.26.dylib",
+          "kind": "sodium",
+          "expectedVersion": "1.0.22",
+          "sha256": "60bb5224f4595ee1b4b6f987ca09a58c1ad4fe2ae6bdec90520f3085e3dbfdf5"
+        },
+        {
+          "path": "libfontconfig.1.dylib",
+          "kind": "fontconfig",
+          "expectedVersion": "2.18.3",
+          "sha256": "08e5bcb5d057e6dc7c95e138634c77be5f30146153e9e7ff8dcf1fdf48ca8a1a"
+        },
+        {
+          "path": "libintl.8.dylib",
+          "kind": "intl",
+          "expectedVersion": "1.0.0",
+          "sha256": "f52b46072ed260f3809f2a4e4345487c83ca5ae791b061e9a6e4f4f48f73c6f0"
+        },
+        {
+          "path": "libfreetype.6.20.2.dylib",
+          "kind": "freetype",
+          "expectedVersion": "2.13.3",
+          "sha256": "90823a5f14e78c8038b2973bc8e61114c33bd8eaf0535932a88d11b4d07316d8"
+        },
+        {
+          "path": "libpng16.16.54.0.dylib",
+          "kind": "png",
+          "expectedVersion": "1.6.54",
+          "sha256": "5c26129cf0a1a10fd2d4eca05527db2e241811f84dba82036a78adf50c90ab74"
+        },
+        {
+          "path": "libbrotlidec.1.2.0.dylib",
+          "kind": "brotli",
+          "expectedVersion": "1.2.0",
+          "sha256": "62391767ae5ac63433e97bc049be60b08ea6f15bd7fe9782e9ee54f4e5e0169c"
+        },
+        {
+          "path": "libfreetype.6.dylib",
+          "kind": "freetype",
+          "expectedVersion": "2.14.3",
+          "sha256": "9df907d636bbe857c15f4e218a1653c02c2a0ec1ceba3d6df7d06e7852963a27"
+        },
+        {
+          "path": "libpng16.16.dylib",
+          "kind": "png",
+          "expectedVersion": "1.6.58",
+          "sha256": "4f2737e29fb9cebcd797f529b91c461834034fe2856ee9542dfa6fdbf70e4f75"
+        }
+      ]
+    }
+  }
+}

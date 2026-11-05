@@ -1,0 +1,75 @@
+name: Inspect preserved macOS providers
+
+on:
+  workflow_dispatch:
+    inputs:
+      platform:
+        description: Frozen native package architecture
+        type: choice
+        default: both
+        options: [both, arm64, x86_64]
+
+permissions:
+  contents: read
+  actions: read
+
+jobs:
+  inspect:
+    strategy:
+      fail-fast: false
+      matrix:
+        architecture: ${{ fromJSON(inputs.platform == 'arm64' && '["arm64"]' || inputs.platform == 'x86_64' && '["x86_64"]' || '["arm64", "x86_64"]') }}
+    runs-on: ${{ matrix.architecture == 'arm64' && 'macos-15' || 'macos-15-intel' }}
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-python@v6
+        with:
+          python-version: "3.12"
+      - name: Select disk temporary storage
+        shell: python
+        run: |
+          import os, pathlib, subprocess, sys
+          root = subprocess.check_output([sys.executable, 'CI/mwnet_temp.py', '--print-root'], text=True).strip()
+          with pathlib.Path(os.environ['GITHUB_ENV']).open('a') as output:
+              for name in ('TMPDIR', 'TMP', 'TEMP'):
+                  output.write(name + '=' + root + '\n')
+      - uses: actions/download-artifact@v5
+        with:
+          name: ${{ matrix.architecture == 'arm64' && 'openmw-macos-dmg-arm64-4ca4c25c74a2fb252ebeab8bedd3ecd85a727cba' || 'openmw-macos-dmg-x86_64-a6868387dc80dcafd9b8ebad3d8c708511d9a615' }}
+          run-id: ${{ matrix.architecture == 'arm64' && '42059980428' || '42025424431' }}
+          github-token: ${{ github.token }}
+          path: incoming
+      - name: Check frozen image hash
+        shell: python
+        env:
+          PROBE_ARCHITECTURE: ${{ matrix.architecture }}
+        run: |
+          import hashlib, json, os, pathlib
+          selected = json.loads(pathlib.Path('CI/mwnet_macos_provider_expectations.json').read_text())['packages'][os.environ['PROBE_ARCHITECTURE']]
+          images = list(pathlib.Path('incoming').glob('*.dmg'))
+          assert len(images) == 1
+          with images[0].open('rb') as stream:
+              assert hashlib.file_digest(stream, 'sha256').hexdigest() == selected['archiveSha256']
+      - name: Read actual native provider APIs without modifying package
+        shell: bash
+        env:
+          PROBE_ARCHITECTURE: ${{ matrix.architecture }}
+        run: |
+          set -euo pipefail
+          mkdir mounted
+          image=(incoming/*.dmg)
+          hdiutil verify "${image[0]}"
+          hdiutil attach "${image[0]}" -readonly -nobrowse -mountpoint "$PWD/mounted"
+          trap 'hdiutil detach "$PWD/mounted"' EXIT
+          python CI/verify_mwnet_macos_dependencies.py --package mounted/MWNet.app \
+            --archive "${image[0]}" --architecture "$PROBE_ARCHITECTURE" --output evidence
+      - name: Preserve actual provider outcome
+        if: always()
+        uses: actions/upload-artifact@v6
+        with:
+          name: mwnet-macos-provider-evidence-${{ matrix.architecture }}-${{ github.run_id }}
+          path: |
+            evidence/*.json
+            evidence/*.log
+          if-no-files-found: error
