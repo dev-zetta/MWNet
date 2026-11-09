@@ -1,0 +1,304 @@
+{
+  "checkedUtc": "2026-11-09T15:13:17.744842+00:00",
+  "scope": "Live read-only NUC reboot/freeze diagnosis, operator-authorized sanitized root evidence export and model-correct firmware package verification; no host firmware/settings/service changes",
+  "operatorReport": {
+    "hostWasUnresponsiveAgain": true,
+    "operatorRestartedHost": true,
+    "operatorDisabledWifiAndBluetoothInBios": true
+  },
+  "current": {
+    "observedUtc": "2026-11-09T14:59:51.623753+00:00",
+    "bootId": "18665649-0174-4c75-99fa-74d4fcc333c9",
+    "uptimeSeconds": 7022.44,
+    "kernel": "7.0.0-42-generic",
+    "hardware": {
+      "sys_vendor": "Intel(R) Client Systems",
+      "product_name": "NUC8i5BEH",
+      "board_name": "NUC8BEB",
+      "board_version": "J72692-309",
+      "bios_vendor": "Intel Corp.",
+      "bios_version": "BECFL357.86A.0095.2023.0918.1953",
+      "bios_date": "09/18/2023"
+    },
+    "telemetryAgeSeconds": 1.542633,
+    "availableMemoryBytes": 6894452736,
+    "globalOomKills": 0,
+    "swapFreeBytes": 4294963200,
+    "radio": {
+      "wifiPhys": [],
+      "bluetoothAdapters": [],
+      "rfkillDeviceCount": 0
+    },
+    "services": {
+      "docker.service": {
+        "Id": "docker.service",
+        "LoadState": "loaded",
+        "ActiveState": "active",
+        "SubState": "running",
+        "Result": "success",
+        "NRestarts": "0",
+        "ExecMainStatus": "0"
+      },
+      "kdump-tools.service": {
+        "Id": "kdump-tools.service",
+        "LoadState": "loaded",
+        "ActiveState": "active",
+        "SubState": "exited",
+        "Result": "success",
+        "NRestarts": "0",
+        "ExecMainStatus": "0"
+      },
+      "mwnet-appliance-setup.service": {
+        "Id": "mwnet-appliance-setup.service",
+        "LoadState": "loaded",
+        "ActiveState": "inactive",
+        "SubState": "dead",
+        "Result": "success",
+        "NRestarts": "0",
+        "ExecMainStatus": "0"
+      },
+      "mwnet-host-telemetry.service": {
+        "Id": "mwnet-host-telemetry.service",
+        "LoadState": "loaded",
+        "ActiveState": "active",
+        "SubState": "running",
+        "Result": "success",
+        "NRestarts": "0",
+        "ExecMainStatus": "0"
+      },
+      "tailscaled.service": {
+        "Id": "tailscaled.service",
+        "LoadState": "loaded",
+        "ActiveState": "active",
+        "SubState": "running",
+        "Result": "success",
+        "NRestarts": "0",
+        "ExecMainStatus": "0"
+      }
+    },
+    "crashControls": {
+      "captureKernelLoaded": "1",
+      "crashReservedBytes": "536870912",
+      "watchdog": "1",
+      "nmi_watchdog": "1",
+      "hardlockup_panic": "1",
+      "softlockup_panic": "1",
+      "panic_on_oops": "1",
+      "panic": "30"
+    },
+    "wiredDefaultRouteDevice": "eno1"
+  },
+  "failedBoot": {
+    "bootId": "7bb206b2-bbec-41c0-9a09-553222b738c7",
+    "lastDurableTelemetry": {
+      "utc": "2026-11-05T20:37:21.579876+00:00",
+      "bootId": "7bb206b2-bbec-41c0-9a09-553222b738c7",
+      "uptimeSeconds": 97901.4,
+      "memoryBytes": {
+        "MemAvailable": 6792040448,
+        "SwapFree": 4294963200,
+        "Shmem": 2330624,
+        "Dirty": 49152,
+        "Writeback": 0
+      },
+      "vmstat": {
+        "oom_kill": 0,
+        "pswpin": 0,
+        "pswpout": 0,
+        "pgmajfault": 7290
+      },
+      "loadAverage": [
+        0.23,
+        0.13,
+        0.1
+      ],
+      "cpuTicks": [
+        1593039,
+        1364,
+        1113588,
+        72394143,
+        50106,
+        0,
+        5860,
+        0,
+        0,
+        0
+      ],
+      "validTemperaturesMilliCelsius": [
+        27800,
+        37850,
+        32850,
+        32850,
+        39000,
+        42000,
+        39000,
+        40000,
+        40000,
+        39000
+      ],
+      "containerCount": 4,
+      "containerOomKillsSum": 0
+    },
+    "lastDurableTelemetryPrague": "2026-11-05T21:37:21.579876+01:00",
+    "lastSampleCpuIdlePercent": 96.26099706744868,
+    "retainedObservationCount": 18644,
+    "minimumRecordedAvailableMemoryBytes": 6260314112,
+    "maximumRecordedGlobalOomKills": 0,
+    "kernelRecordsScanned": 1472,
+    "kernelBytesScanned": 1022980,
+    "kernelScanCompleteWithinBounds": true,
+    "actualFatalKernelMatches": [],
+    "benignSignatureMatchesExcluded": [
+      "DRM panic-plane registration",
+      "i915 vgaarb VGA decode change"
+    ],
+    "normalShutdownOrSuspendAtFailureEstablished": false,
+    "causeEstablished": false
+  },
+  "crashMetadata": [
+    {
+      "root": "/var/crash/mwnet-host",
+      "entries": [
+        {
+          "path": "kdump_lock",
+          "directory": false,
+          "symlink": false,
+          "bytes": 0,
+          "mtimeUtc": "2026-11-09T13:02:53.846422+00:00"
+        },
+        {
+          "path": "kexec_cmd",
+          "directory": false,
+          "symlink": false,
+          "bytes": 266,
+          "mtimeUtc": "2026-11-09T13:02:55.154422+00:00"
+        }
+      ],
+      "contentsRead": false,
+      "maximumEntries": 128
+    },
+    {
+      "root": "/sys/fs/pstore",
+      "entries": [],
+      "contentsRead": false,
+      "maximumEntries": 128
+    },
+    {
+      "root": "/var/lib/systemd/pstore",
+      "entries": [],
+      "contentsRead": false,
+      "maximumEntries": 128
+    }
+  ],
+  "publicDiscovery": {
+    "origin": "https://mwnet.playit.plus",
+    "version": "1.0.0",
+    "protocol": 13,
+    "signedFreshHeartbeatsVerified": 2,
+    "distinctNonceDigests": 2,
+    "fingerprint": "ed25519/Lk3WtO4wS_t4oKQ3iqKqtU8ijPkSpeX5rRCnlxT41jA",
+    "scope": "HTTPS and signed discovery liveness only; not rendered gameplay or private account/state validation"
+  },
+  "firmware": {
+    "officialUrl": "https://dlcdnets.asus.com/pub/ASUS/NUC/NUC_8_Kit/BECFL357.86A.0098.zip",
+    "filename": "BECFL357.86A.0098.zip",
+    "bytes": 46282856,
+    "sha256": "ef36336839565952a1ce1734b6ba93e9ec275d81ab54cbe235b5b1f7842aec7a",
+    "asusCatalogSha256Matched": true,
+    "zipCrcChecked": true,
+    "members": [
+      {
+        "path": "BECFL357.86A.0098/",
+        "bytes": 0
+      },
+      {
+        "path": "BECFL357.86A.0098/BIOFILE File for BIOS Flash through F7/",
+        "bytes": 0
+      },
+      {
+        "path": "BECFL357.86A.0098/BIOFILE File for BIOS Flash through F7/BE0098.bio",
+        "bytes": 10874912
+      },
+      {
+        "path": "BECFL357.86A.0098/BIOS Binary File/",
+        "bytes": 0
+      },
+      {
+        "path": "BECFL357.86A.0098/BIOS Binary File/BE0098.bin",
+        "bytes": 16777216
+      },
+      {
+        "path": "BECFL357.86A.0098/BIOS Flash through utility/",
+        "bytes": 0
+      },
+      {
+        "path": "BECFL357.86A.0098/BIOS Flash through utility/BECFL357.86A.0098.BI/",
+        "bytes": 0
+      },
+      {
+        "path": "BECFL357.86A.0098/BIOS Flash through utility/BECFL357.86A.0098.BI/BE0098.bio",
+        "bytes": 10874912
+      },
+      {
+        "path": "BECFL357.86A.0098/BIOS Flash through utility/BECFL357.86A.0098.BI/IFLASH2.exe",
+        "bytes": 194680
+      },
+      {
+        "path": "BECFL357.86A.0098/BIOS Release Note/",
+        "bytes": 0
+      },
+      {
+        "path": "BECFL357.86A.0098/BIOS Release Note/BE0098 BIOS ReleaseNotes.pdf",
+        "bytes": 440361
+      },
+      {
+        "path": "BECFL357.86A.0098/BIOS Release Note/BE0098_UQI_List.txt",
+        "bytes": 64957
+      },
+      {
+        "path": "BECFL357.86A.0098/One click BIOS Flash for Windows/",
+        "bytes": 0
+      },
+      {
+        "path": "BECFL357.86A.0098/One click BIOS Flash for Windows/BECFL357.86A.0098.EB.EXE",
+        "bytes": 13138864
+      },
+      {
+        "path": "BECFL357.86A.0098/One click BIOS Flash for Windows/BECFL357.86A.0098.EB.WINPE64.EXE",
+        "bytes": 13750704
+      }
+    ],
+    "executedOrFlashed": false,
+    "f7Image": {
+      "filename": "BE0098.bio",
+      "archiveMember": "BECFL357.86A.0098/BIOFILE File for BIOS Flash through F7/BE0098.bio",
+      "bytes": 10874912,
+      "sha256": "a1df7dbfb693f7b9d5b618ef12f21d0e1c05a15f87783da68388fafdcf6b143a"
+    },
+    "releaseNotes": {
+      "filename": "BE0098-BIOS-ReleaseNotes.pdf",
+      "sha256": "5d1ca6e3649c3bf3756f63d275e6a77d437b76467f6681fc519db884810fe508",
+      "biosIdentity": "BECFL357.86A.0098.2026.0204.1428",
+      "listedIssueFix": "Improvement Legacy boot support",
+      "documentedFreezeFix": false,
+      "ecTargetVersion": "3.26",
+      "ecFlashPrerequisite": "LPCClockRun disabled and sleep type Legacy S3; release notes warn boot failure otherwise",
+      "currentEcFirmwareVersion": "3.26",
+      "currentLinuxMemSleep": "s2idle [deep]",
+      "lpcClockRunVerified": false
+    }
+  },
+  "evidenceHashes": {
+    "inspect_host.py": "eb9ccdc97cb9f8600288f7ebd2d8570278c266ec057a0da8deb5cb47b418c559",
+    "inspect_failed_boot.py": "a09863822251c39474c5974769167ba9a62c68f50077102dba93714e28cc9ddb",
+    "host-safe-status.json": "8f1d22e3958d908b7d2671e6e90de073432489ba9bbba8d023e8009bef1a87cf",
+    "failed-boot-safe-status.json": "a36313d1d66f5bb653c7a75c4fe3b998681e2fbcb4c48732c0c16710ad8e2152",
+    "export_safe_freeze_summary.py": "0c76e2552d0b7d2dca6e5a420d29bd7b2e30f806d5307acac5c2e8ba32c6cfca",
+    "safe-freeze-summary.json": "bd5f9f3333776e439357391da67a22464e5bc1b3e87ad408331323d2c246a17b",
+    "public-heartbeats.jsonl": "3263b900d962e5163f5d417d27aedafd54e152c66c44536e79b34c266e35f64b",
+    "bios-package-verification-complete.json": "6647b28b912f2bad20402b762302c8343dc3b196e796ce9f4d990335df2ea445"
+  },
+  "agentFlashedFirmware": false,
+  "agentRestartedOrReconfiguredHost": false,
+  "privateMemoryDumpOrCredentialContentsExported": false
+}
