@@ -26,6 +26,9 @@ GAME_CHECK = r'''
 import configparser, hashlib, json, stat
 from pathlib import Path
 def sha(p): return hashlib.sha256(p.read_bytes()).hexdigest()
+def persistent_xdg_redirect(text):
+    values = [line.split('=',1)[1].strip() for line in text.splitlines() if '=' in line and line.split('=',1)[0].strip()=='config']
+    return values == ['"/state/xdg-config/openmw"']
 result = {'inspectionComplete': False}
 try:
     c = configparser.ConfigParser(interpolation=None)
@@ -41,7 +44,7 @@ try:
         p=Path('/state')/name
         s=p.lstat()
         checks['privateMode.'+name] = stat.S_ISREG(s.st_mode) and stat.S_IMODE(s.st_mode)==0o600 and s.st_uid==10001
-    checks['persistentXdgRedirect'] = 'config="/state/xdg-config/openmw"' in Path('/opt/mwnet/build/openmw.cfg').read_text()
+    checks['persistentXdgRedirect'] = persistent_xdg_redirect(Path('/opt/mwnet/build/openmw.cfg').read_text())
     originals = {str(p.relative_to('/opt/mwnet/files/mwnet/core-scripts')): sha(p) for group in ('scripts','lib') for p in (Path('/opt/mwnet/files/mwnet/core-scripts')/group).rglob('*') if p.is_file()}
     checks['managedCodeMatches'] = len(originals)==48 and all(sha(Path('/state/server')/name)==value for name,value in originals.items())
     running=[]
@@ -83,11 +86,12 @@ def selected_container(raw):
 
 
 def container_checks(role, selected):
-    limits = {'game':(512,128),'directory':(512,64),'https':(128,64),'playit':(256,128)}
-    memory, pids = limits[role]
+    # The production canonical-content overlay deliberately raises the game cap.
+    limits = {'game':(2048,2,128),'directory':(512,1,64),'https':(128,1,64),'playit':(256,1,128)}
+    memory, cpus, pids = limits[role]
     checks = {'runningWithoutOom':selected['running'] and not selected['oomKilled'],
               'noRestarts':selected['restartCount']==0, 'restartUnlessStopped':selected['restartPolicy']=='unless-stopped',
-              'resourceLimits':selected['memoryBytes']==memory*1024**2 and selected['nanoCpus']==10**9 and selected['pidsLimit']==pids,
+              'resourceLimits':selected['memoryBytes']==memory*1024**2 and selected['nanoCpus']==cpus*10**9 and selected['pidsLimit']==pids,
               'boundedLogs':selected['logConfig']=={'Type':'json-file','Config':{'max-size':'10m','max-file':'3'}},
               'notPrivileged':not selected['privileged']}
     if role != 'playit':

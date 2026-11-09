@@ -1,6 +1,6 @@
 {
-  "scope": "NUC post-BIOS inspection and prepared reversible no-sleep policy; live privileged server audit pending",
-  "status": "awaiting-operator-interactive-sudo",
+  "scope": "Actual NUC post-BIOS sleep-policy application, reviewed stable server configuration and independent public discovery verification",
+  "status": "verified-with-preserved-original-audit-findings",
   "runtimeSourceCommit": "a6868387dc80dcafd9b8ebad3d8c708511d9a615",
   "observedUtc": "2026-11-09T19:14:03.649678+00:00",
   "bootId": "95ae2a01-8b09-451b-ba22-81cc557df619",
@@ -185,9 +185,11 @@
   },
   "localVerification": {
     "noSleepRegressionTests": 7,
-    "privateAuditTests": 3,
+    "privateAuditTests": 5,
     "passed": true,
-    "newBuildOrDeploymentPerformed": false
+    "newBuildOrDeploymentPerformed": false,
+    "testsAddedForActualVerifierFindings": 2,
+    "correctedRootVerifierNotRerun": true
   },
   "privateEvidence": {
     "host-before.json": {
@@ -201,11 +203,433 @@
     "inspect_post_bios.py": {
       "sha256": "dec160045ec70bd80a7cbf42e1d0e90e6f7b114d65ec18f189e6a61b385b88aa",
       "bytes": 6713
+    },
+    "operator-verification-result.json": {
+      "sha256": "ae4ddc5cea5136b8ee962994166dda416b1a01dea9629abeda68556db5490663",
+      "bytes": 13139
+    },
+    "host-after.json": {
+      "sha256": "4242a4d82feb16e6ecac99a3ef448dd275dc46e264814b00719f5fe07da07871",
+      "bytes": 9278
+    },
+    "public-after.jsonl": {
+      "sha256": "ebc70eaff8c1483d13c55bb3ddbfd66b9c421780c489f5d487068b0a7edd05f0",
+      "bytes": 1114
+    },
+    "corrected-assessment.json": {
+      "sha256": "6266d48f4ad0ec86d5e03a70bd6bc8480e4f27b3e12d4b473d145cce8eee6bcb",
+      "bytes": 4332
+    },
+    "verify_after-attempt1.py": {
+      "sha256": "b6a56f98da8789404e108b9ec043a25469418bc423ca487e08b25b9f4699f330",
+      "bytes": 3314
+    },
+    "verify_after.py": {
+      "sha256": "9d83c0732a640500912815e0569deedd6a9738d128619a5e905195a416f125ee",
+      "bytes": 3467
     }
   },
   "limitations": [
-    "Operator sudo step has not yet been verified; no sleep configuration change claimed at this checkpoint.",
-    "BIOS update and current healthy state do not establish that recurrent whole-host freezes are fixed.",
-    "No suspend/reboot/panic test, graphical gameplay, release change or production restart performed."
-  ]
+    "Recurrent freeze cause and effectiveness of BIOS/radio/no-sleep changes remain unestablished; no sustained post-update stability qualification claimed.",
+    "No suspend/reboot/panic test, rendered gameplay, release change, production restart or game-state mutation performed.",
+    "Original root audit status remains findings; two verifier defects were resolved by a separate offline assessment using actual reported values and exact accepted config-byte evidence.",
+    "No-sleep persistence is configured on disk; no additional reboot was requested to test it. Key/lid drop-in loads on the next logind start, while masks and sleep capabilities already enforce the policy.",
+    "Playit retains the previously reviewed host network, writable root and default-capability posture; this is not a comprehensive hardening acceptance.",
+    "Operator cannot read protected sleep drop-in directories; hashes are from the original root apply receipt, masks/capabilities were independently rechecked."
+  ],
+  "operatorExecution": {
+    "observedUtc": "2026-11-09T20:07:33.847105+00:00",
+    "receiptSha256": "ae4ddc5cea5136b8ee962994166dda416b1a01dea9629abeda68556db5490663",
+    "receiptBytes": 13139,
+    "originalStatus": "findings",
+    "originalBaselineConfigurationPassed": false,
+    "sleepPolicy": {
+      "status": "sleep-disabled",
+      "persistentTargetMasks": {
+        "sleep.target": {
+          "LoadState": "masked",
+          "UnitFileState": "masked"
+        },
+        "suspend.target": {
+          "LoadState": "masked",
+          "UnitFileState": "masked"
+        },
+        "hibernate.target": {
+          "LoadState": "masked",
+          "UnitFileState": "masked"
+        },
+        "hybrid-sleep.target": {
+          "LoadState": "masked",
+          "UnitFileState": "masked"
+        },
+        "suspend-then-hibernate.target": {
+          "LoadState": "masked",
+          "UnitFileState": "masked"
+        }
+      },
+      "loginManagerCapabilities": {
+        "CanSuspend": "s \"no\"",
+        "CanHibernate": "s \"no\"",
+        "CanHybridSleep": "s \"no\"",
+        "CanSuspendThenHibernate": "s \"no\""
+      },
+      "noSuspendOrRebootTestPerformed": true,
+      "productionAndLoginServicesNotRestarted": true,
+      "backup": "/var/lib/mwnet-host-no-sleep/backups/20261109T200733Z-973740bf",
+      "appliedFileHashes": {
+        "/etc/systemd/sleep.conf.d/90-mwnet-no-sleep.conf": "0da63a8cd77b73fc24f425bedf3ad806d58df2b40d33d6d073f0f51e738abe9a",
+        "/etc/systemd/logind.conf.d/90-mwnet-no-sleep.conf": "d130470efdb240fbec3a8e676062bc038390f8ca08d19d10b3e8558d868f4c49"
+      }
+    },
+    "deploymentCodeInputsChecked": 79,
+    "serverSha256": "0c6aaed0052d703ee0e079d5ffcfef8dcf21d1701e3ca1b81cedb775f235cf8a",
+    "liveServerExecutableHashes": [
+      "0c6aaed0052d703ee0e079d5ffcfef8dcf21d1701e3ca1b81cedb775f235cf8a"
+    ],
+    "managedCodeFiles": 48,
+    "directorySha256": "6baee09c5cc914554321f21a2597a8850eb6355dcecb6ba38819db35cfe92dcd",
+    "nvmeHealth": {
+      "critical_warning": 0,
+      "temperature": 311,
+      "power_cycles": 24527,
+      "power_on_hours": 6557,
+      "unsafe_shutdowns": 105,
+      "media_errors": 0,
+      "num_err_log_entries": 0,
+      "warning_temp_time": 0,
+      "critical_comp_time": 0,
+      "inspectionComplete": true,
+      "healthWarningsPresent": false
+    },
+    "allFourContainersRunningWithoutOom": true,
+    "containerStartedAt": {
+      "game": "2026-11-09T18:31:21.100190661Z",
+      "directory": "2026-11-09T18:31:21.099536343Z",
+      "https": "2026-11-09T18:31:21.098906194Z",
+      "playit": "2026-11-09T18:31:21.100937516Z"
+    }
+  },
+  "correctedConfigurationAssessment": {
+    "scope": "Corrected offline assessment of the unchanged original actual root receipt plus hash-proven accepted config bytes; not a rerun of the root audit",
+    "status": "reviewed-deployment-configuration-verified",
+    "allChecksPassed": true,
+    "originalReceiptSha256": "ae4ddc5cea5136b8ee962994166dda416b1a01dea9629abeda68556db5490663",
+    "originalReceiptStatusPreserved": "findings",
+    "originalRootBaselineVerdictPreserved": false,
+    "corrections": [
+      {
+        "check": "game.resourceLimits",
+        "originalResult": false,
+        "correctedResult": true,
+        "actual": {
+          "memoryBytes": 2147483648,
+          "nanoCpus": 2000000000,
+          "pidsLimit": 128
+        },
+        "reason": "Verifier used registration-test caps instead of the existing canonical-content overlay (2 GiB / 2 CPUs / 128 PIDs).",
+        "evidence": "docker/discovery/gameplay/compose.content.yml and docs/release-evidence/2026-10-29-gameplay-nuc.md"
+      },
+      {
+        "check": "persistentXdgRedirect",
+        "originalResult": false,
+        "correctedResult": true,
+        "reason": "Verifier substring rejected the valid config = syntax with spaces; actual packaged bytes match the pinned accepted manifest and all 79 installed code inputs passed.",
+        "acceptedConfigSha256": "9d6d92896510fef3c20983db92381880f6f1a6814ce9e5ca9341f843aa57726d",
+        "correctedConfigParserRejectsConflictingPaths": true
+      }
+    ],
+    "containerChecks": {
+      "game": {
+        "runningWithoutOom": true,
+        "noRestarts": true,
+        "restartUnlessStopped": true,
+        "resourceLimits": true,
+        "boundedLogs": true,
+        "notPrivileged": true,
+        "readonlyRoot": true,
+        "droppedAllCapabilities": true,
+        "noNewPrivileges": true,
+        "nonRoot": true,
+        "loopbackUdpOnly": true
+      },
+      "directory": {
+        "runningWithoutOom": true,
+        "noRestarts": true,
+        "restartUnlessStopped": true,
+        "resourceLimits": true,
+        "boundedLogs": true,
+        "notPrivileged": true,
+        "readonlyRoot": true,
+        "droppedAllCapabilities": true,
+        "noNewPrivileges": true,
+        "nonRoot": true,
+        "noHostPublishedPorts": true
+      },
+      "https": {
+        "runningWithoutOom": true,
+        "noRestarts": true,
+        "restartUnlessStopped": true,
+        "resourceLimits": true,
+        "boundedLogs": true,
+        "notPrivileged": true,
+        "readonlyRoot": true,
+        "droppedAllCapabilities": true,
+        "noNewPrivileges": true,
+        "loopbackHttpsIngress": true
+      },
+      "playit": {
+        "runningWithoutOom": true,
+        "noRestarts": true,
+        "restartUnlessStopped": true,
+        "resourceLimits": true,
+        "boundedLogs": true,
+        "notPrivileged": true,
+        "hostNetworkAsReviewed": true
+      }
+    },
+    "checks": {
+      "gameBaseImageAccepted": true,
+      "installedReleaseCodeMatches": true,
+      "acceptedReadonlyCodeMounts": true,
+      "persistentState": true,
+      "ownedContentReadonly": true,
+      "gameScratchOnDisk": true,
+      "directoryStatePersistent": true,
+      "acceptedReadonlyDirectoryMount": true,
+      "directoryCommandAsReviewed": true,
+      "httpsStatePersistent": true,
+      "acceptedReadonlyHttpsConfiguration": true,
+      "gameConfigurationVerified": true,
+      "runningServerIdentityMatches": true,
+      "directoryIdentityMatches": true,
+      "directoryHealthEndpoint": true,
+      "secretFilesProtected": true,
+      "originalDeploymentBackupsRetained": true,
+      "nvmeNoCriticalOrMediaErrors": true
+    },
+    "gameConfigurationChecks": {
+      "General.localAddress": true,
+      "General.publicListen": true,
+      "General.port": true,
+      "General.maximumPlayers": true,
+      "General.hostname": true,
+      "Plugins.home": true,
+      "Plugins.plugins": true,
+      "Discovery.directoryUrl": true,
+      "Discovery.announce": true,
+      "Discovery.localTest": true,
+      "Discovery.publicAddress": true,
+      "Discovery.publicPort": true,
+      "passwordHashMatchesStoredArgon2id": true,
+      "noPlaintextPasswordInConfig": true,
+      "privateMode.access-password.txt": true,
+      "privateMode.access-password.hash": true,
+      "privateMode.xdg-config/openmw/mwnet-server.cfg": true,
+      "persistentXdgRedirect": true,
+      "managedCodeMatches": true
+    },
+    "correctedVerifierSha256": "32f62722dad5d940ab10498e28edb79efb981bfe23e0ac17ffe56002b5b6c11f",
+    "serverConfigurationOrResourcesChanged": false,
+    "rootAuditRerun": false
+  },
+  "independentHostAfter": {
+    "observedUtc": "2026-11-09T20:11:09.300877+00:00",
+    "bootId": "95ae2a01-8b09-451b-ba22-81cc557df619",
+    "uptimeSeconds": 6083.11,
+    "biosVersion": "BECFL357.86A.0098.2026.0204.1428",
+    "telemetryAgeSeconds": 1.245973,
+    "wifiPhys": [],
+    "bluetoothAdapters": [],
+    "defaultRouteInterfaces": [
+      "eno1"
+    ],
+    "services": {
+      "docker.service": {
+        "Id": "docker.service",
+        "LoadState": "loaded",
+        "ActiveState": "active",
+        "SubState": "running",
+        "UnitFileState": "enabled",
+        "NRestarts": "0",
+        "ExecMainStartTimestamp": "Mon 2026-11-09 18:31:20 UTC"
+      },
+      "mwnet-host-telemetry.service": {
+        "Id": "mwnet-host-telemetry.service",
+        "LoadState": "loaded",
+        "ActiveState": "active",
+        "SubState": "running",
+        "UnitFileState": "enabled",
+        "NRestarts": "0",
+        "ExecMainStartTimestamp": "Mon 2026-11-09 18:29:52 UTC"
+      },
+      "tailscaled.service": {
+        "Id": "tailscaled.service",
+        "LoadState": "loaded",
+        "ActiveState": "active",
+        "SubState": "running",
+        "UnitFileState": "enabled",
+        "NRestarts": "0",
+        "ExecMainStartTimestamp": "Mon 2026-11-09 18:29:52 UTC"
+      },
+      "kdump-tools.service": {
+        "Id": "kdump-tools.service",
+        "LoadState": "loaded",
+        "ActiveState": "active",
+        "SubState": "exited",
+        "UnitFileState": "enabled",
+        "NRestarts": "0",
+        "ExecMainStartTimestamp": "Mon 2026-11-09 18:29:51 UTC"
+      },
+      "systemd-logind.service": {
+        "Id": "systemd-logind.service",
+        "LoadState": "loaded",
+        "ActiveState": "active",
+        "SubState": "running",
+        "UnitFileState": "static",
+        "NRestarts": "0",
+        "ExecMainStartTimestamp": "Mon 2026-11-09 18:29:52 UTC"
+      }
+    },
+    "sleepTargets": {
+      "sleep.target": {
+        "LoadState": "masked",
+        "UnitFileState": "masked"
+      },
+      "suspend.target": {
+        "LoadState": "masked",
+        "UnitFileState": "masked"
+      },
+      "hibernate.target": {
+        "LoadState": "masked",
+        "UnitFileState": "masked"
+      },
+      "hybrid-sleep.target": {
+        "LoadState": "masked",
+        "UnitFileState": "masked"
+      },
+      "suspend-then-hibernate.target": {
+        "LoadState": "masked",
+        "UnitFileState": "masked"
+      }
+    },
+    "sleepCapabilities": {
+      "CanSuspend": "s \"no\"",
+      "CanHibernate": "s \"no\"",
+      "CanHybridSleep": "s \"no\"",
+      "CanSuspendThenHibernate": "s \"no\""
+    },
+    "sleepFiles": {
+      "/etc/systemd/sleep.conf.d/90-mwnet-no-sleep.conf": {
+        "operatorReadUnavailable": "PermissionError",
+        "hashAvailableInRootReceipt": true
+      },
+      "/etc/systemd/logind.conf.d/90-mwnet-no-sleep.conf": {
+        "operatorReadUnavailable": "PermissionError",
+        "hashAvailableInRootReceipt": true
+      }
+    },
+    "crashControls": {
+      "captureKernelLoaded": "1",
+      "crashReservedBytes": "536870912",
+      "watchdog": "1",
+      "nmi_watchdog": "1",
+      "hardlockup_panic": "1",
+      "softlockup_panic": "1",
+      "panic_on_oops": "1",
+      "panic": "30"
+    },
+    "logindIdleAction": "s \"ignore\"",
+    "acceptedManifestSha256": "3cd7644a5a42eb5f43acb95451699b7fe4b21629e21530ed3f61a32d67df8843",
+    "acceptedPackagedOpenmwConfigSha256": "9d6d92896510fef3c20983db92381880f6f1a6814ce9e5ca9341f843aa57726d",
+    "operatorReceiptSha256": "ae4ddc5cea5136b8ee962994166dda416b1a01dea9629abeda68556db5490663",
+    "hostHealth": {
+      "availableMemoryBytes": 6886866944,
+      "swapFreeBytes": 4294963200,
+      "globalOomKills": 0,
+      "allFourContainerOomCountersZero": true,
+      "hottestValidMilliCelsius": 41000
+    }
+  },
+  "publicDiscoveryAfter": {
+    "exitCode": 0,
+    "distinctSignedHeartbeats": 2,
+    "observations": [
+      {
+        "host": "209.25.141.17",
+        "port": 43133,
+        "name": "MWNet 1.0 server",
+        "version": "1.0.0",
+        "protocol": 13,
+        "players": 0,
+        "capacity": 16,
+        "password": true,
+        "content": [
+          {
+            "name": "Morrowind.esm",
+            "hashes": [
+              2070607289,
+              875048295
+            ]
+          },
+          {
+            "name": "Tribunal.esm",
+            "hashes": [
+              4102157108,
+              554904047
+            ]
+          },
+          {
+            "name": "Bloodmoon.esm",
+            "hashes": [
+              1138565426,
+              2662739750
+            ]
+          }
+        ],
+        "fingerprint": "ed25519/Lk3WtO4wS_t4oKQ3iqKqtU8ijPkSpeX5rRCnlxT41jA",
+        "nonceDigest": "18234c823d5eb1612c3115f20c63996c6d11631963842affc843bffa53202c83",
+        "signatureVerified": true,
+        "acceptedHeartbeats": 1
+      },
+      {
+        "host": "209.25.141.17",
+        "port": 43133,
+        "name": "MWNet 1.0 server",
+        "version": "1.0.0",
+        "protocol": 13,
+        "players": 0,
+        "capacity": 16,
+        "password": true,
+        "content": [
+          {
+            "name": "Morrowind.esm",
+            "hashes": [
+              2070607289,
+              875048295
+            ]
+          },
+          {
+            "name": "Tribunal.esm",
+            "hashes": [
+              4102157108,
+              554904047
+            ]
+          },
+          {
+            "name": "Bloodmoon.esm",
+            "hashes": [
+              1138565426,
+              2662739750
+            ]
+          }
+        ],
+        "fingerprint": "ed25519/Lk3WtO4wS_t4oKQ3iqKqtU8ijPkSpeX5rRCnlxT41jA",
+        "nonceDigest": "8f3896e8a02fb7a6b41d5211067c4632184facaed17b0e068f9ac3932945369a",
+        "signatureVerified": true,
+        "acceptedHeartbeats": 2
+      }
+    ],
+    "outputLastWrittenUtc": "2026-11-09T20:09:50.850771+00:00",
+    "scope": "Public TLS and signed discovery liveness, not rendered gameplay/private login"
+  }
 }

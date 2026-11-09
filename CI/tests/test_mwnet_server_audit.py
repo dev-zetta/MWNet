@@ -1,4 +1,5 @@
 import contextlib
+import ast
 import io
 import json
 from pathlib import Path
@@ -12,6 +13,26 @@ import verify_server as audit
 
 
 class AuditPrivacyTests(unittest.TestCase):
+    def test_production_game_caps_use_canonical_content_overlay(self):
+        selected={'running':True,'oomKilled':False,'restartCount':0,'restartPolicy':'unless-stopped',
+                  'memoryBytes':2*1024**3,'nanoCpus':2*10**9,'pidsLimit':128,'logConfig':{},'privileged':False,
+                  'readonlyRootfs':True,'capDrop':['ALL'],'securityOpt':['no-new-privileges=true'],
+                  'user':'10001:10001','portBindings':{}}
+        self.assertTrue(audit.container_checks('game',selected)['resourceLimits'])
+        selected.update(memoryBytes=512*1024**2,nanoCpus=10**9)
+        self.assertFalse(audit.container_checks('game',selected)['resourceLimits'])
+
+    def test_xdg_redirect_accepts_whitespace_and_rejects_conflicting_paths(self):
+        tree=ast.parse(audit.GAME_CHECK)
+        helper=next(n for n in tree.body if isinstance(n,ast.FunctionDef) and n.name=='persistent_xdg_redirect')
+        namespace={}
+        exec(compile(ast.Module(body=[helper],type_ignores=[]),'<audit redirect>','exec'),namespace)
+        check=namespace['persistent_xdg_redirect']
+        for text in ('config="/state/xdg-config/openmw"','config = "/state/xdg-config/openmw"\n','  config\t=\t"/state/xdg-config/openmw"'):
+            self.assertTrue(check(text))
+        for text in ('# config="/state/xdg-config/openmw"','config="/other/path"','config="/state/xdg-config/openmw"\nconfig="/other"'):
+            self.assertFalse(check(text))
+
     def test_private_docker_values_are_excluded_from_selected_output(self):
         secret='PRIVATE-CANARY-DO-NOT-EXPORT'
         raw={'Id':'id','Image':'image','RestartCount':0,'Mounts':[],
