@@ -1,0 +1,211 @@
+{
+  "scope": "NUC post-BIOS inspection and prepared reversible no-sleep policy; live privileged server audit pending",
+  "status": "awaiting-operator-interactive-sudo",
+  "runtimeSourceCommit": "a6868387dc80dcafd9b8ebad3d8c708511d9a615",
+  "observedUtc": "2026-11-09T19:14:03.649678+00:00",
+  "bootId": "95ae2a01-8b09-451b-ba22-81cc557df619",
+  "uptimeSeconds": 2657.46,
+  "hardware": {
+    "sys_vendor": "Intel(R) Client Systems",
+    "product_name": "NUC8i5BEH",
+    "board_name": "NUC8BEB",
+    "board_version": "J72692-309",
+    "bios_vendor": "Intel Corp.",
+    "bios_version": "BECFL357.86A.0098.2026.0204.1428",
+    "bios_date": "02/04/2026"
+  },
+  "kernel": "7.0.0-42-generic",
+  "radio": {
+    "wifiPhys": [],
+    "bluetoothAdapters": []
+  },
+  "host": {
+    "telemetryAgeSeconds": 1.483134,
+    "availableMemoryBytes": 6893527040,
+    "swapFreeBytes": 4294963200,
+    "globalOomKills": 0,
+    "hottestValidMilliCelsius": 41000,
+    "services": {
+      "docker.service": {
+        "Id": "docker.service",
+        "LoadState": "loaded",
+        "ActiveState": "active",
+        "SubState": "running",
+        "Result": "success",
+        "NRestarts": "0",
+        "ExecMainStatus": "0"
+      },
+      "kdump-tools.service": {
+        "Id": "kdump-tools.service",
+        "LoadState": "loaded",
+        "ActiveState": "active",
+        "SubState": "exited",
+        "Result": "success",
+        "NRestarts": "0",
+        "ExecMainStatus": "0"
+      },
+      "mwnet-appliance-setup.service": {
+        "Id": "mwnet-appliance-setup.service",
+        "LoadState": "loaded",
+        "ActiveState": "inactive",
+        "SubState": "dead",
+        "Result": "success",
+        "NRestarts": "0",
+        "ExecMainStatus": "0"
+      },
+      "mwnet-host-telemetry.service": {
+        "Id": "mwnet-host-telemetry.service",
+        "LoadState": "loaded",
+        "ActiveState": "active",
+        "SubState": "running",
+        "Result": "success",
+        "NRestarts": "0",
+        "ExecMainStatus": "0"
+      },
+      "tailscaled.service": {
+        "Id": "tailscaled.service",
+        "LoadState": "loaded",
+        "ActiveState": "active",
+        "SubState": "running",
+        "Result": "success",
+        "NRestarts": "0",
+        "ExecMainStatus": "0"
+      }
+    },
+    "crashControls": {
+      "captureKernelLoaded": "1",
+      "crashReservedBytes": "536870912",
+      "watchdog": "1",
+      "nmi_watchdog": "1",
+      "hardlockup_panic": "1",
+      "softlockup_panic": "1",
+      "panic_on_oops": "1",
+      "panic": "30"
+    }
+  },
+  "sleepBefore": {
+    "targetsMasked": false,
+    "suspendCapability": "s \"challenge\"",
+    "hibernateCapability": "s \"challenge\"",
+    "logindIdleAction": "ignore",
+    "inhibitorsBlockSleep": false,
+    "systemSleepDisabled": false
+  },
+  "publicDiscoveryBefore": {
+    "exitCode": 0,
+    "distinctSignedHeartbeats": 2,
+    "observations": [
+      {
+        "host": "209.25.141.17",
+        "port": 43133,
+        "name": "MWNet 1.0 server",
+        "version": "1.0.0",
+        "protocol": 13,
+        "players": 0,
+        "capacity": 16,
+        "password": true,
+        "content": [
+          {
+            "name": "Morrowind.esm",
+            "hashes": [
+              2070607289,
+              875048295
+            ]
+          },
+          {
+            "name": "Tribunal.esm",
+            "hashes": [
+              4102157108,
+              554904047
+            ]
+          },
+          {
+            "name": "Bloodmoon.esm",
+            "hashes": [
+              1138565426,
+              2662739750
+            ]
+          }
+        ],
+        "fingerprint": "ed25519/Lk3WtO4wS_t4oKQ3iqKqtU8ijPkSpeX5rRCnlxT41jA",
+        "nonceDigest": "05dd5233cc7f701cd916fcb7381f74adbeb12feb096b6ef6e51ffd642ce2fa09",
+        "signatureVerified": true,
+        "acceptedHeartbeats": 1
+      },
+      {
+        "host": "209.25.141.17",
+        "port": 43133,
+        "name": "MWNet 1.0 server",
+        "version": "1.0.0",
+        "protocol": 13,
+        "players": 0,
+        "capacity": 16,
+        "password": true,
+        "content": [
+          {
+            "name": "Morrowind.esm",
+            "hashes": [
+              2070607289,
+              875048295
+            ]
+          },
+          {
+            "name": "Tribunal.esm",
+            "hashes": [
+              4102157108,
+              554904047
+            ]
+          },
+          {
+            "name": "Bloodmoon.esm",
+            "hashes": [
+              1138565426,
+              2662739750
+            ]
+          }
+        ],
+        "fingerprint": "ed25519/Lk3WtO4wS_t4oKQ3iqKqtU8ijPkSpeX5rRCnlxT41jA",
+        "nonceDigest": "7388c778ab9d74bd2d80023aded6d2e516944b2536704876955022fa4b21fc68",
+        "signatureVerified": true,
+        "acceptedHeartbeats": 2
+      }
+    ],
+    "scope": "Public TLS and signed discovery liveness, not gameplay/private login"
+  },
+  "preparedOperatorBundle": {
+    "stagingDirectory": "/home/gmax/mwnet-post-bios-20261109",
+    "sha256": {
+      "verify_server.py": "0318ba1b114b5a72809de9648cb7433e2c083c346389ef6a0c08568a67fee3d9",
+      "no_sleep.py": "13b7b6b60d703d52664855dba9bdc3808c63dd11a1a6e8c384dc697db8756a4f",
+      "configure.py": "2cccbeca12eca999a841e83626573baae7d7fe4a98592f4e72c5e8c47bfe7584",
+      "manifest.json": "f17bf139fe30074a7cace6c30db09d331bb92591fb8d846200784ca062466899"
+    },
+    "uid": 1000,
+    "mode": "0o700"
+  },
+  "localVerification": {
+    "noSleepRegressionTests": 7,
+    "privateAuditTests": 3,
+    "passed": true,
+    "newBuildOrDeploymentPerformed": false
+  },
+  "privateEvidence": {
+    "host-before.json": {
+      "sha256": "84a5dc510eb2f1976955b072f16cd3b53ec0c734dae75caf15db579fa0d9c348",
+      "bytes": 18687
+    },
+    "public-before.jsonl": {
+      "sha256": "4e70f94089c71e564e262f65c7e7aaad15e4293259b4ae3839e6530a84f6f1c9",
+      "bytes": 1114
+    },
+    "inspect_post_bios.py": {
+      "sha256": "dec160045ec70bd80a7cbf42e1d0e90e6f7b114d65ec18f189e6a61b385b88aa",
+      "bytes": 6713
+    }
+  },
+  "limitations": [
+    "Operator sudo step has not yet been verified; no sleep configuration change claimed at this checkpoint.",
+    "BIOS update and current healthy state do not establish that recurrent whole-host freezes are fixed.",
+    "No suspend/reboot/panic test, graphical gameplay, release change or production restart performed."
+  ]
+}

@@ -53,6 +53,8 @@ jobs:
         bash CI/with_disk_tmp.sh python3 -m unittest discover -s CI/tests -p test_mwnet_proc.py
         bash CI/with_disk_tmp.sh python3 -m unittest discover -s CI/tests -p test_mwnet_nuc_acceptance.py
         bash CI/with_disk_tmp.sh python3 -m unittest discover -s CI/tests -p test_mwnet_host_diagnostics.py
+        bash CI/with_disk_tmp.sh python3 -m unittest discover -s CI/tests -p test_mwnet_no_sleep.py
+        bash CI/with_disk_tmp.sh python3 -m unittest discover -s CI/tests -p test_mwnet_server_audit.py
 
     - name: Verify discovery release updates and rollback
       run: |
